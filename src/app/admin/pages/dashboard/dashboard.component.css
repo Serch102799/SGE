@@ -1,0 +1,179 @@
+/* Estilos Globales heredados o re-definidos para Dashboard */
+/* Nota: Si estos ya están en styles.css o :host del app.component, no los repitas aquí */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: sans-serif;
+}
+
+/* El fondo principal del dashboard, similar al login */
+/* Si tu DashboardComponent está dentro de AdminComponent, este fondo podría ir en AdminComponent.css
+   o en el :host de DashboardComponent si este cubre toda la pantalla.
+   Aquí lo aplicamos a :host del DashboardComponent por si este es el componente principal de la vista. */
+:host {
+  display: block; /* O flex/grid dependiendo del layout principal del dashboard */
+  min-height: 100vh; /* Asegura que ocupe toda la altura */
+  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/pantalla1.jpg") no-repeat center center fixed;
+  background-size: cover;
+  color: white; /* Color de texto base para todo el dashboard */
+  padding: 20px; /* Un poco de padding general para el contenido */
+  overflow-y: auto; /* Para que el contenido pueda hacer scroll si es muy largo */
+}
+
+/* Estilos para el contenedor principal del dashboard (si tienes uno) */
+.dashboard-container {
+  max-width: 1200px; /* Ancho máximo para centrar el contenido */
+  margin: 0 auto; /* Centrar horizontalmente */
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.6); /* Fondo semi-transparente similar al card del login */
+  border: 2px solid white;
+  border-radius: 10px;
+  min-height: calc(100vh - 40px); /* Para que el contenedor sea alto */
+  display: flex; /* Usamos flexbox para organizar las secciones internas */
+  flex-direction: column; /* Contenido en columnas por defecto */
+  gap: 20px; /* Espacio entre las secciones del dashboard */
+}
+
+/* Títulos del Dashboard */
+h1, h2, h3, h4, h5, h6 {
+  color: #ffffff; /* Títulos en blanco */
+  margin-bottom: 15px;
+}
+
+/* Estilo general para las "tarjetas" de información (KPIs, resúmenes) */
+.dashboard-card {
+  background-color: rgba(0, 0, 0, 0.7); /* Fondo similar al card del login */
+  border: 1px solid rgba(255, 255, 255, 0.5); /* Borde más sutil que el del login */
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px; /* Espacio entre tarjetas si no usas grid/flex con gap */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Sombra suave */
+}
+
+.dashboard-card-header {
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 10px 15px;
+  margin: -20px -20px 15px -20px; /* Ajusta el margen para que se vea como cabecera */
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-card-header h3 {
+  color: white;
+  margin: 0;
+}
+
+/* Estilo para un grid de tarjetas (ej. KPIs de inventario, autobuses) */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Columnas responsivas */
+  gap: 20px; /* Espacio entre las tarjetas en el grid */
+  margin-bottom: 20px;
+}
+
+/* Estilo para tablas de datos */
+.dashboard-table-container {
+  overflow-x: auto; /* Para tablas que pueden ser muy anchas */
+  margin-bottom: 20px;
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse; /* Eliminar espacios entre celdas */
+  background-color: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  overflow: hidden; /* Para que los bordes redondeados afecten a la tabla */
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Líneas separadoras entre filas */
+  color: #f0f0f0; /* Color del texto en celdas */
+}
+
+.dashboard-table th {
+  background-color: rgba(0, 0, 0, 0.5); /* Fondo para cabeceras de tabla */
+  color: white;
+  font-weight: bold;
+}
+
+.dashboard-table tr:last-child td {
+  border-bottom: none; /* Elimina el borde de la última fila */
+}
+
+.dashboard-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05); /* Efecto hover en filas */
+}
+
+/* Botones dentro del Dashboard (si son diferentes a los de login) */
+.dashboard-btn {
+  background-color: #4480d3; /* Color primario azul */
+  border: none;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.dashboard-btn:hover {
+  background-color: #3a6cb9; /* Tono más oscuro al pasar el mouse */
+}
+
+/* Mensajes de información o alertas dentro del dashboard */
+.info-message, .error-message, .success-message {
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.info-message {
+  background-color: rgba(68, 128, 211, 0.2);
+  border: 1px solid #4480d3;
+  color: #4480d3;
+}
+
+.error-message {
+  background-color: rgba(255, 51, 51, 0.2);
+  border: 1px solid #ff3333;
+  color: #ff3333;
+}
+
+.success-message {
+  background-color: rgba(76, 175, 80, 0.2);
+  border: 1px solid #4CAF50;
+  color: #4CAF50;
+}
+
+/* Opcional: Estilos para un sidebar si lo tienes */
+.sidebar {
+  background-color: rgba(0, 0, 0, 0.7);
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 20px;
+  /* ... otras propiedades de layout si usas flex/grid en el contenedor padre ... */
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar li a {
+  display: block;
+  padding: 10px 0;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar li a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}

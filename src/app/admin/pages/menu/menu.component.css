@@ -1,0 +1,88 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  
+  .content {
+    flex: 1;
+    min-height: 100vh;
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+      url("/assets/img/fondo.jpg") no-repeat center center / cover;
+    background-attachment: fixed;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .welcome-section {
+    margin-top: 80px;
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+  }
+  
+  .welcome-section h2 {
+    font-size: 35px;
+    margin-bottom: 8px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  .welcome-section p {
+    font-size: 18px;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  .button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 0 20px;
+  }
+  
+  .btn-custom {
+    background: rgba(128, 128, 128, 0.6);
+    border-radius: 20px;
+    border: 2px solid white;
+    color: white;
+    padding: 12px 20px;
+    width: 80%;
+    max-width: 300px;
+    font-size: 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  
+  .btn-custom:hover {
+    background: rgba(144, 138, 138, 0.8);
+    transform: translateY(-3px);
+  }
+  
+  .btn-custom:active {
+    transform: translateY(1px);
+  }
+  
+  .profile-icon {
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+  }
+  
+  .profile-icon i {
+    font-size: 48px;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(rgba(27, 26, 26, 0.5), rgba(27, 26, 26, 0.5)),
+      url("/assets/img/fondo.jpg") no-repeat;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
