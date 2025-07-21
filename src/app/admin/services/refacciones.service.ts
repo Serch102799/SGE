@@ -1,82 +1,94 @@
+// src/app/admin/services/refacciones.service.ts
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// Define una interfaz para la estructura de tu Refacción
 export interface Refaccion {
-  id_refaccion: string; // Asumiendo que el ID es un string/UUID en tu DB
+  id: number;
   nombre: string;
-  numero_parte_fabricante: string;
   categoria: string;
-  marca: string;
-  unidad_medida: string;
-  ubicacion_almacen: string;
   stock_actual: number;
   stock_minimo: number;
-  stock_maximo: number;
   precio_costo: number;
-  fecha_ultima_entrada: string; // Puedes usar Date si necesitas objetos Date
-  proveedor_principal_id: string; // Asumiendo que ID de proveedor es string
+  precio_venta: number;
+  proveedor: string;
+  descripcion: string;
+  fecha_ultima_salida?: string;
+  cantidad_ultima_salida?: number;
+  fecha_ultima_entrada?: string;
+  marca?: string;           
+  ubicacion_almacen?: string; 
 }
+
+// Interfaces para Entradas (déjalas como están)
+export interface EntradaAlmacen {
+  ID_Entrada: number;
+  ID_Proveedor: number;
+  Numero_Factura_Proveedor: string;
+  Observaciones: string;
+  Recibido_Por_ID: number;
+  Fecha_Entrada: string; // Asumiendo que tu DB devuelve la fecha como string
+  Nombre_Proveedor?: string;
+  Nombre_Empleado?: string;
+}
+
+export interface DetalleEntrada {
+  ID_Detalle_Entrada: number;
+  ID_Entrada: number;
+  ID_Refaccion: number;
+  Cantidad_Recibida: number;
+  Costo_Unitario_Entrada: number;
+  Fecha_Caducidad?: string;
+}
+
+// --- NUEVAS INTERFACES para tus datos de Salidas ---
+export interface SalidaAlmacen {
+  ID_Salida: number;
+  Tipo_Salida: string;
+  ID_Autobus?: number; // Puede ser opcional dependiendo de la salida
+  Solicitado_Por_ID: number;
+  Observaciones?: string;
+  Fecha_Salida: string; // Asumiendo que tu DB añade este campo automáticamente
+}
+
+export interface DetalleSalida {
+  ID_Detalle_Salida: number;
+  ID_Salida: number;
+  ID_Refaccion: number;
+  Cantidad_Despachada: number;
+}
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class RefaccionesService {
-  // Asegúrate de que esta URL base sea correcta para tu backend
-  // Si tu API está en localhost:3000 y el router de refacciones está bajo '/api/refacciones'
-  private apiUrl = 'http://localhost:3000/api/refacciones';
+  private readonly API_BASE_URL = 'http://localhost:3000/api'; // Ajusta la URL base de tu API
 
   constructor(private http: HttpClient) { }
 
-  /**
-   * Obtiene todas las refacciones del backend.
-   */
   getRefacciones(): Observable<Refaccion[]> {
-    return this.http.get<Refaccion[]>(this.apiUrl);
+    return this.http.get<Refaccion[]>(`${this.API_BASE_URL}/refacciones`);
   }
 
-  /**
-   * Obtiene una refacción por nombre.
-   */
-  getRefaccionPorNombre(nombre: string): Observable<Refaccion> {
-    return this.http.get<Refaccion>(`${this.apiUrl}/nombre/${nombre}`);
+  // Métodos para obtener datos de Entradas (déjalos como están)
+  getEntradasAlmacen(): Observable<EntradaAlmacen[]> {
+    return this.http.get<EntradaAlmacen[]>(`${this.API_BASE_URL}/entradas`);
   }
 
-  /**
-   * Obtiene refacciones por categoría.
-   */
-  getRefaccionesPorCategoria(categoria: string): Observable<Refaccion[]> {
-    return this.http.get<Refaccion[]>(`${this.apiUrl}/categoria/${categoria}`);
+  getDetallesEntrada(): Observable<DetalleEntrada[]> {
+    return this.http.get<DetalleEntrada[]>(`${this.API_BASE_URL}/detalle-entrada`);
   }
 
-  /**
-   * Obtiene refacciones por marca.
-   */
-  getRefaccionesPorMarca(marca: string): Observable<Refaccion[]> {
-    return this.http.get<Refaccion[]>(`${this.apiUrl}/marca/${marca}`);
+  // --- NUEVOS MÉTODOS PARA OBTENER DATOS DE SALIDAS ---
+
+  getSalidasAlmacen(): Observable<SalidaAlmacen[]> {
+    return this.http.get<SalidaAlmacen[]>(`${this.API_BASE_URL}/salidas`);
   }
 
-  /**
-   * Crea una nueva refacción.
-   */
-  crearRefaccion(refaccion: Omit<Refaccion, 'id_refaccion'>): Observable<Refaccion> {
-    // Nota: Omit<Refaccion, 'id_refaccion'> porque el ID lo genera la DB
-    return this.http.post<Refaccion>(this.apiUrl, refaccion);
-  }
-
-  /**
-   * Actualiza una refacción por nombre.
-   */
-  actualizarRefaccion(nombre: string, updates: Partial<Refaccion>): Observable<{ message: string, refaccion: Refaccion }> {
-    // Partial<Refaccion> permite enviar solo las propiedades a actualizar
-    return this.http.put<{ message: string, refaccion: Refaccion }>(`${this.apiUrl}/nombre/${nombre}`, updates);
-  }
-
-  /**
-   * Elimina una refacción por nombre.
-   */
-  eliminarRefaccion(nombre: string): Observable<{ message: string, refaccion: Refaccion }> {
-    return this.http.delete<{ message: string, refaccion: Refaccion }>(`${this.apiUrl}/nombre/${nombre}`);
+  getDetallesSalida(): Observable<DetalleSalida[]> {
+    // Nota: Tu endpoint para detalles de salida es '/api/detalleSalida'
+    return this.http.get<DetalleSalida[]>(`${this.API_BASE_URL}/detalleSalida`);
   }
 }

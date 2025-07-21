@@ -1,0 +1,130 @@
+<div class="usuarios-container">
+  <div class="container-header">
+    <h2>Gestión de Usuarios</h2>
+    <button class="btn-agregar" (click)="abrirModal()" *ngIf="authService.hasRole(['Admin'])">
+      <span>&#43;</span> Agregar Usuario
+    </button>
+  </div>
+
+  <div class="container-body">
+    <div class="tabla-responsive-wrapper">
+      <table class="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Usuario</th>
+            <th>Puesto</th>
+            <th>Rol</th> <th>Estado</th>
+            <th style="text-align: center;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let usuario of usuariosFiltrados">
+            <td>{{ usuario.nombre }}</td>
+            <td>{{ usuario.nombre_usuario }}</td>
+            <td>{{ usuario.puesto }}</td>
+            <td>{{ usuario.rol }}</td> <td>
+              <span [class.estado-activo]="usuario.estado_cuenta === 'Activo'"
+                    [class.estado-inactivo]="usuario.estado_cuenta === 'Inactivo'">
+                {{ usuario.estado_cuenta }}
+              </span>
+            </td>
+            <td class="acciones">
+              <ng-container *ngIf="authService.hasRole(['Admin'])">
+                <!-- <button class="btn-accion btn-estado" (click)="cambiarEstadoUsuario(usuario)">Cambiar Estado</button> -->
+                <button class="btn-accion btn-eliminar" (click)="abrirModalBorrado(usuario)">Desactivar</button>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Agregar Nuevo Empleado</h3>
+      <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="guardarEmpleado()">
+        <div class="form-group">
+          <label for="nombre">Nombre Completo</label>
+          <input id="nombre" type="text" class="form-control" [(ngModel)]="nuevoEmpleado.Nombre" name="Nombre" placeholder="Ej. Juan Pérez" required>
+        </div>
+        <div class="form-group">
+          <label for="usuario">Nombre de Usuario</label>
+          <input id="usuario" type="text" class="form-control" [(ngModel)]="nuevoEmpleado.Nombre_Usuario" name="Nombre_Usuario" placeholder="Ej. jperez" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input id="password" type="password" class="form-control" [(ngModel)]="nuevoEmpleado.Contrasena_Hash" name="Contrasena_Hash" placeholder="••••••••" required>
+        </div>
+        <div class="form-group">
+          <label for="puesto">Puesto</label>
+          <input id="puesto" type="text" class="form-control" [(ngModel)]="nuevoEmpleado.Puesto" name="Puesto" placeholder="Ej. Desarrollador">
+        </div>
+        <div class="form-group">
+          <label for="departamento">Departamento</label>
+          <input id="departamento" type="text" class="form-control" [(ngModel)]="nuevoEmpleado.Departamento" name="Departamento" placeholder="Ej. TI">
+        </div>
+        
+        <div class="form-group">
+          <label for="rol">Rol del Usuario</label>
+          <select id="rol" class="form-control" [(ngModel)]="nuevoEmpleado.rol" name="rol">
+            <option value="Almacenista">Almacenista</option>
+            <option value="Admin">Administrador</option>
+            </select>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-accion btn-guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalBorrado" (click)="cerrarModalBorrado()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="header-eliminar">Confirmar Desactivación</h3>
+      <button class="btn-cerrar" (click)="cerrarModalBorrado()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text" *ngIf="usuarioAEliminar">
+        ¿Estás seguro de que deseas eliminar permanentemente al usuario
+        <strong>{{ usuarioAEliminar.nombre_usuario }}</strong>?
+      </p>
+      <p class="confirm-warning">Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBorrado()">Cancelar</button>
+      <button type="button" class="btn-accion btn-confirmar-eliminar" (click)="confirmarEliminacion()">Sí, Desactivar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 [ngClass]="{
+          'header-exito': notificacion.tipo === 'exito',
+          'header-error': notificacion.tipo === 'error',
+          'header-advertencia': notificacion.tipo === 'advertencia'
+        }">
+          {{ notificacion.titulo }}
+        </h3>
+        <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-text">{{ notificacion.mensaje }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+      </div>
+    </div>
+  </div>

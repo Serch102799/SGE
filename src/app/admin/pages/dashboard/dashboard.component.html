@@ -1,65 +1,95 @@
 <div class="dashboard-container">
-  <h1>Bienvenido al Dashboard de Almacén</h1>
+  
+  <div *ngIf="!stats" class="loading-message">Cargando datos del dashboard...</div>
 
-  <div class="card-grid">
-    <div class="dashboard-card">
-      <div class="dashboard-card-header"><h3>Total de Refacciones</h3></div>
-      <p style="font-size: 2.5rem; text-align: center;">
-        {{ refacciones.length }}
-      </p>
+  <div *ngIf="stats">
+    
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-value">{{ stats.totalRefacciones }}</div>
+        <div class="kpi-label">Refacciones Totales</div>
+      </div>
+      <div class="kpi-card kpi-alerta" [class.kpi-ok]="stats.refaccionesStockBajo === 0">
+        <div class="kpi-value">{{ stats.refaccionesStockBajo }}</div>
+        <div class="kpi-label">Refacciones con Stock Bajo</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">{{ stats.valorTotalInventario | currency:'MXN' }}</div>
+        <div class="kpi-label">Valor Total del Inventario</div>
+      </div>
     </div>
 
-    <div class="dashboard-card">
-      <div class="dashboard-card-header"><h3>Refacciones con Stock Bajo</h3></div>
-      <p style="font-size: 2.5rem; text-align: center; color: #ff3333;">
-        {{ getRefaccionesConStockBajo().length }}
-      </p>
-      <button class="dashboard-btn" *ngIf="getRefaccionesConStockBajo().length > 0">Ver Detalle</button>
+    <div class="charts-grid">
+      <div class="chart-container">
+        <h3>Top 5 Refacciones con Más Stock</h3>
+        <div class="chart-wrapper">
+          <canvas baseChart
+            [data]="barChartData"
+            [options]="barChartOptions"
+            type="bar">
+          </canvas>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <h3>Refacciones Críticas por Stock Bajo</h3>
+        <div class="chart-wrapper">
+          <canvas baseChart
+            [data]="lowStockChartData"
+            [options]="lowStockChartOptions"
+            type="bar">
+          </canvas>
+        </div>
+      </div>
     </div>
 
-    </div>
+    <div class="movimientos-grid">
+      
+      <div class="movimiento-card">
+        <h3>Últimos 5 Movimientos de Entrada</h3>
+        <div class="tabla-responsive-wrapper">
+          <table class="tabla-movimientos">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Refacción</th>
+                <th>Cantidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let entrada of stats.ultimasEntradas">
+                <td>{{ entrada.fecha_entrada | date:'short' }}</td>
+                <td>{{ entrada.nombre_refaccion }}</td>
+                <td class="cantidad-entrada">+{{ entrada.cantidad_recibida }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-  <div *ngIf="isLoading" class="info-message">
-    <p>Cargando inventario de refacciones...</p>
+      <div class="movimiento-card">
+        <h3>Últimos 5 Movimientos de Salida</h3>
+        <div class="tabla-responsive-wrapper">
+          <table class="tabla-movimientos">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Refacción</th>
+                <th>Cantidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let salida of stats.ultimasSalidas">
+                <td>{{ salida.fecha_salida | date:'short' }}</td>
+                <td>{{ salida.nombre_refaccion }}</td>
+                <td class="cantidad-salida">-{{ salida.cantidad_despachada }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
     </div>
-
-  <div *ngIf="errorMessage" class="error-message">
-    <p>{{ errorMessage }}</p>
-    <button class="dashboard-btn" (click)="cargarRefacciones()">Reintentar Carga</button>
+    
   </div>
-
-  <ng-container *ngIf="!isLoading && !errorMessage">
-    <h2 *ngIf="refacciones.length > 0">Inventario General</h2>
-
-    <div class="dashboard-table-container" *ngIf="refacciones.length > 0">
-      <table class="dashboard-table">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Categoría</th>
-            <th>Marca</th>
-            <th>Stock Actual</th>
-            <th>Stock Mínimo</th>
-            <th>Ubicación</th>
-            <th>Precio Costo</th>
-            </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let refaccion of refacciones">
-            <td>{{ refaccion.nombre }}</td>
-            <td>{{ refaccion.categoria }}</td>
-            <td>{{ refaccion.marca }}</td>
-            <td>{{ refaccion.stock_actual }}</td>
-            <td>{{ refaccion.stock_minimo }}</td>
-            <td>{{ refaccion.ubicacion_almacen }}</td>
-            <td>${{ refaccion.precio_costo | number:'1.2-2' }}</td> </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div *ngIf="refacciones.length === 0" class="info-message">
-      <p>No hay refacciones registradas en el inventario o no se encontraron datos.</p>
-    </div>
-  </ng-container>
-
-  </div>
+</div>

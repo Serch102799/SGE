@@ -1,0 +1,107 @@
+<div class="usuarios-container">
+  <div class="container-header">
+    <h2>Gestión de Proveedores</h2>
+    <button class="btn-agregar" (click)="abrirModal('agregar')">
+      <span>&#43;</span> Agregar Proveedor
+    </button>
+  </div>
+
+  <div class="container-body">
+    <div class="filtros-container">
+      <div class="filtro-item">
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="Buscar por nombre, contacto o RFC..."
+          [(ngModel)]="terminoBusqueda"
+          (input)="aplicarFiltros()">
+      </div>
+    </div>
+
+    <div class="tabla-responsive-wrapper">
+      <table class="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Contacto</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+            <th style="text-align: center;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let proveedor of proveedoresFiltrados">
+            <td>{{ proveedor.nombre_proveedor }}</td>
+            <td>{{ proveedor.contacto }}</td>
+            <td>{{ proveedor.telefono }}</td>
+            <td>{{ proveedor.correo }}</td>
+            <td class="acciones">
+              <button class="btn-accion btn-estado" (click)="abrirModal('editar', proveedor)">Editar</button>
+              <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(proveedor)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ modoEdicion ? 'Editar Proveedor' : 'Agregar Nuevo Proveedor' }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="guardarProveedor()">
+        <div class="form-group"><label>Nombre del Proveedor</label><input type="text" class="form-control" [(ngModel)]="proveedorSeleccionado.nombre_proveedor" name="nombre_proveedor" required></div>
+        <div class="form-group"><label>Contacto</label><input type="text" class="form-control" [(ngModel)]="proveedorSeleccionado.contacto" name="contacto"></div>
+        <div class="form-group"><label>Teléfono</label><input type="text" class="form-control" [(ngModel)]="proveedorSeleccionado.telefono" name="telefono"></div>
+        <div class="form-group"><label>Correo</label><input type="email" class="form-control" [(ngModel)]="proveedorSeleccionado.correo" name="correo"></div>
+        <div class="form-group"><label>Dirección</label><input type="text" class="form-control" [(ngModel)]="proveedorSeleccionado.direccion" name="direccion"></div>
+        <div class="form-group"><label>RFC</label><input type="text" class="form-control" [(ngModel)]="proveedorSeleccionado.rfc" name="rfc"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-accion btn-guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalBorrar" (click)="cerrarModalBorrar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="header-eliminar">Confirmar Eliminación</h3>
+      <button class="btn-cerrar" (click)="cerrarModalBorrar()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text" *ngIf="proveedorABorrar">¿Estás seguro de que deseas eliminar a <strong>{{ proveedorABorrar.nombre_proveedor }}</strong>?</p>
+      <p class="confirm-warning">Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBorrar()">Cancelar</button>
+      <button type="button" class="btn-accion btn-confirmar-eliminar" (click)="confirmarEliminacion()">Sí, Eliminar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{
+        'header-exito': notificacion.tipo === 'exito',
+        'header-error': notificacion.tipo === 'error',
+        'header-advertencia': notificacion.tipo === 'advertencia'
+      }">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>

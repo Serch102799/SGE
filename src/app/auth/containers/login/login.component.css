@@ -1,129 +1,233 @@
+/* Base Styles */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Slightly more modern sans-serif */
 }
 
-.back-arrow {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 999;
-  color: #ffffff;
-  font-size: 20px;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-}
-
-.back-arrow:hover {
-  transform: scale(1.2);
-}
-
+/* Background and Layout for the Host Component */
 :host {
   display: flex;
   justify-content: center;
-  align-items: center; 
-  min-height: 100vh; 
+  align-items: center;
+  min-height: 100vh; /* Ensures full viewport height */
   background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/pantalla1.jpg") no-repeat center center fixed;
   background-size: cover;
+  background-position: center; /* Ensure image is centered */
+  background-attachment: fixed; /* Ensures the background stays fixed during scroll, though min-height makes it less critical here */
 }
 
+/* Login Container - Card Wrapper */
 .login {
-  max-width: 800px; /* ancho del contenedor de login */
-  width: 90%; 
+  max-width: 450px; /* Reduced max-width for a more typical login form size */
+  width: 90%;
+  padding: 25px; /* Added some padding around the card itself */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); /* Enhanced shadow for depth */
+  border-radius: 12px; /* Slightly more rounded corners */
 }
 
-
+/* Card Styling (Login Box) */
 .card {
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  border: 2px solid white !important;
-  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.8); /* Slightly darker for better contrast */
+  color: #e0e0e0; /* Off-white for softer contrast */
+  border: 1px solid rgba(255, 255, 255, 0.3) !important; /* Softer white border */
+  border-radius: 10px; /* Consistent border radius */
+  overflow: hidden; /* Ensures content respects border-radius */
 }
 
 .card-header {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(28, 28, 28, 0.7); /* Darker header for distinction */
+  padding: 15px 20px; /* Adjusted padding */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle separator */
 }
 
 .card-header h3 {
-  color: white;
+  color: #ffffff; /* Pure white for titles */
+  margin-bottom: 0; /* Remove default margin from h3 */
+  font-size: 1.8rem; /* Slightly larger heading */
+  text-align: center; /* Centered header text */
 }
 
 .card-body {
-  padding: 20px;
+  padding: 70px; /* Increased padding inside the body */
 }
 
+
+
+/* Form Group Styling */
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 25px; /* Increased bottom margin for better spacing */
 }
 
 .form-group label {
+  display: flex;
+  margin-bottom: 20px; /* Slightly reduced margin */
+  color: #ffffff; /* Consistent off-white color */
+  font-size: 10rem; /* Slightly smaller font size */
+}
+
+
+.form-control {
+  background-color: rgba(74, 142, 206, 0.3) !important; /* Slightly more transparent background */
+  border: 1px solid rgba(255, 255, 255, 0.4); /* Softer white border */
+  padding: 12px 15px; /* Adjusted padding */
+  color: #f3f3f3; /* Lighter text color inside input */
+  border-radius: 5px; /* Slightly rounded corners for inputs */
+  font-size: 1rem;
+  transition: all 0.3s ease; /* Smooth transition for focus */
+}
+
+.form-group input::placeholder {
+  color: rgba(255, 255, 255, 0.5); /* Softer placeholder color */
+}
+
+.form-group input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(68, 128, 211, 0.7); /* A subtle blue glow on focus */
+  border-color: #4480d3; /* Blue border on focus */
+  background-color: rgba(74, 142, 206, 0.4) !important; /* Slightly less transparent on focus */
+}
+
+/* Checkbox Styling */
+.form-check {
+  margin-bottom: 25px; /* Consistent margin */
+  padding-left: 30px; /* Increased padding for checkbox alignment */
+  display: flex; /* Use flexbox for better alignment */
+  align-items: center;
+}
+
+.form-check-input {
+  /* Using standard browser appearance first, then custom if needed */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background-color: transparent;
+  border: 1px solid #ffffff; /* White border */
+  border-radius: 4px; /* Slightly rounded checkbox */
+  cursor: pointer;
+  margin-right: 10px; /* Space between checkbox and label */
+  flex-shrink: 0; /* Prevent checkbox from shrinking */
+  transition: all 0.2s ease;
+}
+.form-group label {
+  display: flex;
+  margin-bottom: 20px;
+  color: #ffffff;
+  font-size: 1.3rem; /* Aproximadamente 16px. Originalmente estaba en 10rem. */
+}
+
+.form-check-input:checked {
+  background-color: #4480d3; /* Blue when checked */
+  border-color: #4480d3; /* Blue border when checked */
+}
+
+.form-check-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(68, 128, 211, 0.5); /* Focus glow */
+}
+
+.form-check-label {
+  color: #e0e0e0; /* Off-white label color */
+  user-select: none;
+  font-size: 1.0rem;
   display: block;
   margin-bottom: 10px;
   color: white;
 }
 
-.form-control {
-  background-color: rgba(74, 142, 206, 0.5) !important;
-}
-
-.form-group input {
-  width: 100%;
-  background-color: rgba(254, 254, 254, 0.5);
-  border: 1px solid white;
-  padding: 15px;
-  color: rgb(243, 239, 239); 
-}
-
-.form-group input::placeholder {
-  color: rgba(255, 255, 255, 0.6); 
-}
-
-.form-group input:focus {
-  outline: none;
-  box-shadow: 0 0 8px rgb(255, 255, 255); 
-}
-
-.form-check {
-  margin-bottom: 20px;
-  padding-left: 25px;
-}
-
-.form-check-input {
-  background-color: transparent;
-  border: 1px solid rgb(255, 255, 255);
-  margin-right: 10px;
-}
-
-.form-check-label {
-  color: white;
-  user-select: none;
-}
-
+/* Primary Button Styling */
 .btn-primary {
-  background-color: #4480d3;
+  background-color: #4480d3; /* Primary blue */
   border: none;
   color: white;
-  padding: 12px 24px;
-  font-size: 1.1rem;
-  width: calc(100% - 40px);
-  margin: 0 20px 20px;
+  padding: 14px 28px; /* Larger padding for better clickability */
+  font-size: 1.15rem; /* Slightly larger font */
+  width: 100%; /* Full width within the card-body padding */
+  border-radius: 8px; /* Slightly more rounded button */
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #386bbd; /* Slightly darker blue on hover */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Subtle shadow on hover */
+}
+
+.btn-primary:active {
+  background-color: #2e59a0; /* Even darker on click */
 }
 
 .btn-primary:disabled {
-  background-color: #4480d3;
-  opacity: 0.6;
+  background-color: #6a9edc; /* Lighter blue when disabled */
+  opacity: 0.7; /* Make it more obvious it's disabled */
   cursor: not-allowed;
+  box-shadow: none;
 }
 
+/* Error Text */
 .text-danger {
-  color: #ff3333;
-  font-size: 0.8rem;
-  margin-top: 5px;
-  padding-left: 15px;
+  color: #ff6666; /* Slightly softer red for errors */
+  font-size: 0.85rem;
+  margin-top: 8px; /* Adjusted margin */
+  text-align: left;
+  padding-left: 0; /* Remove specific padding-left */
+}
+
+/* Back Arrow (If still present) */
+.back-arrow {
+  position: fixed;
+  top: 25px; /* Slightly adjusted position */
+  left: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000; /* Higher z-index */
+  color: #ffffff;
+  font-size: 24px; /* Slightly larger icon */
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7); /* Stronger shadow for visibility */
+}
+
+.back-arrow:hover {
+  transform: scale(1.2);
+  color: #e0e0e0; /* Subtle color change on hover */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .login {
+    max-width: 90%;
+    padding: 20px;
+  }
+
+  .card-body {
+    padding: 25px;
+  }
+
+  .card-header h3 {
+    font-size: 1.6rem;
+  }
+
+  .btn-primary {
+    padding: 12px 20px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login {
+    padding: 15px;
+  }
+
+  .card-body {
+    padding: 20px;
+  }
+
+  .card-header h3 {
+    font-size: 1.4rem;
+  }
 }

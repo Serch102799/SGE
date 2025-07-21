@@ -1,0 +1,124 @@
+<div class="usuarios-container">
+  <div class="container-header">
+    <h2>Catálogo de Insumos</h2>
+    <div class="acciones-header">
+      <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin'])">
+        <span>&#43;</span> Agregar Insumo
+      </button>
+    </div>
+  </div>
+
+  <div class="container-body">
+    <div class="filtros-container">
+      <div class="filtro-item">
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="Buscar por nombre, marca o tipo..."
+          [(ngModel)]="terminoBusqueda"
+          (input)="aplicarFiltros()">
+      </div>
+    </div>
+
+    <div class="tabla-responsive-wrapper">
+      <table class="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Marca</th>
+            <th>Tipo</th>
+            <th>Stock Actual</th>
+            <th>Unidad</th>
+            <th style="text-align: center;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let insumo of insumosFiltrados">
+            <td>{{ insumo.nombre }}</td>
+            <td>{{ insumo.marca }}</td>
+            <td>{{ insumo.tipo }}</td>
+            <td>{{ insumo.stock_actual | number:'1.2-2' }}</td>
+            <td>{{ insumo.unidad_medida }}</td>
+            <td class="acciones" *ngIf="authService.hasRole(['Admin'])">
+              <button class="btn-accion btn-estado" (click)="abrirModal('editar', insumo)">Editar</button>
+              <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(insumo)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ modoEdicion ? 'Editar Insumo' : 'Agregar Nuevo Insumo' }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="guardarInsumo()">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.nombre" name="nombre" [disabled]="modoEdicion" required>
+        </div>
+        <div class="form-group">
+          <label>Marca</label>
+          <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.marca" name="marca" [disabled]="modoEdicion">
+        </div>
+        <div class="form-group">
+          <label>Tipo (ej. Aceite de Motor)</label>
+          <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.tipo" name="tipo" [disabled]="modoEdicion">
+        </div>
+        <div class="form-group">
+          <label>Unidad de Medida</label>
+          <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.unidad_medida" name="unidad_medida" [disabled]="modoEdicion" required>
+        </div>
+        <div class="form-group" *ngIf="modoEdicion">
+          <label>Stock Mínimo</label>
+          <input type="number" class="form-control" [(ngModel)]="insumoSeleccionado.stock_minimo" name="stock_minimo">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-accion btn-guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="mostrarModalBorrar" (click)="cerrarModalBorrar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="header-eliminar">Confirmar Eliminación</h3>
+      <button class="btn-cerrar" (click)="cerrarModalBorrar()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text" *ngIf="insumoABorrar">¿Estás seguro de que deseas eliminar <strong>{{ insumoABorrar.nombre }}</strong>?</p>
+      <p class="confirm-warning">Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBorrar()">Cancelar</button>
+      <button type="button" class="btn-accion btn-confirmar-eliminar" (click)="confirmarEliminacion()">Sí, Eliminar</button>
+    </div>
+  </div>
+</div>
+  <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{
+        'header-exito': notificacion.tipo === 'exito',
+        'header-error': notificacion.tipo === 'error',
+        'header-advertencia': notificacion.tipo === 'advertencia'
+      }">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>

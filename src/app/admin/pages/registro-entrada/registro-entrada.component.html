@@ -1,0 +1,119 @@
+<div class="back-arrow" (click)="regresar()">&#8592;</div>
+
+<div class="form-container">
+  <div class="container-header">
+    <h2>Registrar Nueva Entrada a Almacén</h2>
+  </div>
+
+  <div class="container-body">
+    
+    <fieldset class="form-section">
+      <legend>1. Datos de la Entrada</legend>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="proveedor">Proveedor</label>
+          <select id="proveedor" class="form-control" [(ngModel)]="entradaMaestro.idProveedor" name="idProveedor" required>
+            <option [ngValue]="null" disabled>Selecciona un proveedor...</option>
+            <option *ngFor="let p of proveedores" [ngValue]="p.id_proveedor">{{ p.nombre_proveedor }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="factura">Número de Factura</label>
+          <input id="factura" type="text" class="form-control" [(ngModel)]="entradaMaestro.numeroFacturaProveedor" name="numeroFacturaProveedor">
+        </div>
+        <div class="form-group">
+          <label for="empleado">Recibido Por</label>
+          <select id="empleado" class="form-control" [(ngModel)]="entradaMaestro.recibidoPorID" name="recibidoPorID" required>
+            <option [ngValue]="null" disabled>Selecciona un empleado...</option>
+            <option *ngFor="let e of empleados" [ngValue]="e.id_empleado">{{ e.nombre }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="observaciones">Observaciones</label>
+        <textarea id="observaciones" class="form-control" [(ngModel)]="entradaMaestro.observaciones" name="observaciones" rows="2"></textarea>
+      </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+      <legend>2. Agregar Refacciones</legend>
+      <div class="form-row">
+        <div class="form-group form-group-refaccion">
+          <label for="refaccion">Refacción</label>
+          <select id="refaccion" class="form-control" [(ngModel)]="detalleActual.idRefaccion" name="idRefaccion">
+            <option [ngValue]="null" disabled>Selecciona una refacción...</option>
+            <option *ngFor="let r of refacciones" [ngValue]="r.id_refaccion">{{ r.nombre }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cantidad">Cantidad</label>
+          <input id="cantidad" type="number" class="form-control" [(ngModel)]="detalleActual.cantidad" name="cantidad" min="1">
+        </div>
+        <div class="form-group">
+          <label for="costo">Costo Unitario</label>
+          <input id="costo" type="number" step="0.01" class="form-control" [(ngModel)]="detalleActual.costo" name="costo" min="0">
+        </div>
+        <div class="form-group-button">
+          <button type="button" class="btn-agregar-detalle" (click)="agregarDetalle()">Agregar a la Lista</button>
+        </div>
+      </div>
+    </fieldset>
+    
+    <fieldset class="form-section">
+      <legend>3. Refacciones en esta Entrada</legend>
+      <div class="tabla-responsive-wrapper">
+        <table class="tabla-preview">
+          <thead>
+            <tr>
+              <th>Refacción</th>
+              <th>Cantidad</th>
+              <th>Costo Unitario</th>
+              <th style="text-align: center;">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="detallesAAgregar.length === 0">
+              <td colspan="4" class="empty-table-message">Aún no has agregado refacciones.</td>
+            </tr>
+            <tr *ngFor="let detalle of detallesAAgregar; let i = index">
+              <td>{{ detalle.nombreRefaccion }}</td>
+              <td>{{ detalle.cantidad }}</td>
+              <td>{{ detalle.costo | currency:'MXN' }}</td>
+              <td class="acciones">
+                <button type="button" class="btn-accion btn-eliminar" (click)="eliminarDetalle(i)">Quitar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </fieldset>
+    
+    <div class="acciones-finales">
+      <button type="button" class="btn-accion btn-cancelar" (click)="regresar()" [disabled]="isSaving">Cancelar</button>
+      <button type="button" class="btn-accion btn-guardar" (click)="guardarEntradaCompleta()" [disabled]="isSaving">
+        {{ isSaving ? 'Guardando...' : 'Guardar Entrada Completa' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{
+        'header-exito': notificacion.tipo === 'exito',
+        'header-error': notificacion.tipo === 'error',
+        'header-advertencia': notificacion.tipo === 'advertencia'
+      }">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>

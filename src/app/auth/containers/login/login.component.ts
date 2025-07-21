@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http'; // Importa HttpErrorResponse
-import { catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -13,18 +11,13 @@ import { of } from 'rxjs';
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
+  errorMessage: string | null = null; // Para mostrar errores en el HTML
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private authService: AuthService // Inyectamos nuestro servicio de autenticación
   ) {}
-
-  regresar() {
-    // Si quieres regresar al login, esta línea está bien.
-    // Si quieres regresar a la página principal del sitio, podrías usar: this.router.navigate(['/']);
-    this.router.navigate(['/auth/login']);
-  }
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -34,76 +27,35 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  get nombreUsuario() {
-    return this.loginForm.get('nombreUsuario');
-  }
-
-  get password() {
-    return this.loginForm.get('password');
-  }
+  // Los getters para los campos del formulario se mantienen igual
+  get nombreUsuario() { return this.loginForm.get('nombreUsuario'); }
+  get password() { return this.loginForm.get('password'); }
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
-      console.error('Formulario inválido. Errores:', this.loginForm.errors);
-      console.error('Errores en nombreUsuario:', this.nombreUsuario?.errors);
-      console.error('Errores en password:', this.password?.errors);
-      alert('Por favor, completa correctamente todos los campos.');
+      this.loginForm.markAllAsTouched(); // Marca todos los campos para mostrar errores
       return;
     }
 
+    this.errorMessage = null; // Limpia errores previos
     const { nombreUsuario, password } = this.loginForm.value;
-    console.log('Credenciales a enviar:', { nombreUsuario, password });
 
-    this.http
-      .post<{ token: string, empleado: any }>('http://localhost:3000/api/login', {
-        Nombre_Usuario: nombreUsuario,
-        Contrasena: password
-      })
-      .pipe(
-        catchError((err: HttpErrorResponse) => {
-          console.error('Error en la petición de login:', err);
-          let errorMessage = 'Error desconocido. Intenta de nuevo.';
-          if (err.error instanceof ErrorEvent) {
-            errorMessage = `Error del cliente: ${err.error.message}`;
-          } else {
-            if (err.status === 401) {
-              errorMessage = 'Credenciales incorrectas. Verifica tu usuario y contraseña.';
-            } else if (err.status === 404) {
-                errorMessage = 'La ruta de login del servidor no fue encontrada.';
-            } else if (err.status === 500) {
-                errorMessage = 'Error interno del servidor. Contacta al administrador.';
-            } else {
-              errorMessage = `Error del servidor: ${err.status} - ${err.message}`;
-            }
-          }
-          alert(errorMessage);
-          return of(null);
-        })
-      )
-      .subscribe(response => {
-        console.log('Respuesta del servidor:', response);
-
-        if (response) {
-          localStorage.setItem('token', response.token);
-          localStorage.setItem('empleado', JSON.stringify(response.empleado));
-          console.log('Login exitoso. Token y empleado almacenados.');
-
-          const puesto = response.empleado?.puesto?.toLowerCase();
-          console.log('Puesto del empleado (minúsculas):', puesto);
-
-          // CAMBIO CLAVE AQUÍ: REDIRECCIÓN AL DASHBOARD DE ADMIN
-          if (puesto === 'almacenista') { // ¡Asegúrate de que 'almacenista' coincida con lo que tu backend envía!
-            this.router.navigate(['/admin/dashboard']); // Redirige a /admin/dashboard
-            console.log('Redirigiendo a /admin/dashboard');
-          } else {
-            // Si hay otros roles, puedes redirigirlos a otras secciones
-            // O si es un dashboard general que no requiere la ruta /admin/
-            this.router.navigate(['/admin/dashboard']); // Si tienes un dashboard no-admin.
-            console.log('Redirigiendo a /dashboard');
-          }
-        } else {
-          console.log('La respuesta fue nula, no se pudo procesar el login (posiblemente por catchError).');
-        }
-      });
+    // Usamos el servicio para hacer el login. ¡Toda la lógica compleja está ahí!
+    this.authService.login({ 
+      Nombre_Usuario: nombreUsuario, 
+      Contrasena: password 
+    }).subscribe({
+      next: (response) => {
+        // El login fue exitoso
+        console.log('Login exitoso, redirigiendo...');
+        // El servicio ya guardó el token, ahora solo navegamos
+        this.router.navigate(['/admin/dashboard']); // Redirige al dashboard
+      },
+      error: (err) => {
+        // El servicio maneja el error, aquí solo lo mostramos
+        console.error('Error recibido en el componente:', err);
+        this.errorMessage = 'Credenciales incorrectas. Verifica tu usuario y contraseña.';
+      }
+    });
   }
 }

@@ -1,0 +1,62 @@
+<div class="usuarios-container">
+  <div class="container-header">
+    <h2>Perfil de Usuario</h2>
+  </div>
+  <div class="container-body profile-layout">
+
+    <div class="profile-card info-card">
+      <h3>Información de la Cuenta</h3>
+      <div *ngIf="currentUser">
+        <p><strong>Nombre:</strong> {{ currentUser.nombre }}</p>
+        <p><strong>Puesto:</strong> {{ currentUser.puesto }}</p>
+        <p><strong>Rol:</strong> {{ currentUser.rol }}</p>
+      </div>
+    </div>
+
+    <div class="profile-card password-card">
+      <h3>Cambiar Contraseña</h3>
+      <form [formGroup]="passwordForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="currentPassword">Contraseña Actual</label>
+          <input id="currentPassword" type="password" class="form-control" formControlName="currentPassword">
+        </div>
+        <div class="form-group">
+          <label for="newPassword">Nueva Contraseña</label>
+          <input id="newPassword" type="password" class="form-control" formControlName="newPassword">
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirmar Nueva Contraseña</label>
+          <input id="confirmPassword" type="password" class="form-control" formControlName="confirmPassword">
+          <div *ngIf="passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched" class="text-danger">
+            Las contraseñas no coinciden.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn-accion btn-guardar" [disabled]="passwordForm.invalid">Actualizar Contraseña</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{
+        'header-exito': notificacion.tipo === 'exito',
+        'header-error': notificacion.tipo === 'error',
+        'header-advertencia': notificacion.tipo === 'advertencia'
+      }">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>

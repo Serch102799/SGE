@@ -1,0 +1,34 @@
+<div class="usuarios-container">
+  <div class="container-header">
+    <h2>Historial de Entradas de Insumos</h2>
+    <button class="btn-agregar" (click)="registrarNuevaEntrada()">
+      <span>&#43;</span> Registrar Entrada de Insumo
+    </button>
+  </div>
+  <div class="container-body">
+    <div class="tabla-responsive-wrapper">
+      <table class="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>ID Entrada</th>
+            <th>Fecha</th>
+            <th>Proveedor</th>
+            <th>N° Factura</th>
+            <th>Recibido Por</th>
+            <th>Observaciones</th>
+            </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let entrada of entradasInsumo">
+            <td>{{ entrada.id_entrada_insumo }}</td>
+            <td>{{ entrada.fecha_entrada | date:'dd/MM/yyyy h:mm a' }}</td>
+            <td>{{ entrada.nombre_proveedor }}</td>
+            <td>{{ entrada.numero_factura }}</td>
+            <td>{{ entrada.nombre_empleado }}</td>
+            <td>{{ entrada.observaciones }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

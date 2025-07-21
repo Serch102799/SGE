@@ -1,0 +1,221 @@
+<div class="usuarios-container">
+  <div class="container-header">
+    <h2>Gestión de Refacciones</h2>
+    <div class="acciones-header">
+      <button class="btn-exportar" (click)="exportarACSV()">
+        <span>&#128196;</span> Exportar a CSV
+      </button>
+      <button class="btn-agregar" (click)="abrirModalAgregar()">
+        <span>&#43;</span> Agregar Refacción
+      </button>
+    </div>
+  </div>
+
+  <div class="container-body">
+    <div class="filtros-container">
+      <div class="filtro-item">
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="Buscar por nombre o n° de parte..."
+          [(ngModel)]="terminoBusqueda"
+          (input)="aplicarFiltros()">
+      </div>
+      <div class="filtro-item">
+        <select class="form-control" [(ngModel)]="filtroCategoria" (change)="aplicarFiltros()">
+          <option value="">Todas las categorías</option>
+          <option *ngFor="let categoria of categoriasUnicas" [value]="categoria">{{ categoria }}</option>
+        </select>
+      </div>
+      <div class="filtro-item">
+        <select class="form-control" [(ngModel)]="filtroMarca" (change)="aplicarFiltros()">
+          <option value="">Todas las marcas</option>
+          <option *ngFor="let marca of marcasUnicas" [value]="marca">{{ marca }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tabla-responsive-wrapper">
+      <table class="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>N° de Parte</th>
+            <th>Marca</th>
+            <th>Categoría</th>
+            <th>Stock</th>
+            <th>Ubicación</th>
+            <th style="text-align: center;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            *ngFor="let refaccion of refaccionesFiltradas" 
+            [ngClass]="{'alerta-stock-bajo': refaccion.Stock_Actual <= refaccion.Stock_Minimo && refaccion.Stock_Minimo > 0}"
+            (click)="abrirModalSalida(refaccion)"
+            class="fila-clickable">
+            
+            <td>{{ refaccion.Nombre }}</td>
+            <td>{{ refaccion.Numero_Parte }}</td>
+            <td>{{ refaccion.Marca }}</td>
+            <td>{{ refaccion.Categoria }}</td>
+            <td [class.stock-critico]="refaccion.Stock_Actual <= refaccion.Stock_Minimo && refaccion.Stock_Minimo > 0">
+              {{ refaccion.Stock_Actual }}
+            </td>
+            <td>{{ refaccion.Ubicacion_Almacen }}</td>
+            
+            <td class="acciones" (click)="$event.stopPropagation()">
+              <button class="btn-accion btn-historial" (click)="verHistorial(refaccion)">Historial</button>
+              <button class="btn-accion btn-estado" (click)="abrirModalEditar(refaccion)">Editar Stock</button>
+              <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(refaccion)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalAgregar" (click)="cerrarModalAgregar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h3>Agregar Nueva Refacción</h3><button class="btn-cerrar" (click)="cerrarModalAgregar()">×</button></div>
+    <div class="modal-body">
+      <form (ngSubmit)="guardarNuevaRefaccion()">
+        <div class="form-group"><label>Nombre</label><input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Nombre" name="Nombre" required></div>
+        <div class="form-group"><label>Número de Parte</label><input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Numero_Parte" name="Numero_Parte"></div>
+        <div class="form-group"><label>Categoría</label><input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Categoria" name="Categoria"></div>
+        <div class="form-group"><label>Marca</label><input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Marca" name="Marca"></div>
+        <div class="form-group"><label>Stock Actual</label><input type="number" class="form-control" [(ngModel)]="nuevaRefaccion.Stock_Actual" name="Stock_Actual"></div>
+        <div class="form-group"><label>Stock Mínimo</label><input type="number" class="form-control" [(ngModel)]="nuevaRefaccion.Stock_Minimo" name="Stock_Minimo"></div>
+        <div class="form-group"><label>Precio de Costo</label><input type="number" class="form-control" [(ngModel)]="nuevaRefaccion.Precio_Costo" name="Precio_Costo"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalAgregar()">Cancelar</button>
+          <button type="submit" class="btn-accion btn-guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalEditar" (click)="cerrarModalEditar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h3 *ngIf="refaccionAEditar">Editar: {{ refaccionAEditar.Nombre }}</h3><button class="btn-cerrar" (click)="cerrarModalEditar()">×</button></div>
+    <div class="modal-body">
+      <form (ngSubmit)="guardarCambiosRefaccion()">
+        <div class="form-group"><label>Stock Actual</label><input type="number" class="form-control" [(ngModel)]="datosEditados.Stock_Actual" name="edit_stock_actual"></div>
+        <div class="form-group"><label>Stock Mínimo</label><input type="number" class="form-control" [(ngModel)]="datosEditados.Stock_Minimo" name="edit_stock_minimo"></div>
+        <div class="form-group"><label>Stock Máximo</label><input type="number" class="form-control" [(ngModel)]="datosEditados.Stock_Maximo" name="edit_stock_maximo"></div>
+        <div class="form-group"><label>Precio de Costo</label><input type="number" class="form-control" [(ngModel)]="datosEditados.Precio_Costo" name="edit_precio_costo"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalEditar()">Cancelar</button>
+          <button type="submit" class="btn-accion btn-guardar">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalSalida" (click)="cerrarModalSalida()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 *ngIf="refaccionParaSalida">Registrar Salida de: {{ refaccionParaSalida.Nombre }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModalSalida()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="stock-info" *ngIf="refaccionParaSalida">Stock Actual: <strong>{{ refaccionParaSalida.Stock_Actual }}</strong> unidades</div>
+      <form (ngSubmit)="guardarSalida()">
+        <div class="form-group"><label for="cantidad_salida">Cantidad a Retirar</label><input id="cantidad_salida" type="number" class="form-control" [(ngModel)]="datosSalida.cantidad" name="cantidad_salida" required min="1"></div>
+        <div class="form-group"><label for="motivo_salida">Motivo (ej. Venta, Taller, etc.)</label><input id="motivo_salida" type="text" class="form-control" [(ngModel)]="datosSalida.motivo" name="motivo_salida" required></div>
+        <div class="modal-footer">
+          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalSalida()">Cancelar</button>
+          <button type="submit" class="btn-accion btn-salida">Confirmar Salida</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalBorrar" (click)="cerrarModalBorrar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h3 class="header-eliminar">Confirmar Eliminación</h3><button class="btn-cerrar" (click)="cerrarModalBorrar()">×</button></div>
+    <div class="modal-body">
+      <p class="confirm-text" *ngIf="refaccionABorrar">¿Estás seguro de que deseas eliminar <strong>{{ refaccionABorrar.Nombre }}</strong>?</p>
+      <p class="confirm-warning">Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBorrar()">Cancelar</button>
+      <button type="button" class="btn-accion btn-confirmar-eliminar" (click)="confirmarEliminacion()">Sí, Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalHistorial" (click)="cerrarModalHistorial()">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Historial de Movimientos: {{ refaccionSeleccionadaNombre }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModalHistorial()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabla-responsive-wrapper">
+        <table class="tabla-preview">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Cantidad</th>
+              <th>Origen/Destino</th>
+              <th>Solicitado Por</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let movimiento of historialSeleccionado">
+              <td>{{ movimiento.fecha | date:'short' }}</td>
+              <td>
+                <span [ngClass]="{
+                  'tipo-entrada': movimiento.tipo === 'Entrada',
+                  'tipo-salida': movimiento.tipo === 'Salida'
+                }">
+                  {{ movimiento.tipo }}
+                </span>
+              </td>
+              <td [ngClass]="{
+                  'cantidad-entrada': movimiento.tipo === 'Entrada',
+                  'cantidad-salida': movimiento.tipo === 'Salida'
+                }">
+                {{ movimiento.tipo === 'Entrada' ? '+' : '-' }}{{ movimiento.cantidad }}
+              </td>
+              <td>{{ movimiento.origen_destino }}</td>
+              <td>{{ movimiento.solicitado_por }}</td>
+            </tr>
+            <tr *ngIf="historialSeleccionado.length === 0">
+              <td colspan="5" class="empty-table-message">No hay movimientos registrados para esta refacción.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalHistorial()">Cerrar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{
+        'header-exito': notificacion.tipo === 'exito',
+        'header-error': notificacion.tipo === 'error',
+        'header-advertencia': notificacion.tipo === 'advertencia'
+      }">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>
