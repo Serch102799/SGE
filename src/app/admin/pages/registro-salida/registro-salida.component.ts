@@ -4,11 +4,26 @@ import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { forkJoin } from 'rxjs';
 
+// --- Interfaces ---
 interface Autobus { id_autobus: number; economico: string; kilometraje_actual: number; }
 interface Empleado { id_empleado: number; nombre: string; }
-interface RefaccionSimple { id_refaccion: number; nombre: string; stock_actual: number; }
-interface InsumoSimple { id_insumo: number; nombre: string; stock_actual: number; unidad_medida: string; }
-interface DetalleRefaccionTemporal { id_refaccion: number; nombre_refaccion: string; cantidad_despachada: number; }
+interface RefaccionSimple { id_refaccion: number; nombre: string; marca: string; numero_parte: string; }
+interface InsumoSimple { id_insumo: number; nombre: string; stock_actual: number; unidad_medida: string; marca:string; numero_parte: string; tipo: string; }
+
+interface Lote {
+  id_lote: number;
+  cantidad_disponible: number;
+  costo_unitario_compra: number;
+  nombre_proveedor: string;
+}
+
+interface DetalleRefaccionTemporal { 
+  id_lote: number; 
+  id_refaccion: number;
+  nombre_refaccion: string; 
+  nombre_proveedor: string;
+  cantidad_despachada: number; 
+}
 interface DetalleInsumoTemporal { id_insumo: number; nombre_insumo: string; cantidad_usada: number; }
 
 @Component({
@@ -31,7 +46,14 @@ export class RegistroSalidaComponent implements OnInit {
     observaciones: '',
     kilometraje: null as number | null
   };
-  detalleActualRefaccion = { id_refaccion: null as number | null, cantidad_despachada: null as number | null };
+  
+  detalleActualRefaccion = { 
+    id_refaccion: null as number | null, 
+    id_lote: null as number | null,
+    cantidad_despachada: null as number | null 
+  };
+  lotesDisponibles: Lote[] = [];
+
   detalleActualInsumo = { id_insumo: null as number | null, cantidad_usada: null as number | null };
   
   detallesRefaccionesAAgregar: DetalleRefaccionTemporal[] = [];
@@ -44,16 +66,14 @@ export class RegistroSalidaComponent implements OnInit {
     mensaje: '',
     tipo: 'advertencia' as 'exito' | 'error' | 'advertencia'
   };
-
+  
   constructor(
     private http: HttpClient,
     private router: Router,
     private location: Location
   ) {}
 
-  ngOnInit(): void {
-    this.cargarCatalogos();
-  }
+  ngOnInit(): void { this.cargarCatalogos(); }
 
   mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
     this.notificacion = { titulo, mensaje, tipo };
@@ -71,6 +91,7 @@ export class RegistroSalidaComponent implements OnInit {
       this.http.get<RefaccionSimple[]>('http://localhost:3000/api/refacciones'),
       this.http.get<InsumoSimple[]>('http://localhost:3000/api/insumos')
     ];
+
     forkJoin(peticiones).subscribe({
       next: ([autobuses, empleados, refacciones, insumos]) => {
         this.autobuses = autobuses as Autobus[];
@@ -91,53 +112,77 @@ export class RegistroSalidaComponent implements OnInit {
     }
   }
 
+  onRefaccionSelect() {
+    this.lotesDisponibles = [];
+    this.detalleActualRefaccion.id_lote = null;
+    const idRefaccion = this.detalleActualRefaccion.id_refaccion;
+
+    if (idRefaccion) {
+      this.http.get<Lote[]>(`http://localhost:3000/api/lotes/${idRefaccion}`).subscribe(lotes => {
+        this.lotesDisponibles = lotes;
+      });
+    }
+  }
+
   agregarDetalleRefaccion() {
-    const { id_refaccion, cantidad_despachada } = this.detalleActualRefaccion;
-    if (!id_refaccion || !cantidad_despachada || cantidad_despachada <= 0) {
-      this.mostrarNotificacion('Datos Incompletos', 'Selecciona una refacción y cantidad válida.'); return;
+    const { id_refaccion, id_lote, cantidad_despachada } = this.detalleActualRefaccion;
+    if (!id_refaccion || !id_lote || !cantidad_despachada || cantidad_despachada <= 0) {
+      this.mostrarNotificacion('Datos Incompletos', 'Selecciona una refacción, un lote y una cantidad válida.');
+      return;
     }
     const refaccion = this.refacciones.find(r => r.id_refaccion === id_refaccion);
-    if (!refaccion) return;
-    if (cantidad_despachada > refaccion.stock_actual) {
-      this.mostrarNotificacion('Stock Insuficiente', `Disponibles: ${refaccion.stock_actual}`); return;
+    const lote = this.lotesDisponibles.find(l => l.id_lote === id_lote);
+    if (!refaccion || !lote) return;
+    if (cantidad_despachada > lote.cantidad_disponible) {
+      this.mostrarNotificacion('Stock Insuficiente', `Stock insuficiente en este lote. Disponible: ${lote.cantidad_disponible}`);
+      return;
     }
-    this.detallesRefaccionesAAgregar.push({ id_refaccion, nombre_refaccion: refaccion.nombre, cantidad_despachada });
-    this.detalleActualRefaccion = { id_refaccion: null, cantidad_despachada: null };
+    this.detallesRefaccionesAAgregar.push({ 
+      id_lote, id_refaccion, nombre_refaccion: refaccion.nombre, 
+      nombre_proveedor: lote.nombre_proveedor || 'N/A', cantidad_despachada 
+    });
+    this.detalleActualRefaccion = { id_refaccion: null, id_lote: null, cantidad_despachada: null };
+    this.lotesDisponibles = [];
   }
-  eliminarDetalleRefaccion(index: number) {
-    this.detallesRefaccionesAAgregar.splice(index, 1);
-  }
+
+  eliminarDetalleRefaccion(index: number) { this.detallesRefaccionesAAgregar.splice(index, 1); }
 
   agregarDetalleInsumo() {
     const { id_insumo, cantidad_usada } = this.detalleActualInsumo;
     if (!id_insumo || !cantidad_usada || cantidad_usada <= 0) {
-      this.mostrarNotificacion('Datos Incompletos', 'Selecciona un insumo y cantidad válida.'); return;
+      this.mostrarNotificacion('Datos Incompletos', 'Selecciona un insumo y cantidad válida.');
+      return;
     }
     const insumo = this.insumos.find(i => i.id_insumo === id_insumo);
     if (!insumo) return;
     if (cantidad_usada > insumo.stock_actual) {
-      this.mostrarNotificacion('Stock Insuficiente', `Disponibles: ${insumo.stock_actual}`); return;
+      this.mostrarNotificacion('Stock Insuficiente', `Stock insuficiente. Disponible: ${insumo.stock_actual}`);
+      return;
     }
     this.detallesInsumosAAgregar.push({ id_insumo, nombre_insumo: insumo.nombre, cantidad_usada });
     this.detalleActualInsumo = { id_insumo: null, cantidad_usada: null };
   }
-  eliminarDetalleInsumo(index: number) {
-    this.detallesInsumosAAgregar.splice(index, 1);
-  }
+
+  eliminarDetalleInsumo(index: number) { this.detallesInsumosAAgregar.splice(index, 1); }
 
   guardarSalidaCompleta() {
     if (this.isSaving) return;
     if (!this.salidaMaestro.idAutobus || !this.salidaMaestro.solicitadoPorID || !this.salidaMaestro.tipoSalida) {
-      this.mostrarNotificacion('Datos Incompletos', 'Completa los datos del vale de salida.'); return;
+      this.mostrarNotificacion('Datos Incompletos', 'Completa los datos del vale de salida.');
+      return;
+    }
+    if (!this.salidaMaestro.kilometraje) {
+        this.mostrarNotificacion('Dato Requerido', 'El kilometraje es obligatorio.');
+        return;
+    }
+    const autobusSeleccionado = this.autobuses.find(a => a.id_autobus === this.salidaMaestro.idAutobus);
+    if (autobusSeleccionado && this.salidaMaestro.kilometraje < autobusSeleccionado.kilometraje_actual) {
+      this.mostrarNotificacion('Dato Inválido', `El kilometraje ingresado no puede ser menor al actual del autobús (${autobusSeleccionado.kilometraje_actual}).`);
+      return;
     }
     if (this.detallesRefaccionesAAgregar.length === 0 && this.detallesInsumosAAgregar.length === 0) {
-      this.mostrarNotificacion('Sin Detalles', 'Agrega al menos una refacción o insumo.'); return;
-    }
-    if (this.salidaMaestro.idAutobus && this.salidaMaestro.kilometraje) {
-      const autobusSeleccionado = this.autobuses.find(a => a.id_autobus === this.salidaMaestro.idAutobus);
-      if (autobusSeleccionado && this.salidaMaestro.kilometraje < autobusSeleccionado.kilometraje_actual) {
-        this.mostrarNotificacion('Dato Inválido', `El kilometraje ingresado no puede ser menor al actual del autobús (${autobusSeleccionado.kilometraje_actual}).`); return;
-      }
+      this.mostrarNotificacion('Sin Detalles', 'Agrega al menos una refacción o insumo.');
+      return;
     }
     
     this.isSaving = true;
@@ -148,17 +193,18 @@ export class RegistroSalidaComponent implements OnInit {
       Observaciones: this.salidaMaestro.observaciones,
       Kilometraje_Autobus: this.salidaMaestro.kilometraje
     };
-
     this.http.post<any>('http://localhost:3000/api/salidas', payloadMaestro).subscribe({
       next: (respuestaMaestro) => {
         const nuevaSalidaID = respuestaMaestro.id_salida;
         const peticionesDetalle = [];
 
         for (const detalle of this.detallesRefaccionesAAgregar) {
-          const payload = { ID_Salida: nuevaSalidaID, ID_Refaccion: detalle.id_refaccion, Cantidad_Despachada: detalle.cantidad_despachada };
+          const payload = { 
+            ID_Salida: nuevaSalidaID, ID_Refaccion: detalle.id_refaccion, 
+            Cantidad_Despachada: detalle.cantidad_despachada, ID_Lote: detalle.id_lote
+          };
           peticionesDetalle.push(this.http.post('http://localhost:3000/api/detalleSalida', payload));
         }
-
         for (const detalle of this.detallesInsumosAAgregar) {
             const payload = { id_salida: nuevaSalidaID, id_insumo: detalle.id_insumo, cantidad_usada: detalle.cantidad_usada };
             peticionesDetalle.push(this.http.post('http://localhost:3000/api/detalle-salida-insumo', payload));

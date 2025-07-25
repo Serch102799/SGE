@@ -33,7 +33,7 @@ export class AutobusesComponent implements OnInit {
   autobusSeleccionadoEconomico: string | null = null;
   costoTotalHistorial: number = 0;
   
-  filtroHistorialRefaccion: string = '';
+  filtroHistorialItem: string = '';
   filtroHistorialFechaInicio: string = '';
   filtroHistorialFechaFin: string = '';
 
@@ -174,19 +174,22 @@ export class AutobusesComponent implements OnInit {
     this.mostrarModalHistorial = false;
     this.historialCompleto = [];
     this.historialFiltrado = [];
-    this.filtroHistorialRefaccion = '';
+    this.filtroHistorialItem = '';
     this.filtroHistorialFechaInicio = '';
     this.filtroHistorialFechaFin = '';
   }
 
   aplicarFiltroHistorial() {
     let historialTemp = [...this.historialCompleto];
-    const busqueda = this.filtroHistorialRefaccion.toLowerCase();
+    const busqueda = this.filtroHistorialItem.toLowerCase();
 
     // Filtro por nombre de refacción
     if (busqueda) {
       historialTemp = historialTemp.filter(item => 
-        (item.nombre_refaccion && item.nombre_refaccion.toLowerCase().includes(busqueda))
+        (item.nombre_refaccion && item.nombre_refaccion.toLowerCase().includes(busqueda))||
+        (item.nombre && item.nombre.toLowerCase().includes(busqueda)) ||
+        (item.marca && item.marca.toLowerCase().includes(busqueda)) ||
+        (item.tipo_item && item.tipo_item.toLowerCase().includes(busqueda))
       );
     }
     // Filtro por fecha de inicio

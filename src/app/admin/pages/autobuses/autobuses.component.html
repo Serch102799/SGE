@@ -9,12 +9,8 @@
   <div class="container-body">
     <div class="filtros-container">
       <div class="filtro-item">
-        <input 
-          type="text" 
-          class="form-control" 
-          placeholder="Buscar por económico, marca o VIN..."
-          [(ngModel)]="terminoBusqueda"
-          (input)="aplicarFiltros()">
+        <input type="text" class="form-control" placeholder="Buscar por económico, marca o VIN..."
+          [(ngModel)]="terminoBusqueda" (input)="aplicarFiltros()">
       </div>
     </div>
 
@@ -61,11 +57,13 @@
       <form (ngSubmit)="guardarAutobus()">
         <div class="form-group">
           <label>N° Económico</label>
-          <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.economico" name="economico" [disabled]="modoEdicion" required>
+          <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.economico" name="economico"
+            [disabled]="modoEdicion" required>
         </div>
         <div class="form-group">
           <label>VIN (Número de Serie)</label>
-          <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.vin" name="vin" [disabled]="modoEdicion" required minlength="17" maxlength="17">
+          <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.vin" name="vin"
+            [disabled]="modoEdicion" required minlength="17" maxlength="17">
         </div>
         <div class="form-group">
           <label>Marca</label>
@@ -81,7 +79,8 @@
         </div>
         <div class="form-group">
           <label>Kilometraje Actual</label>
-          <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.kilometraje_actual" name="kilometraje_actual">
+          <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.kilometraje_actual"
+            name="kilometraje_actual">
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
@@ -99,12 +98,14 @@
       <button class="btn-cerrar" (click)="cerrarModalBorrar()">×</button>
     </div>
     <div class="modal-body">
-      <p class="confirm-text" *ngIf="autobusABorrar">¿Estás seguro de que deseas eliminar el autobús <strong>{{ autobusABorrar.economico }}</strong>?</p>
+      <p class="confirm-text" *ngIf="autobusABorrar">¿Estás seguro de que deseas eliminar el autobús <strong>{{
+          autobusABorrar.economico }}</strong>?</p>
       <p class="confirm-warning">Esta acción no se puede deshacer.</p>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBorrar()">Cancelar</button>
-      <button type="button" class="btn-accion btn-confirmar-eliminar" (click)="confirmarEliminacion()">Sí, Eliminar</button>
+      <button type="button" class="btn-accion btn-confirmar-eliminar" (click)="confirmarEliminacion()">Sí,
+        Eliminar</button>
     </div>
   </div>
 </div>
@@ -138,13 +139,13 @@
     <div class="modal-body">
       
       <div class="costo-total-container">
-        <h4>Costo Total en Refacciones: <span>{{ costoTotalHistorial | currency:'MXN' }}</span></h4>
+        <h4>Costo Total en Mantenimiento: <span>{{ costoTotalHistorial | currency:'MXN' }}</span></h4>
       </div>
       
       <div class="filtros-container-modal">
         <div class="filtro-item">
-          <input type="text" class="form-control" placeholder="Filtrar por refacción..."
-                 [(ngModel)]="filtroHistorialRefaccion" (input)="aplicarFiltroHistorial()">
+          <input type="text" class="form-control" placeholder="Filtrar por refacción o insumo..."
+                 [(ngModel)]="filtroHistorialItem" (input)="aplicarFiltroHistorial()">
         </div>
         <div class="filtro-item">
           <label>Desde:</label>
@@ -162,7 +163,8 @@
             <tr>
               <th>Fecha</th>
               <th>Kilometraje</th>
-              <th>Refacción</th>
+              <th>Tipo</th>
+              <th>Descripción</th>
               <th>Marca</th>
               <th>Cantidad</th>
               <th>Solicitado Por</th>
@@ -170,15 +172,21 @@
           </thead>
           <tbody>
             <tr *ngFor="let item of historialFiltrado">
-              <td>{{ item.fecha_salida | date:'short' }}</td>
-              <td>{{ item.kilometraje_autobus | number }} km</td>
-              <td>{{ item.nombre_refaccion }}</td>
+              <td>{{ item.fecha | date:'short' }}</td>
+              <td>{{ item.kilometraje | number }} km</td>
+              <td>
+                <span [class.tipo-refaccion]="item.tipo_item === 'Refacción'"
+                      [class.tipo-insumo]="item.tipo_item === 'Insumo'">
+                  {{ item.tipo_item }}
+                </span>
+              </td>
+              <td>{{ item.nombre }}</td>
               <td>{{ item.marca }}</td>
-              <td>{{ item.cantidad_despachada }}</td>
+              <td>{{ item.cantidad }}</td>
               <td>{{ item.solicitado_por }}</td>
             </tr>
             <tr *ngIf="historialFiltrado.length === 0">
-              <td colspan="6" class="empty-table-message">No se encontraron movimientos para los filtros aplicados.</td>
+              <td colspan="7" class="empty-table-message">No se encontraron movimientos.</td>
             </tr>
           </tbody>
         </table>

@@ -15,13 +15,13 @@
       </div>
       <div class="kpi-card">
         <div class="kpi-value">{{ stats.valorTotalInventario | currency:'MXN' }}</div>
-        <div class="kpi-label">Valor Total del Inventario</div>
+        <div class="kpi-label">Valor Aprox. del Inventario</div>
       </div>
     </div>
 
     <div class="charts-grid">
       <div class="chart-container">
-        <h3>Top 5 Refacciones con Más Stock</h3>
+        <h3>Refacciones con Más Stock</h3>
         <div class="chart-wrapper">
           <canvas baseChart
             [data]="barChartData"
@@ -46,7 +46,7 @@
     <div class="movimientos-grid">
       
       <div class="movimiento-card">
-        <h3>Últimos 5 Movimientos de Entrada</h3>
+        <h3>Últimos 5 Movimientos de Entradas</h3>
         <div class="tabla-responsive-wrapper">
           <table class="tabla-movimientos">
             <thead>
@@ -68,7 +68,7 @@
       </div>
 
       <div class="movimiento-card">
-        <h3>Últimos 5 Movimientos de Salida</h3>
+        <h3>Últimos 5 Movimientos de Salidas</h3>
         <div class="tabla-responsive-wrapper">
           <table class="tabla-movimientos">
             <thead>

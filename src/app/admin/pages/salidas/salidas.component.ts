@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import * as Papa from 'papaparse';
 import { forkJoin } from 'rxjs';
@@ -19,6 +19,12 @@ export interface Salida {
 
 interface RefaccionSimple { id_refaccion: number; nombre: string; stock_actual: number; }
 interface InsumoSimple { id_insumo: number; nombre: string; stock_actual: number; unidad_medida: string; }
+interface Lote {
+  id_lote: number;
+  cantidad_disponible: number;
+  costo_unitario_compra: number;
+  nombre_proveedor: string;
+}
 
 @Component({
   selector: 'app-salidas',
@@ -48,10 +54,11 @@ export class SalidasComponent implements OnInit {
   itemsExistentes: any[] = [];
   itemsNuevosRefacciones: any[] = [];
   itemsNuevosInsumos: any[] = [];
-  detalleActualRefaccion = { id_refaccion: null as number | null, cantidad_despachada: null as number | null };
+  detalleActualRefaccion = { id_refaccion: null as number | null, id_lote: null as number | null, cantidad_despachada: null as number | null };
   detalleActualInsumo = { id_insumo: null as number | null, cantidad_usada: null as number | null };
   refacciones: RefaccionSimple[] = [];
   insumos: InsumoSimple[] = [];
+  lotesDisponibles: Lote[] = [];
 
   // Modal de Notificación
   mostrarModalNotificacion = false;
@@ -146,6 +153,7 @@ export class SalidasComponent implements OnInit {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
     link.setAttribute('download', 'reporte_salidas.csv');
     document.body.appendChild(link);
     link.click();
@@ -167,6 +175,10 @@ export class SalidasComponent implements OnInit {
     this.salidaSeleccionada = salida;
     this.itemsNuevosRefacciones = [];
     this.itemsNuevosInsumos = [];
+    this.detalleActualRefaccion = { id_refaccion: null, id_lote: null, cantidad_despachada: null };
+    this.detalleActualInsumo = { id_insumo: null, cantidad_usada: null };
+    this.lotesDisponibles = [];
+    
     this.http.get<any[]>(`${this.apiUrl}/detalles/${salida.idSalida}`).subscribe(detalles => {
       this.itemsExistentes = detalles;
       this.mostrarModalAgregarItems = true;
@@ -174,29 +186,42 @@ export class SalidasComponent implements OnInit {
   }
   cerrarModalAgregarItems() { this.mostrarModalAgregarItems = false; }
 
-  agregarNuevaRefaccion() {
-    const { id_refaccion, cantidad_despachada } = this.detalleActualRefaccion;
-    if (!id_refaccion || !cantidad_despachada || cantidad_despachada <= 0) return;
-    const refaccion = this.refacciones.find(r => r.id_refaccion === id_refaccion);
-    if (!refaccion) return;
-    // ✅ VALIDACIÓN CON MODAL DE NOTIFICACIÓN
-    if (cantidad_despachada > refaccion.stock_actual) {
-      this.mostrarNotificacion('Stock Insuficiente', `Disponibles: ${refaccion.stock_actual}`);
-      return;
+  onRefaccionSelectEnModal() {
+    this.lotesDisponibles = [];
+    this.detalleActualRefaccion.id_lote = null;
+    const idRefaccion = this.detalleActualRefaccion.id_refaccion;
+    if (idRefaccion) {
+      this.http.get<Lote[]>(`http://localhost:3000/api/lotes/${idRefaccion}`).subscribe(lotes => {
+        this.lotesDisponibles = lotes;
+      });
     }
-    this.itemsNuevosRefacciones.push({ id_refaccion, nombre_refaccion: refaccion.nombre, cantidad_despachada });
-    this.detalleActualRefaccion = { id_refaccion: null, cantidad_despachada: null };
+  }
+
+  agregarNuevaRefaccion() {
+    const { id_refaccion, id_lote, cantidad_despachada } = this.detalleActualRefaccion;
+    if (!id_refaccion || !id_lote || !cantidad_despachada || cantidad_despachada <= 0) {
+      this.mostrarNotificacion('Datos Incompletos', 'Selecciona refacción, lote y cantidad.'); return;
+    }
+    const refaccion = this.refacciones.find(r => r.id_refaccion === id_refaccion);
+    const lote = this.lotesDisponibles.find(l => l.id_lote === id_lote);
+    if (!refaccion || !lote) return;
+    if (cantidad_despachada > lote.cantidad_disponible) {
+      this.mostrarNotificacion('Stock Insuficiente', `Disponibles en este lote: ${lote.cantidad_disponible}`); return;
+    }
+    this.itemsNuevosRefacciones.push({ id_refaccion, id_lote, nombre_refaccion: refaccion.nombre, nombre_proveedor: lote.nombre_proveedor, cantidad_despachada });
+    this.detalleActualRefaccion = { id_refaccion: null, id_lote: null, cantidad_despachada: null };
+    this.lotesDisponibles = [];
   }
 
   agregarNuevoInsumo() {
     const { id_insumo, cantidad_usada } = this.detalleActualInsumo;
-    if (!id_insumo || !cantidad_usada || cantidad_usada <= 0) return;
+    if (!id_insumo || !cantidad_usada || cantidad_usada <= 0) {
+      this.mostrarNotificacion('Datos Incompletos', 'Selecciona un insumo y cantidad válida.'); return;
+    }
     const insumo = this.insumos.find(i => i.id_insumo === id_insumo);
     if (!insumo) return;
-    // ✅ VALIDACIÓN CON MODAL DE NOTIFICACIÓN
     if (cantidad_usada > insumo.stock_actual) {
-      this.mostrarNotificacion('Stock Insuficiente', `Disponibles: ${insumo.stock_actual}`);
-      return;
+      this.mostrarNotificacion('Stock Insuficiente', `Disponibles: ${insumo.stock_actual}`); return;
     }
     this.itemsNuevosInsumos.push({ id_insumo, nombre_insumo: insumo.nombre, cantidad_usada });
     this.detalleActualInsumo = { id_insumo: null, cantidad_usada: null };
@@ -206,7 +231,7 @@ export class SalidasComponent implements OnInit {
     if (!this.salidaSeleccionada) return;
     const peticionesDetalle = [];
     for (const detalle of this.itemsNuevosRefacciones) {
-      const payload = { ID_Salida: this.salidaSeleccionada.idSalida, ID_Refaccion: detalle.id_refaccion, Cantidad_Despachada: detalle.cantidad_despachada };
+      const payload = { ID_Salida: this.salidaSeleccionada.idSalida, ID_Refaccion: detalle.id_refaccion, Cantidad_Despachada: detalle.cantidad_despachada, ID_Lote: detalle.id_lote };
       peticionesDetalle.push(this.http.post('http://localhost:3000/api/detalleSalida', payload));
     }
     for (const detalle of this.itemsNuevosInsumos) {
@@ -218,7 +243,6 @@ export class SalidasComponent implements OnInit {
       next: () => {
         this.mostrarNotificacion('Éxito', 'Items agregados correctamente a la salida.', 'exito');
         this.cerrarModalAgregarItems();
-        // ✅ SE VUELVE A LLAMAR A obtenerSalidas() PARA REFRESCAR LA TABLA PRINCIPAL
         this.obtenerSalidas();
       },
       error: (err) => this.mostrarNotificacion('Error', `Error al agregar items: ${err.error.message}`, 'error')

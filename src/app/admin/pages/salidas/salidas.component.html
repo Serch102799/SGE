@@ -2,47 +2,21 @@
   <div class="container-header">
     <h2>Historial de Salidas de Almacén</h2>
     <div class="acciones-header">
-      <button class="btn-exportar" (click)="exportarACSV()">
-        <span>&#128196;</span> Exportar a CSV
-      </button>
-      <button class="btn-agregar" (click)="registrarNuevaSalida()">
-        <span>&#43;</span> Registrar Nueva Salida
-      </button>
+      <button class="btn-exportar" (click)="exportarACSV()"><span>&#128196;</span> Exportar a CSV</button>
+      <button class="btn-agregar" (click)="registrarNuevaSalida()"><span>&#43;</span> Registrar Nueva Salida</button>
     </div>
   </div>
-
   <div class="container-body">
     <div class="filtros-container">
-      <div class="filtro-item">
-        <input 
-          type="text" 
-          class="form-control" 
-          placeholder="Buscar por tipo, autobús o empleado..."
-          [(ngModel)]="terminoBusqueda"
-          (input)="aplicarFiltros()">
-      </div>
-      <div class="filtro-item">
-        <label for="fechaInicio">Desde:</label>
-        <input id="fechaInicio" type="date" class="form-control" [(ngModel)]="fechaInicio" (change)="aplicarFiltros()">
-      </div>
-      <div class="filtro-item">
-        <label for="fechaFin">Hasta:</label>
-        <input id="fechaFin" type="date" class="form-control" [(ngModel)]="fechaFin" (change)="aplicarFiltros()">
-      </div>
+      <div class="filtro-item"><input type="text" class="form-control" placeholder="Buscar por tipo, autobús o empleado..." [(ngModel)]="terminoBusqueda" (input)="aplicarFiltros()"></div>
+      <div class="filtro-item"><label for="fechaInicio">Desde:</label><input id="fechaInicio" type="date" class="form-control" [(ngModel)]="fechaInicio" (change)="aplicarFiltros()"></div>
+      <div class="filtro-item"><label for="fechaFin">Hasta:</label><input id="fechaFin" type="date" class="form-control" [(ngModel)]="fechaFin" (change)="aplicarFiltros()"></div>
     </div>
-
     <div class="tabla-responsive-wrapper">
       <table class="tabla-usuarios">
         <thead>
           <tr>
-            <th>ID Salida</th>
-            <th>Fecha</th>
-            <th>Tipo</th>
-            <th>Autobús</th>
-            <th>Kilometraje</th>
-            <th>Solicitado Por</th>
-            <th>Observaciones</th>
-            <th>Acciones</th>
+            <th>ID Salida</th><th>Fecha</th><th>Tipo</th><th>Autobús</th><th>Kilometraje</th><th>Solicitado Por</th><th>Observaciones</th><th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -66,38 +40,17 @@
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Detalles de la Salida #{{ salidaSeleccionadaId }}</h3>
-      <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
-    </div>
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h3>Detalles de la Salida #{{ salidaSeleccionadaId }}</h3><button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button></div>
     <div class="modal-body">
       <div class="tabla-responsive-wrapper">
         <table class="tabla-preview">
-          <thead>
-            <tr>
-              <th>Tipo</th>
-              <th>Descripción</th>
-              <th>Cantidad</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let detalle of detallesSeleccionados">
-              <td>
-                <span [class.tipo-refaccion]="detalle.tipo === 'Refacción'" [class.tipo-insumo]="detalle.tipo === 'Insumo'">
-                  {{ detalle.tipo }}
-                </span>
-              </td>
-              <td>{{ detalle.nombre }}</td>
-              <td>{{ detalle.cantidad }}</td>
-            </tr>
-          </tbody>
+          <thead><tr><th>Tipo</th><th>Descripción</th><th>Cantidad</th></tr></thead>
+          <tbody><tr *ngFor="let detalle of detallesSeleccionados"><td><span [class.tipo-refaccion]="detalle.tipo === 'Refacción'" [class.tipo-insumo]="detalle.tipo === 'Insumo'">{{ detalle.tipo }}</span></td><td>{{ detalle.nombre }}</td><td>{{ detalle.cantidad }}</td></tr></tbody>
         </table>
       </div>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalDetalles()">Cerrar</button>
-    </div>
+    <div class="modal-footer"><button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalDetalles()">Cerrar</button></div>
   </div>
 </div>
 
@@ -108,37 +61,41 @@
       <button class="btn-cerrar" (click)="cerrarModalAgregarItems()">×</button>
     </div>
     <div class="modal-body">
-      <fieldset class="form-section">
-        <legend>Items Ya Registrados</legend>
+      <fieldset class="form-section"><legend>Items Ya Registrados</legend>
         <ul class="lista-items-existentes">
-          <li *ngFor="let item of itemsExistentes">
-            <strong>{{ item.tipo }}:</strong> {{ item.nombre }} - <strong>Cant:</strong> {{ item.cantidad }}
-          </li>
+          <li *ngFor="let item of itemsExistentes"><strong>{{ item.tipo }}:</strong> {{ item.nombre }} - <strong>Cant:</strong> {{ item.cantidad }}</li>
           <li *ngIf="itemsExistentes.length === 0">Esta salida no tiene items registrados.</li>
         </ul>
       </fieldset>
-      
-      <fieldset class="form-section">
-        <legend>Agregar Nuevas Refacciones</legend>
+      <fieldset class="form-section"><legend>Agregar Nuevas Refacciones</legend>
         <div class="form-row">
-          <div class="form-group form-group-refaccion"><select class="form-control" [(ngModel)]="detalleActualRefaccion.id_refaccion" name="id_refaccion_nuevo"><option [ngValue]="null" disabled>Selecciona refacción...</option><option *ngFor="let r of refacciones" [ngValue]="r.id_refaccion">{{ r.nombre }} (Stock: {{r.stock_actual}})</option></select></div>
-          <div class="form-group"><input type="number" class="form-control" [(ngModel)]="detalleActualRefaccion.cantidad_despachada" name="cantidad_despachada_nuevo" min="1" placeholder="Cantidad"></div>
-          <div class="form-group-button"><button type="button" class="btn-agregar-detalle" (click)="agregarNuevaRefaccion()">+</button></div>
+          <div class="form-group form-group-refaccion">
+            <label>Refacción</label>
+            <select class="form-control" [(ngModel)]="detalleActualRefaccion.id_refaccion" (change)="onRefaccionSelectEnModal()" name="id_refaccion_nuevo"><option [ngValue]="null" disabled>Selecciona refacción...</option><option *ngFor="let r of refacciones" [ngValue]="r.id_refaccion">{{ r.nombre }}</option></select>
+          </div>
+        </div>
+        <div class="form-row" *ngIf="lotesDisponibles.length > 0">
+            <div class="form-group form-group-refaccion">
+                <label>Lote Disponible (Proveedor - Cantidad - Costo)</label>
+                <select class="form-control" [(ngModel)]="detalleActualRefaccion.id_lote" name="id_lote_nuevo"><option [ngValue]="null" disabled>Selecciona un lote...</option><option *ngFor="let lote of lotesDisponibles" [ngValue]="lote.id_lote">{{ lote.nombre_proveedor || 'N/A' }} - Disp: {{ lote.cantidad_disponible }} - Costo: {{ lote.costo_unitario_compra | currency }}</option></select>
+            </div>
+            <div class="form-group"><label>Cantidad</label><input type="number" class="form-control" [(ngModel)]="detalleActualRefaccion.cantidad_despachada" name="cantidad_despachada_nuevo" min="1"></div>
+            <div class="form-group-button"><button type="button" class="btn-agregar-detalle" (click)="agregarNuevaRefaccion()">+</button></div>
         </div>
         <table class="tabla-preview-simple" *ngIf="itemsNuevosRefacciones.length > 0">
-          <tr *ngFor="let item of itemsNuevosRefacciones"><td>{{item.nombre_refaccion}}</td><td>{{item.cantidad_despachada}}</td></tr>
+          <thead><tr><th>Refacción</th><th>Proveedor Lote</th><th>Cantidad</th></tr></thead>
+          <tbody><tr *ngFor="let item of itemsNuevosRefacciones"><td>{{item.nombre_refaccion}}</td><td>{{item.nombre_proveedor}}</td><td>{{item.cantidad_despachada}}</td></tr></tbody>
         </table>
       </fieldset>
-
-      <fieldset class="form-section">
-        <legend>Agregar Nuevos Insumos</legend>
+      <fieldset class="form-section"><legend>Agregar Nuevos Insumos</legend>
         <div class="form-row">
             <div class="form-group form-group-refaccion"><select class="form-control" [(ngModel)]="detalleActualInsumo.id_insumo" name="id_insumo_nuevo"><option [ngValue]="null" disabled>Selecciona insumo...</option><option *ngFor="let i of insumos" [ngValue]="i.id_insumo">{{ i.nombre }} (Stock: {{i.stock_actual | number:'1.2-2'}})</option></select></div>
-            <div class="form-group"><input type="number" class="form-control" [(ngModel)]="detalleActualInsumo.cantidad_usada" name="cantidad_usada_nuevo" min="0.1" step="0.01" placeholder="Cantidad"></div>
+            <div class="form-group"><label>Cantidad</label><input type="number" class="form-control" [(ngModel)]="detalleActualInsumo.cantidad_usada" name="cantidad_usada_nuevo" min="0.1" step="0.01"></div>
             <div class="form-group-button"><button type="button" class="btn-agregar-detalle" (click)="agregarNuevoInsumo()">+</button></div>
         </div>
         <table class="tabla-preview-simple" *ngIf="itemsNuevosInsumos.length > 0">
-          <tr *ngFor="let item of itemsNuevosInsumos"><td>{{item.nombre_insumo}}</td><td>{{item.cantidad_usada}}</td></tr>
+          <thead><tr><th>Insumo</th><th>Cantidad</th></tr></thead>
+          <tbody><tr *ngFor="let item of itemsNuevosInsumos"><td>{{item.nombre_insumo}}</td><td>{{item.cantidad_usada}}</td></tr></tbody>
         </table>
       </fieldset>
     </div>
@@ -152,20 +109,10 @@
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3 [ngClass]="{
-        'header-exito': notificacion.tipo === 'exito',
-        'header-error': notificacion.tipo === 'error',
-        'header-advertencia': notificacion.tipo === 'advertencia'
-      }">
-        {{ notificacion.titulo }}
-      </h3>
+      <h3 [ngClass]="{'header-exito': notificacion.tipo === 'exito','header-error': notificacion.tipo === 'error','header-advertencia': notificacion.tipo === 'advertencia'}">{{ notificacion.titulo }}</h3>
       <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
     </div>
-    <div class="modal-body">
-      <p class="confirm-text">{{ notificacion.mensaje }}</p>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
-    </div>
+    <div class="modal-body"><p class="confirm-text">{{ notificacion.mensaje }}</p></div>
+    <div class="modal-footer"><button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button></div>
   </div>
 </div>

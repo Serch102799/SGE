@@ -66,7 +66,7 @@
             
             <td class="acciones" (click)="$event.stopPropagation()">
               <button class="btn-accion btn-historial" (click)="verHistorial(refaccion)">Historial</button>
-              <button class="btn-accion btn-estado" (click)="abrirModalEditar(refaccion)">Editar Stock</button>
+              <!-- <button class="btn-accion btn-estado" (click)="abrirModalEditar(refaccion)">Editar Stock</button> -->
               <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(refaccion)">Eliminar</button>
             </td>
           </tr>
@@ -78,21 +78,48 @@
 
 <div class="modal-overlay" *ngIf="mostrarModalAgregar" (click)="cerrarModalAgregar()">
   <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header"><h3>Agregar Nueva Refacción</h3><button class="btn-cerrar" (click)="cerrarModalAgregar()">×</button></div>
+    <div class="modal-header">
+      <h3>Agregar Nueva Refacción</h3>
+      <button class="btn-cerrar" (click)="cerrarModalAgregar()">×</button>
+    </div>
     <div class="modal-body">
       <form (ngSubmit)="guardarNuevaRefaccion()">
-        <div class="form-group"><label>Nombre</label><input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Nombre" name="Nombre" required></div>
-        <div class="form-group"><label>Número de Parte</label><input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Numero_Parte" name="Numero_Parte"></div>
-        <div class="form-group"><label>Categoría</label><input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Categoria" name="Categoria"></div>
-        <div class="form-group"><label>Marca</label><input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Marca" name="Marca"></div>
-        <div class="form-group"><label>Stock Actual</label><input type="number" class="form-control" [(ngModel)]="nuevaRefaccion.Stock_Actual" name="Stock_Actual"></div>
-        <div class="form-group"><label>Stock Mínimo</label><input type="number" class="form-control" [(ngModel)]="nuevaRefaccion.Stock_Minimo" name="Stock_Minimo"></div>
-        <div class="form-group"><label>Precio de Costo</label><input type="number" class="form-control" [(ngModel)]="nuevaRefaccion.Precio_Costo" name="Precio_Costo"></div>
-        <div class="modal-footer">
-          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalAgregar()">Cancelar</button>
-          <button type="submit" class="btn-accion btn-guardar">Guardar</button>
-        </div>
-      </form>
+  <div class="form-group">
+    <label>Nombre</label>
+    <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Nombre" name="Nombre" required>
+  </div>
+  <div class="form-group">
+    <label>Número de Parte</label>
+    <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Numero_Parte" name="Numero_Parte">
+  </div>
+  <div class="form-group">
+    <label>Categoría</label>
+    <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Categoria" name="Categoria">
+  </div>
+  <div class="form-group">
+    <label>Marca</label>
+    <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Marca" name="Marca">
+  </div>
+  
+  <div class="form-group">
+    <label>Unidad de Medida (ej. Pieza, Caja)</label>
+    <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Unidad_Medida" name="Unidad_Medida" required>
+  </div>
+  <div class="form-group">
+    <label>Ubicación en Almacén</label>
+    <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Ubicacion_Almacen" name="Ubicacion_Almacen">
+  </div>
+  
+  <div class="form-group">
+    <label>Stock Mínimo</label>
+    <input type="number" class="form-control" [(ngModel)]="nuevaRefaccion.Stock_Minimo" name="Stock_Minimo">
+  </div>
+  
+  <div class="modal-footer">
+    <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalAgregar()">Cancelar</button>
+    <button type="submit" class="btn-accion btn-guardar">Guardar</button>
+  </div>
+</form>
     </div>
   </div>
 </div>

@@ -22,6 +22,7 @@ import { InsumosComponent } from './pages/insumos/insumos.component';
 import { EntradasInsumoComponent } from './pages/entradas-insumo/entradas-insumo.component';
 import { RegistroEntradaInsumoComponent } from './pages/registro-entrada-insumo/registro-entrada-insumo.component';
 import { PerfilComponent } from './pages/perfil/perfil.component';
+import { ReportesComponent } from './pages/reportes/reportes.component'; 
 
 @NgModule({
   declarations: [
@@ -38,7 +39,8 @@ import { PerfilComponent } from './pages/perfil/perfil.component';
     InsumosComponent,
     EntradasInsumoComponent,
     RegistroEntradaInsumoComponent,
-    PerfilComponent
+    PerfilComponent,
+    ReportesComponent
   ],
   imports: [
     HttpClientModule,

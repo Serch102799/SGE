@@ -6,7 +6,7 @@
   </div>
 
   <div class="container-body">
-    
+
     <fieldset class="form-section">
       <legend>1. Datos de la Entrada</legend>
       <div class="form-row">
@@ -19,11 +19,13 @@
         </div>
         <div class="form-group">
           <label for="factura">Número de Factura (Opcional)</label>
-          <input id="factura" type="text" class="form-control" [(ngModel)]="entradaMaestro.numero_factura" name="numero_factura">
+          <input id="factura" type="text" class="form-control" [(ngModel)]="entradaMaestro.numero_factura"
+            name="numero_factura">
         </div>
         <div class="form-group">
           <label for="empleado">Recibido Por</label>
-          <select id="empleado" class="form-control" [(ngModel)]="entradaMaestro.id_empleado" name="id_empleado" required>
+          <select id="empleado" class="form-control" [(ngModel)]="entradaMaestro.id_empleado" name="id_empleado"
+            required>
             <option [ngValue]="null" disabled>Selecciona un empleado...</option>
             <option *ngFor="let e of empleados" [ngValue]="e.id_empleado">{{ e.nombre }}</option>
           </select>
@@ -31,7 +33,8 @@
       </div>
       <div class="form-group">
         <label for="observaciones">Observaciones</label>
-        <textarea id="observaciones" class="form-control" [(ngModel)]="entradaMaestro.observaciones" name="observaciones" rows="2"></textarea>
+        <textarea id="observaciones" class="form-control" [(ngModel)]="entradaMaestro.observaciones"
+          name="observaciones" rows="2"></textarea>
       </div>
     </fieldset>
 
@@ -42,23 +45,27 @@
           <label for="insumo">Insumo</label>
           <select id="insumo" class="form-control" [(ngModel)]="detalleActual.id_insumo" name="id_insumo">
             <option [ngValue]="null" disabled>Selecciona un insumo...</option>
-            <option *ngFor="let i of insumos" [ngValue]="i.id_insumo">{{ i.nombre }} ({{i.unidad_medida}})</option>
+            <option *ngFor="let i of insumos" [ngValue]="i.id_insumo">
+              {{ i.nombre }} - {{ i.marca }} ({{ i.tipo || 'N/A' }})
+            </option>
           </select>
         </div>
         <div class="form-group">
           <label for="cantidad">Cantidad Recibida</label>
-          <input id="cantidad" type="number" step="0.01" class="form-control" [(ngModel)]="detalleActual.cantidad_recibida" name="cantidad_recibida">
+          <input id="cantidad" type="number" step="0.01" class="form-control"
+            [(ngModel)]="detalleActual.cantidad_recibida" name="cantidad_recibida">
         </div>
         <div class="form-group">
           <label for="costo">Costo Total (de esta cantidad)</label>
-          <input id="costo" type="number" step="0.01" class="form-control" [(ngModel)]="detalleActual.costo_total_compra" name="costo_total_compra">
+          <input id="costo" type="number" step="0.01" class="form-control"
+            [(ngModel)]="detalleActual.costo_total_compra" name="costo_total_compra">
         </div>
         <div class="form-group-button">
           <button type="button" class="btn-agregar-detalle" (click)="agregarDetalle()">Agregar a la Lista</button>
         </div>
       </div>
     </fieldset>
-    
+
     <fieldset class="form-section">
       <legend>3. Insumos en esta Entrada</legend>
       <div class="tabla-responsive-wrapper">
@@ -87,7 +94,7 @@
         </table>
       </div>
     </fieldset>
-    
+
     <div class="acciones-finales">
       <button type="button" class="btn-accion btn-cancelar" (click)="regresar()" [disabled]="isSaving">Cancelar</button>
       <button type="button" class="btn-accion btn-guardar" (click)="guardarEntradaCompleta()" [disabled]="isSaving">

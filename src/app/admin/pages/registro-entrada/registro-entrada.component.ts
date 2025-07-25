@@ -7,7 +7,7 @@ import { forkJoin } from 'rxjs';
 // --- Interfaces ---
 interface Proveedor { id_proveedor: number; nombre_proveedor: string; }
 interface Empleado { id_empleado: number; nombre: string; }
-interface RefaccionSimple { id_refaccion: number; nombre: string; }
+interface RefaccionSimple { id_refaccion: number; nombre: string; marca: string; numero_parte: string; }
 interface DetalleTemporal { idRefaccion: number; nombreRefaccion: string; cantidad: number; costo: number; }
 
 @Component({

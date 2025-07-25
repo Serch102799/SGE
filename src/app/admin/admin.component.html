@@ -6,7 +6,7 @@
     </div>
     <ul class="sidebar-nav">
   <li><a routerLink="dashboard">Dashboard</a></li>
-  <li><a routerLink="entradas">Entradas Refacciones</a></li>
+  <li><a routerLink="entradas">Entradas</a></li>
   <li><a routerLink="salidas">Salidas</a></li>
   
   
@@ -26,6 +26,9 @@
   </li>
   <li *ngIf="authService.hasRole(['Admin'])">
     <a routerLink="proveedores">Proveedores</a>
+  </li>
+  <li *ngIf="authService.hasRole(['Admin'])">
+    <a routerLink="reportes" routerLinkActive="active">Reportes</a>
   </li>
   <li><a routerLink="perfil">Mi Perfil</a></li>
 </ul>

@@ -11,7 +11,7 @@ interface DashboardStats {
   lowStockItems: { nombre: string, stock_actual: number, stock_minimo: number }[];
   ultimasEntradas: { id_detalle_entrada: number, fecha_entrada: string, nombre_refaccion: string, cantidad_recibida: number }[];
   ultimasSalidas: { id_detalle_salida: number, fecha_salida: string, nombre_refaccion: string, cantidad_despachada: number }[];
-  
+
 }
 
 @Component({
@@ -38,8 +38,8 @@ export class DashboardComponent implements OnInit {
   public barChartData: ChartData<'bar'> = {
     labels: [],
     datasets: [
-      { 
-        data: [], 
+      {
+        data: [],
         label: 'Stock Actual',
         backgroundColor: 'rgba(68, 128, 211, 0.8)',
         borderColor: '#4480d3'
@@ -47,15 +47,20 @@ export class DashboardComponent implements OnInit {
     ]
   };
 
-  // --- Configuración Gráfica Stock Bajo ---
   public lowStockChartOptions: ChartConfiguration['options'] = {
     responsive: true,
     maintainAspectRatio: false,
-    indexAxis: 'y', // Barras horizontales
-    plugins: { legend: { display: true } },
-    scales: { 
-      x: { ticks: { color: '#e0e0e0' } }, 
-      y: { ticks: { color: '#e0e0e0' } } 
+    indexAxis: 'y',
+    plugins: {
+      legend: {
+        display: true, labels: {
+          color: '#e0e0e0'
+        }
+      }
+    },
+    scales: {
+      x: { ticks: { color: '#e0e0e0' } },
+      y: { ticks: { color: '#e0e0e0' } }
     }
   };
   public lowStockChartData: ChartData<'bar'> = {
@@ -66,8 +71,7 @@ export class DashboardComponent implements OnInit {
     ]
   };
 
-  // --- Configuración Gráfica Costo por Autobús ---
-  
+
 
   constructor(private http: HttpClient) { }
 
@@ -75,12 +79,11 @@ export class DashboardComponent implements OnInit {
     this.cargarEstadisticas();
   }
 
-   cargarEstadisticas() {
+  cargarEstadisticas() {
     this.http.get<DashboardStats>(this.apiUrl).subscribe({
       next: (data) => {
         this.stats = data;
-        
-        // Para depurar, puedes ver aquí exactamente lo que envía la API
+
         console.log('Datos recibidos de la API del dashboard:', data);
 
         if (this.stats && this.stats.topStock) {

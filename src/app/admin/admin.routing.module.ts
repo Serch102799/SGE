@@ -7,7 +7,7 @@ import { RoleGuard } from '../guards/role.guard';
 
 // Componentes
 import { AdminComponent } from './admin.component';
-import { DashboardComponent } from './pages/dashboard/dashboard.component'; 
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { UsuariosComponent } from './pages/usuarios/usuarios.component';
 import { RefaccionesComponent } from './pages/refacciones/refacciones.component';
 import { EntradasComponent } from './pages/entradas/entradas.component';
@@ -20,92 +20,103 @@ import { InsumosComponent } from './pages/insumos/insumos.component';
 import { EntradasInsumoComponent } from './pages/entradas-insumo/entradas-insumo.component';
 import { RegistroEntradaInsumoComponent } from './pages/registro-entrada-insumo/registro-entrada-insumo.component';
 import { PerfilComponent } from './pages/perfil/perfil.component';
+import { ReportesComponent } from './pages/reportes/reportes.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: AdminComponent, 
+    component: AdminComponent,
     canActivate: [AuthGuard],
     children: [
       {
-        path: 'dashboard', 
+        path: 'dashboard',
         component: DashboardComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista'] } 
+        data: { roles: ['Admin', 'Almacenista'] }
       },
-      { 
-        path: 'refacciones', 
+      {
+        path: 'refacciones',
         component: RefaccionesComponent,
         canActivate: [RoleGuard],
         data: { roles: ['Admin'] }
       },
-      { 
-        path: 'entradas', 
+      {
+        path: 'entradas',
         component: EntradasComponent,
         canActivate: [RoleGuard],
         data: { roles: ['Admin', 'Almacenista'] }
       },
-      { 
-        path: 'registro-entrada', 
+      {
+        path: 'registro-entrada',
         component: RegistroEntradaComponent,
         canActivate: [RoleGuard],
         data: { roles: ['Admin', 'Almacenista'] }
       },
-      { 
-        path: 'salidas', 
+      {
+        path: 'salidas',
         component: SalidasComponent,
         canActivate: [RoleGuard],
         data: { roles: ['Admin', 'Almacenista'] }
       },
-      { 
-        path: 'registro-salida', 
+      {
+        path: 'registro-salida',
         component: RegistroSalidaComponent,
         canActivate: [RoleGuard],
         data: { roles: ['Admin', 'Almacenista'] }
       },
-      { 
-        path: 'usuarios', 
+      {
+        path: 'usuarios',
         component: UsuariosComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin'] } 
+        data: { roles: ['Admin'] }
       },
-      { 
-        path: 'proveedores', 
+      {
+        path: 'proveedores',
         component: ProveedoresComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin'] } 
+        data: { roles: ['Admin'] }
       },
-      { 
-        path: 'autobuses', 
+      {
+        path: 'autobuses',
         component: AutobusesComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin'] } 
+        data: { roles: ['Admin'] }
       },
       {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',
       },
-      { 
-        path: 'insumos', 
+      {
+        path: 'insumos',
         component: InsumosComponent,
         canActivate: [RoleGuard],
         data: { roles: ['Admin'] }
       },
-      { 
-        path: 'entradas-insumo', 
+      {
+        path: 'entradas-insumo',
         component: EntradasInsumoComponent,
         canActivate: [RoleGuard],
         data: { roles: ['Admin', 'Almacenista'] }
       },
-      { path: 'registro-entrada-insumo', 
-        component: RegistroEntradaInsumoComponent, 
-        canActivate: [RoleGuard], 
-        data: { roles: ['Admin', 'Almacenista'] } },
-      { path: 'perfil', 
-        component: PerfilComponent, 
-        canActivate: [RoleGuard], 
-        data: { roles: ['Admin', 'Almacenista'] } },
+      {
+        path: 'registro-entrada-insumo',
+        component: RegistroEntradaInsumoComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['Admin', 'Almacenista'] }
+      },
+      {
+        path: 'perfil',
+        component: PerfilComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['Admin', 'Almacenista'] }
+      },
+      {
+        path: 'reportes',
+        component: ReportesComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['Admin'] } 
+      },
     ],
   },
 ];
@@ -114,4 +125,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class AdminRoutingModule {}
+export class AdminRoutingModule { }

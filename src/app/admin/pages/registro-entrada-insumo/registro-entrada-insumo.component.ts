@@ -6,7 +6,7 @@ import { forkJoin } from 'rxjs';
 
 interface Proveedor { id_proveedor: number; nombre_proveedor: string; }
 interface Empleado { id_empleado: number; nombre: string; }
-interface InsumoSimple { id_insumo: number; nombre: string; unidad_medida: string; }
+interface InsumoSimple { id_insumo: number; nombre: string; unidad_medida: string; marca: string; numero_parte: string; tipo: string; }
 
 interface DetalleInsumoTemporal {
   id_insumo: number;
