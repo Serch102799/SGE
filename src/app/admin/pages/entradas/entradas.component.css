@@ -6,6 +6,24 @@
   background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/pantalla1.jpg") no-repeat center center fixed;
   background-size: cover;
 }
+.modal-header .header-advertencia {
+  color: #f0ad4e; /* Naranja/ámbar para advertencia */
+}
+
+.modal-header .header-error {
+  color: #d9534f; /* Rojo para error */
+}
+
+.modal-header .header-exito {
+  color: #5cb85c; /* Verde para éxito */
+}
+
+/* Estilo para el texto dentro del modal de notificación */
+.confirm-text {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #e0e0e0;
+}
 
 /* Contenedor Principal */
 .usuarios-container {

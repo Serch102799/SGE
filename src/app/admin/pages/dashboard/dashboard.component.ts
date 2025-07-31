@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ChartConfiguration, ChartData } from 'chart.js';
+import { environment } from '../../../../environments/environments';
 
-// Interfaz completa con todos los datos que esperamos de la API del dashboard
 interface DashboardStats {
   totalRefacciones: number;
   refaccionesStockBajo: number;
@@ -23,7 +23,7 @@ interface DashboardStats {
 export class DashboardComponent implements OnInit {
 
   stats: DashboardStats | null = null;
-  private apiUrl = 'http://localhost:3000/api/dashboard/stats';
+  private apiUrl = `${environment.apiUrl}/dashboard/stats`;
 
   // --- Configuración Gráfica Top Stock ---
   public barChartOptions: ChartConfiguration['options'] = {

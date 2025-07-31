@@ -3,12 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { forkJoin } from 'rxjs';
+import { environment } from '../../../../environments/environments';
 
-// --- Interfaces ---
 interface Autobus { id_autobus: number; economico: string; kilometraje_actual: number; }
 interface Empleado { id_empleado: number; nombre: string; }
-interface RefaccionSimple { id_refaccion: number; nombre: string; marca: string; numero_parte: string; }
-interface InsumoSimple { id_insumo: number; nombre: string; stock_actual: number; unidad_medida: string; marca:string; numero_parte: string; tipo: string; }
+interface RefaccionSimple { id_refaccion: number; nombre: string; marca: string; numero_parte: string; } 
+interface InsumoSimple { id_insumo: number; nombre: string; stock_actual: number; unidad_medida: string; marca: string; tipo: string; }
 
 interface Lote {
   id_lote: number;
@@ -34,11 +34,16 @@ interface DetalleInsumoTemporal { id_insumo: number; nombre_insumo: string; cant
 })
 export class RegistroSalidaComponent implements OnInit {
 
+  // --- URLs de la API ---
+  private apiUrl = environment.apiUrl;
+
+  // --- Catálogos ---
   autobuses: Autobus[] = [];
   empleados: Empleado[] = [];
   refacciones: RefaccionSimple[] = [];
   insumos: InsumoSimple[] = [];
 
+  // --- Formularios y Listas ---
   salidaMaestro = {
     tipoSalida: 'Mantenimiento Correctivo',
     idAutobus: null as number | null,
@@ -60,6 +65,7 @@ export class RegistroSalidaComponent implements OnInit {
   detallesInsumosAAgregar: DetalleInsumoTemporal[] = [];
   isSaving = false;
 
+  // --- Notificaciones ---
   mostrarModalNotificacion = false;
   notificacion = {
     titulo: 'Aviso',
@@ -86,10 +92,10 @@ export class RegistroSalidaComponent implements OnInit {
 
   cargarCatalogos() {
     const peticiones = [
-      this.http.get<Autobus[]>('http://localhost:3000/api/autobuses'),
-      this.http.get<Empleado[]>('http://localhost:3000/api/empleados'),
-      this.http.get<RefaccionSimple[]>('http://localhost:3000/api/refacciones'),
-      this.http.get<InsumoSimple[]>('http://localhost:3000/api/insumos')
+      this.http.get<Autobus[]>(`${this.apiUrl}/autobuses`),
+      this.http.get<Empleado[]>(`${this.apiUrl}/empleados`),
+      this.http.get<RefaccionSimple[]>(`${this.apiUrl}/refacciones`),
+      this.http.get<InsumoSimple[]>(`${this.apiUrl}/insumos`)
     ];
 
     forkJoin(peticiones).subscribe({
@@ -118,7 +124,7 @@ export class RegistroSalidaComponent implements OnInit {
     const idRefaccion = this.detalleActualRefaccion.id_refaccion;
 
     if (idRefaccion) {
-      this.http.get<Lote[]>(`http://localhost:3000/api/lotes/${idRefaccion}`).subscribe(lotes => {
+      this.http.get<Lote[]>(`${this.apiUrl}/lotes/${idRefaccion}`).subscribe(lotes => {
         this.lotesDisponibles = lotes;
       });
     }
@@ -193,7 +199,7 @@ export class RegistroSalidaComponent implements OnInit {
       Observaciones: this.salidaMaestro.observaciones,
       Kilometraje_Autobus: this.salidaMaestro.kilometraje
     };
-    this.http.post<any>('http://localhost:3000/api/salidas', payloadMaestro).subscribe({
+    this.http.post<any>(`${this.apiUrl}/salidas`, payloadMaestro).subscribe({
       next: (respuestaMaestro) => {
         const nuevaSalidaID = respuestaMaestro.id_salida;
         const peticionesDetalle = [];
@@ -203,11 +209,11 @@ export class RegistroSalidaComponent implements OnInit {
             ID_Salida: nuevaSalidaID, ID_Refaccion: detalle.id_refaccion, 
             Cantidad_Despachada: detalle.cantidad_despachada, ID_Lote: detalle.id_lote
           };
-          peticionesDetalle.push(this.http.post('http://localhost:3000/api/detalleSalida', payload));
+          peticionesDetalle.push(this.http.post(`${this.apiUrl}/detalleSalida`, payload));
         }
         for (const detalle of this.detallesInsumosAAgregar) {
             const payload = { id_salida: nuevaSalidaID, id_insumo: detalle.id_insumo, cantidad_usada: detalle.cantidad_usada };
-            peticionesDetalle.push(this.http.post('http://localhost:3000/api/detalle-salida-insumo', payload));
+            peticionesDetalle.push(this.http.post(`${this.apiUrl}/detalle-salida-insumo`, payload));
         }
 
         if (peticionesDetalle.length === 0) { this.finalizarGuardado(); return; }

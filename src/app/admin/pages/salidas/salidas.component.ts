@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import * as Papa from 'papaparse';
 import { forkJoin } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../environments/environments';
 
 export interface Salida {
   idSalida: number;
@@ -36,14 +37,12 @@ export class SalidasComponent implements OnInit {
 
   salidas: Salida[] = [];
   salidasFiltradas: Salida[] = [];
-  private apiUrl = 'http://localhost:3000/api/salidas';
+  private apiUrl = `${environment.apiUrl}/salidas`;
   
-  // Filtros
   terminoBusqueda: string = '';
   fechaInicio: string = '';
   fechaFin: string = '';
 
-  // Modal "Ver Detalles"
   mostrarModalDetalles = false;
   detallesSeleccionados: any[] = [];
   salidaSeleccionadaId: number | null = null;
@@ -60,7 +59,6 @@ export class SalidasComponent implements OnInit {
   insumos: InsumoSimple[] = [];
   lotesDisponibles: Lote[] = [];
 
-  // Modal de Notificación
   mostrarModalNotificacion = false;
   notificacion = {
     titulo: 'Aviso',
@@ -76,7 +74,6 @@ export class SalidasComponent implements OnInit {
     this.cargarCatalogos(); 
   }
 
-  // --- Métodos de Notificación ---
   mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
     this.notificacion = { titulo, mensaje, tipo };
     this.mostrarModalNotificacion = true;
@@ -92,7 +89,6 @@ export class SalidasComponent implements OnInit {
     }
   }
 
-  // --- Métodos de Datos y Filtros ---
   obtenerSalidas() {
     this.http.get<any[]>(this.apiUrl).subscribe({
       next: (data) => {
@@ -131,8 +127,8 @@ export class SalidasComponent implements OnInit {
   
   cargarCatalogos() {
     const peticiones = [
-      this.http.get<RefaccionSimple[]>('http://localhost:3000/api/refacciones'),
-      this.http.get<InsumoSimple[]>('http://localhost:3000/api/insumos')
+      this.http.get<RefaccionSimple[]>(`${environment.apiUrl}/refacciones`),
+      this.http.get<InsumoSimple[]>(`${environment.apiUrl}/insumos`)
     ];
     forkJoin(peticiones).subscribe(([refacciones, insumos]) => {
       this.refacciones = refacciones as RefaccionSimple[];
@@ -140,7 +136,6 @@ export class SalidasComponent implements OnInit {
     });
   }
 
-  // --- Métodos de Acciones Principales ---
   registrarNuevaSalida() { this.router.navigate(['/admin/registro-salida']); }
 
   exportarACSV() {
@@ -160,7 +155,6 @@ export class SalidasComponent implements OnInit {
     document.body.removeChild(link);
   }
 
-  // --- Modal "Ver Detalles" ---
   verDetalles(salida: Salida) {
     this.salidaSeleccionadaId = salida.idSalida;
     this.http.get<any[]>(`${this.apiUrl}/detalles/${salida.idSalida}`).subscribe({
@@ -170,7 +164,6 @@ export class SalidasComponent implements OnInit {
   }
   cerrarModalDetalles() { this.mostrarModalDetalles = false; }
 
-  // --- Modal "Agregar Items" ---
   abrirModalAgregarItems(salida: Salida) {
     this.salidaSeleccionada = salida;
     this.itemsNuevosRefacciones = [];
@@ -191,7 +184,7 @@ export class SalidasComponent implements OnInit {
     this.detalleActualRefaccion.id_lote = null;
     const idRefaccion = this.detalleActualRefaccion.id_refaccion;
     if (idRefaccion) {
-      this.http.get<Lote[]>(`http://localhost:3000/api/lotes/${idRefaccion}`).subscribe(lotes => {
+      this.http.get<Lote[]>(`${environment.apiUrl}/lotes/${idRefaccion}`).subscribe(lotes => {
         this.lotesDisponibles = lotes;
       });
     }
@@ -232,20 +225,20 @@ export class SalidasComponent implements OnInit {
     const peticionesDetalle = [];
     for (const detalle of this.itemsNuevosRefacciones) {
       const payload = { ID_Salida: this.salidaSeleccionada.idSalida, ID_Refaccion: detalle.id_refaccion, Cantidad_Despachada: detalle.cantidad_despachada, ID_Lote: detalle.id_lote };
-      peticionesDetalle.push(this.http.post('http://localhost:3000/api/detalleSalida', payload));
+      peticionesDetalle.push(this.http.post(`${environment.apiUrl}/detalleSalida`, payload));
     }
     for (const detalle of this.itemsNuevosInsumos) {
       const payload = { id_salida: this.salidaSeleccionada.idSalida, id_insumo: detalle.id_insumo, cantidad_usada: detalle.cantidad_usada };
-      peticionesDetalle.push(this.http.post('http://localhost:3000/api/detalle-salida-insumo', payload));
+      peticionesDetalle.push(this.http.post(`${environment.apiUrl}/detalle-salida-insumo`, payload));
     }
     if (peticionesDetalle.length === 0) { this.cerrarModalAgregarItems(); return; }
     forkJoin(peticionesDetalle).subscribe({
       next: () => {
-        this.mostrarNotificacion('Éxito', 'Items agregados correctamente a la salida.', 'exito');
+        this.mostrarNotificacion('Éxito', 'Valores agregados correctamente a la salida.', 'exito');
         this.cerrarModalAgregarItems();
         this.obtenerSalidas();
       },
-      error: (err) => this.mostrarNotificacion('Error', `Error al agregar items: ${err.error.message}`, 'error')
+      error: (err) => this.mostrarNotificacion('Error', `Error al agregar: ${err.error.message}`, 'error')
     });
   }
 }

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../environments/environments';
+
 
 // Interfaz actualizada
 export interface Autobus {
@@ -23,8 +25,8 @@ export class AutobusesComponent implements OnInit {
 
   autobuses: Autobus[] = [];
   autobusesFiltrados: Autobus[] = [];
-  private apiUrl = 'http://localhost:3000/api/autobuses';
-   private historialApiUrl = 'http://localhost:3000/api/historial';
+  private apiUrl = `${environment.apiUrl}/autobuses`;
+  private historialApiUrl = `${environment.apiUrl}/historial`;
 
   terminoBusqueda: string = '';
   mostrarModalHistorial = false;

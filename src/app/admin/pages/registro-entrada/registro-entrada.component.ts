@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { forkJoin } from 'rxjs';
+import { environment } from '../../../../environments/environments';
+
 
 // --- Interfaces ---
 interface Proveedor { id_proveedor: number; nombre_proveedor: string; }
@@ -17,6 +19,8 @@ interface DetalleTemporal { idRefaccion: number; nombreRefaccion: string; cantid
   styleUrls: ['./registro-entrada.component.css']
 })
 export class RegistroEntradaComponent implements OnInit {
+
+  private apiUrl = environment.apiUrl;
 
   proveedores: Proveedor[] = [];
   empleados: Empleado[] = [];
@@ -49,9 +53,9 @@ export class RegistroEntradaComponent implements OnInit {
   
   cargarCatalogos() {
     const peticiones = [
-      this.http.get<Proveedor[]>('http://localhost:3000/api/proveedores'),
-      this.http.get<Empleado[]>('http://localhost:3000/api/empleados'),
-      this.http.get<RefaccionSimple[]>('http://localhost:3000/api/refacciones')
+      this.http.get<Proveedor[]>(`${this.apiUrl}/proveedores`),
+      this.http.get<Empleado[]>(`${this.apiUrl}/empleados`),
+      this.http.get<RefaccionSimple[]>(`${this.apiUrl}/refacciones`)
     ];
 
     forkJoin(peticiones).subscribe({
@@ -105,7 +109,7 @@ export class RegistroEntradaComponent implements OnInit {
       Observaciones: this.entradaMaestro.observaciones,
       Recibido_Por_ID: this.entradaMaestro.recibidoPorID
     };
-    this.http.post<any>('http://localhost:3000/api/entradas', payloadMaestro).subscribe({
+    this.http.post<any>(`${this.apiUrl}/entradas`, payloadMaestro).subscribe({
       next: (respuestaMaestro) => {
         const nuevaEntradaID = respuestaMaestro.id_entrada;
         const peticionesDetalle = this.detallesAAgregar.map(detalle => {
@@ -115,7 +119,7 @@ export class RegistroEntradaComponent implements OnInit {
             Cantidad_Recibida: detalle.cantidad,
             Costo_Unitario_Entrada: detalle.costo
           };
-          return this.http.post('http://localhost:3000/api/detalle-entrada', payloadDetalle);
+          return this.http.post(`${this.apiUrl}/detalle-entrada`, payloadDetalle);
         });
         forkJoin(peticionesDetalle).subscribe({
           next: () => {

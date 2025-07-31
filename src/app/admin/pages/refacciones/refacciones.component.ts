@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Location } from '@angular/common';
 import * as Papa from 'papaparse';
 import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../environments/environments';
 
-// Interfaz que coincide con la capitalización de la API
 export interface Refaccion {
   id_refaccion: number;
   Nombre: string;
@@ -31,8 +31,8 @@ export class RefaccionesComponent implements OnInit {
 
   refacciones: Refaccion[] = [];
   refaccionesFiltradas: Refaccion[] = [];
-  private apiUrl = 'http://localhost:3000/api/refacciones';
-  private movimientosApiUrl = 'http://localhost:3000/api/movimientos';
+  private apiUrl = `${environment.apiUrl}/refacciones`;
+  private movimientosApiUrl = `${environment.apiUrl}/movimientos`;
 
   terminoBusqueda: string = '';
   filtroCategoria: string = '';
@@ -46,7 +46,11 @@ export class RefaccionesComponent implements OnInit {
   mostrarModalSalida = false;
   mostrarModalHistorial = false;
   
-  nuevaRefaccion: Partial<Refaccion> = {};
+  nuevaRefaccion: Partial<Refaccion> = {
+    Nombre: '',
+    Unidad_Medida: 'Pieza',
+    Stock_Minimo: 0
+  };
   refaccionAEditar: Refaccion | null = null;
   datosEditados: { Stock_Actual?: number; Stock_Minimo?: number; Stock_Maximo?: number; Precio_Costo?: number } = {};
   refaccionABorrar: Refaccion | null = null;

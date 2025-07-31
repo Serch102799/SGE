@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService, CurrentUser } from '../../../services/auth.service';
+import { environment } from '../../../../environments/environments';
 
 @Component({
   selector: 'app-perfil',
@@ -13,8 +14,9 @@ export class PerfilComponent implements OnInit {
 
   currentUser: CurrentUser | null = null;
   passwordForm: FormGroup;
-  
-  // Propiedades para el modal de notificación
+
+   private apiUrl = `${environment.apiUrl}/auth`;
+
   mostrarModalNotificacion = false;
   notificacion = {
     titulo: 'Aviso',
@@ -53,7 +55,7 @@ export class PerfilComponent implements OnInit {
 
     const { currentPassword, newPassword } = this.passwordForm.value;
     
-    this.http.put('http://localhost:3000/api/auth/change-password', { currentPassword, newPassword })
+    this.http.put(`${this.apiUrl}/change-password`, { currentPassword, newPassword })
       .subscribe({
         next: (res: any) => {
           this.mostrarNotificacion('Éxito', res.message, 'exito');

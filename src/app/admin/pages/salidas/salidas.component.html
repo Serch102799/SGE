@@ -30,7 +30,7 @@
             <td>{{ salida.observaciones }}</td>
             <td class="acciones">
               <button class="btn-accion btn-estado" (click)="verDetalles(salida)">Ver Detalles</button>
-              <button class="btn-accion btn-agregar-items" (click)="abrirModalAgregarItems(salida)" *ngIf="authService.hasRole(['Admin', 'Almacenista'])">Agregar Items</button>
+              <button class="btn-accion btn-agregar-items" (click)="abrirModalAgregarItems(salida)" *ngIf="authService.hasRole(['Admin', 'Almacenista'])">Agregar</button>
             </td>
           </tr>
         </tbody>
@@ -64,7 +64,7 @@
       <fieldset class="form-section"><legend>Items Ya Registrados</legend>
         <ul class="lista-items-existentes">
           <li *ngFor="let item of itemsExistentes"><strong>{{ item.tipo }}:</strong> {{ item.nombre }} - <strong>Cant:</strong> {{ item.cantidad }}</li>
-          <li *ngIf="itemsExistentes.length === 0">Esta salida no tiene items registrados.</li>
+          <li *ngIf="itemsExistentes.length === 0">Esta salida no tiene valores registrados.</li>
         </ul>
       </fieldset>
       <fieldset class="form-section"><legend>Agregar Nuevas Refacciones</legend>
@@ -101,7 +101,7 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalAgregarItems()">Cancelar</button>
-      <button type="button" class="btn-accion btn-guardar" (click)="guardarItemsAdicionales()">Guardar Items Adicionales</button>
+      <button type="button" class="btn-accion btn-guardar" (click)="guardarItemsAdicionales()">Agregar</button>
     </div>
   </div>
 </div>

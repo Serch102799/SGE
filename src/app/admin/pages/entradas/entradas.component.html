@@ -95,3 +95,23 @@
     </div>
   </div>
 </div>
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{
+        'header-exito': notificacion.tipo === 'exito',
+        'header-error': notificacion.tipo === 'error',
+        'header-advertencia': notificacion.tipo === 'advertencia'
+      }">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>

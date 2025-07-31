@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { environment } from '../../../../environments/environments';
 
 export interface EntradaInsumo {
   id_entrada_insumo: number;
@@ -19,7 +20,7 @@ export interface EntradaInsumo {
 })
 export class EntradasInsumoComponent implements OnInit {
   entradasInsumo: EntradaInsumo[] = [];
-  private apiUrl = 'http://localhost:3000/api/entradas-insumo';
+  private apiUrl = `${environment.apiUrl}/entradas-insumo`;
 
   mostrarModalNotificacion = false;
   notificacion = {

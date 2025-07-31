@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { environment } from '../../../../environments/environments';
 
 @Component({
   selector: 'app-reportes',
@@ -11,12 +12,10 @@ import autoTable from 'jspdf-autotable';
 })
 export class ReportesComponent {
   
-  // --- Filtros ---
   tipoReporteSeleccionado: string = 'stock-bajo';
   fechaInicio: string = '';
   fechaFin: string = '';
 
-  // --- Resultados ---
   reporteData: any[] = [];
   columnasReporte: string[] = [];
   isLoading = false;
@@ -28,7 +27,7 @@ export class ReportesComponent {
     tipo: 'advertencia' as 'exito' | 'error' | 'advertencia'
   };
   
-  private apiUrl = 'http://localhost:3000/api/reportes';
+    private apiUrl = `${environment.apiUrl}/reportes`;
 
   constructor(private http: HttpClient) { }
 

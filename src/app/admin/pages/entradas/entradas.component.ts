@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import * as Papa from 'papaparse';
+import { environment } from '../../../../environments/environments';
+
 
 // Interfaz para la lista de entradas
 export interface Entrada {
@@ -25,8 +27,8 @@ export class EntradasComponent implements OnInit {
 
   entradas: Entrada[] = [];
   entradasFiltradas: Entrada[] = [];
-  private apiUrl = 'http://localhost:3000/api/entradas';
-  private detalleApiUrl = 'http://localhost:3000/api/detalle-entrada';
+  private apiUrl = `${environment.apiUrl}/entradas`;
+  private detalleApiUrl = `${environment.apiUrl}/detalle-entrada`;
 
   
   terminoBusqueda: string = '';
@@ -36,10 +38,32 @@ export class EntradasComponent implements OnInit {
   detallesSeleccionados: any[] = [];
   entradaSeleccionadaId: number | null = null;
 
+  mostrarModalNotificacion = false;
+  notificacion = {
+    titulo: 'Aviso',
+    mensaje: '',
+    tipo: 'advertencia' as 'exito' | 'error' | 'advertencia'
+  };
+
   constructor(private http: HttpClient, private router: Router) { }
 
   ngOnInit(): void {
     this.obtenerEntradas();
+    this.revisarNotificaciones();
+  }
+  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
+    this.notificacion = { titulo, mensaje, tipo };
+    this.mostrarModalNotificacion = true;
+  }
+  cerrarModalNotificacion() {
+    this.mostrarModalNotificacion = false;
+  }
+  revisarNotificaciones() {
+    const notificacionMsg = sessionStorage.getItem('notificacion');
+    if (notificacionMsg) {
+      this.mostrarNotificacion('Éxito', notificacionMsg, 'exito');
+      sessionStorage.removeItem('notificacion');
+    }
   }
 
   obtenerEntradas() {
@@ -91,7 +115,7 @@ export class EntradasComponent implements OnInit {
 
   exportarACSV() {
     if (this.entradasFiltradas.length === 0) {
-      alert('No hay datos para exportar.');
+      this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.');
       return;
     }
 
@@ -128,7 +152,7 @@ export class EntradasComponent implements OnInit {
         this.detallesSeleccionados = detalles;
         this.mostrarModalDetalles = true;
       },
-      error: (err) => alert('Error al cargar los detalles de la entrada.')
+      error: (err) => this.mostrarNotificacion('Error', 'Error al cargar los detalles de la entrada.', 'error')
     });
   }
 

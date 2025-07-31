@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../environments/environments';
+
 
 export interface Insumo {
   id_insumo: number;
@@ -23,7 +25,7 @@ export class InsumosComponent implements OnInit {
 
   insumos: Insumo[] = [];
   insumosFiltrados: Insumo[] = [];
-  private apiUrl = 'http://localhost:3000/api/insumos';
+ private apiUrl = `${environment.apiUrl}/insumos`;
 
   terminoBusqueda: string = '';
   

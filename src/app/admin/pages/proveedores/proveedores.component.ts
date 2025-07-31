@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../environments/environments';
+
 
 export interface Proveedor {
   id_proveedor: number;
@@ -22,7 +24,7 @@ export class ProveedoresComponent implements OnInit {
 
   proveedores: Proveedor[] = [];
   proveedoresFiltrados: Proveedor[] = [];
-  private apiUrl = 'http://localhost:3000/api/proveedores';
+  private apiUrl = `${environment.apiUrl}/proveedores`;
 
   terminoBusqueda: string = '';
 

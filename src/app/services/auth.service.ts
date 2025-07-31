@@ -3,20 +3,19 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { environment } from '../../environments/environments';
 
-// ✅ Interfaz actualizada para incluir el rol
 export interface AuthResponse {
   message: string;
   empleado: {
     id: number;
     nombre: string;
     puesto: string;
-    rol: string; // <-- Propiedad añadida
+    rol: string;
   };
   token: string;
 }
 
-// ✅ Interfaz para tipar al usuario actual
 export interface CurrentUser {
   id: number;
   nombre: string;
@@ -28,7 +27,8 @@ export interface CurrentUser {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3000/api';
+    private apiUrl = environment.apiUrl; 
+
   private _isLoggedIn = new BehaviorSubject<boolean>(false);
   public isLoggedIn$ = this._isLoggedIn.asObservable();
 
@@ -92,7 +92,7 @@ export class AuthService {
     return null;
   }
   
-  // ✅ NUEVO MÉTODO para verificar el rol del usuario
+ 
   /**
    * Verifica si el usuario actual tiene uno de los roles especificados.
    * @param roles - Un arreglo de roles permitidos (ej. ['Admin']).

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../environments/environments';
+
 
 export interface Empleado {
   id_empleado: number;
@@ -21,7 +23,7 @@ export interface Empleado {
 export class UsuariosComponent implements OnInit {
   usuarios: Empleado[] = [];
   usuariosFiltrados: Empleado[] = []; 
-  private apiUrl = 'http://localhost:3000/api/empleados';
+  private apiUrl = `${environment.apiUrl}/empleados`;
 
   // --- Propiedades para Modales ---
   mostrarModal = false;

@@ -3,10 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { forkJoin } from 'rxjs';
+import { environment } from '../../../../environments/environments';
 
 interface Proveedor { id_proveedor: number; nombre_proveedor: string; }
 interface Empleado { id_empleado: number; nombre: string; }
-interface InsumoSimple { id_insumo: number; nombre: string; unidad_medida: string; marca: string; numero_parte: string; tipo: string; }
+interface InsumoSimple { id_insumo: number; nombre: string; unidad_medida: string; marca: string; tipo: string; }
 
 interface DetalleInsumoTemporal {
   id_insumo: number;
@@ -22,6 +23,8 @@ interface DetalleInsumoTemporal {
   styleUrls: ['./registro-entrada-insumo.component.css']
 })
 export class RegistroEntradaInsumoComponent implements OnInit {
+
+  private apiUrl = environment.apiUrl;
 
   proveedores: Proveedor[] = [];
   empleados: Empleado[] = [];
@@ -47,7 +50,6 @@ export class RegistroEntradaInsumoComponent implements OnInit {
   };
   
   detallesAAgregar: DetalleInsumoTemporal[] = [];
-  
   isSaving = false;
 
   constructor(
@@ -59,7 +61,8 @@ export class RegistroEntradaInsumoComponent implements OnInit {
   ngOnInit(): void {
     this.cargarCatalogos();
   }
-   mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
+  
+  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
     this.notificacion = { titulo, mensaje, tipo };
     this.mostrarModalNotificacion = true;
   }
@@ -70,9 +73,9 @@ export class RegistroEntradaInsumoComponent implements OnInit {
 
   cargarCatalogos() {
     const peticiones = [
-      this.http.get<Proveedor[]>('http://localhost:3000/api/proveedores'),
-      this.http.get<Empleado[]>('http://localhost:3000/api/empleados'),
-      this.http.get<InsumoSimple[]>('http://localhost:3000/api/insumos')
+      this.http.get<Proveedor[]>(`${this.apiUrl}/proveedores`),
+      this.http.get<Empleado[]>(`${this.apiUrl}/empleados`),
+      this.http.get<InsumoSimple[]>(`${this.apiUrl}/insumos`)
     ];
 
     forkJoin(peticiones).subscribe({
@@ -81,7 +84,7 @@ export class RegistroEntradaInsumoComponent implements OnInit {
         this.empleados = empleados as Empleado[];
         this.insumos = insumos as InsumoSimple[];
       },
-      error: err => console.error('Error al cargar los catálogos', err)
+      error: err => this.mostrarNotificacion('Error de Carga', 'No se pudieron cargar los datos necesarios.', 'error')
     });
   }
   
@@ -105,7 +108,7 @@ export class RegistroEntradaInsumoComponent implements OnInit {
   }
 
   eliminarDetalle(index: number) {
-    this.detallesAAgregar.splice(index, 1);
+    this.detallesAAgregar = this.detallesAAgregar.filter((_, i) => i !== index);
   }
 
   guardarEntradaCompleta() {
@@ -120,13 +123,12 @@ export class RegistroEntradaInsumoComponent implements OnInit {
     }
     
     this.isSaving = true;
-
     const payload = {
         maestro: this.entradaMaestro,
         detalles: this.detallesAAgregar
     };
 
-    this.http.post('http://localhost:3000/api/entradas-insumo', payload).subscribe({
+    this.http.post(`${this.apiUrl}/entradas-insumo`, payload).subscribe({
       next: () => {
         sessionStorage.setItem('notificacion', '¡Entrada de insumos registrada exitosamente!');
         this.isSaving = false;
