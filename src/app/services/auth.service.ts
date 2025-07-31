@@ -82,8 +82,6 @@ export class AuthService {
     }
     return null;
   }
-
-  // ✅ Método actualizado para devolver un tipo más específico
   getCurrentUser(): CurrentUser | null {
     if (this.isBrowser) {
       const user = localStorage.getItem('current_user');

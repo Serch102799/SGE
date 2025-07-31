@@ -11,12 +11,12 @@ import { AuthService } from '../../../services/auth.service';
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
-  errorMessage: string | null = null; // Para mostrar errores en el HTML
+  errorMessage: string | null = null; 
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService // Inyectamos nuestro servicio de autenticación
+    private authService: AuthService 
   ) {}
 
   ngOnInit(): void {
@@ -33,14 +33,13 @@ export class LoginComponent implements OnInit {
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched(); // Marca todos los campos para mostrar errores
+      this.loginForm.markAllAsTouched(); 
       return;
     }
 
     this.errorMessage = null; // Limpia errores previos
     const { nombreUsuario, password } = this.loginForm.value;
 
-    // Usamos el servicio para hacer el login. ¡Toda la lógica compleja está ahí!
     this.authService.login({ 
       Nombre_Usuario: nombreUsuario, 
       Contrasena: password 
@@ -48,11 +47,9 @@ export class LoginComponent implements OnInit {
       next: (response) => {
         // El login fue exitoso
         console.log('Login exitoso, redirigiendo...');
-        // El servicio ya guardó el token, ahora solo navegamos
-        this.router.navigate(['/admin/dashboard']); // Redirige al dashboard
+        this.router.navigate(['/admin/dashboard']); 
       },
       error: (err) => {
-        // El servicio maneja el error, aquí solo lo mostramos
         console.error('Error recibido en el componente:', err);
         this.errorMessage = 'Credenciales incorrectas. Verifica tu usuario y contraseña.';
       }
