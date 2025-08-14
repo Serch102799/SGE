@@ -19,6 +19,7 @@ export interface Refaccion {
   Precio_Costo: number;
   Fecha_Ultima_Entrada: string | null;
   Proveedor_Principal_ID: number | null;
+  Descripcion?: string;
 }
 
 @Component({
@@ -49,7 +50,8 @@ export class RefaccionesComponent implements OnInit {
   nuevaRefaccion: Partial<Refaccion> = {
     Nombre: '',
     Unidad_Medida: 'Pieza',
-    Stock_Minimo: 0
+    Stock_Minimo: 0,
+    Descripcion: ''
   };
   refaccionAEditar: Refaccion | null = null;
   datosEditados: { Stock_Actual?: number; Stock_Minimo?: number; Stock_Maximo?: number; Precio_Costo?: number } = {};
@@ -104,7 +106,8 @@ export class RefaccionesComponent implements OnInit {
           Stock_Maximo: item.stock_maximo,
           Precio_Costo: item.precio_costo,
           Fecha_Ultima_Entrada: item.fecha_ultima_entrada,
-          Proveedor_Principal_ID: item.proveedor_principal_id
+          Proveedor_Principal_ID: item.proveedor_principal_id,
+          Descripcion: item.descripcion
         }));
         this.generarFiltrosUnicos();
         this.aplicarFiltros();
@@ -139,7 +142,7 @@ export class RefaccionesComponent implements OnInit {
   }
 
   abrirModalAgregar(): void {
-    this.nuevaRefaccion = { Nombre: '', Numero_Parte: '', Categoria: '', Marca: '', Stock_Actual: 0, Stock_Minimo: 0, Precio_Costo: 0 };
+    this.nuevaRefaccion = { Nombre: '', Numero_Parte: '', Categoria: '', Marca: '', Stock_Actual: 0, Stock_Minimo: 0, Precio_Costo: 0, Descripcion: '' };
     this.mostrarModalAgregar = true;
   }
   cerrarModalAgregar(): void { this.mostrarModalAgregar = false; }

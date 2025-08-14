@@ -66,7 +66,7 @@
             
             <td class="acciones" (click)="$event.stopPropagation()">
               <button class="btn-accion btn-historial" (click)="verHistorial(refaccion)">Historial</button>
-              <!-- <button class="btn-accion btn-estado" (click)="abrirModalEditar(refaccion)">Editar Stock</button> -->
+              <button class="btn-accion btn-estado" (click)="abrirModalEditar(refaccion)">Editar Stock</button> 
               <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(refaccion)">Eliminar</button>
             </td>
           </tr>
@@ -100,6 +100,10 @@
     <label>Marca</label>
     <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Marca" name="Marca">
   </div>
+  <div class="form-group">
+          <label>Descripción / Uso de la Refacción</label>
+          <textarea class="form-control" [(ngModel)]="nuevaRefaccion.Descripcion" name="Descripcion" rows="3"></textarea>
+        </div>
   
   <div class="form-group">
     <label>Unidad de Medida (ej. Pieza, Caja)</label>
