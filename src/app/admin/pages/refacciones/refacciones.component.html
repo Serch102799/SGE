@@ -66,7 +66,7 @@
             
             <td class="acciones" (click)="$event.stopPropagation()">
               <button class="btn-accion btn-historial" (click)="verHistorial(refaccion)">Historial</button>
-              <button class="btn-accion btn-estado" (click)="abrirModalEditar(refaccion)">Editar Stock</button> 
+              <button class="btn-accion btn-estado" (click)="abrirModalEditar(refaccion)">Editar</button> 
               <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(refaccion)">Eliminar</button>
             </td>
           </tr>
@@ -129,14 +129,55 @@
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalEditar" (click)="cerrarModalEditar()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header"><h3 *ngIf="refaccionAEditar">Editar: {{ refaccionAEditar.Nombre }}</h3><button class="btn-cerrar" (click)="cerrarModalEditar()">×</button></div>
+  <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="refaccionAEditar">
+    <div class="modal-header">
+        <h3>Editar Refacción: {{ refaccionAEditar.Nombre }}</h3>
+        <button class="btn-cerrar" (click)="cerrarModalEditar()">×</button>
+    </div>
     <div class="modal-body">
       <form (ngSubmit)="guardarCambiosRefaccion()">
-        <div class="form-group"><label>Stock Actual</label><input type="number" class="form-control" [(ngModel)]="datosEditados.Stock_Actual" name="edit_stock_actual"></div>
-        <div class="form-group"><label>Stock Mínimo</label><input type="number" class="form-control" [(ngModel)]="datosEditados.Stock_Minimo" name="edit_stock_minimo"></div>
-        <div class="form-group"><label>Stock Máximo</label><input type="number" class="form-control" [(ngModel)]="datosEditados.Stock_Maximo" name="edit_stock_maximo"></div>
-        <div class="form-group"><label>Precio de Costo</label><input type="number" class="form-control" [(ngModel)]="datosEditados.Precio_Costo" name="edit_precio_costo"></div>
+        
+        <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Nombre" name="edit_nombre" required>
+        </div>
+        <div class="form-group">
+            <label>Número de Parte</label>
+            <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Numero_Parte" name="edit_numero_parte">
+        </div>
+        <div class="form-group">
+            <label>Categoría</label>
+            <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Categoria" name="edit_categoria">
+        </div>
+        <div class="form-group">
+            <label>Marca</label>
+            <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Marca" name="edit_marca">
+        </div>
+        <div class="form-group">
+            <label>Descripción / Uso de la Refacción</label>
+            <textarea class="form-control" [(ngModel)]="refaccionAEditar.Descripcion" name="edit_descripcion" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Unidad de Medida</label>
+            <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Unidad_Medida" name="edit_unidad_medida">
+        </div>
+        <div class="form-group">
+            <label>Ubicación en Almacén</label>
+            <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Ubicacion_Almacen" name="edit_ubicacion">
+        </div>
+        <div class="form-group">
+            <label>Stock Mínimo</label>
+            <input type="number" class="form-control" [(ngModel)]="refaccionAEditar.Stock_Minimo" name="edit_stock_minimo">
+        </div><!-- 
+        <div class="form-group">
+            <label>Stock Máximo</label>
+            <input type="number" class="form-control" [(ngModel)]="refaccionAEditar.Stock_Maximo" name="edit_stock_maximo">
+        </div> -->
+        <!-- <div class="form-group">
+            <label>Precio de Costo</label>
+            <input type="number" class="form-control" [(ngModel)]="refaccionAEditar.Precio_Costo" name="edit_precio_costo">
+        </div> -->
+
         <div class="modal-footer">
           <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalEditar()">Cancelar</button>
           <button type="submit" class="btn-accion btn-guardar">Guardar Cambios</button>

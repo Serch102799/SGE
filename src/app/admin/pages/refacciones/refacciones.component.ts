@@ -164,15 +164,16 @@ export class RefaccionesComponent implements OnInit {
 
   abrirModalEditar(refaccion: Refaccion): void {
     this.refaccionAEditar = { ...refaccion };
-    this.datosEditados = { Stock_Actual: refaccion.Stock_Actual, Stock_Minimo: refaccion.Stock_Minimo, Stock_Maximo: refaccion.Stock_Maximo ?? undefined, Precio_Costo: refaccion.Precio_Costo };
     this.mostrarModalEditar = true;
   }
+
   cerrarModalEditar(): void { this.mostrarModalEditar = false; this.refaccionAEditar = null; }
   
   guardarCambiosRefaccion(): void {
     if (!this.refaccionAEditar) return;
-    const url = `${this.apiUrl}/nombre/${this.refaccionAEditar.Nombre}`;
-    this.http.put(url, this.datosEditados).subscribe({
+    const url = `${this.apiUrl}/${this.refaccionAEditar.id_refaccion}`; 
+
+    this.http.put(url, this.refaccionAEditar).subscribe({
       next: () => {
         this.mostrarNotificacion('Éxito', 'Refacción actualizada exitosamente.', 'exito');
         this.obtenerRefacciones();
