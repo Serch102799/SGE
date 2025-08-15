@@ -34,6 +34,8 @@ export class AutobusesComponent implements OnInit {
   private historialApiUrl = `${environment.apiUrl}/historial`;
   razonesSociales: string[] = ['MARTRESS', 'A8M', 'TRESA', 'GIALJU'];
   sistemasEmisiones: string[] = ['UREA', 'EGR', 'OTRO'];
+  mostrarModalDetalles = false;
+  autobusParaDetalles: Autobus | null = null;
 
   terminoBusqueda: string = '';
   mostrarModalHistorial = false;
@@ -73,6 +75,29 @@ export class AutobusesComponent implements OnInit {
 
   cerrarModalNotificacion() {
     this.mostrarModalNotificacion = false;
+  }
+  abrirModalDetalles(autobus: Autobus): void {
+    this.autobusParaDetalles = autobus;
+    this.mostrarModalDetalles = true;
+  }
+
+  cerrarModalDetalles(): void {
+    this.mostrarModalDetalles = false;
+    this.autobusParaDetalles = null;
+  }
+
+  editarDesdeDetalles(): void {
+    if (this.autobusParaDetalles) {
+      this.abrirModal('editar', this.autobusParaDetalles as Autobus);
+      this.cerrarModalDetalles();
+    }
+  }
+
+  verHistorialDesdeDetalles(): void {
+    if (this.autobusParaDetalles) {
+      this.verHistorial(this.autobusParaDetalles as Autobus);
+      this.cerrarModalDetalles();
+    }
   }
 
   obtenerAutobuses() {

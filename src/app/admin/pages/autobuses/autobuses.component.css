@@ -6,6 +6,52 @@
   background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/pantalla1.jpg") no-repeat center center fixed;
   background-size: cover;
 }
+.fila-clickable {
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.fila-clickable:hover {
+  background-color: #38404a; /* Un color sutil para indicar que se puede hacer clic */
+}
+
+/* CAMBIO: Estilos para el nuevo modal de detalles */
+.modal-header-detalles h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Espacio entre el ícono y el texto */
+}
+
+.detalles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem 2rem;
+  padding: 1rem 0;
+}
+
+.detalle-columna {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.detalle-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.detalle-label {
+  font-size: 0.8em;
+  color: #8a99b0;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.detalle-valor {
+  font-size: 1em;
+  color: #ffffff;
+  font-weight: 600;
+}
 
 .usuarios-container {
   max-width: 1300px;

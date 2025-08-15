@@ -38,7 +38,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let autobus of autobusesFiltrados">
+          <tr *ngFor="let autobus of autobusesFiltrados" (click)="abrirModalDetalles(autobus)" class="fila-clickable">
             <td>{{ autobus.economico }}</td>
             <td>{{ autobus.razon_social }}</td>
             <td>{{ autobus.vin }}</td>
@@ -48,7 +48,7 @@
             <td>{{ autobus.kilometraje_actual | number }} km</td>
             <td class="acciones" *ngIf="authService.hasRole(['Admin'])">
               <button class="btn-accion btn-historial" (click)="verHistorial(autobus)">Historial</button>
-              <button class="btn-accion btn-estado" (click)="abrirModal('editar', autobus)">Editar</button>
+              <!-- <button class="btn-accion btn-estado" (click)="abrirModal('editar', autobus)">Editar</button> -->
               <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(autobus)">Eliminar</button>
             </td>
           </tr>
@@ -245,6 +245,67 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalHistorial()">Cerrar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()" *ngIf="autobusParaDetalles">
+    <div class="modal-header modal-header-detalles">
+      <h3>🚌 Detalles del Autobús: {{ autobusParaDetalles.economico }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="detalles-grid">
+        <div class="detalle-columna">
+          <div class="detalle-item">
+            <span class="detalle-label">Placa:</span>
+            <span class="detalle-valor">{{ autobusParaDetalles.placa }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="detalle-label">VIN:</span>
+            <span class="detalle-valor">{{ autobusParaDetalles.vin }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="detalle-label">Chasis:</span>
+            <span class="detalle-valor">{{ autobusParaDetalles.chasis }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="detalle-label">Motor:</span>
+            <span class="detalle-valor">{{ autobusParaDetalles.motor }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="detalle-label">Tarjeta de Circulación:</span>
+            <span class="detalle-valor">{{ autobusParaDetalles.tarjeta_circulacion }}</span>
+          </div>
+        </div>
+        <div class="detalle-columna">
+          <div class="detalle-item">
+            <span class="detalle-label">Razón Social:</span>
+            <span class="detalle-valor">{{ autobusParaDetalles.razon_social }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="detalle-label">Marca / Modelo:</span>
+            <span class="detalle-valor">{{ autobusParaDetalles.marca }} / {{ autobusParaDetalles.modelo }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="detalle-label">Año:</span>
+            <span class="detalle-valor">{{ autobusParaDetalles.anio }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="detalle-label">Kilometraje Actual:</span>
+            <span class="detalle-valor">{{ autobusParaDetalles.kilometraje_actual | number }} km</span>
+          </div>
+          <div class="detalle-item">
+            <span class="detalle-label">Sistema Emisiones:</span>
+            <span class="detalle-valor">{{ autobusParaDetalles.sistema }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-historial" (click)="verHistorialDesdeDetalles()">Ver Historial</button>
+      <button type="button" class="btn-accion btn-estado" (click)="editarDesdeDetalles()">Editar Autobús</button>
+      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalDetalles()">Cerrar</button>
     </div>
   </div>
 </div>
