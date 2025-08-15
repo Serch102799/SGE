@@ -50,46 +50,79 @@
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ modoEdicion ? 'Editar Autobús' : 'Agregar Nuevo Autobús' }}</h3>
       <button class="btn-cerrar" (click)="cerrarModal()">×</button>
     </div>
     <div class="modal-body">
       <form (ngSubmit)="guardarAutobus()">
-        <div class="form-group">
-          <label>N° Económico</label>
-          <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.economico" name="economico"
-            [disabled]="modoEdicion" required>
+        <div class="form-row">
+            <div class="form-group col">
+                <label>N° Económico</label>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.economico" name="economico" [disabled]="modoEdicion" required>
+            </div>
+            <div class="form-group col">
+                <label>VIN (Número de Serie)</label>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.vin" name="vin" [disabled]="modoEdicion" required minlength="17" maxlength="17">
+            </div>
         </div>
-        <div class="form-group">
-          <label>Razón Social</label>
-          <select class="form-control" [(ngModel)]="autobusSeleccionado.razon_social" name="razon_social" required>
-            <option value="" disabled>Selecciona una opción</option>
-            <option *ngFor="let rs of razonesSociales" [value]="rs">{{ rs }}</option>
-          </select>
+        <div class="form-row">
+            <div class="form-group col">
+                <label>Placa</label>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.placa" name="placa" required>
+            </div>
+            <div class="form-group col">
+                <label>Chasis</label>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.chasis" name="chasis" required>
+            </div>
         </div>
-        <div class="form-group">
-          <label>VIN (Número de Serie)</label>
-          <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.vin" name="vin"
-            [disabled]="modoEdicion" required minlength="17" maxlength="17">
+        <div class="form-row">
+            <div class="form-group col">
+                <label>Motor</label>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.motor" name="motor">
+            </div>
+            <div class="form-group col">
+                <label>Tarjeta de Circulación</label>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.tarjeta_circulacion" name="tarjeta_circulacion">
+            </div>
         </div>
-        <div class="form-group">
-          <label>Marca</label>
-          <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.marca" name="marca">
+        <hr>
+        <div class="form-row">
+            <div class="form-group col">
+                <label>Razón Social</label>
+                <select class="form-control" [(ngModel)]="autobusSeleccionado.razon_social" name="razon_social" required>
+                    <option value="" disabled>Selecciona una opción</option>
+                    <option *ngFor="let rs of razonesSociales" [value]="rs">{{ rs }}</option>
+                </select>
+            </div>
+            <div class="form-group col">
+                <label>Sistema de Emisiones</label>
+                <select class="form-control" [(ngModel)]="autobusSeleccionado.sistema" name="sistema">
+                    <option value="" disabled>Selecciona una opción</option>
+                    <option *ngFor="let sistema of sistemasEmisiones" [value]="sistema">{{ sistema }}</option>
+                </select>
+            </div>
         </div>
-        <div class="form-group">
-          <label>Modelo</label>
-          <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.modelo" name="modelo">
+        <div class="form-row">
+            <div class="form-group col">
+                <label>Marca</label>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.marca" name="marca">
+            </div>
+            <div class="form-group col">
+                <label>Modelo</label>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.modelo" name="modelo">
+            </div>
         </div>
-        <div class="form-group">
-          <label>Año</label>
-          <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.anio" name="anio">
-        </div>
-        <div class="form-group">
-          <label>Kilometraje Actual</label>
-          <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.kilometraje_actual"
-            name="kilometraje_actual">
+        <div class="form-row">
+            <div class="form-group col">
+                <label>Año</label>
+                <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.anio" name="anio">
+            </div>
+            <div class="form-group col">
+                <label>Kilometraje Actual</label>
+                <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.kilometraje_actual" name="kilometraje_actual">
+            </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>

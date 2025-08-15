@@ -12,7 +12,12 @@ export interface Autobus {
   anio: number;
   kilometraje_actual: number;
   vin: string;
-   razon_social: string;
+  razon_social: string;
+  chasis: string;
+  motor: string;
+  tarjeta_circulacion: string;
+  placa: string;
+  sistema: string;
 }
 
 @Component({
@@ -28,6 +33,7 @@ export class AutobusesComponent implements OnInit {
   private apiUrl = `${environment.apiUrl}/autobuses`;
   private historialApiUrl = `${environment.apiUrl}/historial`;
   razonesSociales: string[] = ['MARTRESS', 'A8M', 'TRESA', 'GIALJU'];
+  sistemasEmisiones: string[] = ['UREA', 'EGR', 'OTRO'];
 
   terminoBusqueda: string = '';
   mostrarModalHistorial = false;
@@ -85,7 +91,9 @@ export class AutobusesComponent implements OnInit {
       a.economico.toLowerCase().includes(busqueda) ||
       (a.marca && a.marca.toLowerCase().includes(busqueda)) ||
       (a.vin && a.vin.toLowerCase().includes(busqueda))||
-      (a.razon_social && a.razon_social.toLowerCase().includes(busqueda))
+      (a.razon_social && a.razon_social.toLowerCase().includes(busqueda)) ||
+      (a.placa && a.placa.toLowerCase().includes(busqueda)) || 
+      (a.chasis && a.chasis.toLowerCase().includes(busqueda))
     );
   }
 
@@ -94,7 +102,15 @@ export class AutobusesComponent implements OnInit {
     if (modo === 'editar' && autobus) {
       this.autobusSeleccionado = { ...autobus };
     } else {
-      this.autobusSeleccionado = { economico: '', vin: '',razon_social: '' };
+      this.autobusSeleccionado = { 
+        economico: '', 
+        vin: '',
+        razon_social: '', 
+        placa: '',
+        chasis: '',
+        motor: '',
+        tarjeta_circulacion: '',
+        sistema: '' };
     }
     this.mostrarModal = true;
   }
@@ -104,37 +120,40 @@ export class AutobusesComponent implements OnInit {
   }
 
   guardarAutobus() {
-  if (!this.autobusSeleccionado.economico || !this.autobusSeleccionado.vin || !this.autobusSeleccionado.razon_social) {
-    this.mostrarNotificacion('Campos Requeridos', 'El número económico, VIN y Razón Social son obligatorios.');
-    return;
-  }
+    if (!this.autobusSeleccionado.economico || !this.autobusSeleccionado.vin || !this.autobusSeleccionado.razon_social || !this.autobusSeleccionado.placa || !this.autobusSeleccionado.chasis) {
+      this.mostrarNotificacion('Campos Requeridos', 'Económico, VIN, Razón Social, Placa y Chasis son obligatorios.');
+      return;
+    }
 
-  // CAMBIO: Se construye el payload mapeando las propiedades a PascalCase
-  const payload = {
-    Economico: this.autobusSeleccionado.economico,
-    Marca: this.autobusSeleccionado.marca,
-    Modelo: this.autobusSeleccionado.modelo,
-    Anio: this.autobusSeleccionado.anio,
-    Kilometraje_Actual: this.autobusSeleccionado.kilometraje_actual,
-    VIN: this.autobusSeleccionado.vin,
-    Razon_Social: this.autobusSeleccionado.razon_social
-  };
+    const payload = {
+      Economico: this.autobusSeleccionado.economico,
+      Marca: this.autobusSeleccionado.marca,
+      Modelo: this.autobusSeleccionado.modelo,
+      Anio: this.autobusSeleccionado.anio,
+      Kilometraje_Actual: this.autobusSeleccionado.kilometraje_actual,
+      VIN: this.autobusSeleccionado.vin,
+      Razon_Social: this.autobusSeleccionado.razon_social,
+      Chasis: this.autobusSeleccionado.chasis,
+      Motor: this.autobusSeleccionado.motor,
+      Tarjeta_Circulacion: this.autobusSeleccionado.tarjeta_circulacion,
+      Placa: this.autobusSeleccionado.placa,
+      Sistema: this.autobusSeleccionado.sistema
+    };
 
-  if (this.modoEdicion) {
-    if (!this.autobusSeleccionado.id_autobus) return;
-    const url = `${this.apiUrl}/${this.autobusSeleccionado.id_autobus}`;
-    
-    this.http.put(url, payload).subscribe({
-      next: () => this.postGuardado('Autobús actualizado exitosamente.'),
-      error: (err) => this.mostrarNotificacion('Error', err.error?.message || 'No se pudo actualizar.', 'error')
-    });
-  } else {
-    this.http.post(this.apiUrl, payload).subscribe({
-      next: () => this.postGuardado('Autobús creado exitosamente.'),
-      error: (err) => this.mostrarNotificacion('Error', err.error?.message || 'No se pudo agregar.', 'error')
-    });
+    if (this.modoEdicion) {
+      if (!this.autobusSeleccionado.id_autobus) return;
+      const url = `${this.apiUrl}/${this.autobusSeleccionado.id_autobus}`;
+      this.http.put(url, payload).subscribe({
+        next: () => this.postGuardado('Autobús actualizado exitosamente.'),
+        error: (err) => this.mostrarNotificacion('Error', err.error?.message || 'No se pudo actualizar.', 'error')
+      });
+    } else {
+      this.http.post(this.apiUrl, payload).subscribe({
+        next: () => this.postGuardado('Autobús creado exitosamente.'),
+        error: (err) => this.mostrarNotificacion('Error', err.error?.message || 'No se pudo agregar.', 'error')
+      });
+    }
   }
-}
   abrirModalBorrar(autobus: Autobus) {
     this.autobusABorrar = autobus;
     this.mostrarModalBorrar = true;
