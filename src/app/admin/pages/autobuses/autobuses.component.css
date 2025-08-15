@@ -278,7 +278,13 @@ td.stock-critico {
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
-
+.contador-resultados {
+  padding: 0 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9em;
+  color: #8a99b0;
+  text-align: right;
+}
 .costo-total-container h4 {
   margin: 0;
   color: #e0e0e0;
