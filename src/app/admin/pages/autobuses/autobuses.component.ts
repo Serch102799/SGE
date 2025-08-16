@@ -33,16 +33,13 @@ export class AutobusesComponent implements OnInit, OnDestroy {
   private apiUrl = `${environment.apiUrl}/autobuses`;
   private historialApiUrl = `${environment.apiUrl}/historial`;
 
-  // Listas para los menús desplegables
   razonesSociales: string[] = ['MARTRESS', 'A8M', 'TRESA', 'GIALJU'];
   sistemasEmisiones: string[] = ['UREA', 'EGR', 'OTRO'];
   
-  // --- Estado de la Paginación ---
   currentPage: number = 1;
-  itemsPerPage: number = 10; // Puedes ajustar cuántos ítems mostrar por página
+  itemsPerPage: number = 10; 
   totalItems: number = 0;
 
-  // --- Estado de la Búsqueda ---
   terminoBusqueda: string = '';
   private searchSubject: Subject<string> = new Subject<string>();
   private searchSubscription?: Subscription;
