@@ -9,18 +9,13 @@
   <div class="container-body">
     <div class="filtros-container">
       <div class="filtro-item">
-        <input type="text" class="form-control" placeholder="Filtrar por económico, razón social, marca o VIN..."
-          [(ngModel)]="terminoBusqueda" (input)="aplicarFiltros()">
+        <input type="text" class="form-control" placeholder="Buscar por económico, marca, VIN, placa o chasis..."
+          [(ngModel)]="terminoBusqueda" (ngModelChange)="onSearchChange()">
       </div>
     </div>
 
-     <div class="contador-resultados">
-      <ng-container *ngIf="terminoBusqueda; else total">
-        Mostrando <strong>{{ autobusesFiltrados.length }}</strong> de <strong>{{ autobuses.length }}</strong> autobuses
-      </ng-container>
-      <ng-template #total>
-        <strong>{{ autobuses.length }}</strong> Autobuses en total
-      </ng-template>
+    <div class="contador-resultados">
+      <strong>{{ totalItems }}</strong> autobuses encontrados
     </div>
 
     <div class="tabla-responsive-wrapper">
@@ -29,7 +24,7 @@
           <tr>
             <th>N° Económico</th>
             <th>Razón Social</th>
-            <th>VIN</th>
+            <th>Placa</th>
             <th>Marca</th>
             <th>Modelo</th>
             <th>Año</th>
@@ -38,22 +33,38 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let autobus of autobusesFiltrados" (click)="abrirModalDetalles(autobus)" class="fila-clickable">
+          <tr *ngFor="let autobus of autobuses | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }" 
+              (click)="abrirModalDetalles(autobus)" 
+              class="fila-clickable">
             <td>{{ autobus.economico }}</td>
             <td>{{ autobus.razon_social }}</td>
-            <td>{{ autobus.vin }}</td>
+            <td>{{ autobus.placa }}</td>
             <td>{{ autobus.marca }}</td>
             <td>{{ autobus.modelo }}</td>
             <td>{{ autobus.anio }}</td>
             <td>{{ autobus.kilometraje_actual | number }} km</td>
-            <td class="acciones" *ngIf="authService.hasRole(['Admin'])">
+            <td class="acciones" *ngIf="authService.hasRole(['Admin'])" (click)="$event.stopPropagation()">
               <button class="btn-accion btn-historial" (click)="verHistorial(autobus)">Historial</button>
-              <!-- <button class="btn-accion btn-estado" (click)="abrirModal('editar', autobus)">Editar</button> -->
-              <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(autobus)">Eliminar</button>
+<!--               <button class="btn-accion btn-estado" (click)="abrirModal('editar', autobus)">Editar</button>
+ -->              <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(autobus)">Eliminar</button>
             </td>
+          </tr>
+          <tr *ngIf="autobuses.length === 0">
+            <td colspan="8" class="empty-table-message">No se encontraron autobuses que coincidan con la búsqueda.</td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="pagination-controls">
+        <pagination-controls 
+            (pageChange)="onPageChange($event)"
+            previousLabel="Anterior"
+            nextLabel="Siguiente"
+            screenReaderPaginationLabel="Paginación"
+            screenReaderPageLabel="página"
+            screenReaderCurrentLabel="Estás en la página">
+        </pagination-controls>
     </div>
   </div>
 </div>
@@ -142,112 +153,6 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalBorrar" (click)="cerrarModalBorrar()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3 class="header-eliminar">Confirmar Eliminación</h3>
-      <button class="btn-cerrar" (click)="cerrarModalBorrar()">×</button>
-    </div>
-    <div class="modal-body">
-      <p class="confirm-text" *ngIf="autobusABorrar">¿Estás seguro de que deseas eliminar el autobús <strong>{{
-          autobusABorrar.economico }}</strong>?</p>
-      <p class="confirm-warning">Esta acción no se puede deshacer.</p>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBorrar()">Cancelar</button>
-      <button type="button" class="btn-accion btn-confirmar-eliminar" (click)="confirmarEliminacion()">Sí,
-        Eliminar</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3 [ngClass]="{
-        'header-exito': notificacion.tipo === 'exito',
-        'header-error': notificacion.tipo === 'error',
-        'header-advertencia': notificacion.tipo === 'advertencia'
-      }">
-        {{ notificacion.titulo }}
-      </h3>
-      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
-    </div>
-    <div class="modal-body">
-      <p class="confirm-text">{{ notificacion.mensaje }}</p>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" *ngIf="mostrarModalHistorial" (click)="cerrarModalHistorial()">
-  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Historial de Mantenimiento: Autobús #{{ autobusSeleccionadoEconomico }}</h3>
-      <button class="btn-cerrar" (click)="cerrarModalHistorial()">×</button>
-    </div>
-    <div class="modal-body">
-      
-      <div class="costo-total-container">
-        <h4>Costo Total en Mantenimiento: <span>{{ costoTotalHistorial | currency:'MXN' }}</span></h4>
-      </div>
-      
-      <div class="filtros-container-modal">
-        <div class="filtro-item">
-          <input type="text" class="form-control" placeholder="Filtrar por refacción o insumo..."
-                 [(ngModel)]="filtroHistorialItem" (input)="aplicarFiltroHistorial()">
-        </div>
-        <div class="filtro-item">
-          <label>Desde:</label>
-          <input type="date" class="form-control" [(ngModel)]="filtroHistorialFechaInicio" (change)="aplicarFiltroHistorial()">
-        </div>
-        <div class="filtro-item">
-          <label>Hasta:</label>
-          <input type="date" class="form-control" [(ngModel)]="filtroHistorialFechaFin" (change)="aplicarFiltroHistorial()">
-        </div>
-      </div>
-
-      <div class="tabla-responsive-wrapper">
-        <table class="tabla-preview">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Kilometraje</th>
-              <th>Tipo</th>
-              <th>Descripción</th>
-              <th>Marca</th>
-              <th>Cantidad</th>
-              <th>Solicitado Por</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of historialFiltrado">
-              <td>{{ item.fecha | date:'short' }}</td>
-              <td>{{ item.kilometraje | number }} km</td>
-              <td>
-                <span [class.tipo-refaccion]="item.tipo_item === 'Refacción'"
-                      [class.tipo-insumo]="item.tipo_item === 'Insumo'">
-                  {{ item.tipo_item }}
-                </span>
-              </td>
-              <td>{{ item.nombre }}</td>
-              <td>{{ item.marca }}</td>
-              <td>{{ item.cantidad }}</td>
-              <td>{{ item.solicitado_por }}</td>
-            </tr>
-            <tr *ngIf="historialFiltrado.length === 0">
-              <td colspan="7" class="empty-table-message">No se encontraron movimientos.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalHistorial()">Cerrar</button>
-    </div>
-  </div>
-</div>
 <div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
   <div class="modal-content modal-lg" (click)="$event.stopPropagation()" *ngIf="autobusParaDetalles">
     <div class="modal-header modal-header-detalles">
@@ -306,6 +211,109 @@
       <button type="button" class="btn-accion btn-historial" (click)="verHistorialDesdeDetalles()">Ver Historial</button>
       <button type="button" class="btn-accion btn-estado" (click)="editarDesdeDetalles()">Editar Autobús</button>
       <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalDetalles()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalBorrar" (click)="cerrarModalBorrar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="header-eliminar">Confirmar Eliminación</h3>
+      <button class="btn-cerrar" (click)="cerrarModalBorrar()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text" *ngIf="autobusABorrar">¿Estás seguro de que deseas eliminar el autobús <strong>{{ autobusABorrar.economico }}</strong>?</p>
+      <p class="confirm-warning">Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBorrar()">Cancelar</button>
+      <button type="button" class="btn-accion btn-confirmar-eliminar" (click)="confirmarEliminacion()">Sí, Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{
+        'header-exito': notificacion.tipo === 'exito',
+        'header-error': notificacion.tipo === 'error',
+        'header-advertencia': notificacion.tipo === 'advertencia'
+      }">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalHistorial" (click)="cerrarModalHistorial()">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Historial de Mantenimiento: Autobús #{{ autobusSeleccionadoEconomico }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModalHistorial()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="costo-total-container">
+        <h4>Costo Total en Mantenimiento: <span>{{ costoTotalHistorial | currency:'MXN' }}</span></h4>
+      </div>
+      <div class="filtros-container-modal">
+        <div class="filtro-item">
+          <input type="text" class="form-control" placeholder="Filtrar por refacción o insumo..."
+                 [(ngModel)]="filtroHistorialItem" (input)="aplicarFiltroHistorial()">
+        </div>
+        <div class="filtro-item">
+          <label>Desde:</label>
+          <input type="date" class="form-control" [(ngModel)]="filtroHistorialFechaInicio" (change)="aplicarFiltroHistorial()">
+        </div>
+        <div class="filtro-item">
+          <label>Hasta:</label>
+          <input type="date" class="form-control" [(ngModel)]="filtroHistorialFechaFin" (change)="aplicarFiltroHistorial()">
+        </div>
+      </div>
+      <div class="tabla-responsive-wrapper">
+        <table class="tabla-preview">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Kilometraje</th>
+              <th>Tipo</th>
+              <th>Descripción</th>
+              <th>Marca</th>
+              <th>Cantidad</th>
+              <th>Solicitado Por</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of historialFiltrado">
+              <td>{{ item.fecha | date:'short' }}</td>
+              <td>{{ item.kilometraje | number }} km</td>
+              <td>
+                <span [class.tipo-refaccion]="item.tipo_item === 'Refacción'"
+                      [class.tipo-insumo]="item.tipo_item === 'Insumo'">
+                  {{ item.tipo_item }}
+                </span>
+              </td>
+              <td>{{ item.nombre }}</td>
+              <td>{{ item.marca }}</td>
+              <td>{{ item.cantidad }}</td>
+              <td>{{ item.solicitado_por }}</td>
+            </tr>
+            <tr *ngIf="historialFiltrado.length === 0">
+              <td colspan="7" class="empty-table-message">No se encontraron movimientos.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalHistorial()">Cerrar</button>
     </div>
   </div>
 </div>

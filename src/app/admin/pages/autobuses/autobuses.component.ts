@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environments';
-
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 export interface Autobus {
   id_autobus: number;
@@ -26,18 +27,37 @@ export interface Autobus {
   templateUrl: './autobuses.component.html',
   styleUrls: ['./autobuses.component.css']
 })
-export class AutobusesComponent implements OnInit {
+export class AutobusesComponent implements OnInit, OnDestroy {
 
   autobuses: Autobus[] = [];
-  autobusesFiltrados: Autobus[] = [];
   private apiUrl = `${environment.apiUrl}/autobuses`;
   private historialApiUrl = `${environment.apiUrl}/historial`;
+
+  // Listas para los menús desplegables
   razonesSociales: string[] = ['MARTRESS', 'A8M', 'TRESA', 'GIALJU'];
   sistemasEmisiones: string[] = ['UREA', 'EGR', 'OTRO'];
+  
+  // --- Estado de la Paginación ---
+  currentPage: number = 1;
+  itemsPerPage: number = 10; // Puedes ajustar cuántos ítems mostrar por página
+  totalItems: number = 0;
+
+  // --- Estado de la Búsqueda ---
+  terminoBusqueda: string = '';
+  private searchSubject: Subject<string> = new Subject<string>();
+  private searchSubscription?: Subscription;
+
+  // --- Estado de los Modales ---
+  mostrarModal = false;
+  modoEdicion = false;
+  autobusSeleccionado: Partial<Autobus> = {};
+  
+  mostrarModalBorrar = false;
+  autobusABorrar: Autobus | null = null;
+
   mostrarModalDetalles = false;
   autobusParaDetalles: Autobus | null = null;
-
-  terminoBusqueda: string = '';
+  
   mostrarModalHistorial = false;
   historialCompleto: any[] = [];
   historialFiltrado: any[] = [];
@@ -47,13 +67,6 @@ export class AutobusesComponent implements OnInit {
   filtroHistorialItem: string = '';
   filtroHistorialFechaInicio: string = '';
   filtroHistorialFechaFin: string = '';
-
-  mostrarModal = false;
-  modoEdicion = false;
-  autobusSeleccionado: Partial<Autobus> = {};
-  
-  mostrarModalBorrar = false;
-  autobusABorrar: Autobus | null = null;
   
   mostrarModalNotificacion = false;
   notificacion = {
@@ -66,16 +79,129 @@ export class AutobusesComponent implements OnInit {
 
   ngOnInit(): void {
     this.obtenerAutobuses();
+    
+    // Configura el "debounce" para la búsqueda
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.currentPage = 1; // Regresa a la página 1 en cada nueva búsqueda
+      this.obtenerAutobuses();
+    });
   }
 
-  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
-    this.notificacion = { titulo, mensaje, tipo };
-    this.mostrarModalNotificacion = true;
+  ngOnDestroy(): void {
+    // Limpia la suscripción para evitar fugas de memoria
+    this.searchSubscription?.unsubscribe();
+  }
+  
+  obtenerAutobuses(): void {
+    const params = {
+      page: this.currentPage.toString(),
+      limit: this.itemsPerPage.toString(),
+      search: this.terminoBusqueda.trim()
+    };
+
+    this.http.get<{ total: number, data: Autobus[] }>(this.apiUrl, { params }).subscribe({
+      next: (response) => {
+        this.autobuses = response.data || [];
+        this.totalItems = response.total || 0;
+      },
+      error: (err) => {
+        console.error('Error al obtener autobuses', err);
+        this.mostrarNotificacion('Error', 'No se pudo cargar la lista de autobuses.', 'error');
+        this.autobuses = [];
+        this.totalItems = 0;
+      }
+    });
   }
 
-  cerrarModalNotificacion() {
-    this.mostrarModalNotificacion = false;
+  onSearchChange(): void {
+    this.searchSubject.next(this.terminoBusqueda);
   }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.obtenerAutobuses();
+  }
+
+  // --- Métodos para Modales (CRUD, Detalles, Historial) ---
+
+  abrirModal(modo: 'agregar' | 'editar', autobus?: Autobus): void {
+    this.modoEdicion = (modo === 'editar');
+    if (modo === 'editar' && autobus) {
+      this.autobusSeleccionado = { ...autobus };
+    } else {
+      this.autobusSeleccionado = {
+        economico: '', vin: '', razon_social: '', placa: '', chasis: '',
+        motor: '', tarjeta_circulacion: '', sistema: ''
+      };
+    }
+    this.mostrarModal = true;
+  }
+
+  cerrarModal(): void {
+    this.mostrarModal = false;
+  }
+
+  guardarAutobus(): void {
+    if (!this.autobusSeleccionado.economico || !this.autobusSeleccionado.vin || !this.autobusSeleccionado.razon_social || !this.autobusSeleccionado.placa || !this.autobusSeleccionado.chasis) {
+      this.mostrarNotificacion('Campos Requeridos', 'Económico, VIN, Razón Social, Placa y Chasis son obligatorios.');
+      return;
+    }
+
+    const payload = {
+      Economico: this.autobusSeleccionado.economico,
+      Marca: this.autobusSeleccionado.marca,
+      Modelo: this.autobusSeleccionado.modelo,
+      Anio: this.autobusSeleccionado.anio,
+      Kilometraje_Actual: this.autobusSeleccionado.kilometraje_actual,
+      VIN: this.autobusSeleccionado.vin,
+      Razon_Social: this.autobusSeleccionado.razon_social,
+      Chasis: this.autobusSeleccionado.chasis,
+      Motor: this.autobusSeleccionado.motor,
+      Tarjeta_Circulacion: this.autobusSeleccionado.tarjeta_circulacion,
+      Placa: this.autobusSeleccionado.placa,
+      Sistema: this.autobusSeleccionado.sistema
+    };
+
+    const request = this.modoEdicion
+      ? this.http.put(`${this.apiUrl}/${this.autobusSeleccionado.id_autobus}`, payload)
+      : this.http.post(this.apiUrl, payload);
+
+    request.subscribe({
+      next: () => this.postGuardado(`Autobús ${this.modoEdicion ? 'actualizado' : 'creado'} exitosamente.`),
+      error: (err) => this.mostrarNotificacion('Error', err.error?.message || `No se pudo ${this.modoEdicion ? 'actualizar' : 'crear'}.`, 'error')
+    });
+  }
+
+  abrirModalBorrar(autobus: Autobus): void {
+    this.autobusABorrar = autobus;
+    this.mostrarModalBorrar = true;
+  }
+
+  cerrarModalBorrar(): void {
+    this.mostrarModalBorrar = false;
+    this.autobusABorrar = null;
+  }
+
+  confirmarEliminacion(): void {
+    if (!this.autobusABorrar) return;
+    const url = `${this.apiUrl}/${this.autobusABorrar.id_autobus}`;
+    this.http.delete(url).subscribe({
+      next: () => this.postGuardado('Autobús eliminado exitosamente.'),
+      error: (err) => this.mostrarNotificacion('Error', err.error?.message || 'No se pudo eliminar.', 'error')
+    });
+  }
+
+  private postGuardado(mensaje: string): void {
+    this.mostrarNotificacion('Éxito', mensaje, 'exito');
+    // Vuelve a cargar los datos de la página actual después de guardar/eliminar
+    this.obtenerAutobuses(); 
+    this.cerrarModal();
+    this.cerrarModalBorrar();
+  }
+
   abrirModalDetalles(autobus: Autobus): void {
     this.autobusParaDetalles = autobus;
     this.mostrarModalDetalles = true;
@@ -100,111 +226,7 @@ export class AutobusesComponent implements OnInit {
     }
   }
 
-  obtenerAutobuses() {
-    this.http.get<Autobus[]>(this.apiUrl).subscribe({
-      next: (data) => {
-        this.autobuses = data;
-        this.autobusesFiltrados = data;
-      },
-      error: (err) => console.error('Error al obtener autobuses', err)
-    });
-  }
-
-  aplicarFiltros() {
-    const busqueda = this.terminoBusqueda.toLowerCase();
-    this.autobusesFiltrados = this.autobuses.filter(a =>
-      a.economico.toLowerCase().includes(busqueda) ||
-      (a.marca && a.marca.toLowerCase().includes(busqueda)) ||
-      (a.vin && a.vin.toLowerCase().includes(busqueda))||
-      (a.razon_social && a.razon_social.toLowerCase().includes(busqueda)) ||
-      (a.placa && a.placa.toLowerCase().includes(busqueda)) || 
-      (a.chasis && a.chasis.toLowerCase().includes(busqueda))
-    );
-  }
-
-  abrirModal(modo: 'agregar' | 'editar', autobus?: Autobus) {
-    this.modoEdicion = (modo === 'editar');
-    if (modo === 'editar' && autobus) {
-      this.autobusSeleccionado = { ...autobus };
-    } else {
-      this.autobusSeleccionado = { 
-        economico: '', 
-        vin: '',
-        razon_social: '', 
-        placa: '',
-        chasis: '',
-        motor: '',
-        tarjeta_circulacion: '',
-        sistema: '' };
-    }
-    this.mostrarModal = true;
-  }
-
-  cerrarModal() {
-    this.mostrarModal = false;
-  }
-
-  guardarAutobus() {
-    if (!this.autobusSeleccionado.economico || !this.autobusSeleccionado.vin || !this.autobusSeleccionado.razon_social || !this.autobusSeleccionado.placa || !this.autobusSeleccionado.chasis) {
-      this.mostrarNotificacion('Campos Requeridos', 'Económico, VIN, Razón Social, Placa y Chasis son obligatorios.');
-      return;
-    }
-
-    const payload = {
-      Economico: this.autobusSeleccionado.economico,
-      Marca: this.autobusSeleccionado.marca,
-      Modelo: this.autobusSeleccionado.modelo,
-      Anio: this.autobusSeleccionado.anio,
-      Kilometraje_Actual: this.autobusSeleccionado.kilometraje_actual,
-      VIN: this.autobusSeleccionado.vin,
-      Razon_Social: this.autobusSeleccionado.razon_social,
-      Chasis: this.autobusSeleccionado.chasis,
-      Motor: this.autobusSeleccionado.motor,
-      Tarjeta_Circulacion: this.autobusSeleccionado.tarjeta_circulacion,
-      Placa: this.autobusSeleccionado.placa,
-      Sistema: this.autobusSeleccionado.sistema
-    };
-
-    if (this.modoEdicion) {
-      if (!this.autobusSeleccionado.id_autobus) return;
-      const url = `${this.apiUrl}/${this.autobusSeleccionado.id_autobus}`;
-      this.http.put(url, payload).subscribe({
-        next: () => this.postGuardado('Autobús actualizado exitosamente.'),
-        error: (err) => this.mostrarNotificacion('Error', err.error?.message || 'No se pudo actualizar.', 'error')
-      });
-    } else {
-      this.http.post(this.apiUrl, payload).subscribe({
-        next: () => this.postGuardado('Autobús creado exitosamente.'),
-        error: (err) => this.mostrarNotificacion('Error', err.error?.message || 'No se pudo agregar.', 'error')
-      });
-    }
-  }
-  abrirModalBorrar(autobus: Autobus) {
-    this.autobusABorrar = autobus;
-    this.mostrarModalBorrar = true;
-  }
-
-  cerrarModalBorrar() {
-    this.mostrarModalBorrar = false;
-    this.autobusABorrar = null;
-  }
-
-  confirmarEliminacion() {
-    if (!this.autobusABorrar) return;
-    const url = `${this.apiUrl}/${this.autobusABorrar.id_autobus}`;
-    this.http.delete(url).subscribe({
-      next: () => this.postGuardado('Autobús eliminado exitosamente.'),
-      error: (err) => this.mostrarNotificacion('Error', err.error?.message || 'No se pudo eliminar.', 'error')
-    });
-  }
-  
-  private postGuardado(mensaje: string) {
-    this.mostrarNotificacion('Éxito', mensaje, 'exito');
-    this.obtenerAutobuses();
-    this.cerrarModal();
-    this.cerrarModalBorrar();
-  }
-  verHistorial(autobus: Autobus) {
+  verHistorial(autobus: Autobus): void {
     this.autobusSeleccionadoEconomico = autobus.economico;
     
     this.http.get<{ historial: any[], costoTotal: number }>(`${this.historialApiUrl}/${autobus.id_autobus}`).subscribe({
@@ -218,7 +240,7 @@ export class AutobusesComponent implements OnInit {
     });
   }
 
-  cerrarModalHistorial() {
+  cerrarModalHistorial(): void {
     this.mostrarModalHistorial = false;
     this.historialCompleto = [];
     this.historialFiltrado = [];
@@ -226,8 +248,8 @@ export class AutobusesComponent implements OnInit {
     this.filtroHistorialFechaInicio = '';
     this.filtroHistorialFechaFin = '';
   }
-
-  aplicarFiltroHistorial() {
+  
+  aplicarFiltroHistorial(): void {
     let historialTemp = [...this.historialCompleto];
     const busqueda = this.filtroHistorialItem.toLowerCase();
 
@@ -239,12 +261,10 @@ export class AutobusesComponent implements OnInit {
         (item.tipo_item && item.tipo_item.toLowerCase().includes(busqueda))
       );
     }
-    // Filtro por fecha de inicio
     if (this.filtroHistorialFechaInicio) {
       const fechaDesde = new Date(this.filtroHistorialFechaInicio);
       historialTemp = historialTemp.filter(item => new Date(item.fecha_salida) >= fechaDesde);
     }
-    // Filtro por fecha de fin
     if (this.filtroHistorialFechaFin) {
       const fechaHasta = new Date(this.filtroHistorialFechaFin);
       fechaHasta.setDate(fechaHasta.getDate() + 1);
@@ -252,5 +272,14 @@ export class AutobusesComponent implements OnInit {
     }
 
     this.historialFiltrado = historialTemp;
+  }
+
+  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
+    this.notificacion = { titulo, mensaje, tipo };
+    this.mostrarModalNotificacion = true;
+  }
+
+  cerrarModalNotificacion() {
+    this.mostrarModalNotificacion = false;
   }
 }

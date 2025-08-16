@@ -23,6 +23,7 @@ import { EntradasInsumoComponent } from './pages/entradas-insumo/entradas-insumo
 import { RegistroEntradaInsumoComponent } from './pages/registro-entrada-insumo/registro-entrada-insumo.component';
 import { PerfilComponent } from './pages/perfil/perfil.component';
 import { ReportesComponent } from './pages/reportes/reportes.component'; 
+import { NgxPaginationModule } from 'ngx-pagination'; // Importa el módulo de paginación
 
 @NgModule({
   declarations: [
@@ -40,7 +41,7 @@ import { ReportesComponent } from './pages/reportes/reportes.component';
     EntradasInsumoComponent,
     RegistroEntradaInsumoComponent,
     PerfilComponent,
-    ReportesComponent
+    ReportesComponent,
   ],
   imports: [
     HttpClientModule,
@@ -50,6 +51,7 @@ import { ReportesComponent } from './pages/reportes/reportes.component';
     ReactiveFormsModule,
     RouterModule,
     AdminRoutingModule,
+    NgxPaginationModule 
     
   ],
   providers: [
