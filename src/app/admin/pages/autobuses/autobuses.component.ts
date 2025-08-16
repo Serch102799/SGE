@@ -35,6 +35,8 @@ export class AutobusesComponent implements OnInit, OnDestroy {
 
   razonesSociales: string[] = ['MARTRESS', 'A8M', 'TRESA', 'GIALJU'];
   sistemasEmisiones: string[] = ['UREA', 'EGR', 'OTRO'];
+  sortField: string = 'economico'; // Campo de ordenamiento actual
+  sortDirection: 'asc' | 'desc' = 'asc'; // Dirección actual
   
   currentPage: number = 1;
   itemsPerPage: number = 10; 
@@ -96,7 +98,9 @@ export class AutobusesComponent implements OnInit, OnDestroy {
     const params = {
       page: this.currentPage.toString(),
       limit: this.itemsPerPage.toString(),
-      search: this.terminoBusqueda.trim()
+      search: this.terminoBusqueda.trim(),
+      sortBy: this.sortField,
+      sortOrder: this.sortDirection
     };
 
     this.http.get<{ total: number, data: Autobus[] }>(this.apiUrl, { params }).subscribe({
@@ -111,6 +115,18 @@ export class AutobusesComponent implements OnInit, OnDestroy {
         this.totalItems = 0;
       }
     });
+  }
+  onSort(field: string): void {
+    if (this.sortField === field) {
+      // Si ya se está ordenando por este campo, invertir la dirección
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Si es un campo nuevo, ordenar por él en ascendente
+      this.sortField = field;
+      this.sortDirection = 'asc';
+    }
+    // Volver a pedir los datos con el nuevo ordenamiento
+    this.obtenerAutobuses();
   }
 
   onSearchChange(): void {

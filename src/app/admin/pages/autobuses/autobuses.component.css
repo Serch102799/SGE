@@ -35,7 +35,28 @@
 :host ::ng-deep .ngx-pagination li:not(.current):hover {
   background-color: #38404a;
 }
+.tabla-usuarios thead th button {
+  background: none;
+  border: none;
+  color: inherit; /* Hereda el color del texto del <th> */
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
 
+.tabla-usuarios thead th button:hover {
+  color: #a7b7d2; /* Un color ligeramente más claro al pasar el ratón */
+}
+
+/* Espacio para los íconos de flecha */
+.tabla-usuarios thead th button span {
+  margin-left: 8px;
+  display: inline-block;
+}
 /* Estilo para los botones "Anterior" y "Siguiente" deshabilitados */
 :host ::ng-deep .ngx-pagination .disabled {
   color: #6c757d; /* Color de texto más opaco */

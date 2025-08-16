@@ -18,17 +18,52 @@
       <strong>{{ totalItems }}</strong> autobuses encontrados
     </div>
 
-    <div class="tabla-responsive-wrapper">
+<div class="tabla-responsive-wrapper">
       <table class="tabla-usuarios">
         <thead>
           <tr>
-            <th>N° Económico</th>
-            <th>Razón Social</th>
-            <th>Placa</th>
-            <th>Marca</th>
-            <th>Modelo</th>
-            <th>Año</th>
-            <th>Kilometraje</th>
+            <th>
+              <button (click)="onSort('economico')">
+                N° Económico
+                <span *ngIf="sortField === 'economico'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+              </button>
+            </th>
+            <th>
+              <button (click)="onSort('razon_social')">
+                Razón Social
+                <span *ngIf="sortField === 'razon_social'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+              </button>
+            </th>
+            <th>
+              <button (click)="onSort('placa')">
+                Placa
+                <span *ngIf="sortField === 'placa'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+              </button>
+            </th>
+            <th>
+              <button (click)="onSort('marca')">
+                Marca
+                <span *ngIf="sortField === 'marca'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+              </button>
+            </th>
+            <th>
+              <button (click)="onSort('modelo')">
+                Modelo
+                <span *ngIf="sortField === 'modelo'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+              </button>
+            </th>
+            <th>
+              <button (click)="onSort('anio')">
+                Año
+                <span *ngIf="sortField === 'anio'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+              </button>
+            </th>
+            <th>
+              <button (click)="onSort('kilometraje_actual')">
+                Kilometraje
+                <span *ngIf="sortField === 'kilometraje_actual'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+              </button>
+            </th>
             <th style="text-align: center;">Acciones</th>
           </tr>
         </thead>
