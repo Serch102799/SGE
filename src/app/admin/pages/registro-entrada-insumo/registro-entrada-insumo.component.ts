@@ -13,7 +13,9 @@ interface DetalleInsumoTemporal {
   id_insumo: number;
   nombre_insumo: string;
   cantidad_recibida: number;
-  costo_total_compra: number;
+  costo_ingresado: number;
+  tipo_costo: 'unitario' | 'neto';
+  aplica_iva: boolean;
 }
 
 @Component({
@@ -46,7 +48,9 @@ export class RegistroEntradaInsumoComponent implements OnInit {
   detalleActual = {
     id_insumo: null as number | null,
     cantidad_recibida: null as number | null,
-    costo_total_compra: null as number | null
+    costo_ingresado: null as number | null,
+    tipo_costo: 'unitario' as 'unitario' | 'neto',
+    aplica_iva: false
   };
   
   detallesAAgregar: DetalleInsumoTemporal[] = [];
@@ -89,22 +93,27 @@ export class RegistroEntradaInsumoComponent implements OnInit {
   }
   
   agregarDetalle() {
-    const { id_insumo, cantidad_recibida, costo_total_compra } = this.detalleActual;
-    if (!id_insumo || !cantidad_recibida || cantidad_recibida <= 0 || !costo_total_compra || costo_total_compra <= 0) {
+    // CAMBIO: Se leen los nuevos campos del formulario
+    const { id_insumo, cantidad_recibida, costo_ingresado, tipo_costo, aplica_iva } = this.detalleActual;
+    if (!id_insumo || !cantidad_recibida || cantidad_recibida <= 0 || !costo_ingresado || costo_ingresado <= 0) {
       this.mostrarNotificacion('Datos Incompletos', 'Por favor, selecciona un insumo y completa cantidad y costo válidos.');
       return;
     }
     const insumoSeleccionado = this.insumos.find(i => i.id_insumo === id_insumo);
     if (!insumoSeleccionado) return;
 
+    // CAMBIO: Se guardan los nuevos datos en el arreglo temporal
     this.detallesAAgregar.push({
       id_insumo: id_insumo,
       nombre_insumo: insumoSeleccionado.nombre,
       cantidad_recibida: cantidad_recibida,
-      costo_total_compra: costo_total_compra
+      costo_ingresado: costo_ingresado,
+      tipo_costo: tipo_costo,
+      aplica_iva: aplica_iva
     });
 
-    this.detalleActual = { id_insumo: null, cantidad_recibida: null, costo_total_compra: null };
+    // CAMBIO: Se resetea el formulario a sus valores por defecto
+    this.detalleActual = { id_insumo: null, cantidad_recibida: null, costo_ingresado: null, tipo_costo: 'unitario', aplica_iva: false };
   }
 
   eliminarDetalle(index: number) {
@@ -125,7 +134,13 @@ export class RegistroEntradaInsumoComponent implements OnInit {
     this.isSaving = true;
     const payload = {
         maestro: this.entradaMaestro,
-        detalles: this.detallesAAgregar
+        detalles: this.detallesAAgregar.map(d => ({
+            id_insumo: d.id_insumo,
+            cantidad_recibida: d.cantidad_recibida,
+            costo_ingresado: d.costo_ingresado,
+            tipo_costo: d.tipo_costo,
+            aplica_iva: d.aplica_iva
+        }))
     };
 
     this.http.post(`${this.apiUrl}/entradas-insumo`, payload).subscribe({

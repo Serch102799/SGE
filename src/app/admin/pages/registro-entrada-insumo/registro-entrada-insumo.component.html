@@ -40,6 +40,7 @@
 
     <fieldset class="form-section">
       <legend>2. Agregar Insumos a la Entrada</legend>
+
       <div class="form-row">
         <div class="form-group form-group-refaccion">
           <label for="insumo">Insumo</label>
@@ -53,15 +54,34 @@
         <div class="form-group">
           <label for="cantidad">Cantidad Recibida</label>
           <input id="cantidad" type="number" step="0.01" class="form-control"
-            [(ngModel)]="detalleActual.cantidad_recibida" name="cantidad_recibida">
+            [(ngModel)]="detalleActual.cantidad_recibida" name="cantidad_recibida" min="0.01">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+            <label for="tipo_costo">Tipo de Costo</label>
+            <select id="tipo_costo" class="form-control" [(ngModel)]="detalleActual.tipo_costo" name="tipo_costo">
+                <option value="unitario">Costo por Unidad</option>
+                <option value="neto">Costo Neto (Total)</option>
+            </select>
         </div>
         <div class="form-group">
-          <label for="costo">Costo Total (de esta cantidad)</label>
-          <input id="costo" type="number" step="0.01" class="form-control"
-            [(ngModel)]="detalleActual.costo_total_compra" name="costo_total_compra">
+            <label for="costo">{{ detalleActual.tipo_costo === 'unitario' ? 'Costo Unitario ($)' : 'Costo Neto ($)' }}</label>
+            <input id="costo" type="number" step="0.01" class="form-control" [(ngModel)]="detalleActual.costo_ingresado"
+                name="costo_ingresado" min="0">
+        </div>
+      </div>
+
+      <div class="form-row-actions">
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="ivaCheck" [(ngModel)]="detalleActual.aplica_iva" name="aplica_iva">
+            <label class="form-check-label" for="ivaCheck">
+                Aplicar IVA (16%)
+            </label>
         </div>
         <div class="form-group-button">
-          <button type="button" class="btn-agregar-detalle" (click)="agregarDetalle()">Agregar a la Lista</button>
+            <button type="button" class="btn-agregar-detalle" (click)="agregarDetalle()">Agregar a la Lista</button>
         </div>
       </div>
     </fieldset>
@@ -73,19 +93,23 @@
           <thead>
             <tr>
               <th>Insumo</th>
-              <th>Cantidad Recibida</th>
-              <th>Costo Total</th>
+              <th>Cantidad</th>
+              <th>Costo Ingresado</th>
+              <th>Tipo</th>
+              <th>IVA Aplicado</th>
               <th style="text-align: center;">Acción</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngIf="detallesAAgregar.length === 0">
-              <td colspan="4" class="empty-table-message">Aún no has agregado insumos.</td>
+              <td colspan="6" class="empty-table-message">Aún no has agregado insumos.</td>
             </tr>
             <tr *ngFor="let detalle of detallesAAgregar; let i = index">
               <td>{{ detalle.nombre_insumo }}</td>
               <td>{{ detalle.cantidad_recibida | number:'1.2-2' }}</td>
-              <td>{{ detalle.costo_total_compra | currency:'MXN' }}</td>
+              <td>{{ detalle.costo_ingresado | currency:'MXN' }}</td>
+              <td>{{ detalle.tipo_costo === 'unitario' ? 'Unitario' : 'Neto' }}</td>
+              <td>{{ detalle.aplica_iva ? 'Sí' : 'No' }}</td>
               <td class="acciones">
                 <button type="button" class="btn-accion btn-eliminar" (click)="eliminarDetalle(i)">Quitar</button>
               </td>
@@ -103,6 +127,7 @@
     </div>
   </div>
 </div>
+
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
