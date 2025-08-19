@@ -92,7 +92,7 @@ export class RegistroSalidaComponent implements OnInit {
 
   cargarCatalogos() {
     const peticiones = [
-      this.http.get<Autobus[]>(`${this.apiUrl}/autobuses`),
+      this.http.get<Autobus[]>(`${this.apiUrl}/autobuses/lista-simple`),
       this.http.get<Empleado[]>(`${this.apiUrl}/empleados`),
       this.http.get<RefaccionSimple[]>(`${this.apiUrl}/refacciones`),
       this.http.get<InsumoSimple[]>(`${this.apiUrl}/insumos`)
