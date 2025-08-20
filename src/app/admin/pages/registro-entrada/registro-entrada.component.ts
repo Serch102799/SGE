@@ -2,16 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { forkJoin, Observable, of } from 'rxjs';
+import { catchError, startWith, debounceTime, distinctUntilChanged, switchMap, map } from 'rxjs/operators';
+import { FormControl } from '@angular/forms';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { environment } from '../../../../environments/environments';
 
 // --- Interfaces ---
 interface Proveedor { id_proveedor: number; nombre_proveedor: string; }
 interface Empleado { id_empleado: number; nombre: string; }
-interface ItemSimple { id: number; nombre: string; } // Interfaz genérica para los dropdowns
-
-// Interfaz para los items en la lista de "agregados"
+interface ItemSimple { id: number; nombre: string; }
 interface DetalleTemporal {
   id: number;
   nombre: string;
@@ -32,11 +32,9 @@ export class RegistroEntradaComponent implements OnInit {
 
   private apiUrl = environment.apiUrl;
 
-  // --- Catálogos ---
+  // --- Catálogos (para dropdowns estáticos) ---
   proveedores: Proveedor[] = [];
   empleados: Empleado[] = [];
-  refacciones: ItemSimple[] = [];
-  insumos: ItemSimple[] = [];
 
   // --- Formulario Maestro ---
   entradaMaestro = {
@@ -45,6 +43,12 @@ export class RegistroEntradaComponent implements OnInit {
     observaciones: '',
     recibidoPorID: null as number | null
   };
+
+  // --- Lógica para Autocompletes ---
+  refaccionControl = new FormControl();
+  insumoControl = new FormControl();
+  filteredRefacciones$: Observable<ItemSimple[]>;
+  filteredInsumos$: Observable<ItemSimple[]>;
   
   // --- Formulario de Detalle (unificado) ---
   detalleActual = {
@@ -62,58 +66,84 @@ export class RegistroEntradaComponent implements OnInit {
 
   // --- Notificaciones ---
   mostrarModalNotificacion = false;
-  notificacion = {
-    titulo: 'Aviso',
-    mensaje: '',
-    tipo: 'advertencia' as 'exito' | 'error' | 'advertencia'
-  };
+  notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
 
-  constructor(private http: HttpClient, private router: Router, private location: Location) {}
+  constructor(private http: HttpClient, private router: Router, private location: Location) {
+    this.filteredRefacciones$ = this.refaccionControl.valueChanges.pipe(
+      startWith(''),
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap(value => this._buscarApi('refacciones', value || ''))
+    );
+    this.filteredInsumos$ = this.insumoControl.valueChanges.pipe(
+      startWith(''),
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap(value => this._buscarApi('insumos', value || ''))
+    );
+  }
 
   ngOnInit(): void {
     this.cargarCatalogos();
   }
+
+  private _buscarApi(tipo: 'refacciones' | 'insumos', term: any): Observable<ItemSimple[]> {
+    const searchTerm = typeof term === 'string' ? term : term.nombre;
+    if (!searchTerm || searchTerm.length < 2) {
+      return of([]);
+    }
+    return this.http.get<any[]>(`${this.apiUrl}/${tipo}/buscar`, { params: { term: searchTerm } })
+      .pipe(
+        map(respuesta => 
+          respuesta.map(item => ({
+            id: item.id_refaccion || item.id_insumo,
+            nombre: item.nombre,
+          }))
+        )
+      );
+  }
+
+  displayFn(item: ItemSimple): string {
+    return item ? item.nombre : '';
+  }
+
+  onItemSelected(event: MatAutocompleteSelectedEvent): void {
+    const item = event.option.value as ItemSimple;
+    this.detalleActual.id_item = item.id;
+  }
   
   cargarCatalogos() {
-    const peticiones = [
+    const peticiones: [Observable<Proveedor[]>, Observable<Empleado[]>] = [
       this.http.get<Proveedor[]>(`${this.apiUrl}/proveedores`),
-      this.http.get<Empleado[]>(`${this.apiUrl}/empleados`),
-      this.http.get<any[]>(`${this.apiUrl}/refacciones`).pipe(catchError(() => of([]))),
-      this.http.get<any[]>(`${this.apiUrl}/insumos`).pipe(catchError(() => of([])))
+      this.http.get<Empleado[]>(`${this.apiUrl}/empleados`)
     ];
 
     forkJoin(peticiones).subscribe({
-      next: ([proveedores, empleados, refacciones, insumos]) => {
-        this.proveedores = proveedores as Proveedor[];
-        this.empleados = empleados as Empleado[];
-        // Se mapean los datos a una interfaz genérica para los dropdowns
-        this.refacciones = (refacciones as any[]).map(r => ({ id: r.id_refaccion, nombre: `${r.nombre} - ${r.marca}` }));
-        this.insumos = (insumos as any[]).map(i => ({ id: i.id_insumo, nombre: i.nombre }));
+      next: ([proveedores, empleados]) => {
+        this.proveedores = proveedores;
+        this.empleados = empleados;
       },
       error: err => {
-        console.error('Error al cargar los catálogos', err);
         this.mostrarNotificacion('Error de Carga', 'No se pudieron cargar los datos necesarios para el formulario.', 'error');
       }
     });
   }
 
-  // Se resetea el ID del item cuando el usuario cambia de tipo (Refacción/Insumo)
   onTipoItemChange(): void {
     this.detalleActual.id_item = null;
+    this.refaccionControl.setValue('');
+    this.insumoControl.setValue('');
   }
 
   agregarDetalle() {
-    console.log('Datos del detalle al hacer clic:', this.detalleActual); 
     const { tipo_item, id_item, cantidad, costo_ingresado, tipo_costo, aplica_iva } = this.detalleActual;
-    
-    if (!id_item || !cantidad || cantidad <= 0 || !costo_ingresado || costo_ingresado <= 0) {
-      this.mostrarNotificacion('Datos Incompletos', 'Por favor, selecciona un ítem, cantidad y costo válidos.');
+    const itemControl = tipo_item === 'Refacción' ? this.refaccionControl : this.insumoControl;
+    const itemSeleccionado = itemControl.value as ItemSimple;
+
+    if (!id_item || !itemSeleccionado || !cantidad || cantidad <= 0 || (costo_ingresado !== 0 && !costo_ingresado) || costo_ingresado < 0) {
+      this.mostrarNotificacion('Datos Incompletos', 'Busca y selecciona un ítem, y completa una cantidad y costo válidos.');
       return;
     }
-
-    const listaItems = tipo_item === 'Refacción' ? this.refacciones : this.insumos;
-    const itemSeleccionado = listaItems.find(item => item.id === id_item);
-    if (!itemSeleccionado) return;
 
     if (this.detallesAAgregar.some(d => d.id === id_item && d.tipo === tipo_item)) {
       this.mostrarNotificacion('Ítem Duplicado', `Este ${tipo_item.toLowerCase()} ya ha sido agregado a la lista.`);
@@ -135,9 +165,10 @@ export class RegistroEntradaComponent implements OnInit {
   }
   
   resetDetalleActual(): void {
-    // Resetea el formulario de detalle manteniendo el último tipo de item seleccionado
     const tipoActual = this.detalleActual.tipo_item;
     this.detalleActual = { tipo_item: tipoActual, id_item: null, cantidad: null, costo_ingresado: null, tipo_costo: 'unitario', aplica_iva: false };
+    this.refaccionControl.setValue('');
+    this.insumoControl.setValue('');
   }
 
   eliminarDetalle(index: number): void {
@@ -163,12 +194,10 @@ export class RegistroEntradaComponent implements OnInit {
       Recibido_Por_ID: this.entradaMaestro.recibidoPorID
     };
 
-    // 1. Se crea el registro maestro en la tabla unificada 'entrada'
     this.http.post<any>(`${this.apiUrl}/entradas`, payloadMaestro).subscribe({
       next: (respuestaMaestro) => {
         const nuevaEntradaID = respuestaMaestro.id_entrada;
 
-        // 2. Se separan los detalles de refacciones y de insumos
         const peticionesRefacciones = this.detallesAAgregar
             .filter(d => d.tipo === 'Refacción')
             .map(detalle => this.http.post(`${this.apiUrl}/detalle-entrada`, {
@@ -182,7 +211,7 @@ export class RegistroEntradaComponent implements OnInit {
             
         const peticionesInsumos = this.detallesAAgregar
             .filter(d => d.tipo === 'Insumo')
-            .map(detalle => this.http.post(`${this.apiUrl}/entradas-insumo`, {
+            .map(detalle => this.http.post(`${this.apiUrl}/detalle-entrada-insumo`, {
                 ID_Entrada: nuevaEntradaID,
                 ID_Insumo: detalle.id,
                 Cantidad_Recibida: detalle.cantidad,
@@ -191,12 +220,15 @@ export class RegistroEntradaComponent implements OnInit {
                 aplica_iva: detalle.aplica_iva
             }));
 
-        // 3. Se ejecutan todas las peticiones de detalle en paralelo
-        forkJoin([...peticionesRefacciones, ...peticionesInsumos]).subscribe({
+        const todasLasPeticiones = [...peticionesRefacciones, ...peticionesInsumos];
+        if (todasLasPeticiones.length === 0) {
+            this.finalizarGuardado();
+            return;
+        }
+
+        forkJoin(todasLasPeticiones).subscribe({
           next: () => {
-            sessionStorage.setItem('notificacion', '¡Entrada registrada exitosamente!');
-            this.isSaving = false;
-            this.router.navigate(['/admin/entradas']); // Redirige a la lista de entradas unificada
+            this.finalizarGuardado();
           },
           error: err => {
             const serverMessage = err.error?.message || 'Error desconocido al guardar detalles.';
@@ -211,6 +243,12 @@ export class RegistroEntradaComponent implements OnInit {
         this.isSaving = false;
       }
     });
+  }
+
+  private finalizarGuardado(): void {
+    sessionStorage.setItem('notificacion', '¡Entrada registrada exitosamente!');
+    this.isSaving = false;
+    this.router.navigate(['/admin/entradas']);
   }
 
   regresar() { this.location.back(); }

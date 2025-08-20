@@ -2,13 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
+import { catchError, startWith, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { FormControl } from '@angular/forms';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { environment } from '../../../../environments/environments';
 
+// --- Interfaces ---
 interface Proveedor { id_proveedor: number; nombre_proveedor: string; }
 interface Empleado { id_empleado: number; nombre: string; }
-interface InsumoSimple { id_insumo: number; nombre: string; unidad_medida: string; marca: string; tipo: string; }
-
+interface InsumoSimple { id_insumo: number; nombre: string; }
 interface DetalleInsumoTemporal {
   id_insumo: number;
   nombre_insumo: string;
@@ -28,23 +31,23 @@ export class RegistroEntradaInsumoComponent implements OnInit {
 
   private apiUrl = environment.apiUrl;
 
+  // --- Catálogos (para dropdowns estáticos) ---
   proveedores: Proveedor[] = [];
   empleados: Empleado[] = [];
-  insumos: InsumoSimple[] = [];
 
-  mostrarModalNotificacion = false;
-  notificacion = {
-    titulo: 'Aviso',
-    mensaje: '',
-    tipo: 'advertencia' as 'exito' | 'error' | 'advertencia'
-  };
-
+  // --- Lógica para Autocomplete ---
+  insumoControl = new FormControl();
+  filteredInsumos$: Observable<InsumoSimple[]>;
+  
+  // --- Formulario Maestro ---
   entradaMaestro = {
     id_proveedor: null as number | null,
     numero_factura: '',
     observaciones: '',
     id_empleado: null as number | null
   };
+  
+  // --- Formulario de Detalle ---
   detalleActual = {
     id_insumo: null as number | null,
     cantidad_recibida: null as number | null,
@@ -56,55 +59,66 @@ export class RegistroEntradaInsumoComponent implements OnInit {
   detallesAAgregar: DetalleInsumoTemporal[] = [];
   isSaving = false;
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-    private location: Location
-  ) {}
+  // --- Notificaciones ---
+  mostrarModalNotificacion = false;
+  notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
+
+  constructor(private http: HttpClient, private router: Router, private location: Location) {
+    this.filteredInsumos$ = this.insumoControl.valueChanges.pipe(
+      startWith(''),
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap(value => this._buscarApi('insumos', value || ''))
+    );
+  }
 
   ngOnInit(): void {
     this.cargarCatalogos();
   }
   
-  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
-    this.notificacion = { titulo, mensaje, tipo };
-    this.mostrarModalNotificacion = true;
+  private _buscarApi(tipo: 'insumos', term: any): Observable<InsumoSimple[]> {
+    const searchTerm = typeof term === 'string' ? term : term.nombre;
+    if (!searchTerm || searchTerm.length < 2) {
+      return of([]);
+    }
+    return this.http.get<InsumoSimple[]>(`${this.apiUrl}/${tipo}/buscar`, { params: { term: searchTerm } });
   }
 
-  cerrarModalNotificacion() {
-    this.mostrarModalNotificacion = false;
+  displayFn(item: InsumoSimple): string {
+    return item ? item.nombre : '';
+  }
+
+  onInsumoSelected(event: MatAutocompleteSelectedEvent): void {
+    const insumo = event.option.value as InsumoSimple;
+    this.detalleActual.id_insumo = insumo.id_insumo;
   }
 
   cargarCatalogos() {
-    const peticiones = [
+    const peticiones: [Observable<Proveedor[]>, Observable<Empleado[]>] = [
       this.http.get<Proveedor[]>(`${this.apiUrl}/proveedores`),
-      this.http.get<Empleado[]>(`${this.apiUrl}/empleados`),
-      this.http.get<InsumoSimple[]>(`${this.apiUrl}/insumos`)
+      this.http.get<Empleado[]>(`${this.apiUrl}/empleados`)
     ];
 
     forkJoin(peticiones).subscribe({
-      next: ([proveedores, empleados, insumos]) => {
-        this.proveedores = proveedores as Proveedor[];
-        this.empleados = empleados as Empleado[];
-        this.insumos = insumos as InsumoSimple[];
+      next: ([proveedores, empleados]) => {
+        this.proveedores = proveedores;
+        this.empleados = empleados;
       },
       error: err => this.mostrarNotificacion('Error de Carga', 'No se pudieron cargar los datos necesarios.', 'error')
     });
   }
   
   agregarDetalle() {
-    // CAMBIO: Se leen los nuevos campos del formulario
     const { id_insumo, cantidad_recibida, costo_ingresado, tipo_costo, aplica_iva } = this.detalleActual;
-    if (!id_insumo || !cantidad_recibida || cantidad_recibida <= 0 || !costo_ingresado || costo_ingresado <= 0) {
-      this.mostrarNotificacion('Datos Incompletos', 'Por favor, selecciona un insumo y completa cantidad y costo válidos.');
+    const insumoSeleccionado = this.insumoControl.value as InsumoSimple;
+
+    if (!id_insumo || !insumoSeleccionado || !cantidad_recibida || cantidad_recibida <= 0 || !costo_ingresado || costo_ingresado < 0) {
+      this.mostrarNotificacion('Datos Incompletos', 'Busca y selecciona un insumo, y completa cantidad y costo válidos.');
       return;
     }
-    const insumoSeleccionado = this.insumos.find(i => i.id_insumo === id_insumo);
-    if (!insumoSeleccionado) return;
 
-    // CAMBIO: Se guardan los nuevos datos en el arreglo temporal
     this.detallesAAgregar.push({
-      id_insumo: id_insumo,
+      id_insumo: insumoSeleccionado.id_insumo,
       nombre_insumo: insumoSeleccionado.nombre,
       cantidad_recibida: cantidad_recibida,
       costo_ingresado: costo_ingresado,
@@ -112,8 +126,8 @@ export class RegistroEntradaInsumoComponent implements OnInit {
       aplica_iva: aplica_iva
     });
 
-    // CAMBIO: Se resetea el formulario a sus valores por defecto
     this.detalleActual = { id_insumo: null, cantidad_recibida: null, costo_ingresado: null, tipo_costo: 'unitario', aplica_iva: false };
+    this.insumoControl.setValue('');
   }
 
   eliminarDetalle(index: number) {
@@ -134,13 +148,7 @@ export class RegistroEntradaInsumoComponent implements OnInit {
     this.isSaving = true;
     const payload = {
         maestro: this.entradaMaestro,
-        detalles: this.detallesAAgregar.map(d => ({
-            id_insumo: d.id_insumo,
-            cantidad_recibida: d.cantidad_recibida,
-            costo_ingresado: d.costo_ingresado,
-            tipo_costo: d.tipo_costo,
-            aplica_iva: d.aplica_iva
-        }))
+        detalles: this.detallesAAgregar
     };
 
     this.http.post(`${this.apiUrl}/entradas-insumo`, payload).subscribe({
@@ -155,8 +163,9 @@ export class RegistroEntradaInsumoComponent implements OnInit {
       }
     });
   }
+  
+  regresar() { this.location.back(); }
 
-  regresar() {
-    this.location.back();
-  }
+  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') { this.notificacion = { titulo, mensaje, tipo }; this.mostrarModalNotificacion = true; }
+  cerrarModalNotificacion() { this.mostrarModalNotificacion = false; }
 }

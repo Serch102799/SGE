@@ -23,7 +23,10 @@ import { EntradasInsumoComponent } from './pages/entradas-insumo/entradas-insumo
 import { RegistroEntradaInsumoComponent } from './pages/registro-entrada-insumo/registro-entrada-insumo.component';
 import { PerfilComponent } from './pages/perfil/perfil.component';
 import { ReportesComponent } from './pages/reportes/reportes.component'; 
-import { NgxPaginationModule } from 'ngx-pagination'; // Importa el módulo de paginación
+import { NgxPaginationModule } from 'ngx-pagination'; 
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 @NgModule({
   declarations: [
@@ -51,7 +54,10 @@ import { NgxPaginationModule } from 'ngx-pagination'; // Importa el módulo de p
     ReactiveFormsModule,
     RouterModule,
     AdminRoutingModule,
-    NgxPaginationModule 
+    NgxPaginationModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatAutocompleteModule
     
   ],
   providers: [
