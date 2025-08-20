@@ -18,7 +18,7 @@
       <strong>{{ totalItems }}</strong> autobuses encontrados
     </div>
 
-<div class="tabla-responsive-wrapper">
+    <div class="tabla-responsive-wrapper">
       <table class="tabla-usuarios">
         <thead>
           <tr>
@@ -29,10 +29,10 @@
               </button>
             </th>
             <th>
-              <button (click)="onSort('razon_social')">
-                Razón Social
-                <span *ngIf="sortField === 'razon_social'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
-              </button>
+                <button (click)="onSort('razon_social')">
+                  Razón Social
+                  <span *ngIf="sortField === 'razon_social'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+                </button>
             </th>
             <th>
               <button (click)="onSort('placa')">
@@ -80,8 +80,8 @@
             <td>{{ autobus.kilometraje_actual | number }} km</td>
             <td class="acciones" *ngIf="authService.hasRole(['Admin'])" (click)="$event.stopPropagation()">
               <button class="btn-accion btn-historial" (click)="verHistorial(autobus)">Historial</button>
-<!--               <button class="btn-accion btn-estado" (click)="abrirModal('editar', autobus)">Editar</button>
- -->              <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(autobus)">Eliminar</button>
+              <button class="btn-accion btn-estado" (click)="abrirModal('editar', autobus)">Editar</button>
+              <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(autobus)">Eliminar</button>
             </td>
           </tr>
           <tr *ngIf="autobuses.length === 0">
@@ -129,7 +129,7 @@
             </div>
             <div class="form-group col">
                 <label>Chasis</label>
-                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.chasis" name="chasis" required>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.chasis" name="chasis">
             </div>
         </div>
         <div class="form-row">
@@ -179,6 +179,26 @@
                 <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.kilometraje_actual" name="kilometraje_actual">
             </div>
         </div>
+        <div class="form-row">
+            <div class="form-group col">
+                <label>HP (Caballos de Fuerza)</label>
+                <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.hp" name="hp">
+            </div>
+            <div class="form-group col">
+                <label>Carrocería</label>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.carroceria" name="carroceria">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col">
+                <label>Sistema Eléctrico</label>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.sistema_electrico" name="sistema_electrico">
+            </div>
+            <div class="form-group col">
+                <label>Medida de Llanta</label>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.medida_llanta" name="medida_llanta">
+            </div>
+        </div>
         <div class="modal-footer">
           <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
           <button type="submit" class="btn-accion btn-guardar">Guardar</button>
@@ -213,6 +233,10 @@
             <span class="detalle-label">Motor:</span>
             <span class="detalle-valor">{{ autobusParaDetalles.motor }}</span>
           </div>
+           <div class="detalle-item">
+            <span class="detalle-label">HP:</span>
+            <span class="detalle-valor">{{ autobusParaDetalles.hp }}</span>
+          </div>
           <div class="detalle-item">
             <span class="detalle-label">Tarjeta de Circulación:</span>
             <span class="detalle-valor">{{ autobusParaDetalles.tarjeta_circulacion }}</span>
@@ -238,6 +262,18 @@
           <div class="detalle-item">
             <span class="detalle-label">Sistema Emisiones:</span>
             <span class="detalle-valor">{{ autobusParaDetalles.sistema }}</span>
+          </div>
+           <div class="detalle-item">
+            <span class="detalle-label">Carrocería:</span>
+            <span class="detalle-valor">{{ autobusParaDetalles.carroceria }}</span>
+          </div>
+           <div class="detalle-item">
+            <span class="detalle-label">Sistema Eléctrico:</span>
+            <span class="detalle-valor">{{ autobusParaDetalles.sistema_electrico }}</span>
+          </div>
+           <div class="detalle-item">
+            <span class="detalle-label">Medida de Llanta:</span>
+            <span class="detalle-valor">{{ autobusParaDetalles.medida_llanta }}</span>
           </div>
         </div>
       </div>

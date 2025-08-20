@@ -4,7 +4,9 @@ import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environments';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
+// --- Interfaces ---
 export interface Autobus {
   id_autobus: number;
   economico: string;
@@ -19,6 +21,10 @@ export interface Autobus {
   tarjeta_circulacion: string;
   placa: string;
   sistema: string;
+  hp: number;
+  carroceria: string;
+  sistema_electrico: string;
+  medida_llanta: string;
 }
 
 @Component({
@@ -33,15 +39,18 @@ export class AutobusesComponent implements OnInit, OnDestroy {
   private apiUrl = `${environment.apiUrl}/autobuses`;
   private historialApiUrl = `${environment.apiUrl}/historial`;
 
+  // --- Listas para Dropdowns ---
   razonesSociales: string[] = ['MARTRESS', 'A8M', 'TRESA', 'GIALJU'];
   sistemasEmisiones: string[] = ['UREA', 'EGR', 'OTRO'];
-  sortField: string = 'economico'; // Campo de ordenamiento actual
-  sortDirection: 'asc' | 'desc' = 'asc'; // Dirección actual
-  
+
+  // --- Estado de la Tabla ---
+  sortField: string = 'economico';
+  sortDirection: 'asc' | 'desc' = 'asc';
   currentPage: number = 1;
   itemsPerPage: number = 10; 
   totalItems: number = 0;
 
+  // --- Búsqueda ---
   terminoBusqueda: string = '';
   private searchSubject: Subject<string> = new Subject<string>();
   private searchSubscription?: Subscription;
@@ -74,23 +83,21 @@ export class AutobusesComponent implements OnInit, OnDestroy {
     tipo: 'advertencia' as 'exito' | 'error' | 'advertencia'
   };
 
-  constructor(private http: HttpClient, public authService: AuthService) { }
+  constructor(private http: HttpClient, public authService: AuthService, private router: Router) { }
 
   ngOnInit(): void {
     this.obtenerAutobuses();
     
-    // Configura el "debounce" para la búsqueda
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(400),
       distinctUntilChanged()
     ).subscribe(() => {
-      this.currentPage = 1; // Regresa a la página 1 en cada nueva búsqueda
+      this.currentPage = 1;
       this.obtenerAutobuses();
     });
   }
 
   ngOnDestroy(): void {
-    // Limpia la suscripción para evitar fugas de memoria
     this.searchSubscription?.unsubscribe();
   }
   
@@ -116,16 +123,14 @@ export class AutobusesComponent implements OnInit, OnDestroy {
       }
     });
   }
+  
   onSort(field: string): void {
     if (this.sortField === field) {
-      // Si ya se está ordenando por este campo, invertir la dirección
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
-      // Si es un campo nuevo, ordenar por él en ascendente
       this.sortField = field;
       this.sortDirection = 'asc';
     }
-    // Volver a pedir los datos con el nuevo ordenamiento
     this.obtenerAutobuses();
   }
 
@@ -138,16 +143,16 @@ export class AutobusesComponent implements OnInit, OnDestroy {
     this.obtenerAutobuses();
   }
 
-  // --- Métodos para Modales (CRUD, Detalles, Historial) ---
-
   abrirModal(modo: 'agregar' | 'editar', autobus?: Autobus): void {
     this.modoEdicion = (modo === 'editar');
     if (modo === 'editar' && autobus) {
       this.autobusSeleccionado = { ...autobus };
     } else {
+      // Se inicializan TODOS los campos para un nuevo autobús
       this.autobusSeleccionado = {
         economico: '', vin: '', razon_social: '', placa: '', chasis: '',
-        motor: '', tarjeta_circulacion: '', sistema: ''
+        motor: '', tarjeta_circulacion: '', sistema: '', hp: undefined,
+        carroceria: '', sistema_electrico: '', medida_llanta: ''
       };
     }
     this.mostrarModal = true;
@@ -158,11 +163,12 @@ export class AutobusesComponent implements OnInit, OnDestroy {
   }
 
   guardarAutobus(): void {
-    if (!this.autobusSeleccionado.economico || !this.autobusSeleccionado.vin || !this.autobusSeleccionado.razon_social || !this.autobusSeleccionado.placa || !this.autobusSeleccionado.chasis) {
-      this.mostrarNotificacion('Campos Requeridos', 'Económico, VIN, Razón Social, Placa y Chasis son obligatorios.');
+    if (!this.autobusSeleccionado.economico || !this.autobusSeleccionado.vin || !this.autobusSeleccionado.razon_social || !this.autobusSeleccionado.placa) {
+      this.mostrarNotificacion('Campos Requeridos', 'Económico, VIN, Razón Social y Placa son obligatorios.');
       return;
     }
 
+    // Se construye el payload con TODOS los campos, incluyendo los nuevos
     const payload = {
       Economico: this.autobusSeleccionado.economico,
       Marca: this.autobusSeleccionado.marca,
@@ -175,7 +181,11 @@ export class AutobusesComponent implements OnInit, OnDestroy {
       Motor: this.autobusSeleccionado.motor,
       Tarjeta_Circulacion: this.autobusSeleccionado.tarjeta_circulacion,
       Placa: this.autobusSeleccionado.placa,
-      Sistema: this.autobusSeleccionado.sistema
+      Sistema: this.autobusSeleccionado.sistema,
+      HP: this.autobusSeleccionado.hp,
+      Carroceria: this.autobusSeleccionado.carroceria,
+      Sistema_Electrico: this.autobusSeleccionado.sistema_electrico,
+      Medida_Llanta: this.autobusSeleccionado.medida_llanta
     };
 
     const request = this.modoEdicion
@@ -209,7 +219,6 @@ export class AutobusesComponent implements OnInit, OnDestroy {
 
   private postGuardado(mensaje: string): void {
     this.mostrarNotificacion('Éxito', mensaje, 'exito');
-    // Vuelve a cargar los datos de la página actual después de guardar/eliminar
     this.obtenerAutobuses(); 
     this.cerrarModal();
     this.cerrarModalBorrar();
