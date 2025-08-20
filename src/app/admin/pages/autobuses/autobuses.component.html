@@ -211,7 +211,7 @@
 <div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
   <div class="modal-content modal-lg" (click)="$event.stopPropagation()" *ngIf="autobusParaDetalles">
     <div class="modal-header modal-header-detalles">
-      <h3>🚌 Detalles del Autobús: {{ autobusParaDetalles.economico }}</h3>
+      <h3>🚌 Ficha Ténica del Autobús: {{ autobusParaDetalles.economico }}</h3>
       <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
     </div>
     <div class="modal-body">
