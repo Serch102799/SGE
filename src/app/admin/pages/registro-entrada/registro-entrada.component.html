@@ -18,10 +18,19 @@
             <option *ngFor="let p of proveedores" [ngValue]="p.id_proveedor">{{ p.nombre_proveedor }}</option>
           </select>
         </div>
-        <div class="form-group">
-          <label for="factura">Número de Factura/ Vale</label>
-          <input id="factura" type="text" class="form-control" [(ngModel)]="entradaMaestro.numeroFacturaProveedor"
-            name="numeroFacturaProveedor">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="factura">Número de Factura (Externo)</label>
+            <input id="factura" type="text" class="form-control" [(ngModel)]="entradaMaestro.factura_proveedor"
+              name="factura_proveedor">
+          </div>
+          <div class="form-group">
+            <label for="vale">Número de Vale (Interno)</label>
+            <input id="vale" type="text" class="form-control" [(ngModel)]="entradaMaestro.vale_interno"
+              name="vale_interno">
+          </div>
+          <div class="form-group">
+          </div>
         </div>
         <div class="form-group">
           <label for="empleado">Recibió</label>
@@ -41,11 +50,12 @@
 
     <fieldset class="form-section">
       <legend>2. Agregar Refacciones a la Entrada</legend>
-      
+
       <div class="form-row">
         <div class="form-group col-md-4">
           <label>Tipo de Item</label>
-          <select class="form-control" [(ngModel)]="detalleActual.tipo_item" name="tipo_item" (change)="onTipoItemChange()">
+          <select class="form-control" [(ngModel)]="detalleActual.tipo_item" name="tipo_item"
+            (change)="onTipoItemChange()">
             <option value="Refacción">Refacción</option><!-- 
             <option value="Insumo">Insumo</option> -->
           </select>
@@ -54,9 +64,11 @@
         <div class="form-group col-md-8" *ngIf="detalleActual.tipo_item === 'Refacción'">
           <label for="refaccion-input">Buscar Refacción</label>
           <mat-form-field appearance="outline" class="full-width">
-            <input type="text" id="refaccion-input" placeholder="Escribe para buscar..." matInput [formControl]="refaccionControl" [matAutocomplete]="autoRefaccion">
+            <input type="text" id="refaccion-input" placeholder="Escribe para buscar..." matInput
+              [formControl]="refaccionControl" [matAutocomplete]="autoRefaccion">
           </mat-form-field>
-          <mat-autocomplete #autoRefaccion="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onItemSelected($event)">
+          <mat-autocomplete #autoRefaccion="matAutocomplete" [displayWith]="displayFn"
+            (optionSelected)="onItemSelected($event)">
             <mat-option *ngFor="let item of filteredRefacciones$ | async" [value]="item">
               {{ item.nombre }}
             </mat-option>
@@ -66,20 +78,23 @@
         <div class="form-group col-md-8" *ngIf="detalleActual.tipo_item === 'Insumo'">
           <label for="insumo-input">Buscar Insumo</label>
           <mat-form-field appearance="outline" class="full-width">
-            <input type="text" id="insumo-input" placeholder="Escribe para buscar..." matInput [formControl]="insumoControl" [matAutocomplete]="autoInsumo">
+            <input type="text" id="insumo-input" placeholder="Escribe para buscar..." matInput
+              [formControl]="insumoControl" [matAutocomplete]="autoInsumo">
           </mat-form-field>
-          <mat-autocomplete #autoInsumo="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onItemSelected($event)">
+          <mat-autocomplete #autoInsumo="matAutocomplete" [displayWith]="displayFn"
+            (optionSelected)="onItemSelected($event)">
             <mat-option *ngFor="let item of filteredInsumos$ | async" [value]="item">
               {{ item.nombre }}
             </mat-option>
           </mat-autocomplete>
         </div>
       </div>
-      
+
       <div class="form-row">
         <div class="form-group col-md-3">
           <label>Cantidad Recibida</label>
-          <input type="number" step="0.01" class="form-control" [(ngModel)]="detalleActual.cantidad" name="cantidad" min="0.01">
+          <input type="number" step="0.01" class="form-control" [(ngModel)]="detalleActual.cantidad" name="cantidad"
+            min="0.01">
         </div>
         <div class="form-group col-md-3">
           <label>Tipo de Costo</label>
@@ -90,13 +105,15 @@
         </div>
         <div class="form-group col-md-3">
           <label>{{ detalleActual.tipo_costo === 'unitario' ? 'Costo Unitario ($)' : 'Costo Neto ($)' }}</label>
-          <input type="number" step="0.01" class="form-control" [(ngModel)]="detalleActual.costo_ingresado" name="costo_ingresado" min="0">
+          <input type="number" step="0.01" class="form-control" [(ngModel)]="detalleActual.costo_ingresado"
+            name="costo_ingresado" min="0">
         </div>
       </div>
 
       <div class="form-row-actions">
         <div class="form-group form-check">
-          <input type="checkbox" class="form-check-input" id="ivaCheck" [(ngModel)]="detalleActual.aplica_iva" name="aplica_iva">
+          <input type="checkbox" class="form-check-input" id="ivaCheck" [(ngModel)]="detalleActual.aplica_iva"
+            name="aplica_iva">
           <label class="form-check-label" for="ivaCheck">Aplicar IVA (16%)</label>
         </div>
         <div class="form-group-button">
@@ -125,7 +142,8 @@
             </tr>
             <tr *ngFor="let detalle of detallesAAgregar; let i = index">
               <td>
-                <span class="badge" [ngClass]="{'badge-refaccion': detalle.tipo === 'Refacción', 'badge-insumo': detalle.tipo === 'Insumo'}">
+                <span class="badge"
+                  [ngClass]="{'badge-refaccion': detalle.tipo === 'Refacción', 'badge-insumo': detalle.tipo === 'Insumo'}">
                   {{ detalle.tipo }}
                 </span>
               </td>

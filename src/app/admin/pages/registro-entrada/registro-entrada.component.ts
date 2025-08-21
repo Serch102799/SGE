@@ -39,7 +39,8 @@ export class RegistroEntradaComponent implements OnInit {
   // --- Formulario Maestro ---
   entradaMaestro = {
     idProveedor: null as number | null,
-    numeroFacturaProveedor: '',
+    factura_proveedor: '', 
+    vale_interno: '',     
     observaciones: '',
     recibidoPorID: null as number | null
   };
@@ -187,9 +188,10 @@ export class RegistroEntradaComponent implements OnInit {
     }
 
     this.isSaving = true;
-    const payloadMaestro = {
+     const payloadMaestro = {
       ID_Proveedor: this.entradaMaestro.idProveedor,
-      Numero_Factura_Proveedor: this.entradaMaestro.numeroFacturaProveedor,
+      Factura_Proveedor: this.entradaMaestro.factura_proveedor, 
+      Vale_Interno: this.entradaMaestro.vale_interno,           
       Observaciones: this.entradaMaestro.observaciones,
       Recibido_Por_ID: this.entradaMaestro.recibidoPorID
     };
