@@ -1,8 +1,8 @@
 <div class="usuarios-container">
   <div class="container-header">
-    <h2>Catálogo de Insumos</h2>
+    <h2>Catálogo de Insumos y Consumibles</h2>
     <div class="acciones-header">
-      <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin'])">
+      <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'Almacenista'])">
         <span>&#43;</span> Agregar Insumo
       </button>
     </div>
@@ -14,38 +14,70 @@
         <input 
           type="text" 
           class="form-control" 
-          placeholder="Buscar por nombre, marca o tipo..."
+          placeholder="Buscar por nombre o marca..."
           [(ngModel)]="terminoBusqueda"
-          (input)="aplicarFiltros()">
+          (ngModelChange)="onFiltroChange()">
       </div>
+      <div class="filtro-item">
+        <select class="form-control" [(ngModel)]="filtroTipo" (change)="onFiltroChange()">
+          <option value="">Todos los Tipos</option>
+          <option *ngFor="let tipo of tiposDeInsumo" [value]="tipo">{{ tipo }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="contador-resultados">
+      <strong>{{ totalItems }}</strong> insumos encontrados
     </div>
 
     <div class="tabla-responsive-wrapper">
       <table class="tabla-usuarios">
         <thead>
           <tr>
-            <th>Nombre</th>
-            <th>Marca</th>
-            <th>Tipo</th>
-            <th>Stock Actual</th>
-            <th>Unidad</th>
+            <th><button (click)="onSort('nombre')">Nombre <span *ngIf="sortField === 'nombre'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span></button></th>
+            <th><button (click)="onSort('marca')">Marca <span *ngIf="sortField === 'marca'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span></button></th>
+            <th><button (click)="onSort('tipo_insumo')">Tipo <span *ngIf="sortField === 'tipo_insumo'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span></button></th>
+            <th><button (click)="onSort('stock_actual')">Stock Actual <span *ngIf="sortField === 'stock_actual'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span></button></th>
+            <th><button (click)="onSort('unidad_medida')">Unidad <span *ngIf="sortField === 'unidad_medida'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span></button></th>
             <th style="text-align: center;">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let insumo of insumosFiltrados">
+          <tr *ngFor="let insumo of insumos | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
             <td>{{ insumo.nombre }}</td>
             <td>{{ insumo.marca }}</td>
-            <td>{{ insumo.tipo }}</td>
-            <td>{{ insumo.stock_actual | number:'1.2-2' }}</td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'badge-fluido': insumo.tipo_insumo === 'Fluido', 
+                'badge-consumible': insumo.tipo_insumo === 'Consumible de Taller',
+                'badge-limpieza': insumo.tipo_insumo === 'Limpieza',
+                'badge-seguridad': insumo.tipo_insumo === 'Seguridad'
+              }">
+                {{ insumo.tipo_insumo }}
+              </span>
+            </td>
+            <td [class.stock-critico]="insumo.stock_actual <= insumo.stock_minimo && insumo.stock_minimo > 0">
+              {{ insumo.stock_actual | number:'1.2-2' }}
+            </td>
             <td>{{ insumo.unidad_medida }}</td>
-            <td class="acciones" *ngIf="authService.hasRole(['Admin'])">
+            <td class="acciones" *ngIf="authService.hasRole(['Admin', 'Almacenista'])">
               <button class="btn-accion btn-estado" (click)="abrirModal('editar', insumo)">Editar</button>
               <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(insumo)">Eliminar</button>
             </td>
           </tr>
+          <tr *ngIf="insumos.length === 0">
+            <td colspan="6" class="empty-table-message">No se encontraron insumos que coincidan con los filtros.</td>
+          </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="pagination-controls">
+      <pagination-controls 
+          (pageChange)="onPageChange($event)"
+          previousLabel="Anterior"
+          nextLabel="Siguiente">
+      </pagination-controls>
     </div>
   </div>
 </div>
@@ -60,21 +92,24 @@
       <form (ngSubmit)="guardarInsumo()">
         <div class="form-group">
           <label>Nombre</label>
-          <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.nombre" name="nombre" [disabled]="modoEdicion" required>
+          <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.nombre" name="nombre" required>
         </div>
         <div class="form-group">
           <label>Marca</label>
-          <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.marca" name="marca" [disabled]="modoEdicion">
+          <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.marca" name="marca">
         </div>
         <div class="form-group">
-          <label>Tipo (ej. Aceite de Motor)</label>
-          <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.tipo" name="tipo" [disabled]="modoEdicion">
+          <label>Tipo de Insumo</label>
+          <select class="form-control" [(ngModel)]="insumoSeleccionado.tipo_insumo" name="tipo_insumo" required>
+            <option value="" disabled>Selecciona un tipo...</option>
+            <option *ngFor="let tipo of tiposDeInsumo" [value]="tipo">{{ tipo }}</option>
+          </select>
         </div>
         <div class="form-group">
           <label>Unidad de Medida</label>
-          <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.unidad_medida" name="unidad_medida" [disabled]="modoEdicion" required>
+          <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.unidad_medida" name="unidad_medida" required>
         </div>
-        <div class="form-group" *ngIf="modoEdicion">
+        <div class="form-group">
           <label>Stock Mínimo</label>
           <input type="number" class="form-control" [(ngModel)]="insumoSeleccionado.stock_minimo" name="stock_minimo">
         </div>
@@ -86,6 +121,7 @@
     </div>
   </div>
 </div>
+
 <div class="modal-overlay" *ngIf="mostrarModalBorrar" (click)="cerrarModalBorrar()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -102,7 +138,8 @@
     </div>
   </div>
 </div>
-  <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3 [ngClass]="{

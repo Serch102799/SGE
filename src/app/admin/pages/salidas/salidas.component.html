@@ -29,8 +29,8 @@
             <td>{{ salida.nombreEmpleado }}</td>
             <td>{{ salida.observaciones }}</td>
             <td class="acciones">
-              <button class="btn-accion btn-estado" (click)="verDetalles(salida)">Ver Detalles</button>
-              <button class="btn-accion btn-agregar-items" (click)="abrirModalAgregarItems(salida)" *ngIf="authService.hasRole(['Admin', 'Almacenista'])">Agregar</button>
+              <button class="btn-accion btn-estado" (click)="verDetalles(salida)">Ver Detalles</button><!-- 
+              <button class="btn-accion btn-agregar-items" (click)="abrirModalAgregarItems(salida)" *ngIf="authService.hasRole(['Admin', 'Almacenista'])">Agregar</button> -->
             </td>
           </tr>
         </tbody>

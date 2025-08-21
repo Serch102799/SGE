@@ -1,14 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environments';
-
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 export interface Insumo {
   id_insumo: number;
   nombre: string;
   marca: string;
-  tipo: string;
+  tipo_insumo: string; // Columna para la categoría (Fluido, Consumible, etc.)
   unidad_medida: string;
   stock_actual: number;
   stock_minimo: number;
@@ -21,14 +22,26 @@ export interface Insumo {
   templateUrl: './insumos.component.html',
   styleUrls: ['./insumos.component.css']
 })
-export class InsumosComponent implements OnInit {
+export class InsumosComponent implements OnInit, OnDestroy {
 
   insumos: Insumo[] = [];
-  insumosFiltrados: Insumo[] = [];
- private apiUrl = `${environment.apiUrl}/insumos`;
+  private apiUrl = `${environment.apiUrl}/insumos`;
 
-  terminoBusqueda: string = '';
+  // --- Estado de la Tabla ---
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
+  totalItems: number = 0;
+  sortField: string = 'nombre';
+  sortDirection: 'asc' | 'desc' = 'asc';
   
+  // --- Filtros ---
+  terminoBusqueda: string = '';
+  filtroTipo: string = ''; 
+  tiposDeInsumo: string[] = ['Fluido', 'Consumible de Taller', 'Limpieza', 'Seguridad', 'Otro'];
+  private searchSubject: Subject<void> = new Subject<void>();
+  private searchSubscription?: Subscription;
+  
+  // --- Modales ---
   mostrarModal = false;
   modoEdicion = false;
   insumoSeleccionado: Partial<Insumo> = {};
@@ -47,34 +60,61 @@ export class InsumosComponent implements OnInit {
 
   ngOnInit(): void {
     this.obtenerInsumos();
-  }
-
-  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
-    this.notificacion = { titulo, mensaje, tipo };
-    this.mostrarModalNotificacion = true;
-  }
-
-  cerrarModalNotificacion() {
-    this.mostrarModalNotificacion = false;
-  }
-
-  obtenerInsumos() {
-    this.http.get<Insumo[]>(this.apiUrl).subscribe({
-      next: (data) => {
-        this.insumos = data;
-        this.insumosFiltrados = data;
-      },
-      error: (err) => console.error('Error al obtener insumos', err)
+    
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(400) // Espera 400ms antes de buscar
+    ).subscribe(() => {
+      this.currentPage = 1;
+      this.obtenerInsumos();
     });
   }
 
-  aplicarFiltros() {
-    const busqueda = this.terminoBusqueda.toLowerCase();
-    this.insumosFiltrados = this.insumos.filter(i =>
-      i.nombre.toLowerCase().includes(busqueda) ||
-      (i.marca && i.marca.toLowerCase().includes(busqueda)) ||
-      (i.tipo && i.tipo.toLowerCase().includes(busqueda))
-    );
+  ngOnDestroy(): void {
+    this.searchSubscription?.unsubscribe();
+  }
+
+  obtenerInsumos() {
+    let params = new HttpParams()
+      .set('page', this.currentPage.toString())
+      .set('limit', this.itemsPerPage.toString())
+      .set('search', this.terminoBusqueda.trim())
+      .set('sortBy', this.sortField)
+      .set('sortOrder', this.sortDirection);
+
+    if (this.filtroTipo) {
+      params = params.set('tipo', this.filtroTipo);
+    }
+
+    this.http.get<{ total: number, data: Insumo[] }>(this.apiUrl, { params }).subscribe({
+      next: (response) => {
+        this.insumos = response.data || [];
+        this.totalItems = response.total || 0;
+      },
+      error: (err) => {
+        console.error('Error al obtener insumos', err);
+        this.insumos = [];
+        this.totalItems = 0;
+      }
+    });
+  }
+
+  onFiltroChange(): void {
+    this.searchSubject.next();
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.obtenerInsumos();
+  }
+
+  onSort(field: string): void {
+    if (this.sortField === field) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortField = field;
+      this.sortDirection = 'asc';
+    }
+    this.obtenerInsumos();
   }
 
   abrirModal(modo: 'agregar' | 'editar', insumo?: Insumo) {
@@ -82,7 +122,7 @@ export class InsumosComponent implements OnInit {
     if (modo === 'editar' && insumo) {
       this.insumoSeleccionado = { ...insumo };
     } else {
-      this.insumoSeleccionado = { nombre: '', unidad_medida: 'Litros' };
+      this.insumoSeleccionado = { nombre: '', unidad_medida: 'Pieza', tipo_insumo: 'Consumible de Taller' };
     }
     this.mostrarModal = true;
   }
@@ -92,23 +132,19 @@ export class InsumosComponent implements OnInit {
   }
 
   guardarInsumo() {
-    if (!this.insumoSeleccionado.nombre || !this.insumoSeleccionado.unidad_medida) {
-      this.mostrarNotificacion('Campos Requeridos', 'Nombre y Unidad de Medida son requeridos.');
+    if (!this.insumoSeleccionado.nombre || !this.insumoSeleccionado.unidad_medida || !this.insumoSeleccionado.tipo_insumo) {
+      this.mostrarNotificacion('Campos Requeridos', 'Nombre, Unidad de Medida y Tipo son requeridos.');
       return;
     }
 
-    if (this.modoEdicion) {
-      const url = `${this.apiUrl}/${this.insumoSeleccionado.id_insumo}`;
-      this.http.put(url, { stock_minimo: this.insumoSeleccionado.stock_minimo }).subscribe({
-        next: () => this.postGuardado('Insumo actualizado exitosamente.'),
-        error: (err) => this.mostrarNotificacion('Error', err.error.message || 'No se pudo actualizar el insumo.', 'error')
-      });
-    } else {
-      this.http.post(this.apiUrl, this.insumoSeleccionado).subscribe({
-        next: () => this.postGuardado('Insumo creado exitosamente.'),
-        error: (err) => this.mostrarNotificacion('Error', err.error.message || 'No se pudo agregar el insumo.', 'error')
-      });
-    }
+    const request$ = this.modoEdicion
+      ? this.http.put(`${this.apiUrl}/${this.insumoSeleccionado.id_insumo}`, this.insumoSeleccionado)
+      : this.http.post(this.apiUrl, this.insumoSeleccionado);
+
+    request$.subscribe({
+      next: () => this.postGuardado(`Insumo ${this.modoEdicion ? 'actualizado' : 'creado'} exitosamente.`),
+      error: (err) => this.mostrarNotificacion('Error', err.error.message || `No se pudo ${this.modoEdicion ? 'actualizar' : 'agregar'} el insumo.`, 'error')
+    });
   }
 
   abrirModalBorrar(insumo: Insumo) {
@@ -118,6 +154,7 @@ export class InsumosComponent implements OnInit {
 
   cerrarModalBorrar() {
     this.mostrarModalBorrar = false;
+    this.insumoABorrar = null;
   }
 
   confirmarEliminacion() {
@@ -134,5 +171,14 @@ export class InsumosComponent implements OnInit {
     this.obtenerInsumos();
     this.cerrarModal();
     this.cerrarModalBorrar();
+  }
+
+  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
+    this.notificacion = { titulo, mensaje, tipo };
+    this.mostrarModalNotificacion = true;
+  }
+
+  cerrarModalNotificacion() {
+    this.mostrarModalNotificacion = false;
   }
 }

@@ -389,3 +389,43 @@ td.stock-critico {
   font-size: 0.9rem;
   color: #e0e0e0;
 }
+.tabla-usuarios thead th button {
+  /* Reseteo completo del estilo de botón */
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  
+  /* Heredar estilos de la cabecera */
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit; /* Usa el color de texto por defecto del <th> */
+
+  /* Funcionalidad y apariencia */
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+  
+  /* Alineación del texto y la flecha */
+  display: flex;
+  align-items: center;
+}
+
+/* Efecto al pasar el ratón sobre cualquier cabecera */
+.tabla-usuarios thead th button:hover {
+  color: #ffffff; /* Ilumina el texto al pasar el ratón */
+}
+
+/* Estilo para la cabecera que está activa (ordenando) */
+.tabla-usuarios thead th button.active-sort {
+  color: #4dabf7; /* Un color azul brillante para la columna activa */
+}
+
+/* Estilo para la flecha de dirección del ordenamiento */
+.tabla-usuarios thead th button span {
+  margin-left: 8px;
+  display: inline-block;
+  font-size: 0.9em;
+}

@@ -6,6 +6,7 @@ import { forkJoin } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environments';
 
+
 export interface Salida {
   idSalida: number;
   fechaSalida: string;
