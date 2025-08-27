@@ -6,61 +6,86 @@
     
     <div class="kpi-grid">
       <div class="kpi-card">
+        <div class="kpi-value">{{ stats.valorTotalInventario | currency:'MXN' }}</div>
+        <div class="kpi-label">Valor Total del Inventario</div>
+      </div>
+      <div class="kpi-card">
         <div class="kpi-value">{{ stats.totalRefacciones }}</div>
         <div class="kpi-label">Refacciones Totales</div>
       </div>
-      <div class="kpi-card kpi-alerta" [class.kpi-ok]="stats.refaccionesStockBajo === 0">
-        <div class="kpi-value">{{ stats.refaccionesStockBajo }}</div>
-        <div class="kpi-label">Refacciones con Stock Bajo</div>
-      </div>
       <div class="kpi-card">
-        <div class="kpi-value">{{ stats.valorTotalInventario | currency:'MXN' }}</div>
-        <div class="kpi-label">Valor Aprox. del Inventario</div>
+        <div class="kpi-value">{{ stats.totalInsumos }}</div>
+        <div class="kpi-label">Insumos y Consumibles</div>
+      </div>
+      <div class="kpi-card kpi-alerta" [class.kpi-ok]="stats.refaccionesStockBajo === 0 && stats.insumosStockBajo === 0">
+        <div class="kpi-value">{{ stats.refaccionesStockBajo + stats.insumosStockBajo }}</div>
+        <div class="kpi-label">Items con Stock Bajo</div>
       </div>
     </div>
 
     <div class="charts-grid">
       <div class="chart-container">
-        <h3>Refacciones con Más Stock</h3>
+        <h3>Refacciones con Más Stock (Top 5)</h3>
         <div class="chart-wrapper">
           <canvas baseChart
-            [data]="barChartData"
-            [options]="barChartOptions"
+            [data]="topStockRefaccionesData"
+            [options]="topStockRefaccionesOptions"
             type="bar">
           </canvas>
         </div>
       </div>
 
       <div class="chart-container">
-        <h3>Refacciones Críticas por Stock Bajo</h3>
+        <h3>Insumos con Más Stock (Top 5)</h3>
         <div class="chart-wrapper">
           <canvas baseChart
-            [data]="lowStockChartData"
-            [options]="lowStockChartOptions"
+            [data]="topStockInsumosData"
+            [options]="topStockInsumosOptions"
             type="bar">
           </canvas>
         </div>
       </div>
     </div>
 
+    <div class="charts-grid-single">
+        <div class="chart-container">
+            <h3>Costo Total por Autobús (Top 5)</h3>
+            <div class="chart-wrapper-horizontal">
+              <canvas baseChart
+                [data]="topCostoAutobusesData"
+                [options]="topCostoAutobusesOptions"
+                type="bar">
+              </canvas>
+            </div>
+          </div>
+    </div>
+    
     <div class="movimientos-grid">
-      
       <div class="movimiento-card">
-        <h3>Últimos 5 Movimientos de Entradas</h3>
+        <h3>Últimos Movimientos de Entradas</h3>
         <div class="tabla-responsive-wrapper">
           <table class="tabla-movimientos">
             <thead>
               <tr>
                 <th>Fecha</th>
-                <th>Refacción</th>
+                <th>Tipo</th>
+                <th>Descripción</th>
                 <th>Cantidad</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let entrada of stats.ultimasEntradas">
                 <td>{{ entrada.fecha_entrada | date:'short' }}</td>
-                <td>{{ entrada.nombre_refaccion }}</td>
-                <td class="cantidad-entrada">+{{ entrada.cantidad_recibida }}</td>
+                <td>
+                    <span class="badge" [ngClass]="{'badge-refaccion': entrada.tipo_item === 'Refacción', 'badge-insumo': entrada.tipo_item === 'Insumo'}">
+                        {{ entrada.tipo_item }}
+                    </span>
+                </td>
+                <td>{{ entrada.nombre_item }}</td>
+                <td class="cantidad-entrada">+{{ entrada.cantidad_recibida | number:'1.2-2' }}</td>
+              </tr>
+              <tr *ngIf="!stats.ultimasEntradas || stats.ultimasEntradas.length === 0">
+                <td colspan="4" class="empty-table-message">No hay entradas recientes.</td>
               </tr>
             </tbody>
           </table>
@@ -68,27 +93,35 @@
       </div>
 
       <div class="movimiento-card">
-        <h3>Últimos 5 Movimientos de Salidas</h3>
+        <h3>Últimos Movimientos de Salidas</h3>
         <div class="tabla-responsive-wrapper">
           <table class="tabla-movimientos">
             <thead>
               <tr>
                 <th>Fecha</th>
-                <th>Refacción</th>
+                <th>Tipo</th>
+                <th>Descripción</th>
                 <th>Cantidad</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let salida of stats.ultimasSalidas">
                 <td>{{ salida.fecha_salida | date:'short' }}</td>
-                <td>{{ salida.nombre_refaccion }}</td>
-                <td class="cantidad-salida">-{{ salida.cantidad_despachada }}</td>
+                <td>
+                    <span class="badge" [ngClass]="{'badge-refaccion': salida.tipo_item === 'Refacción', 'badge-insumo': salida.tipo_item === 'Insumo'}">
+                        {{ salida.tipo_item }}
+                    </span>
+                </td>
+                <td>{{ salida.nombre_item }}</td>
+                <td class="cantidad-salida">-{{ salida.cantidad | number:'1.2-2' }}</td>
+              </tr>
+              <tr *ngIf="!stats.ultimasSalidas || stats.ultimasSalidas.length === 0">
+                <td colspan="4" class="empty-table-message">No hay salidas recientes.</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-      
     </div>
     
   </div>
