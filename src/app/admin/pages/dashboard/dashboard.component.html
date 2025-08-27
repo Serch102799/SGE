@@ -15,7 +15,7 @@
       </div>
       <div class="kpi-card">
         <div class="kpi-value">{{ stats.totalInsumos }}</div>
-        <div class="kpi-label">Insumos y Consumibles</div>
+        <div class="kpi-label">Insumos</div>
       </div>
       <div class="kpi-card kpi-alerta" [class.kpi-ok]="stats.refaccionesStockBajo === 0 && stats.insumosStockBajo === 0">
         <div class="kpi-value">{{ stats.refaccionesStockBajo + stats.insumosStockBajo }}</div>
@@ -49,7 +49,7 @@
 
     <div class="charts-grid-single">
         <div class="chart-container">
-            <h3>Costo Total por Autobús (Top 5)</h3>
+            <h3>Gasto Total por Autobús (Top 5)</h3>
             <div class="chart-wrapper-horizontal">
               <canvas baseChart
                 [data]="topCostoAutobusesData"
