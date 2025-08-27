@@ -30,6 +30,7 @@ interface DetalleInsumoTemporal {
 export class RegistroEntradaInsumoComponent implements OnInit {
 
   private apiUrl = environment.apiUrl;
+  razonesSociales: string[] = ['MARTRESS', 'A8M', 'TRESA', 'GIALJU'];
 
   // --- Catálogos (para dropdowns estáticos) ---
   proveedores: Proveedor[] = [];
@@ -44,7 +45,8 @@ export class RegistroEntradaInsumoComponent implements OnInit {
     id_proveedor: null as number | null,
     numero_factura: '',
     observaciones: '',
-    id_empleado: null as number | null
+    id_empleado: null as number | null,
+    razon_social: null as string | null
   };
   
   // --- Formulario de Detalle ---
@@ -136,6 +138,10 @@ export class RegistroEntradaInsumoComponent implements OnInit {
 
   guardarEntradaCompleta() {
     if (this.isSaving) return;
+    if (!this.entradaMaestro.razon_social) {
+    this.mostrarNotificacion('Campo Requerido', 'Debes seleccionar la Razón Social que cubre el gasto.');
+    return;
+  }
     if (!this.entradaMaestro.id_empleado) {
       this.mostrarNotificacion('Campo Requerido', 'Debes seleccionar quién recibe los insumos.');
       return;

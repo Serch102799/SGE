@@ -18,6 +18,13 @@
             <option *ngFor="let p of proveedores" [ngValue]="p.id_proveedor">{{ p.nombre_proveedor }}</option>
           </select>
         </div>
+        <div class="form-group">
+        <label for="razon_social">Gasto Cubierto Por</label>
+        <select id="razon_social" class="form-control" [(ngModel)]="entradaMaestro.razon_social" name="razon_social" required>
+            <option [ngValue]="null" disabled>Selecciona una Razón Social...</option>
+            <option *ngFor="let rs of razonesSociales" [ngValue]="rs">{{ rs }}</option>
+        </select>
+    </div>
         <div class="form-row">
           <div class="form-group">
             <label for="factura">Número de Factura (Externo)</label>

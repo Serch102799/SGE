@@ -31,6 +31,7 @@ interface DetalleTemporal {
 export class RegistroEntradaComponent implements OnInit {
 
   private apiUrl = environment.apiUrl;
+  razonesSociales: string[] = ['MARTRESS', 'A8M', 'TRESA', 'GIALJU'];
 
   // --- Catálogos (para dropdowns estáticos) ---
   proveedores: Proveedor[] = [];
@@ -42,7 +43,8 @@ export class RegistroEntradaComponent implements OnInit {
     factura_proveedor: '', 
     vale_interno: '',     
     observaciones: '',
-    recibidoPorID: null as number | null
+    recibidoPorID: null as number | null,
+    razon_social: null as string | null
   };
 
   // --- Lógica para Autocompletes ---
@@ -193,7 +195,8 @@ export class RegistroEntradaComponent implements OnInit {
       Factura_Proveedor: this.entradaMaestro.factura_proveedor, 
       Vale_Interno: this.entradaMaestro.vale_interno,           
       Observaciones: this.entradaMaestro.observaciones,
-      Recibido_Por_ID: this.entradaMaestro.recibidoPorID
+      Recibido_Por_ID: this.entradaMaestro.recibidoPorID,
+      Razon_Social: this.entradaMaestro.razon_social
     };
 
     this.http.post<any>(`${this.apiUrl}/entradas`, payloadMaestro).subscribe({
