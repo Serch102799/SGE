@@ -73,18 +73,27 @@
         <table class="tabla-preview">
           <thead>
             <tr>
-              <th>Refacción</th>
+              <th>Tipo</th>
+              <th>Descripción</th>
               <th>Marca</th>
               <th>Cantidad Recibida</th>
-              <th>Costo Unitario</th>
+              <th>Costo Unitario Final</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let detalle of detallesSeleccionados">
-              <td>{{ detalle.nombre_refaccion }}</td>
+              <td>
+                <span class="badge" [ngClass]="{'badge-refaccion': detalle.tipo_item === 'Refacción', 'badge-insumo': detalle.tipo_item === 'Insumo'}">
+                  {{ detalle.tipo_item }}
+                </span>
+              </td>
+              <td>{{ detalle.nombre_item }}</td>
               <td>{{ detalle.marca }}</td> 
-              <td>{{ detalle.cantidad_recibida }}</td>
-              <td>{{ detalle.costo_unitario_entrada | currency:'MXN' }}</td>
+              <td>{{ detalle.cantidad | number:'1.2-2' }}</td>
+              <td>{{ detalle.costo | currency:'MXN' }}</td>
+            </tr>
+            <tr *ngIf="detallesSeleccionados.length === 0">
+              <td colspan="5" class="empty-table-message">Esta entrada no tiene items registrados.</td>
             </tr>
           </tbody>
         </table>
@@ -95,6 +104,7 @@
     </div>
   </div>
 </div>
+
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
