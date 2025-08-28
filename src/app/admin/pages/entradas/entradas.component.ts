@@ -76,7 +76,7 @@ export class EntradasComponent implements OnInit {
           numeroFacturaProveedor: item.numero_factura_proveedor,
           observaciones: item.observaciones,
           recibidoPorID: item.recibido_por_id,
-          fechaEntrada: item.fecha_entrada,
+          fechaEntrada: item.fecha_operacion,
           nombreProveedor: item.nombre_proveedor,
           nombreEmpleado: item.nombre_empleado
         }));

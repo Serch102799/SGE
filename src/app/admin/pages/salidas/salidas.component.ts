@@ -94,7 +94,7 @@ export class SalidasComponent implements OnInit {
     this.http.get<any[]>(this.apiUrl).subscribe({
       next: (data) => {
         this.salidas = data.map(item => ({
-          idSalida: item.id_salida, fechaSalida: item.fecha_salida, tipoSalida: item.tipo_salida,
+          idSalida: item.id_salida, fechaSalida: item.fecha_operacion, tipoSalida: item.tipo_salida,
           idAutobus: item.id_autobus, solicitadoPorID: item.solicitado_por_id, observaciones: item.observaciones,
           economicoAutobus: item.economico_autobus, nombreEmpleado: item.nombre_empleado, kilometrajeAutobus: item.kilometraje_autobus
         }));

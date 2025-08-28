@@ -75,7 +75,7 @@
             </thead>
             <tbody>
               <tr *ngFor="let entrada of stats.ultimasEntradas">
-                <td>{{ entrada.fecha_entrada | date:'short' }}</td>
+                <td>{{ entrada.fecha_operacion | date:'short' }}</td>
                 <td>
                     <span class="badge" [ngClass]="{'badge-refaccion': entrada.tipo_item === 'Refacción', 'badge-insumo': entrada.tipo_item === 'Insumo'}">
                         {{ entrada.tipo_item }}
@@ -106,7 +106,7 @@
             </thead>
             <tbody>
               <tr *ngFor="let salida of stats.ultimasSalidas">
-                <td>{{ salida.fecha_salida | date:'short' }}</td>
+                <td>{{ salida.fecha_operacion | date:'short' }}</td>
                 <td>
                     <span class="badge" [ngClass]="{'badge-refaccion': salida.tipo_item === 'Refacción', 'badge-insumo': salida.tipo_item === 'Insumo'}">
                         {{ salida.tipo_item }}
