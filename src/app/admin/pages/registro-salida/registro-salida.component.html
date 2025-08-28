@@ -11,6 +11,13 @@
       <legend>1. Datos del Vale de Salida</legend>
       <div class="form-row">
         <div class="form-group col">
+          <label for="fecha_operacion">Fecha de Operación</label>
+          <input id="fecha_operacion" type="datetime-local" class="form-control" 
+                 [(ngModel)]="salidaMaestro.fecha_operacion" name="fecha_operacion"
+                 [max]="getFormattedCurrentDateTime()" 
+                 required>
+        </div>
+        <div class="form-group col">
           <label for="tipoSalida">Tipo de Salida</label>
           <select id="tipoSalida" class="form-control" [(ngModel)]="salidaMaestro.tipoSalida" name="tipoSalida">
             <option value="Mantenimiento Correctivo">Mantenimiento Correctivo</option>
@@ -22,7 +29,7 @@
         </div>
         
         <div class="form-group col">
-          <label for="autobus-input">Buscar Autobús (por económico, marca, placa o VIN)</label>
+          <label for="autobus-input">Buscar Autobús</label>
           <mat-form-field appearance="outline" class="full-width">
             <input 
               type="text" 

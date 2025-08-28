@@ -27,6 +27,7 @@ interface DetalleInsumoTemporal { id_insumo: number; nombre_insumo: string; cant
 export class RegistroSalidaComponent implements OnInit {
 
   private apiUrl = environment.apiUrl;
+  maxDate: string = this.getFormattedCurrentDateTime();
 
   // --- Catálogos (solo para dropdowns estáticos) ---
   empleados: Empleado[] = [];
@@ -37,7 +38,8 @@ export class RegistroSalidaComponent implements OnInit {
     idAutobus: null as number | null,
     solicitadoPorID: null as number | null,
     observaciones: '',
-    kilometraje: null as number | null
+    kilometraje: null as number | null,
+    fecha_operacion: this.getFormattedCurrentDateTime()
   };
   
   // --- Lógica para Autocompletes ---
@@ -84,6 +86,11 @@ export class RegistroSalidaComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarCatalogos();
+  }
+  public getFormattedCurrentDateTime(): string {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // Ajusta a la zona horaria local
+    return now.toISOString().slice(0, 16);
   }
 
   private _buscarApi(tipo: 'autobuses' | 'refacciones' | 'insumos', term: any): Observable<any[]> {
@@ -181,8 +188,9 @@ export class RegistroSalidaComponent implements OnInit {
   
   guardarSalidaCompleta() {
     if (this.isSaving) return;
-    if (!this.salidaMaestro.idAutobus || !this.salidaMaestro.solicitadoPorID || !this.salidaMaestro.tipoSalida || !this.salidaMaestro.kilometraje) {
-      this.mostrarNotificacion('Datos Incompletos', 'Completa los datos del vale de salida (Tipo, Autobús, Kilometraje, Solicitado Por).');
+    // CAMBIO: Se añade validación para la fecha
+    if (!this.salidaMaestro.idAutobus || !this.salidaMaestro.solicitadoPorID || !this.salidaMaestro.tipoSalida || !this.salidaMaestro.kilometraje || !this.salidaMaestro.fecha_operacion) {
+      this.mostrarNotificacion('Datos Incompletos', 'Completa todos los datos del vale de salida.');
       return;
     }
     // La validación de kilometraje ahora se basa en el objeto del FormControl
@@ -202,7 +210,8 @@ export class RegistroSalidaComponent implements OnInit {
       ID_Autobus: this.salidaMaestro.idAutobus,
       Solicitado_Por_ID: this.salidaMaestro.solicitadoPorID,
       Observaciones: this.salidaMaestro.observaciones,
-      Kilometraje_Autobus: this.salidaMaestro.kilometraje
+      Kilometraje_Autobus: this.salidaMaestro.kilometraje,
+      Fecha_Operacion: this.salidaMaestro.fecha_operacion
     };
     this.http.post<any>(`${this.apiUrl}/salidas`, payloadMaestro).subscribe({
       next: (respuestaMaestro) => {

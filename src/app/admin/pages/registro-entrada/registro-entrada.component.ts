@@ -44,7 +44,8 @@ export class RegistroEntradaComponent implements OnInit {
     vale_interno: '',     
     observaciones: '',
     recibidoPorID: null as number | null,
-    razon_social: null as string | null
+    razon_social: null as string | null,
+    fecha_operacion: this.getFormattedCurrentDateTime()
   };
 
   // --- Lógica para Autocompletes ---
@@ -63,6 +64,7 @@ export class RegistroEntradaComponent implements OnInit {
     aplica_iva: false
   };
 
+  maxDate: string = this.getFormattedCurrentDateTime();
   // --- Lista de Items a Agregar ---
   detallesAAgregar: DetalleTemporal[] = [];
   isSaving = false;
@@ -177,6 +179,11 @@ export class RegistroEntradaComponent implements OnInit {
   eliminarDetalle(index: number): void {
     this.detallesAAgregar = this.detallesAAgregar.filter((_, i) => i !== index);
   }
+  private getFormattedCurrentDateTime(): string {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // Ajusta a la zona horaria local
+    return now.toISOString().slice(0, 16);
+  }
 
   guardarEntradaCompleta() {
     if (this.isSaving) return;
@@ -196,7 +203,8 @@ export class RegistroEntradaComponent implements OnInit {
       Vale_Interno: this.entradaMaestro.vale_interno,           
       Observaciones: this.entradaMaestro.observaciones,
       Recibido_Por_ID: this.entradaMaestro.recibidoPorID,
-      Razon_Social: this.entradaMaestro.razon_social
+      Razon_Social: this.entradaMaestro.razon_social,
+      Fecha_Operacion: this.entradaMaestro.fecha_operacion
     };
 
     this.http.post<any>(`${this.apiUrl}/entradas`, payloadMaestro).subscribe({
