@@ -399,6 +399,20 @@ button:disabled { background-color: #555; cursor: not-allowed; }
 :host ::ng-deep .mat-mdc-form-field .mdc-floating-label {
   color: #b0bec5 !important; /* Un gris claro para el texto "flotante" y el borde */
 }
+.form-group.col-md-8 {
+  flex: 0 0 58.333333%;
+  max-width: 58.333333%;
+}
+:host ::ng-deep .mat-mdc-form-field .mat-mdc-input-element {
+  font-size: 14px; /* Puedes ajustar este valor (el original es ~16px) */
+}
+
+/* * Opcional: Reduce también el tamaño de la letra en la lista de 
+ * sugerencias para que todo se vea consistente.
+*/
+:host ::ng-deep .mat-mdc-autocomplete-panel .mat-mdc-option .mdc-list-item__primary-text {
+  font-size: 14px;
+}
 
 /* Cambia el color del texto que el usuario escribe */
 :host ::ng-deep .mat-mdc-form-field input.mat-mdc-input-element {

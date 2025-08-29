@@ -1,43 +1,53 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import * as Papa from 'papaparse';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, startWith } from 'rxjs/operators';
+import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environments';
-
 
 // Interfaz para la lista de entradas
 export interface Entrada {
   idEntrada: number;
   idProveedor: number;
   factura_proveedor: string;
+  vale_interno: string; 
+  valor_neto: number;
   observaciones: string;
   recibidoPorID: number;
   fechaEntrada: string;
   nombreProveedor: string; 
-  nombreEmpleado: string;  
+  nombreEmpleado: string;   
 }
 
 @Component({
   selector: 'app-entradas',
-  standalone: false,
+  standalone  : false,
   templateUrl: './entradas.component.html',
   styleUrls: ['./entradas.component.css']
 })
-export class EntradasComponent implements OnInit {
+export class EntradasComponent implements OnInit, OnDestroy {
 
-  entradas: Entrada[] = [];
-  entradasFiltradas: Entrada[] = [];
   private apiUrl = `${environment.apiUrl}/entradas`;
-  private detalleApiUrl = `${environment.apiUrl}/detalle-entrada`;
-
   
+  // --- Estado de la Tabla ---
+  entradas: Entrada[] = [];
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
+  totalItems: number = 0;
+
+  // --- Filtros ---
   terminoBusqueda: string = '';
   fechaInicio: string = '';
   fechaFin: string = '';
+  private searchSubject: Subject<void> = new Subject<void>();
+  private searchSubscription?: Subscription;
+
+  // --- Modales y Notificaciones ---
   mostrarModalDetalles = false;
   detallesSeleccionados: any[] = [];
   entradaSeleccionadaId: number | null = null;
-
   mostrarModalNotificacion = false;
   notificacion = {
     titulo: 'Aviso',
@@ -45,19 +55,115 @@ export class EntradasComponent implements OnInit {
     tipo: 'advertencia' as 'exito' | 'error' | 'advertencia'
   };
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient, private router: Router, public authService: AuthService) { }
 
   ngOnInit(): void {
-    this.obtenerEntradas();
     this.revisarNotificaciones();
+
+    this.searchSubscription = this.searchSubject.pipe(
+      startWith(undefined), 
+      debounceTime(400)
+    ).subscribe(() => {
+      this.currentPage = 1;
+      this.obtenerEntradas();
+    });
   }
-  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
-    this.notificacion = { titulo, mensaje, tipo };
-    this.mostrarModalNotificacion = true;
+
+  ngOnDestroy(): void {
+    this.searchSubscription?.unsubscribe();
   }
-  cerrarModalNotificacion() {
-    this.mostrarModalNotificacion = false;
+  
+  obtenerEntradas() {
+    let params = new HttpParams()
+      .set('page', this.currentPage.toString())
+      .set('limit', this.itemsPerPage.toString())
+      .set('search', this.terminoBusqueda.trim());
+
+    if (this.fechaInicio) params = params.set('fechaInicio', this.fechaInicio);
+    if (this.fechaFin) params = params.set('fechaFin', this.fechaFin);
+
+    this.http.get<{ total: number, data: any[] }>(this.apiUrl, { params }).subscribe({
+      next: (response) => {
+        this.entradas = (response.data || []).map(item => ({
+          idEntrada: item.id_entrada,
+          fechaEntrada: item.fecha_operacion,
+          idProveedor: item.id_proveedor,
+          nombreProveedor: item.nombre_proveedor,
+          factura_proveedor: item.factura_proveedor,
+          vale_interno: item.vale_interno,
+          recibidoPorID: item.recibido_por_id,
+          nombreEmpleado: item.nombre_empleado,
+          observaciones: item.observaciones,
+          valor_neto: parseFloat(item.valor_neto) || 0
+        }));
+        this.totalItems = response.total || 0;
+      },
+      error: (err) => {
+        console.error('Error al obtener las entradas', err);
+        this.mostrarNotificacion('Error', 'No se pudo cargar el historial de entradas.', 'error');
+        this.entradas = [];
+        this.totalItems = 0;
+      }
+    });
   }
+
+  // Este método unificado ahora maneja todos los cambios en los filtros
+  onFiltroChange(): void {
+    this.searchSubject.next();
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.obtenerEntradas();
+  }
+  
+  registrarNuevaEntrada() {
+    this.router.navigate(['/admin/registro-entrada']);
+  }
+
+  exportarACSV() {
+    if (this.entradas.length === 0) {
+      this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.');
+      return;
+    }
+
+    const dataParaExportar = this.entradas.map(entrada => ({
+      'ID Entrada': entrada.idEntrada,
+      'Fecha Operación': entrada.fechaEntrada,
+      'Proveedor': entrada.nombreProveedor,
+      'Factura/Vale': entrada.factura_proveedor || entrada.vale_interno,
+      'Recibido Por': entrada.nombreEmpleado,
+      'Valor Neto': entrada.valor_neto,
+      'Observaciones': entrada.observaciones
+    }));
+
+    const csv = Papa.unparse(dataParaExportar);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'reporte_entradas.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  verDetalles(entrada: Entrada) {
+    this.entradaSeleccionadaId = entrada.idEntrada;
+    this.http.get<any[]>(`${this.apiUrl}/detalles/${entrada.idEntrada}`).subscribe({
+      next: (detalles) => {
+        this.detallesSeleccionados = detalles;
+        this.mostrarModalDetalles = true;
+      },
+      error: (err) => this.mostrarNotificacion('Error', 'No se pudieron cargar los detalles de la entrada.', 'error')
+    });
+  }
+  
+  cerrarModalDetalles() {
+    this.mostrarModalDetalles = false;
+  }
+  
+  // --- Métodos de utilidad ---
   revisarNotificaciones() {
     const notificacionMsg = sessionStorage.getItem('notificacion');
     if (notificacionMsg) {
@@ -66,99 +172,12 @@ export class EntradasComponent implements OnInit {
     }
   }
 
-  obtenerEntradas() {
-    this.http.get<any[]>(this.apiUrl).subscribe({
-      next: (data) => {
-        // Mapeamos los datos de la API a nuestra interfaz
-        this.entradas = data.map(item => ({
-          idEntrada: item.id_entrada,
-          idProveedor: item.id_proveedor,
-          factura_proveedor: item.factura_proveedor,
-          observaciones: item.observaciones,
-          recibidoPorID: item.recibido_por_id,
-          fechaEntrada: item.fecha_operacion,
-          nombreProveedor: item.nombre_proveedor,
-          nombreEmpleado: item.nombre_empleado
-        }));
-          this.entradasFiltradas = this.entradas;
-      },
-      error: (err) => console.error('Error al obtener las entradas', err)
-    });
+  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
+    this.notificacion = { titulo, mensaje, tipo };
+    this.mostrarModalNotificacion = true;
   }
 
-   aplicarFiltros() {
-    let entradasTemp = this.entradas;
-    const busqueda = this.terminoBusqueda.toLowerCase();
-
-    // 1. Filtro de texto (existente)
-    if (this.terminoBusqueda) {
-      entradasTemp = entradasTemp.filter(e =>
-        e.nombreProveedor.toLowerCase().includes(busqueda) ||
-        e.factura_proveedor.toLowerCase().includes(busqueda) ||
-        e.nombreEmpleado.toLowerCase().includes(busqueda)
-      );
-    }
-
-    // 2. Filtro por fecha
-    if (this.fechaInicio) {
-      const fechaDesde = new Date(this.fechaInicio);
-      entradasTemp = entradasTemp.filter(e => new Date(e.fechaEntrada) >= fechaDesde);
-    }
-    if (this.fechaFin) {
-      const fechaHasta = new Date(this.fechaFin);
-      fechaHasta.setDate(fechaHasta.getDate() + 1);
-      entradasTemp = entradasTemp.filter(e => new Date(e.fechaEntrada) < fechaHasta);
-    }
-
-    this.entradasFiltradas = entradasTemp;
-  }
-
-  exportarACSV() {
-    if (this.entradasFiltradas.length === 0) {
-      this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.');
-      return;
-    }
-
-    const dataParaExportar = this.entradasFiltradas.map(entrada => ({
-      'ID Entrada': entrada.idEntrada,
-      'Fecha': entrada.fechaEntrada,
-      'Proveedor': entrada.nombreProveedor,
-      'Numero de Factura': entrada.factura_proveedor,
-      'Recibido Por': entrada.nombreEmpleado,
-      'Observaciones': entrada.observaciones
-    }));
-
-    const csv = Papa.unparse(dataParaExportar);
-    
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'reporte_entradas.csv');
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
-  registrarNuevaEntrada() {
-    this.router.navigate(['/admin/registro-entrada']);
-  }
-
-  verDetalles(entrada: Entrada) {
-    this.entradaSeleccionadaId = entrada.idEntrada;
-    this.http.get<any[]>(`${this.detalleApiUrl}/${entrada.idEntrada}`).subscribe({
-      next: (detalles) => {
-        this.detallesSeleccionados = detalles;
-        this.mostrarModalDetalles = true;
-      },
-      error: (err) => this.mostrarNotificacion('Error', 'Error al cargar los detalles de la entrada.', 'error')
-    });
-  }
-
-  cerrarModalDetalles() {
-    this.mostrarModalDetalles = false;
-    this.detallesSeleccionados = [];
-    this.entradaSeleccionadaId = null;
+  cerrarModalNotificacion() {
+    this.mostrarModalNotificacion = false;
   }
 }

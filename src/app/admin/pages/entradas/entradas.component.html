@@ -11,117 +11,123 @@
     </div>
   </div>
 
-  <div class="container-body">
-    <div class="filtros-container">
-      <div class="filtro-item">
-        <input 
-          type="text" 
-          class="form-control" 
-          placeholder="Buscar por proveedor, factura o empleado..."
-          [(ngModel)]="terminoBusqueda"
-          (input)="aplicarFiltros()">
-      </div>
-      <div class="filtro-item">
-        <label for="fechaInicio">Desde:</label>
-        <input id="fechaInicio" type="date" class="form-control" [(ngModel)]="fechaInicio" (change)="aplicarFiltros()">
-      </div>
-      <div class="filtro-item">
-        <label for="fechaFin">Hasta:</label>
-        <input id="fechaFin" type="date" class="form-control" [(ngModel)]="fechaFin" (change)="aplicarFiltros()">
-      </div>
+  <div class="filtros-container">
+    <div class="filtro-item">
+      <input type="text" class="form-control" placeholder="Buscar por proveedor, factura o empleado..."
+        [(ngModel)]="terminoBusqueda" (ngModelChange)="onFiltroChange()">
     </div>
-
-    <div class="tabla-responsive-wrapper">
-      <table class="tabla-usuarios">
-        <thead>
-          <tr>
-            <!-- <th>ID Entrada</th> -->
-            <th>Fecha</th>
-            <th>Proveedor</th>
-            <th>N° Factura</th>
-            <th>Recibido Por</th>
-            <th>Observaciones</th>
-            <th style="text-align: center;">Acciones</th> 
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let entrada of entradasFiltradas">
-           <!--  <td>{{ entrada.idEntrada }}</td> -->
-            <td>{{ entrada.fechaEntrada | date:'dd/MM/yyyy h:mm a' }}</td>
-            <td>{{ entrada.nombreProveedor }}</td>
-            <td>{{ entrada.factura_proveedor }}</td>
-            <td>{{ entrada.nombreEmpleado }}</td>
-            <td>{{ entrada.observaciones }}</td>
-            <td class="acciones">
-              <button class="btn-accion btn-estado" (click)="verDetalles(entrada)">Ver Detalles</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="filtro-item">
+      <label for="fechaInicio">Desde:</label>
+      <input id="fechaInicio" type="date" class="form-control" [(ngModel)]="fechaInicio"
+        (ngModelChange)="onFiltroChange()">
+    </div>
+    <div class="filtro-item">
+      <label for="fechaFin">Hasta:</label>
+      <input id="fechaFin" type="date" class="form-control" [(ngModel)]="fechaFin" (ngModelChange)="onFiltroChange()">
     </div>
   </div>
-</div>
 
-<div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Detalles de la Entrada #{{ entradaSeleccionadaId }}</h3>
-      <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="tabla-responsive-wrapper">
-        <table class="tabla-preview">
-          <thead>
-            <tr>
-              <th>Tipo</th>
-              <th>Descripción</th>
-              <th>Marca</th>
-              <th>Cantidad Recibida</th>
-              <th>Costo Unitario Final</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let detalle of detallesSeleccionados">
-              <td>
-                <span class="badge" [ngClass]="{'badge-refaccion': detalle.tipo_item === 'Refacción', 'badge-insumo': detalle.tipo_item === 'Insumo'}">
-                  {{ detalle.tipo_item }}
-                </span>
-              </td>
-              <td>{{ detalle.nombre_item }}</td>
-              <td>{{ detalle.marca }}</td> 
-              <td>{{ detalle.cantidad | number:'1.2-2' }}</td>
-              <td>{{ detalle.costo | currency:'MXN' }}</td>
-            </tr>
-            <tr *ngIf="detallesSeleccionados.length === 0">
-              <td colspan="5" class="empty-table-message">Esta entrada no tiene items registrados.</td>
-            </tr>
-          </tbody>
-        </table>
+  <div class="tabla-responsive-wrapper">
+    <table class="tabla-usuarios">
+      <thead>
+        <tr>
+          <th>Fecha Operación</th>
+          <th>Proveedor</th>
+          <th>Factura / Vale</th>
+          <th>Recibido Por</th>
+          <th>Observaciones</th>
+          <th>Valor Neto</th>
+          <th style="text-align: center;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let entrada of entradas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+          <td>{{ entrada.fechaEntrada | date:'dd/MM/yyyy h:mm a' }}</td>
+          <td>{{ entrada.nombreProveedor }}</td>
+          <td>
+            <div *ngIf="entrada.factura_proveedor" class="documento-linea">
+              <strong>Factura:</strong> {{ entrada.factura_proveedor }}
+            </div>
+            <div *ngIf="entrada.vale_interno" class="documento-linea">
+              <strong>Vale:</strong> {{ entrada.vale_interno }}
+            </div>
+          </td>
+          <td>{{ entrada.nombreEmpleado }}</td>
+          <td>{{ entrada.observaciones }}</td>
+          <td><strong>{{ entrada.valor_neto | currency:'MXN' }}</strong></td>
+          <td class="acciones">
+            <button class="btn-accion btn-estado" (click)="verDetalles(entrada)">Ver Detalles</button>
+          </td>
+        </tr>
+        <tr *ngIf="entradas.length === 0">
+          <td colspan="7" class="empty-table-message">No se encontraron entradas que coincidan con los filtros.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Detalles de la Entrada #{{ entradaSeleccionadaId }}</h3>
+        <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="tabla-responsive-wrapper">
+          <table class="tabla-preview">
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th>Marca</th>
+                <th>Cantidad Recibida</th>
+                <th>Costo Unitario Final</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let detalle of detallesSeleccionados">
+                <td>
+                  <span class="badge"
+                    [ngClass]="{'badge-refaccion': detalle.tipo_item === 'Refacción', 'badge-insumo': detalle.tipo_item === 'Insumo'}">
+                    {{ detalle.tipo_item }}
+                  </span>
+                </td>
+                <td>{{ detalle.nombre_item }}</td>
+                <td>{{ detalle.marca }}</td>
+                <td>{{ detalle.cantidad | number:'1.2-2' }}</td>
+                <td>{{ detalle.costo | currency:'MXN' }}</td>
+              </tr>
+              <tr *ngIf="detallesSeleccionados.length === 0">
+                <td colspan="5" class="empty-table-message">Esta entrada no tiene items registrados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalDetalles()">Cerrar</button>
       </div>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalDetalles()">Cerrar</button>
-    </div>
   </div>
-</div>
 
-<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3 [ngClass]="{
+  <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 [ngClass]="{
         'header-exito': notificacion.tipo === 'exito',
         'header-error': notificacion.tipo === 'error',
         'header-advertencia': notificacion.tipo === 'advertencia'
       }">
-        {{ notificacion.titulo }}
-      </h3>
-      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
-    </div>
-    <div class="modal-body">
-      <p class="confirm-text">{{ notificacion.mensaje }}</p>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+          {{ notificacion.titulo }}
+        </h3>
+        <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-text">{{ notificacion.mensaje }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+      </div>
     </div>
   </div>
-</div>

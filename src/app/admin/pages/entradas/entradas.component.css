@@ -17,6 +17,9 @@
 .modal-header .header-exito {
   color: #5cb85c; /* Verde para éxito */
 }
+.documento-linea {
+  display: block; /* Asegura que cada uno ocupe su propia línea si ambos existen */
+}
 
 /* Estilo para el texto dentro del modal de notificación */
 .confirm-text {
