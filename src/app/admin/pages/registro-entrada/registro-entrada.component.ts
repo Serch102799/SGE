@@ -263,6 +263,23 @@ export class RegistroEntradaComponent implements OnInit {
     this.isSaving = false;
     this.router.navigate(['/admin/entradas']);
   }
+  /**
+   * Calcula el valor neto final de una línea de detalle para mostrarlo en la tabla.
+   * @param detalle El item de la lista detallesAAgregar.
+   * @returns El valor total calculado.
+   */
+  calcularValorNeto(detalle: DetalleTemporal): number {
+    let costoUnitarioSubtotal = 0;
+    if (detalle.tipo_costo === 'unitario') {
+      costoUnitarioSubtotal = detalle.costo_ingresado;
+    } else { // tipo_costo es 'neto'
+      costoUnitarioSubtotal = detalle.cantidad > 0 ? detalle.costo_ingresado / detalle.cantidad : 0;
+    }
+    const costoUnitarioFinal = detalle.aplica_iva 
+      ? costoUnitarioSubtotal * 1.16 
+      : costoUnitarioSubtotal;
+    return costoUnitarioFinal * detalle.cantidad;
+  }
 
   regresar() { this.location.back(); }
 

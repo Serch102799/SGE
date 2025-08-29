@@ -35,7 +35,7 @@
       <table class="tabla-usuarios">
         <thead>
           <tr>
-            <th>ID Entrada</th>
+            <!-- <th>ID Entrada</th> -->
             <th>Fecha</th>
             <th>Proveedor</th>
             <th>N° Factura</th>
@@ -46,10 +46,10 @@
         </thead>
         <tbody>
           <tr *ngFor="let entrada of entradasFiltradas">
-            <td>{{ entrada.idEntrada }}</td>
+           <!--  <td>{{ entrada.idEntrada }}</td> -->
             <td>{{ entrada.fechaEntrada | date:'dd/MM/yyyy h:mm a' }}</td>
             <td>{{ entrada.nombreProveedor }}</td>
-            <td>{{ entrada.numeroFacturaProveedor }}</td>
+            <td>{{ entrada.factura_proveedor }}</td>
             <td>{{ entrada.nombreEmpleado }}</td>
             <td>{{ entrada.observaciones }}</td>
             <td class="acciones">

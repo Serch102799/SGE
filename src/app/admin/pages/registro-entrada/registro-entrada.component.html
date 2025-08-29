@@ -146,6 +146,7 @@
               <th>Cantidad</th>
               <th>Costo Ingresado</th>
               <th>IVA</th>
+              <th>Valor Neto</th>
               <th style="text-align: center;">Acción</th>
             </tr>
           </thead>
@@ -164,6 +165,7 @@
               <td>{{ detalle.cantidad | number:'1.2-2' }}</td>
               <td>{{ detalle.costo_ingresado | currency:'MXN' }} ({{ detalle.tipo_costo }})</td>
               <td>{{ detalle.aplica_iva ? 'Sí' : 'No' }}</td>
+              <td><strong>{{ calcularValorNeto(detalle) | currency:'MXN' }}</strong></td>
               <td class="acciones">
                 <button type="button" class="btn-accion btn-eliminar" (click)="eliminarDetalle(i)">Quitar</button>
               </td>

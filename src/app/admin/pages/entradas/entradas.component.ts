@@ -9,7 +9,7 @@ import { environment } from '../../../../environments/environments';
 export interface Entrada {
   idEntrada: number;
   idProveedor: number;
-  numeroFacturaProveedor: string;
+  factura_proveedor: string;
   observaciones: string;
   recibidoPorID: number;
   fechaEntrada: string;
@@ -73,7 +73,7 @@ export class EntradasComponent implements OnInit {
         this.entradas = data.map(item => ({
           idEntrada: item.id_entrada,
           idProveedor: item.id_proveedor,
-          numeroFacturaProveedor: item.numero_factura_proveedor,
+          factura_proveedor: item.factura_proveedor,
           observaciones: item.observaciones,
           recibidoPorID: item.recibido_por_id,
           fechaEntrada: item.fecha_operacion,
@@ -94,7 +94,7 @@ export class EntradasComponent implements OnInit {
     if (this.terminoBusqueda) {
       entradasTemp = entradasTemp.filter(e =>
         e.nombreProveedor.toLowerCase().includes(busqueda) ||
-        e.numeroFacturaProveedor.toLowerCase().includes(busqueda) ||
+        e.factura_proveedor.toLowerCase().includes(busqueda) ||
         e.nombreEmpleado.toLowerCase().includes(busqueda)
       );
     }
@@ -123,7 +123,7 @@ export class EntradasComponent implements OnInit {
       'ID Entrada': entrada.idEntrada,
       'Fecha': entrada.fechaEntrada,
       'Proveedor': entrada.nombreProveedor,
-      'Numero de Factura': entrada.numeroFacturaProveedor,
+      'Numero de Factura': entrada.factura_proveedor,
       'Recibido Por': entrada.nombreEmpleado,
       'Observaciones': entrada.observaciones
     }));

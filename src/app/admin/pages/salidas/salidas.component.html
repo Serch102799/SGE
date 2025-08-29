@@ -16,12 +16,13 @@
       <table class="tabla-usuarios">
         <thead>
           <tr>
-            <th>ID Salida</th><th>Fecha</th><th>Tipo</th><th>Autobús</th><th>Kilometraje</th><th>Solicitado Por</th><th>Observaciones</th><th>Acciones</th>
+            <!-- <th>ID Salida</th> -->
+            <th>Fecha</th><th>Tipo</th><th>Autobús</th><th>Kilometraje</th><th>Solicitado Por</th><th>Observaciones</th><th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let salida of salidasFiltradas">
-            <td>{{ salida.idSalida }}</td>
+           <!--  <td>{{ salida.idSalida }}</td> -->
             <td>{{ salida.fechaSalida | date:'dd/MM/yyyy h:mm a' }}</td>
             <td>{{ salida.tipoSalida }}</td>
             <td>{{ salida.economicoAutobus }}</td>
