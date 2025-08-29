@@ -46,6 +46,7 @@ export class EntradasComponent implements OnInit, OnDestroy {
 
   // --- Modales y Notificaciones ---
   mostrarModalDetalles = false;
+  valorNetoEntradaSeleccionada: number = 0;
   detallesSeleccionados: any[] = [];
   entradaSeleccionadaId: number | null = null;
   mostrarModalNotificacion = false;
@@ -150,9 +151,12 @@ export class EntradasComponent implements OnInit, OnDestroy {
 
   verDetalles(entrada: Entrada) {
     this.entradaSeleccionadaId = entrada.idEntrada;
-    this.http.get<any[]>(`${this.apiUrl}/detalles/${entrada.idEntrada}`).subscribe({
-      next: (detalles) => {
-        this.detallesSeleccionados = detalles;
+    
+    // La petición ahora espera un objeto { detalles, valorNeto }
+    this.http.get<{ detalles: any[], valorNeto: number }>(`${this.apiUrl}/detalles/${entrada.idEntrada}`).subscribe({
+      next: (respuesta) => {
+        this.detallesSeleccionados = respuesta.detalles;
+        this.valorNetoEntradaSeleccionada = respuesta.valorNeto; // <-- SE GUARDA EL VALOR
         this.mostrarModalDetalles = true;
       },
       error: (err) => this.mostrarNotificacion('Error', 'No se pudieron cargar los detalles de la entrada.', 'error')
