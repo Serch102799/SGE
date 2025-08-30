@@ -345,7 +345,7 @@ td.stock-critico {
   bottom: 10px; /* Posición sobre la carretera */
   left: 0;
   /* Aquí se define la animación */
-  animation: drive 3s linear infinite;
+  animation: drive 7s linear infinite;
 }
 
 .road {
