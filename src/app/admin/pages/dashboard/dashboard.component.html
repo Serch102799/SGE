@@ -1,8 +1,14 @@
 <div class="dashboard-container">
   
-  <div *ngIf="!stats" class="loading-message">Cargando datos del dashboard...</div>
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="animation-wrapper">
+      <img src="assets/images/bus.png" alt="Cargando..." class="bus-animation">
+      <div class="road"></div>
+    </div>
+    <p>Cargando datos del dashboard...</p>
+  </div>
 
-  <div *ngIf="stats">
+  <div *ngIf="!isLoading && stats">
     
     <div class="kpi-grid">
       <div class="kpi-card">
@@ -15,7 +21,7 @@
       </div>
       <div class="kpi-card">
         <div class="kpi-value">{{ stats.totalInsumos }}</div>
-        <div class="kpi-label">Insumos</div>
+        <div class="kpi-label">Insumos y Consumibles</div>
       </div>
       <div class="kpi-card kpi-alerta" [class.kpi-ok]="stats.refaccionesStockBajo === 0 && stats.insumosStockBajo === 0">
         <div class="kpi-value">{{ stats.refaccionesStockBajo + stats.insumosStockBajo }}</div>
@@ -34,7 +40,6 @@
           </canvas>
         </div>
       </div>
-
       <div class="chart-container">
         <h3>Insumos con Más Stock (Top 5)</h3>
         <div class="chart-wrapper">
@@ -49,7 +54,7 @@
 
     <div class="charts-grid-single">
         <div class="chart-container">
-            <h3>Gasto Total por Autobús (Top 5)</h3>
+            <h3>Costo Total por Autobús (Top 5)</h3>
             <div class="chart-wrapper-horizontal">
               <canvas baseChart
                 [data]="topCostoAutobusesData"
@@ -91,7 +96,6 @@
           </table>
         </div>
       </div>
-
       <div class="movimiento-card">
         <h3>Últimos Movimientos de Salidas</h3>
         <div class="tabla-responsive-wrapper">

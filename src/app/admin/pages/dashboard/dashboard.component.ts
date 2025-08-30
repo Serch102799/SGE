@@ -59,6 +59,7 @@ export class DashboardComponent implements OnInit {
     labels: [],
     datasets: [{ data: [], label: 'Costo Total', backgroundColor: 'rgba(211, 75, 68, 0.8)' }]
   };
+  isLoading: boolean = true;
 
 
   constructor(private http: HttpClient) {
@@ -70,6 +71,7 @@ export class DashboardComponent implements OnInit {
   }
 
   cargarEstadisticas() {
+    this.isLoading = true; 
     this.http.get<DashboardStats>(this.apiUrl).subscribe({
       next: (data) => {
         this.stats = data;
@@ -95,8 +97,10 @@ export class DashboardComponent implements OnInit {
 
         // Actualiza las gráficas para que se redibujen con los nuevos datos
         this.chart?.update();
+        this.isLoading = false; 
       },
-      error: (err) => console.error('Error al cargar estadísticas', err)
+      error: (err) => {console.error('Error al cargar estadísticas', err);
+        this.isLoading = false;}
     });
   }
 }
