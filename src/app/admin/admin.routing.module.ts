@@ -21,6 +21,7 @@ import { EntradasInsumoComponent } from './pages/entradas-insumo/entradas-insumo
 import { RegistroEntradaInsumoComponent } from './pages/registro-entrada-insumo/registro-entrada-insumo.component';
 import { PerfilComponent } from './pages/perfil/perfil.component';
 import { ReportesComponent } from './pages/reportes/reportes.component';
+import { InventarioInicialComponent } from './pages/inventario-inicial/inventario-inicial.component';
 
 const routes: Routes = [
   {
@@ -114,6 +115,12 @@ const routes: Routes = [
       {
         path: 'reportes',
         component: ReportesComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['Admin'] } 
+      },
+      {
+        path: 'inventario-inicial',
+        component: InventarioInicialComponent,
         canActivate: [RoleGuard],
         data: { roles: ['Admin'] } 
       },

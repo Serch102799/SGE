@@ -30,6 +30,9 @@
   <li *ngIf="authService.hasRole(['Admin'])">
     <a routerLink="reportes" routerLinkActive="active">Reportes</a>
   </li>
+  <li *ngIf="authService.hasRole(['Admin'])">
+    <a routerLink="inventario-inicial" routerLinkActive="active">Carga Inicial</a>
+  </li>
   <li><a routerLink="perfil">Mi Perfil</a></li>
 </ul>
 

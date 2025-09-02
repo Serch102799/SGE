@@ -27,6 +27,7 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { InventarioInicialComponent } from './pages/inventario-inicial/inventario-inicial.component';
 
 @NgModule({
   declarations: [
@@ -45,6 +46,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
     RegistroEntradaInsumoComponent,
     PerfilComponent,
     ReportesComponent,
+    InventarioInicialComponent
   ],
   imports: [
     HttpClientModule,

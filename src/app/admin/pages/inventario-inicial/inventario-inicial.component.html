@@ -1,0 +1,142 @@
+<div class="back-arrow" (click)="regresar()">&#8592;</div>
+
+<div class="form-container">
+  <div class="container-header">
+    <h2>Carga de Inventario Inicial</h2>
+  </div>
+
+  <div class="container-body">
+    <fieldset class="form-section">
+      <legend>1. Datos del Conteo</legend>
+      <div class="form-row">
+        <div class="form-group col-md-4">
+            <label for="fecha_conteo">Fecha del Conteo Físico</label>
+            <input id="fecha_conteo" type="datetime-local" class="form-control" 
+                   [(ngModel)]="conteoMaestro.fecha_conteo" name="fecha_conteo" required>
+        </div>
+        <div class="form-group col-md-4">
+          <label for="empleado">Realizado Por</label>
+          <select id="empleado" class="form-control" [(ngModel)]="conteoMaestro.id_empleado" name="id_empleado" required>
+            <option [ngValue]="null" disabled>Selecciona un empleado...</option>
+            <option *ngFor="let e of empleados" [ngValue]="e.id_empleado">{{ e.nombre }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="motivo">Motivo / Observaciones</label>
+        <textarea id="motivo" class="form-control" [(ngModel)]="conteoMaestro.motivo"
+          name="motivo" rows="2" required></textarea>
+      </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+      <legend>2. Agregar Items al Inventario</legend>
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label>Tipo de Item</label>
+          <select class="form-control" [(ngModel)]="detalleActual.tipo_item" name="tipo_item" (change)="onTipoItemChange()">
+            <option value="Refacción">Refacción</option>
+            <option value="Insumo">Insumo</option>
+          </select>
+        </div>
+
+        <div class="form-group col-md-8" *ngIf="detalleActual.tipo_item === 'Refacción'">
+          <label for="refaccion-input">Buscar Refacción</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input type="text" id="refaccion-input" placeholder="Escribe para buscar..." matInput [formControl]="refaccionControl" [matAutocomplete]="autoRefaccion">
+          </mat-form-field>
+          <mat-autocomplete #autoRefaccion="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onItemSelected($event)">
+            <mat-option *ngFor="let item of filteredRefacciones$ | async" [value]="item">
+              {{ item.nombre }}
+            </mat-option>
+          </mat-autocomplete>
+        </div>
+
+        <div class="form-group col-md-8" *ngIf="detalleActual.tipo_item === 'Insumo'">
+          <label for="insumo-input">Buscar Insumo</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input type="text" id="insumo-input" placeholder="Escribe para buscar..." matInput [formControl]="insumoControl" [matAutocomplete]="autoInsumo">
+          </mat-form-field>
+          <mat-autocomplete #autoInsumo="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onItemSelected($event)">
+            <mat-option *ngFor="let item of filteredInsumos$ | async" [value]="item">
+              {{ item.nombre }}
+            </mat-option>
+          </mat-autocomplete>
+        </div>
+      </div>
+
+      <div class="form-row align-items-end">
+        <div class="form-group col-md-6">
+          <label>Cantidad Contada</label>
+          <input type="number" class="form-control" [(ngModel)]="detalleActual.cantidad" name="cantidad" min="1">
+        </div>
+        <div class="form-group col-md-6">
+          <label>Costo Unitario Actual ($)</label>
+          <input type="number" step="0.01" class="form-control" [(ngModel)]="detalleActual.costo" name="costo" min="0">
+        </div>
+        <div class="form-group-button">
+          <button type="button" class="btn-agregar-detalle" (click)="agregarDetalle()">Agregar a la Lista</button>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+      <legend>3. Inventario a Cargar</legend>
+      <div class="tabla-responsive-wrapper">
+        <table class="tabla-preview">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Descripción</th>
+              <th>Cantidad Contada</th>
+              <th>Costo Unitario Asignado</th>
+              <th style="text-align: center;">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="detallesAAgregar.length === 0">
+              <td colspan="5" class="empty-table-message">Aún no has agregado items.</td>
+            </tr>
+            <tr *ngFor="let detalle of detallesAAgregar; let i = index">
+              <td>
+                <span class="badge" [ngClass]="{'badge-refaccion': detalle.tipo === 'Refacción', 'badge-insumo': detalle.tipo === 'Insumo'}">
+                  {{ detalle.tipo }}
+                </span>
+              </td>
+              <td>{{ detalle.nombre }}</td>
+              <td>{{ detalle.cantidad }}</td>
+              <td>{{ detalle.costo | currency:'MXN' }}</td>
+              <td class="acciones">
+                <button type="button" class="btn-accion btn-eliminar" (click)="eliminarDetalle(i)">Quitar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </fieldset>
+
+    <div class="acciones-finales">
+      <button type="button" class="btn-accion btn-cancelar" (click)="regresar()">Cancelar</button>
+      <button type="button" class="btn-accion btn-guardar" (click)="guardarInventario()" [disabled]="isSaving">
+        {{ isSaving ? 'Guardando...' : 'Guardar Inventario Inicial' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{'header-exito': notificacion.tipo === 'exito','header-error': notificacion.tipo === 'error','header-advertencia': notificacion.tipo === 'advertencia'}">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>
