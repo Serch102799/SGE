@@ -8,6 +8,7 @@ import { BaseChartDirective } from 'ng2-charts';
 interface DashboardStats {
   totalRefacciones: number;
   totalInsumos: number;
+  totalPiezasRefacciones: number;
   refaccionesStockBajo: number;
   insumosStockBajo: number;
   valorTotalInventario: number;
