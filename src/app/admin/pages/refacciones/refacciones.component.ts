@@ -14,6 +14,7 @@ export interface Refaccion {
   Unidad_Medida: string;
   Ubicacion_Almacen: string;
   Stock_Actual: number;
+  ultimo_costo: number | null;
   Stock_Minimo: number;
   Stock_Maximo: number | null;
   Precio_Costo: number;
@@ -107,7 +108,8 @@ export class RefaccionesComponent implements OnInit {
           Precio_Costo: item.precio_costo,
           Fecha_Ultima_Entrada: item.fecha_ultima_entrada,
           Proveedor_Principal_ID: item.proveedor_principal_id,
-          Descripcion: item.descripcion
+          Descripcion: item.descripcion,
+          ultimo_costo: item.ultimo_costo
         }));
         this.generarFiltrosUnicos();
         this.aplicarFiltros();

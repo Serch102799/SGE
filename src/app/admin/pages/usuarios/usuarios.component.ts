@@ -33,8 +33,10 @@ export class UsuariosComponent implements OnInit {
     Departamento: '',
     Nombre_Usuario: '',
     Contrasena_Hash: '',
-    rol: 'Almacenista'
+    ID_Rol: null as number | null
   };
+  roles: { id_rol: number, nombre_rol: string }[] = [];
+  
   
   mostrarModalBorrado = false;
   usuarioAEliminar: Empleado | null = null;
@@ -50,7 +52,19 @@ export class UsuariosComponent implements OnInit {
 
   ngOnInit() {
     this.obtenerUsuarios();
+    this.cargarRoles();
   }
+  cargarRoles() {
+  // CAMBIO: Se construye la URL correctamente desde la raíz de la API, no desde la URL de 'empleados'
+  const rolesApiUrl = `${environment.apiUrl}/roles`;
+  
+  this.http.get<any[]>(rolesApiUrl).subscribe({
+    next: (data) => {
+      this.roles = data;
+    },
+    error: (err) => console.error('Error al cargar roles', err)
+  });
+}
   
   mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
     this.notificacion = { titulo, mensaje, tipo };
@@ -73,7 +87,7 @@ export class UsuariosComponent implements OnInit {
 
   abrirModal(): void {
     this.nuevoEmpleado = {
-      Nombre: '', Puesto: '', Departamento: '', Nombre_Usuario: '', Contrasena_Hash: '', rol: 'Almacenista'
+      Nombre: '', Puesto: '', Departamento: '', Nombre_Usuario: '', Contrasena_Hash: '', ID_Rol: null
     };
     this.mostrarModal = true;
   }
@@ -83,10 +97,18 @@ export class UsuariosComponent implements OnInit {
   }
 
   guardarEmpleado(): void {
-    if (!this.nuevoEmpleado.Nombre || !this.nuevoEmpleado.Nombre_Usuario || !this.nuevoEmpleado.Contrasena_Hash) {
-      this.mostrarNotificacion('Campos Requeridos', 'Por favor, completa Nombre, Usuario y Contraseña.');
+    if (!this.nuevoEmpleado.Nombre || !this.nuevoEmpleado.Nombre_Usuario || !this.nuevoEmpleado.Contrasena_Hash || !this.nuevoEmpleado.ID_Rol) {
+      this.mostrarNotificacion('Campos Requeridos', 'Por favor, completa Nombre, Usuario, Rol y Contraseña.');
       return;
     }
+    const payload = {
+    Nombre: this.nuevoEmpleado.Nombre,
+    Puesto: this.nuevoEmpleado.Puesto,
+    Departamento: this.nuevoEmpleado.Departamento,
+    Nombre_Usuario: this.nuevoEmpleado.Nombre_Usuario,
+    Contrasena_Hash: this.nuevoEmpleado.Contrasena_Hash, // Se envía la contraseña en texto plano
+    ID_Rol: this.nuevoEmpleado.ID_Rol           // Se envía el ID numérico del rol
+  };
 
     this.http.post<Empleado>(this.apiUrl, this.nuevoEmpleado).subscribe({
       next: (empleadoCreado) => {
@@ -95,7 +117,7 @@ export class UsuariosComponent implements OnInit {
         this.cerrarModal();
       },
       error: (err) => {
-        const mensajeError = err.error?.message || 'No se pudo crear el empleado.';
+        const mensajeError = err.error?.message || err.error?.errores?.[0]?.msg || 'No se pudo crear el empleado.';
         this.mostrarNotificacion('Error', mensajeError, 'error');
       }
     });
