@@ -22,6 +22,7 @@ import { RegistroEntradaInsumoComponent } from './pages/registro-entrada-insumo/
 import { PerfilComponent } from './pages/perfil/perfil.component';
 import { ReportesComponent } from './pages/reportes/reportes.component';
 import { InventarioInicialComponent } from './pages/inventario-inicial/inventario-inicial.component';
+import { SuperadminPanelComponent } from './pages/superadmin-panel/superadmin-panel.component';
 
 const routes: Routes = [
   {
@@ -124,6 +125,12 @@ const routes: Routes = [
         canActivate: [RoleGuard],
         data: { roles: ['Admin'] } 
       },
+      {
+    path: 'superadmin',
+    component: SuperadminPanelComponent,
+    canActivate: [AuthGuard], // El guard que ya usas para proteger rutas
+    data: { roles: ['SuperUsuario'] } // Especifica que solo este rol puede entrar
+  },
     ],
   },
 ];

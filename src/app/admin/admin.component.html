@@ -33,6 +33,11 @@
   <li *ngIf="authService.hasRole(['Admin'])">
     <a routerLink="inventario-inicial" routerLinkActive="active">Carga Inicial</a>
   </li>
+  <li *ngIf="authService.hasRole(['SuperUsuario'])">
+  <a routerLink="/admin/superadmin">
+    <i class="fas fa-shield-alt"></i> Panel SuperAdmin
+  </a>
+</li>
   <li><a routerLink="perfil">Mi Perfil</a></li>
 </ul>
 

@@ -28,6 +28,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { InventarioInicialComponent } from './pages/inventario-inicial/inventario-inicial.component';
+import { SuperadminPanelComponent } from './pages/superadmin-panel/superadmin-panel.component';
 
 @NgModule({
   declarations: [
@@ -46,7 +47,8 @@ import { InventarioInicialComponent } from './pages/inventario-inicial/inventari
     RegistroEntradaInsumoComponent,
     PerfilComponent,
     ReportesComponent,
-    InventarioInicialComponent
+    InventarioInicialComponent,
+    SuperadminPanelComponent
   ],
   imports: [
     HttpClientModule,

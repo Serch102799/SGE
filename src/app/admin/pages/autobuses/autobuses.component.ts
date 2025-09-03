@@ -163,8 +163,8 @@ export class AutobusesComponent implements OnInit, OnDestroy {
   }
 
   guardarAutobus(): void {
-    if (!this.autobusSeleccionado.economico || !this.autobusSeleccionado.vin || !this.autobusSeleccionado.razon_social || !this.autobusSeleccionado.placa) {
-      this.mostrarNotificacion('Campos Requeridos', 'Económico, VIN, Razón Social y Placa son obligatorios.');
+    if (!this.autobusSeleccionado.economico || !this.autobusSeleccionado.vin || !this.autobusSeleccionado.razon_social/*  || !this.autobusSeleccionado.placa */) {
+      this.mostrarNotificacion('Campos Requeridos', 'Económico, VIN, y Razón Social son obligatorios.');
       return;
     }
 
