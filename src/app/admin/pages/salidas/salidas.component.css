@@ -6,6 +6,10 @@
   background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/pantalla1.jpg") no-repeat center center fixed;
   background-size: cover;
 }
+:host ::ng-deep .mat-mdc-form-field input.mat-mdc-input-element {
+  /* Cambia el color del texto que el usuario escribe a blanco */
+  color: white !important;
+}
 
 /* Contenedor Principal */
 .usuarios-container {
@@ -294,6 +298,46 @@ td.stock-critico {
   width: 90%;
   max-width: 700px;
   overflow: hidden;
+}
+.modal-body .form-section-sm {
+  border: 1px solid #38404a;
+  border-radius: 8px;
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.modal-body .form-section-sm legend {
+  padding: 0 10px;
+  width: auto; /* Permite que el fondo no ocupe toda la línea */
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #a7b7d2;
+  border-bottom: none;
+}
+
+/* Estilo para las listas de items (existentes y nuevos) */
+.lista-items-existentes,
+.lista-items-nuevos {
+  list-style-type: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+}
+
+.lista-items-existentes li,
+.lista-items-nuevos li {
+  background-color: #1e293b;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  font-size: 0.9em;
+  color: #e0e0e0;
+  display: flex;
+  align-items: center;
+}
+
+/* Espacio entre el ícono y el texto en la lista de nuevos items */
+.lista-items-nuevos span {
+  margin-left: 8px;
 }
 
 .modal-header {

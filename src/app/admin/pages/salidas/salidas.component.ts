@@ -1,12 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { Subject, Subscription, forkJoin, Observable, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, startWith, switchMap } from 'rxjs/operators';
 import * as Papa from 'papaparse';
-import { forkJoin } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environments';
+import { FormControl } from '@angular/forms';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 
-
+// --- Interfaces ---
 export interface Salida {
   idSalida: number;
   fechaSalida: string;
@@ -18,15 +21,9 @@ export interface Salida {
   nombreEmpleado: string;
   kilometrajeAutobus: number;
 }
-
-interface RefaccionSimple { id_refaccion: number; nombre: string; stock_actual: number; }
+interface RefaccionSimple { id_refaccion: number; nombre: string; marca: string; numero_parte: string; }
 interface InsumoSimple { id_insumo: number; nombre: string; stock_actual: number; unidad_medida: string; }
-interface Lote {
-  id_lote: number;
-  cantidad_disponible: number;
-  costo_unitario_compra: number;
-  nombre_proveedor: string;
-}
+interface Lote { id_lote: number; cantidad_disponible: number; nombre_proveedor: string; }
 
 @Component({
   selector: 'app-salidas',
@@ -34,114 +31,149 @@ interface Lote {
   templateUrl: './salidas.component.html',
   styleUrls: ['./salidas.component.css']
 })
-export class SalidasComponent implements OnInit {
+export class SalidasComponent implements OnInit, OnDestroy {
 
-  salidas: Salida[] = [];
-  salidasFiltradas: Salida[] = [];
   private apiUrl = `${environment.apiUrl}/salidas`;
   
+  // --- Estado de la Tabla Principal ---
+  salidas: Salida[] = [];
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
+  totalItems: number = 0;
+  
+  // --- Filtros ---
   terminoBusqueda: string = '';
   fechaInicio: string = '';
   fechaFin: string = '';
+  private searchSubject: Subject<void> = new Subject<void>();
+  private searchSubscription?: Subscription;
 
+  // --- Modal de Detalles ---
   mostrarModalDetalles = false;
   detallesSeleccionados: any[] = [];
   salidaSeleccionadaId: number | null = null;
 
-  // Modal "Agregar Items"
+  // --- Modal "Agregar Items" ---
   mostrarModalAgregarItems = false;
   salidaSeleccionada: Salida | null = null;
   itemsExistentes: any[] = [];
   itemsNuevosRefacciones: any[] = [];
   itemsNuevosInsumos: any[] = [];
+  
+  // --- Lógica de Autocomplete para el Modal ---
+  refaccionControl = new FormControl();
+  insumoControl = new FormControl();
+  filteredRefacciones$: Observable<RefaccionSimple[]>;
+  filteredInsumos$: Observable<InsumoSimple[]>;
+  
   detalleActualRefaccion = { id_refaccion: null as number | null, id_lote: null as number | null, cantidad_despachada: null as number | null };
   detalleActualInsumo = { id_insumo: null as number | null, cantidad_usada: null as number | null };
-  refacciones: RefaccionSimple[] = [];
-  insumos: InsumoSimple[] = [];
   lotesDisponibles: Lote[] = [];
 
+  // --- Notificaciones ---
   mostrarModalNotificacion = false;
-  notificacion = {
-    titulo: 'Aviso',
-    mensaje: '',
-    tipo: 'advertencia' as 'exito' | 'error' | 'advertencia'
-  };
+  notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
 
-  constructor(private http: HttpClient, private router: Router, public authService: AuthService) { }
+  constructor(private http: HttpClient, private router: Router, public authService: AuthService) {
+    this.filteredRefacciones$ = this.refaccionControl.valueChanges.pipe(
+      startWith(''),
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap(value => this._buscarApi('refacciones', value || ''))
+    );
+    this.filteredInsumos$ = this.insumoControl.valueChanges.pipe(
+      startWith(''),
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap(value => this._buscarApi('insumos', value || ''))
+    );
+  }
 
   ngOnInit(): void {
-    this.obtenerSalidas();
     this.revisarNotificaciones();
-    this.cargarCatalogos(); 
+    
+    this.searchSubscription = this.searchSubject.pipe(
+      startWith(undefined), 
+      debounceTime(400)
+    ).subscribe(() => {
+      this.currentPage = 1;
+      this.obtenerSalidas();
+    });
   }
 
-  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
-    this.notificacion = { titulo, mensaje, tipo };
-    this.mostrarModalNotificacion = true;
+  ngOnDestroy(): void {
+    this.searchSubscription?.unsubscribe();
   }
-  cerrarModalNotificacion() {
-    this.mostrarModalNotificacion = false;
-  }
-  revisarNotificaciones() {
-    const notificacionMsg = sessionStorage.getItem('notificacion');
-    if (notificacionMsg) {
-      this.mostrarNotificacion('Éxito', notificacionMsg, 'exito');
-      sessionStorage.removeItem('notificacion');
+
+  private _buscarApi(tipo: 'refacciones' | 'insumos', term: any): Observable<any[]> {
+    const searchTerm = typeof term === 'string' ? term : term.nombre;
+    if (!searchTerm || searchTerm.length < 2) {
+      return of([]);
     }
+    return this.http.get<any[]>(`${environment.apiUrl}/${tipo}/buscar`, { params: { term: searchTerm } });
+  }
+
+  displayFn(item: any): string {
+    return item ? item.nombre : '';
+  }
+
+  onRefaccionSelectedEnModal(event: MatAutocompleteSelectedEvent): void {
+    const refaccion = event.option.value as RefaccionSimple;
+    this.detalleActualRefaccion.id_refaccion = refaccion.id_refaccion;
+    this.onRefaccionSelectEnModal();
+  }
+
+  onInsumoSelectedEnModal(event: MatAutocompleteSelectedEvent): void {
+    const insumo = event.option.value as InsumoSimple;
+    this.detalleActualInsumo.id_insumo = insumo.id_insumo;
   }
 
   obtenerSalidas() {
-    this.http.get<any[]>(this.apiUrl).subscribe({
-      next: (data) => {
-        this.salidas = data.map(item => ({
-          idSalida: item.id_salida, fechaSalida: item.fecha_operacion, tipoSalida: item.tipo_salida,
-          idAutobus: item.id_autobus, solicitadoPorID: item.solicitado_por_id, observaciones: item.observaciones,
-          economicoAutobus: item.economico_autobus, nombreEmpleado: item.nombre_empleado, kilometrajeAutobus: item.kilometraje_autobus
+    let params = new HttpParams()
+      .set('page', this.currentPage.toString())
+      .set('limit', this.itemsPerPage.toString())
+      .set('search', this.terminoBusqueda.trim());
+    
+    if (this.fechaInicio) params = params.set('fechaInicio', this.fechaInicio);
+    if (this.fechaFin) params = params.set('fechaFin', this.fechaFin);
+    
+    this.http.get<{ total: number, data: any[] }>(this.apiUrl, { params }).subscribe({
+      next: (response) => {
+        this.salidas = (response.data || []).map(item => ({
+          idSalida: item.id_salida,
+          fechaSalida: item.fecha_operacion,
+          tipoSalida: item.tipo_salida,
+          idAutobus: item.id_autobus,
+          solicitadoPorID: item.solicitado_por_id,
+          observaciones: item.observaciones,
+          economicoAutobus: item.economico_autobus,
+          nombreEmpleado: item.nombre_empleado,
+          kilometrajeAutobus: item.kilometraje_autobus
         }));
-        this.aplicarFiltros();
+        this.totalItems = response.total || 0;
       },
-      error: (err) => console.error('Error al obtener las salidas', err)
+      error: (err) => {
+        console.error('Error al obtener las salidas', err);
+        this.salidas = [];
+        this.totalItems = 0;
+      }
     });
   }
 
-  aplicarFiltros() {
-    let salidasTemp = this.salidas;
-    const busqueda = this.terminoBusqueda.toLowerCase();
-    if (this.terminoBusqueda) {
-      salidasTemp = salidasTemp.filter(s =>
-        (s.economicoAutobus && s.economicoAutobus.toLowerCase().includes(busqueda)) ||
-        (s.tipoSalida && s.tipoSalida.toLowerCase().includes(busqueda)) ||
-        (s.nombreEmpleado && s.nombreEmpleado.toLowerCase().includes(busqueda))
-      );
-    }
-    if (this.fechaInicio) {
-      const fechaDesde = new Date(this.fechaInicio);
-      salidasTemp = salidasTemp.filter(s => new Date(s.fechaSalida) >= fechaDesde);
-    }
-    if (this.fechaFin) {
-      const fechaHasta = new Date(this.fechaFin);
-      fechaHasta.setDate(fechaHasta.getDate() + 1);
-      salidasTemp = salidasTemp.filter(s => new Date(s.fechaSalida) < fechaHasta);
-    }
-    this.salidasFiltradas = salidasTemp;
+  onFiltroChange(): void {
+    this.searchSubject.next();
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.obtenerSalidas();
   }
   
-  cargarCatalogos() {
-    const peticiones = [
-      this.http.get<RefaccionSimple[]>(`${environment.apiUrl}/refacciones`),
-      this.http.get<InsumoSimple[]>(`${environment.apiUrl}/insumos`)
-    ];
-    forkJoin(peticiones).subscribe(([refacciones, insumos]) => {
-      this.refacciones = refacciones as RefaccionSimple[];
-      this.insumos = insumos as InsumoSimple[];
-    });
-  }
-
   registrarNuevaSalida() { this.router.navigate(['/admin/registro-salida']); }
 
   exportarACSV() {
-    if (this.salidasFiltradas.length === 0) { this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.'); return; }
-    const dataParaExportar = this.salidasFiltradas.map(salida => ({
+    if (this.salidas.length === 0) { this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.'); return; }
+    const dataParaExportar = this.salidas.map(salida => ({
       'ID Salida': salida.idSalida, 'Fecha': salida.fechaSalida, 'Tipo de Salida': salida.tipoSalida,
       'Autobús': salida.economicoAutobus, 'Kilometraje': salida.kilometrajeAutobus, 'Solicitado Por': salida.nombreEmpleado, 'Observaciones': salida.observaciones
     }));
@@ -159,7 +191,10 @@ export class SalidasComponent implements OnInit {
   verDetalles(salida: Salida) {
     this.salidaSeleccionadaId = salida.idSalida;
     this.http.get<any[]>(`${this.apiUrl}/detalles/${salida.idSalida}`).subscribe({
-      next: (detalles) => { this.detallesSeleccionados = detalles; this.mostrarModalDetalles = true; },
+      next: (detalles) => {
+        this.detallesSeleccionados = detalles;
+        this.mostrarModalDetalles = true;
+      },
       error: (err) => this.mostrarNotificacion('Error', 'No se pudieron cargar los detalles.', 'error')
     });
   }
@@ -169,9 +204,8 @@ export class SalidasComponent implements OnInit {
     this.salidaSeleccionada = salida;
     this.itemsNuevosRefacciones = [];
     this.itemsNuevosInsumos = [];
-    this.detalleActualRefaccion = { id_refaccion: null, id_lote: null, cantidad_despachada: null };
-    this.detalleActualInsumo = { id_insumo: null, cantidad_usada: null };
-    this.lotesDisponibles = [];
+    this.resetDetalleRefaccion();
+    this.resetDetalleInsumo();
     
     this.http.get<any[]>(`${this.apiUrl}/detalles/${salida.idSalida}`).subscribe(detalles => {
       this.itemsExistentes = detalles;
@@ -185,40 +219,52 @@ export class SalidasComponent implements OnInit {
     this.detalleActualRefaccion.id_lote = null;
     const idRefaccion = this.detalleActualRefaccion.id_refaccion;
     if (idRefaccion) {
-      this.http.get<Lote[]>(`${environment.apiUrl}/lotes/${idRefaccion}`).subscribe(lotes => {
-        this.lotesDisponibles = lotes;
-      });
+      this.http.get<Lote[]>(`${environment.apiUrl}/lotes/${idRefaccion}`).subscribe(lotes => this.lotesDisponibles = lotes);
     }
   }
 
   agregarNuevaRefaccion() {
-    const { id_refaccion, id_lote, cantidad_despachada } = this.detalleActualRefaccion;
-    if (!id_refaccion || !id_lote || !cantidad_despachada || cantidad_despachada <= 0) {
-      this.mostrarNotificacion('Datos Incompletos', 'Selecciona refacción, lote y cantidad.'); return;
+    const { id_lote, cantidad_despachada } = this.detalleActualRefaccion;
+    const refaccionSeleccionada = this.refaccionControl.value as RefaccionSimple;
+
+    if (!refaccionSeleccionada || !refaccionSeleccionada.id_refaccion || !id_lote || !cantidad_despachada || cantidad_despachada <= 0) {
+      this.mostrarNotificacion('Datos Incompletos', 'Busca y selecciona una refacción, un lote y una cantidad válida.'); return;
     }
-    const refaccion = this.refacciones.find(r => r.id_refaccion === id_refaccion);
     const lote = this.lotesDisponibles.find(l => l.id_lote === id_lote);
-    if (!refaccion || !lote) return;
+    if (!lote) return;
     if (cantidad_despachada > lote.cantidad_disponible) {
       this.mostrarNotificacion('Stock Insuficiente', `Disponibles en este lote: ${lote.cantidad_disponible}`); return;
     }
-    this.itemsNuevosRefacciones.push({ id_refaccion, id_lote, nombre_refaccion: refaccion.nombre, nombre_proveedor: lote.nombre_proveedor, cantidad_despachada });
-    this.detalleActualRefaccion = { id_refaccion: null, id_lote: null, cantidad_despachada: null };
-    this.lotesDisponibles = [];
+    this.itemsNuevosRefacciones.push({ id_refaccion: refaccionSeleccionada.id_refaccion, id_lote, nombre_refaccion: refaccionSeleccionada.nombre, nombre_proveedor: lote.nombre_proveedor, cantidad_despachada });
+    this.resetDetalleRefaccion();
+  }
+  
+  resetDetalleRefaccion() {
+      this.refaccionControl.setValue('');
+      this.detalleActualRefaccion = { id_refaccion: null, id_lote: null, cantidad_despachada: null };
+      this.lotesDisponibles = [];
   }
 
   agregarNuevoInsumo() {
-    const { id_insumo, cantidad_usada } = this.detalleActualInsumo;
-    if (!id_insumo || !cantidad_usada || cantidad_usada <= 0) {
-      this.mostrarNotificacion('Datos Incompletos', 'Selecciona un insumo y cantidad válida.'); return;
+    const { cantidad_usada } = this.detalleActualInsumo;
+    const insumoSeleccionado = this.insumoControl.value as InsumoSimple;
+
+    if (!insumoSeleccionado || !insumoSeleccionado.id_insumo || !cantidad_usada || cantidad_usada <= 0) {
+      this.mostrarNotificacion('Datos Incompletos', 'Busca y selecciona un insumo y una cantidad válida.'); return;
     }
-    const insumo = this.insumos.find(i => i.id_insumo === id_insumo);
-    if (!insumo) return;
-    if (cantidad_usada > insumo.stock_actual) {
-      this.mostrarNotificacion('Stock Insuficiente', `Disponibles: ${insumo.stock_actual}`); return;
-    }
-    this.itemsNuevosInsumos.push({ id_insumo, nombre_insumo: insumo.nombre, cantidad_usada });
-    this.detalleActualInsumo = { id_insumo: null, cantidad_usada: null };
+    
+    this.http.get<InsumoSimple>(`${environment.apiUrl}/insumos/${insumoSeleccionado.id_insumo}`).subscribe(insumoDetalle => {
+        if (cantidad_usada > insumoDetalle.stock_actual) {
+            this.mostrarNotificacion('Stock Insuficiente', `Stock insuficiente. Disponible: ${insumoDetalle.stock_actual}`); return;
+        }
+        this.itemsNuevosInsumos.push({ id_insumo: insumoSeleccionado.id_insumo, nombre_insumo: insumoSeleccionado.nombre, cantidad_usada });
+        this.resetDetalleInsumo();
+    });
+  }
+
+  resetDetalleInsumo() {
+      this.insumoControl.setValue('');
+      this.detalleActualInsumo = { id_insumo: null, cantidad_usada: null };
   }
   
   guardarItemsAdicionales() {
@@ -235,11 +281,27 @@ export class SalidasComponent implements OnInit {
     if (peticionesDetalle.length === 0) { this.cerrarModalAgregarItems(); return; }
     forkJoin(peticionesDetalle).subscribe({
       next: () => {
-        this.mostrarNotificacion('Éxito', 'Valores agregados correctamente a la salida.', 'exito');
+        this.mostrarNotificacion('Éxito', 'Items agregados correctamente a la salida.', 'exito');
         this.cerrarModalAgregarItems();
         this.obtenerSalidas();
       },
       error: (err) => this.mostrarNotificacion('Error', `Error al agregar: ${err.error.message}`, 'error')
     });
+  }
+  
+  revisarNotificaciones() {
+    const notificacionMsg = sessionStorage.getItem('notificacion');
+    if (notificacionMsg) {
+      this.mostrarNotificacion('Éxito', notificacionMsg, 'exito');
+      sessionStorage.removeItem('notificacion');
+    }
+  }
+
+  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
+    this.notificacion = { titulo, mensaje, tipo };
+    this.mostrarModalNotificacion = true;
+  }
+  cerrarModalNotificacion() {
+    this.mostrarModalNotificacion = false;
   }
 }
