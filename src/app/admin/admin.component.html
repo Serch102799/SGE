@@ -1,45 +1,48 @@
-<div class="admin-layout">
-  
+<div class="admin-layout" [class.sidebar-collapsed]="isCollapsed">
+
   <div class="sidebar">
     <div class="sidebar-header">
       <h3>Mi Almacén</h3>
+      <button class="toggle-button" (click)="toggleSidebar()">
+        <fa-icon [icon]="faBars"></fa-icon>
+      </button>
     </div>
     <ul class="sidebar-nav">
-  <li><a routerLink="dashboard"><fa-icon [icon]="faDashboard" ></fa-icon> Dashboard</a></li>
-  <li><a routerLink="entradas"><fa-icon [icon]="faEntradas"></fa-icon> Entradas </a></li>
-  <li><a routerLink="salidas"><fa-icon [icon]="faSalidas"></fa-icon> Salidas</a></li>
-<!--   <li><a routerLink="registro-entrada-insumo">Entradas I</a></li> -->
-  
-  
+      <li><a routerLink="dashboard"><fa-icon [icon]="faDashboard"></fa-icon> <span>Dashboard</span></a></li>
+      <li><a routerLink="entradas"><fa-icon [icon]="faEntradas"></fa-icon><span>Entradas</span></a></li>
+      <li><a routerLink="salidas"><fa-icon [icon]="faSalidas"></fa-icon> <span>Salidas</span></a></li>
+      <!--   <li><a routerLink="registro-entrada-insumo">Entradas I</a></li> -->
 
-
-  <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
-    <a routerLink="refacciones"><fa-icon [icon]="faRefacciones"></fa-icon><span>Refacciones</span></a>
-  </li>
-  <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
-    <a routerLink="insumos"><fa-icon [icon]="faInsumos"></fa-icon> <span>Insumos</span></a>
-  <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
-    <a routerLink="usuarios"><fa-icon [icon]="faUsuarios"></fa-icon> <span>Usuarios</span></a>
-  </li>
-  <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
-    <a routerLink="autobuses"><fa-icon [icon]="faAutobuses"></fa-icon> <span>Autobuses</span></a>
-  </li>
-  <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
-    <a routerLink="proveedores"><fa-icon [icon]="faProveedores"></fa-icon> <span>Proveedores</span></a>
-  </li>
-  <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
-    <a routerLink="reportes" routerLinkActive="active"><fa-icon [icon]="faReportes"></fa-icon> <span>Reportes</span></a>
-  </li>
-  <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
-    <a routerLink="inventario-inicial" routerLinkActive="active"><fa-icon [icon]="faCargaInicial"></fa-icon> <span>Carga Inicial</span></a>
-  </li>
-  <li *ngIf="authService.hasRole(['SuperUsuario'])">
-  <a routerLink="/admin/superadmin">
-    <i class="fas fa-shield-alt"></i> <fa-icon [icon]="faEdicionHistorica"></fa-icon> <span>Edición Histórica</span>
-  </a>
-</li>
-  <li><a routerLink="perfil"><fa-icon [icon]="faMiPerfil"></fa-icon> <span>Mi Perfil</span></a></li>
-</ul>
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+        <a routerLink="refacciones"><fa-icon [icon]="faRefacciones"></fa-icon><span>Gestión de Refacciones</span></a>
+      </li>
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+        <a routerLink="insumos"><fa-icon [icon]="faInsumos"></fa-icon> <span>Gestión de Insumos</span></a>
+      <li *ngIf="authService.hasRole(['SuperUsuario'])">
+        <a routerLink="usuarios"><fa-icon [icon]="faUsuarios"></fa-icon> <span>Usuarios</span></a>
+      </li>
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+        <a routerLink="autobuses"><fa-icon [icon]="faAutobuses"></fa-icon> <span>Autobuses</span></a>
+      </li>
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+        <a routerLink="proveedores"><fa-icon [icon]="faProveedores"></fa-icon> <span>Proveedores</span></a>
+      </li>
+      <li *ngIf="authService.hasRole(['SuperUsuario'])">
+        <a routerLink="reportes" routerLinkActive="active"><fa-icon [icon]="faReportes"></fa-icon>
+          <span>Reportes</span></a>
+      </li>
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+        <a routerLink="inventario-inicial" routerLinkActive="active"><fa-icon [icon]="faCargaInicial"></fa-icon>
+          <span>Carga Inicial</span></a>
+      </li>
+      <li *ngIf="authService.hasRole(['SuperUsuario'])">
+        <a routerLink="/admin/superadmin">
+          <i class="fas fa-shield-alt"></i> <fa-icon [icon]="faEdicionHistorica"></fa-icon> <span>Edición
+            Histórica</span>
+        </a>
+      </li>
+      <li><a routerLink="perfil"><fa-icon [icon]="faMiPerfil"></fa-icon> <span>Mi Perfil</span></a></li>
+    </ul>
 
 
     <div class="sidebar-footer" *ngIf="currentUser">
@@ -47,12 +50,13 @@
         <div class="user-name">{{ currentUser.nombre }}</div>
         <div class="user-role">{{ currentUser.puesto }}</div>
       </div>
-      <button class="logout-button" (click)="logout()"><fa-icon [icon]="faCerrarSesion"></fa-icon> <span>Cerrar Sesión</span></button>
+      <button class="logout-button" (click)="logout()"><fa-icon [icon]="faCerrarSesion"></fa-icon> <span>Cerrar
+          Sesión</span></button>
     </div>
   </div>
 
   <div class="main-content">
     <router-outlet></router-outlet>
   </div>
-  
+
 </div>

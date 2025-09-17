@@ -26,64 +26,132 @@ a fa-icon {
   padding: 30px;
 }
 
-/* --- Panel Lateral (Sidebar) --- */
-.sidebar {
-  width: 250px;
-  flex-shrink: 0; /* Evita que se encoja */
-  background-color: #23272f;
-  color: #e0e0e0;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+/* ============================================= */
+/* --- Estructura Principal del Layout --- */
+/* ============================================= */
+.admin-layout {
+  display: grid;
+  /* Define 2 columnas: el sidebar y el contenido principal */
+  grid-template-columns: 250px 1fr; /* Ancho inicial del sidebar y el resto del espacio */
+  height: 100vh;
+  transition: grid-template-columns 0.3s ease-in-out; /* Animación suave */
 }
 
+/* Estado COLAPSADO del layout */
+.admin-layout.sidebar-collapsed {
+  grid-template-columns: 80px 1fr; /* Ancho del sidebar colapsado */
+}
+
+.sidebar {
+  background-color: #0a1825; /* Color de fondo del menú */
+  color: #ecf0f1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden; /* Oculta el texto que se desborda durante la animación */
+}
+
+.main-content {
+  background-color: #1f2937; /* Color de fondo del área principal */
+  overflow-y: auto; /* Permite scroll si el contenido es largo */
+  padding: 2rem;
+}
+
+/* ============================================= */
+/* --- Estilos del Sidebar --- */
+/* ============================================= */
 .sidebar-header {
-  padding: 20px;
-  text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #38404a;
 }
 
 .sidebar-header h3 {
   margin: 0;
-  color: #4480d3;
-  font-weight: bold;
+  font-size: 1.5rem;
+  white-space: nowrap; /* Evita que el texto se parta en dos líneas */
+  transition: opacity 0.3s ease;
 }
 
-/* --- Navegación --- */
+.toggle-button {
+  background: none;
+  border: none;
+  color: #a7b7d2;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
 .sidebar-nav {
   list-style: none;
-  padding: 10px 0;
+  padding: 0;
   margin: 0;
-  flex-grow: 1;
-  overflow-y: auto;
+  flex-grow: 1; /* Ocupa el espacio disponible */
 }
 
-.sidebar-nav a {
-  display: block;
+.sidebar-nav li a {
+  display: flex;
+  align-items: center;
   padding: 15px 20px;
-  color: #e0e0e0;
+  color: #a7b7d2;
   text-decoration: none;
-  transition: background-color 0.2s ease, border-left 0.2s ease;
-  border-left: 3px solid transparent;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.sidebar-nav a:hover {
-  background-color: rgba(68, 128, 211, 0.2);
-}
-
-.sidebar-nav a.active {
-  background-color: rgba(68, 128, 211, 0.1);
-  border-left: 3px solid #4480d3;
+.sidebar-nav li a:hover {
+  background-color: #38404a;
   color: #ffffff;
-  font-weight: 500;
+}
+
+.sidebar-nav li a fa-icon {
+  font-size: 1.2em;
+  margin-right: 15px;
+  width: 25px; /* Ancho fijo para alineación perfecta */
+  text-align: center;
+  transition: margin 0.3s ease-in-out;
+}
+
+.sidebar-nav li a span {
+  transition: opacity 0.2s ease;
+}
+
+/* Estilos para el pie del sidebar */
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid #38404a;
+  white-space: nowrap;
+}
+.user-info {
+    margin-bottom: 1rem;
+}
+.user-name {
+    font-weight: bold;
+}
+.user-role {
+    font-size: 0.8em;
+    color: #a7b7d2;
 }
 
 
-/* --- Pie del Sidebar (Usuario y Logout) --- */
-.sidebar-footer {
-  padding: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  flex-shrink: 0;
+
+/* ============================================= */
+/* --- Lógica del Estado COLAPSADO --- */
+/* ============================================= */
+.admin-layout.sidebar-collapsed .sidebar-header h3,
+.admin-layout.sidebar-collapsed .sidebar-nav a span,
+.admin-layout.sidebar-collapsed .sidebar-footer {
+  opacity: 0; /* Oculta el texto con una transición suave */
+  width: 0;
+  overflow: hidden;
+}
+
+.admin-layout.sidebar-collapsed .sidebar-nav a {
+  justify-content: center;
+}
+
+.admin-layout.sidebar-collapsed .sidebar-nav a fa-icon {
+  margin-right: 0; /* Elimina el margen del icono cuando está colapsado */
 }
 
 .user-menu {

@@ -7,7 +7,7 @@ import {
   ViewEncapsulation, ElementRef
 } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import { faTachometerAlt, faArrowCircleDown, faArrowCircleUp, faCogs, 
+import { faBars, faTachometerAlt, faArrowCircleDown, faArrowCircleUp, faCogs, 
   faTint, faUsersCog, faBus, faTruck, faChartPie, 
   faDolly, faHistory, faUserCircle, faSignOutAlt  } from '@fortawesome/free-solid-svg-icons';
 
@@ -19,6 +19,9 @@ import { faTachometerAlt, faArrowCircleDown, faArrowCircleUp, faCogs,
   encapsulation: ViewEncapsulation.None
 })
 export class AdminComponent implements OnInit, AfterViewInit {
+
+  isCollapsed = false;
+  faBars = faBars;
 
   faDashboard = faTachometerAlt;
   faEntradas = faArrowCircleDown;
@@ -44,7 +47,9 @@ export class AdminComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
   }
-
+  toggleSidebar(): void {
+    this.isCollapsed = !this.isCollapsed;
+  }
   
   logout(): void {
     this.authService.logout();
