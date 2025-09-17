@@ -66,6 +66,15 @@
       </tbody>
     </table>
   </div>
+  <div class="pagination-controls">
+        <pagination-controls 
+            (pageChange)="onPageChange($event)"
+            previousLabel="Anterior"
+            nextLabel="Siguiente">
+        </pagination-controls>
+    </div>
+
+  </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
   <div class="modal-content" (click)="$event.stopPropagation()">

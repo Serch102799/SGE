@@ -29,6 +29,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { InventarioInicialComponent } from './pages/inventario-inicial/inventario-inicial.component';
 import { SuperadminPanelComponent } from './pages/superadmin-panel/superadmin-panel.component';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @NgModule({
   declarations: [
@@ -61,7 +62,8 @@ import { SuperadminPanelComponent } from './pages/superadmin-panel/superadmin-pa
     NgxPaginationModule,
     MatFormFieldModule,
     MatInputModule,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    FontAwesomeModule 
     
   ],
   providers: [

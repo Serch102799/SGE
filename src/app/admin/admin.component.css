@@ -11,6 +11,13 @@
   height: 100%;
 }
 
+a fa-icon {
+  font-size: 1.3em; /* <-- Ajusta este valor (ej. 1.5em, 18px) como necesites */
+  margin-right: 5px; /* Añade un buen espacio entre el icono y el texto */
+  width: 25px; /* Asegura que todos los iconos ocupen el mismo ancho para una alineación perfecta */
+  text-align: center;
+}
+
 .main-content {
   flex-grow: 1;
   background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url("/assets/img/pantalla1.jpg") no-repeat center center fixed;

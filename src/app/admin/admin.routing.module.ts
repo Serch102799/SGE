@@ -34,55 +34,55 @@ const routes: Routes = [
         path: 'dashboard',
         component: DashboardComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista'] }
+        data: { roles: ['Admin', 'Almacenista','SuperUsuario'] }
       },
       {
         path: 'refacciones',
         component: RefaccionesComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin'] }
+        data: { roles: ['Admin', 'Almacenista','SuperUsuario'] }
       },
       {
         path: 'entradas',
         component: EntradasComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista'] }
+        data: { roles: ['Admin', 'Almacenista','SuperUsuario'] }
       },
       {
         path: 'registro-entrada',
         component: RegistroEntradaComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista'] }
+        data: { roles: ['Admin', 'Almacenista','SuperUsuario'] }
       },
       {
         path: 'salidas',
         component: SalidasComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista'] }
+        data: { roles: ['Admin', 'Almacenista','SuperUsuario'] }
       },
       {
         path: 'registro-salida',
         component: RegistroSalidaComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista'] }
+        data: { roles: ['Admin', 'Almacenista','SuperUsuario'] }
       },
       {
         path: 'usuarios',
         component: UsuariosComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin'] }
+        data: { roles: ['SuperUsuario'] }
       },
       {
         path: 'proveedores',
         component: ProveedoresComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin'] }
+        data: { roles: ['Admin','SuperUsuario'] }
       },
       {
         path: 'autobuses',
         component: AutobusesComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin'] }
+        data: { roles: ['Admin', 'SuperUsuario'] }
       },
       {
         path: '',
@@ -93,37 +93,37 @@ const routes: Routes = [
         path: 'insumos',
         component: InsumosComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin'] }
+        data: { roles: ['Admin', 'SuperUsuario'] }
       },
       {
         path: 'entradas-insumo',
         component: EntradasInsumoComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista'] }
+        data: { roles: ['Admin', 'SuperUsuario', 'Almacenista'] }
       },
       {
         path: 'registro-entrada-insumo',
         component: RegistroEntradaInsumoComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista'] }
+        data: { roles: ['Admin', 'SuperUsuario', 'Almacenista'] }
       },
       {
         path: 'perfil',
         component: PerfilComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista'] }
+        data: { roles: ['Admin', 'SuperUsuario', 'Almacenista'] }
       },
       {
         path: 'reportes',
         component: ReportesComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin'] } 
+        data: { roles: ['SuperUsuario'] } 
       },
       {
         path: 'inventario-inicial',
         component: InventarioInicialComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin'] } 
+        data: { roles: ['Admin', 'SuperUsuario'] } 
       },
       {
     path: 'superadmin',

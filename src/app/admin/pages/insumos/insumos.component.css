@@ -412,6 +412,62 @@ td.stock-critico {
   display: flex;
   align-items: center;
 }
+/*
+=============================================
+--- Estilos para Controles de Paginación ---
+=============================================
+*/
+
+/* Centra el contenedor de los controles */
+.pagination-controls {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+/*
+ * Se usa :host ::ng-deep para sobreescribir los estilos
+ * por defecto de la librería ngx-pagination.
+*/
+:host ::ng-deep .ngx-pagination {
+  padding: 0;
+  margin: 0;
+}
+
+:host ::ng-deep .ngx-pagination li {
+  display: inline-block;
+  margin: 0 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* Color del texto para todos los elementos (números, "...") */
+:host ::ng-deep .ngx-pagination a,
+:host ::ng-deep .ngx-pagination span {
+  color: #ffffff; /* Letra blanca */
+  padding: 8px 12px;
+  display: block;
+}
+
+/* Estilo para la página actual (fondo de color para que resalte) */
+:host ::ng-deep .ngx-pagination .current {
+  background: #007bff; /* Un azul para destacar la página activa */
+}
+
+/* Efecto al pasar el ratón sobre un número de página */
+:host ::ng-deep .ngx-pagination li:not(.current):hover {
+  background-color: #38404a;
+}
+
+/* Estilo para los botones "Anterior" y "Siguiente" deshabilitados */
+:host ::ng-deep .ngx-pagination .disabled {
+  color: #6c757d; /* Color de texto más opaco */
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+:host ::ng-deep .ngx-pagination .disabled:hover {
+  background-color: transparent !important;
+}
 
 /* Efecto al pasar el ratón sobre cualquier cabecera */
 .tabla-usuarios thead th button:hover {

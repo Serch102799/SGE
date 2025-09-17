@@ -7,6 +7,10 @@ import {
   ViewEncapsulation, ElementRef
 } from '@angular/core';
 import { AuthService } from '../services/auth.service';
+import { faTachometerAlt, faArrowCircleDown, faArrowCircleUp, faCogs, 
+  faTint, faUsersCog, faBus, faTruck, faChartPie, 
+  faDolly, faHistory, faUserCircle, faSignOutAlt  } from '@fortawesome/free-solid-svg-icons';
+
 @Component({
   selector: 'app-admin',
   standalone: false,
@@ -16,8 +20,20 @@ import { AuthService } from '../services/auth.service';
 })
 export class AdminComponent implements OnInit, AfterViewInit {
 
-  
-  
+  faDashboard = faTachometerAlt;
+  faEntradas = faArrowCircleDown;
+  faSalidas = faArrowCircleUp;
+  faRefacciones = faCogs;
+  faInsumos = faTint;
+  faUsuarios = faUsersCog;
+  faAutobuses = faBus;
+  faProveedores = faTruck;
+  faReportes = faChartPie;
+  faCargaInicial = faDolly;
+  faEdicionHistorica = faHistory;
+  faMiPerfil = faUserCircle;
+  faCerrarSesion = faSignOutAlt;
+
   currentUser: any;
   constructor(
     public authService: AuthService,

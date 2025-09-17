@@ -1,1 +1,121 @@
-<p>superadmin-panel works!</p>
+<div class="usuarios-container">
+    <div class="container-header">
+      <h2>Panel de Edición de Registros</h2>
+    </div>
+  
+    <div class="container-body">
+      <div class="tabs-container">
+        <button class="tab-button" [class.active]="vistaActual === 'entradas'" (click)="cambiarVista('entradas')">
+          Editar Entradas Históricas
+        </button>
+        <button class="tab-button" [class.active]="vistaActual === 'salidas'" (click)="cambiarVista('salidas')">
+          Editar Salidas Históricas
+        </button>
+      </div>
+  
+      <div class="filtros-container">
+        <div class="filtro-item">
+          <input type="text" class="form-control" placeholder="Buscar..." [(ngModel)]="terminoBusqueda" (ngModelChange)="onFiltroChange()">
+        </div>
+        <div class="filtro-item"><label>Desde:</label><input type="date" class="form-control" [(ngModel)]="fechaInicio" (change)="onFiltroChange()"></div>
+        <div class="filtro-item"><label>Hasta:</label><input type="date" class="form-control" [(ngModel)]="fechaFin" (change)="onFiltroChange()"></div>
+      </div>
+  
+      <div *ngIf="vistaActual === 'entradas'">
+        <div class="tabla-responsive-wrapper">
+          <table class="tabla-usuarios">
+            <thead>
+              <tr>
+                <th>ID</th><th>Fecha Operación</th><th>Proveedor</th><th>Factura/Vale</th><th>Recibido Por</th><th style="text-align: center;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let registro of registros | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+                <td>{{ registro.id_entrada }}</td>
+                <td>{{ registro.fecha_operacion | date:'dd/MM/yyyy h:mm a' }}</td>
+                <td>{{ registro.nombre_proveedor }}</td>
+                <td>{{ registro.factura_proveedor || registro.vale_interno }}</td>
+                <td>{{ registro.nombre_empleado }}</td>
+                <td class="acciones"><button class="btn-accion btn-estado" (click)="abrirModalEditar(registro)">Editar Fecha</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+  
+      <div *ngIf="vistaActual === 'salidas'">
+        <div class="tabla-responsive-wrapper">
+            <table class="tabla-usuarios">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Fecha Operación</th><th>Tipo</th><th>Autobús</th><th>Solicitado Por</th><th style="text-align: center;">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let registro of registros | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+                    <td>{{ registro.id_salida }}</td>
+                    <td>{{ registro.fecha_operacion | date:'dd/MM/yyyy h:mm a' }}</td>
+                    <td>{{ registro.tipo_salida }}</td>
+                    <td>{{ registro.economico_autobus }}</td>
+                    <td>{{ registro.nombre_empleado }}</td>
+                    <td class="acciones"><button class="btn-accion btn-estado" (click)="abrirModalEditar(registro)">Editar Fecha</button></td>
+                  </tr>
+                </tbody>
+              </table>
+        </div>
+      </div>
+  
+      <div class="pagination-controls">
+        <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente"></pagination-controls>
+      </div>
+    </div>
+</div>
+  
+<div class="modal-overlay" *ngIf="mostrarModalEditar" (click)="cerrarModalEditar()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3 *ngIf="registroAEditar">Editar Fecha de {{ registroAEditar.tipo === 'entrada' ? 'Entrada' : 'Salida' }} #{{ registroAEditar.id }}</h3>
+            <button class="btn-cerrar" (click)="cerrarModalEditar()">×</button>
+        </div>
+        <div class="modal-body">
+            <form (ngSubmit)="guardarCambiosFecha()">
+                <div class="form-group">
+                    <label for="fecha_operacion">Nueva Fecha de Operación</label>
+                    <input id="fecha_operacion" type="datetime-local" class="form-control" [(ngModel)]="nuevosDatos.fecha_operacion" name="fecha_operacion" required>
+                </div>
+                <div class="form-group">
+                    <label for="motivo">Motivo de la Modificación (Obligatorio)</label>
+                    <textarea id="motivo" class="form-control" [(ngModel)]="nuevosDatos.motivo" name="motivo" rows="3" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalEditar()">Cancelar</button>
+                    <button type="submit" class="btn-accion btn-guardar" [disabled]="isSaving || !nuevosDatos.motivo.trim()">
+                        {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{
+        'header-exito': notificacion.tipo === 'exito',
+        'header-error': notificacion.tipo === 'error',
+        'header-advertencia': notificacion.tipo === 'advertencia'
+      }">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>
