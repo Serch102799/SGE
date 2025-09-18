@@ -3782,6 +3782,32 @@ textarea.form-control-lg {
   align-items: center;
   justify-content: space-between;
 }
+/* ============================================= */
+/* --- Estructura Principal del Layout --- */
+/* ============================================= */
+:host {
+  display: block;
+  height: 100vh;
+}
+
+.admin-layout {
+  display: grid;
+  /* Define 2 columnas: el sidebar y el contenido principal */
+  grid-template-columns: 250px 1fr; /* Ancho inicial del sidebar */
+  height: 100%;
+  transition: grid-template-columns 0.3s ease-in-out; /* Animación suave */
+}
+
+/* Estado COLAPSADO del layout */
+.admin-layout.sidebar-collapsed {
+  grid-template-columns: 80px 1fr; /* Ancho del sidebar colapsado */
+}
+
+.main-content {
+  background-color: #1f2937;
+  overflow-y: auto;
+  padding: 2rem;
+}
 .navbar-brand {
   padding-top: var(--bs-navbar-brand-padding-y);
   padding-bottom: var(--bs-navbar-brand-padding-y);
