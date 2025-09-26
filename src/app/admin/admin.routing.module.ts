@@ -74,7 +74,7 @@ const routes: Routes = [
         path: 'usuarios',
         component: UsuariosComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['SuperUsuario'] }
+        data: { roles: ['SuperUsuario', 'Admin'] }
       },
       {
         path: 'proveedores',
