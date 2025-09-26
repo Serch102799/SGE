@@ -1,0 +1,80 @@
+<div class="usuarios-container">
+  <div class="container-header">
+    <h2>Catálogo de Rutas</h2>
+    <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+      <span>&#43;</span> Agregar Ruta
+    </button>
+  </div>
+  <div class="container-body">
+    <div class="filtros-container">
+      <div class="filtro-item">
+        <input type="text" class="form-control" placeholder="Buscar por nombre de ruta..."
+          [(ngModel)]="terminoBusqueda" (ngModelChange)="onSearchChange()">
+      </div>
+    </div>
+    <div class="contador-resultados"><strong>{{ totalItems }}</strong> rutas encontradas</div>
+    <div class="tabla-responsive-wrapper">
+      <table class="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>Nombre de la Ruta</th>
+            <th>Descripción</th>
+            <th>Kilometraje por Vuelta</th>
+            <th style="text-align: center;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ruta of rutas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+            <td>{{ ruta.nombre_ruta }}</td>
+            <td>{{ ruta.descripcion }}</td>
+            <td>{{ ruta.kilometraje_vuelta | number }} km</td>
+            <td class="acciones" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+              <button class="btn-accion btn-estado" (click)="abrirModal('editar', ruta)">Editar</button>
+              </td>
+          </tr>
+          <tr *ngIf="rutas.length === 0"><td colspan="4" class="empty-table-message">No se encontraron rutas.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination-controls">
+      <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente"></pagination-controls>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ modoEdicion ? 'Editar Ruta' : 'Agregar Nueva Ruta' }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="guardarRuta()">
+        <div class="form-group"><label>Nombre de la Ruta</label><input type="text" class="form-control" [(ngModel)]="rutaSeleccionada.nombre_ruta" name="nombre_ruta" required></div>
+        <div class="form-group"><label>Descripción</label><textarea class="form-control" [(ngModel)]="rutaSeleccionada.descripcion" name="descripcion" rows="3"></textarea></div>
+        <div class="form-group"><label>Kilometraje por Vuelta</label><input type="number" step="0.1" class="form-control" [(ngModel)]="rutaSeleccionada.kilometraje_vuelta" name="kilometraje_vuelta" required></div>
+        <div class="modal-footer">
+          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-accion btn-guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{'header-exito': notificacion.tipo === 'exito','header-error': notificacion.tipo === 'error','header-advertencia': notificacion.tipo === 'advertencia'}">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,129 @@
+<div class="usuarios-container">
+  <div class="container-header">
+    <h2>Catálogo de Operadores</h2>
+    <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+      <span>&#43;</span> Agregar Operador
+    </button>
+  </div>
+
+  <div class="container-body">
+    <div class="filtros-container">
+      <div class="filtro-item">
+        <input type="text" class="form-control" placeholder="Buscar por nombre, n° de empleado o NSS..."
+          [(ngModel)]="terminoBusqueda" (ngModelChange)="onSearchChange()">
+      </div>
+    </div>
+
+    <div class="contador-resultados">
+      <strong>{{ totalItems }}</strong> operadores encontrados
+    </div>
+
+    <div class="tabla-responsive-wrapper">
+      <table class="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>Nombre Completo</th>
+            <th>N° Empleado</th>
+            <th>Licencia</th>
+            <th>NSS</th>
+            <th>Edad</th>
+            <th>Antigüedad</th>
+            <th>Estatus</th>
+            <th style="text-align: center;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let operador of operadores | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+            <td>{{ operador.nombre_completo }}</td>
+            <td>{{ operador.numero_empleado }}</td>
+            <td>{{ operador.numero_licencia }} ({{ operador.tipo_licencia }})</td>
+            <td>{{ operador.nss }}</td>
+            <td>{{ operador.edad }} años</td>
+            <td>{{ operador.antiguedad_anios }} años</td>
+            <td>
+              <span class="badge" [ngClass]="{'badge-activo': operador.estatus === 'Activo', 'badge-inactivo': operador.estatus !== 'Activo'}">
+                {{ operador.estatus }}
+              </span>
+            </td>
+            <td class="acciones" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+              <button class="btn-accion btn-estado" (click)="abrirModal('editar', operador)">Editar</button>
+              <button class="btn-accion btn-eliminar" *ngIf="operador.estatus === 'Activo'" (click)="desactivarOperador(operador)">Desactivar</button>
+            </td>
+          </tr>
+          <tr *ngIf="operadores.length === 0">
+            <td colspan="8" class="empty-table-message">No se encontraron operadores.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-controls">
+      <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente"></pagination-controls>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ modoEdicion ? 'Editar Operador' : 'Agregar Nuevo Operador' }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="guardarOperador()">
+        <div class="form-row">
+          <div class="form-group col-md-8"><label>Nombre Completo</label><input type="text" class="form-control" [(ngModel)]="operadorSeleccionado.nombre_completo" name="nombre_completo" required></div>
+          <div class="form-group col-md-4"><label>N° de Empleado</label><input type="text" class="form-control" [(ngModel)]="operadorSeleccionado.numero_empleado" name="numero_empleado"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-4"><label>NSS (Seguro Social)</label><input type="text" class="form-control" [(ngModel)]="operadorSeleccionado.nss" name="nss"></div>
+            <div class="form-group col-md-4"><label>Estatus NSS</label>
+                <select class="form-control" [(ngModel)]="operadorSeleccionado.estatus_nss" name="estatus_nss">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                    <option value="En trámite">En trámite</option>
+                </select>
+            </div>
+        </div>
+        <hr>
+        <div class="form-row">
+            <div class="form-group col-md-4"><label>N° de Licencia</label><input type="text" class="form-control" [(ngModel)]="operadorSeleccionado.numero_licencia" name="numero_licencia"></div>
+            <div class="form-group col-md-4"><label>Tipo de Licencia</label><input type="text" class="form-control" [(ngModel)]="operadorSeleccionado.tipo_licencia" name="tipo_licencia"></div>
+            <div class="form-group col-md-4"><label>Vencimiento de Licencia</label><input type="date" class="form-control" [(ngModel)]="operadorSeleccionado.licencia_vencimiento" name="licencia_vencimiento"></div>
+        </div>
+        <hr>
+        <div class="form-row">
+            <div class="form-group col-md-4"><label>Fecha de Nacimiento</label><input type="date" class="form-control" [(ngModel)]="operadorSeleccionado.fecha_nacimiento" name="fecha_nacimiento"></div>
+            <div class="form-group col-md-4"><label>Fecha de Ingreso</label><input type="date" class="form-control" [(ngModel)]="operadorSeleccionado.fecha_ingreso" name="fecha_ingreso"></div>
+            <div class="form-group col-md-4" *ngIf="modoEdicion"><label>Estatus</label>
+                <select class="form-control" [(ngModel)]="operadorSeleccionado.estatus" name="estatus">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-accion btn-guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{'header-exito': notificacion.tipo === 'exito','header-error': notificacion.tipo === 'error','header-advertencia': notificacion.tipo === 'advertencia'}">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>

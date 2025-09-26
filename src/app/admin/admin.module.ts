@@ -30,6 +30,10 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { InventarioInicialComponent } from './pages/inventario-inicial/inventario-inicial.component';
 import { SuperadminPanelComponent } from './pages/superadmin-panel/superadmin-panel.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { RegistroCargaCombustibleComponent } from './pages/registro-carga-combustible/registro-carga-combustible.component';
+import { OperadoresComponent } from './pages/operadores/operadores.component';
+import { RutasComponent } from './pages/rutas/rutas.component';
+import { TanquesComponent } from './pages/tanques/tanques.component';
 
 @NgModule({
   declarations: [
@@ -49,7 +53,11 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     PerfilComponent,
     ReportesComponent,
     InventarioInicialComponent,
-    SuperadminPanelComponent
+    SuperadminPanelComponent,
+    RegistroCargaCombustibleComponent,
+    OperadoresComponent,
+    RutasComponent,
+    TanquesComponent
   ],
   imports: [
     HttpClientModule,

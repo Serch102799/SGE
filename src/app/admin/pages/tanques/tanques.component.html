@@ -1,0 +1,135 @@
+<div class="usuarios-container">
+  <div class="container-header">
+    <h2>Gestión de Tanques de Combustible</h2>
+    <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+      <span>&#43;</span> Agregar Tanque
+    </button>
+  </div>
+  <div class="container-body">
+
+    <fieldset class="form-section">
+        <legend>Combustible Total por Ubicación</legend>
+        <div class="kpi-grid">
+            <div class="kpi-card" *ngFor="let total of totalesPorUbicacion">
+              <div class="kpi-value">{{ total.total_litros | number:'1.0-0' }} Lts</div>
+              <div class="kpi-label">{{ total.nombre_ubicacion }}</div>
+            </div>
+            <div *ngIf="totalesPorUbicacion.length === 0" class="empty-kpi">
+                No hay tanques con combustible registrado para mostrar totales.
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+        <legend>Detalle de Tanques</legend>
+        <div class="tabla-responsive-wrapper">
+        <table class="tabla-usuarios">
+            <thead>
+            <tr>
+                <th>Nombre del Tanque</th>
+                <th>Ubicación</th>
+                <th>Nivel Actual</th>
+                <th>Capacidad</th>
+                <th style="width: 20%;">Porcentaje</th>
+                <th style="text-align: center;">Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let tanque of tanques">
+                <td>{{ tanque.nombre_tanque }}</td>
+                <td>{{ tanque.nombre_ubicacion }}</td>
+                <td>{{ tanque.nivel_actual_litros | number:'1.2-2' }} Lts</td>
+                <td>{{ tanque.capacidad_litros | number:'1.2-2' }} Lts</td>
+                <td>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" 
+                        [style.width.%]="(tanque.nivel_actual_litros / tanque.capacidad_litros) * 100"
+                        [ngClass]="{
+                            'low': (tanque.nivel_actual_litros / tanque.capacidad_litros) * 100 < 20,
+                            'medium': (tanque.nivel_actual_litros / tanque.capacidad_litros) * 100 >= 20 && (tanque.nivel_actual_litros / tanque.capacidad_litros) * 100 < 60,
+                            'high': (tanque.nivel_actual_litros / tanque.capacidad_litros) * 100 >= 60
+                        }">
+                    {{ (tanque.nivel_actual_litros / tanque.capacidad_litros) | percent:'1.0-0' }}
+                    </div>
+                </div>
+                </td>
+                <td class="acciones" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+                    <button class="btn-accion btn-estado" (click)="abrirModal('editar', tanque)">Editar</button>
+                    <button class="btn-accion btn-recargar" (click)="abrirModalRecarga(tanque)">Recargar</button>
+                </td>
+            </tr>
+            <tr *ngIf="tanques.length === 0">
+                <td colspan="6" class="empty-table-message">No hay tanques registrados.</td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+    </fieldset>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="mostrarModalRecarga" (click)="cerrarModalRecarga()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 *ngIf="tanqueARecargar">Recargar Tanque: {{ tanqueARecargar.nombre_tanque }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModalRecarga()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="confirmarRecarga()">
+        <div class="form-group">
+            <label for="litros">Litros a Cargar</label>
+            <input id="litros" type="number" step="0.01" class="form-control" 
+                   [(ngModel)]="litrosARecargar" name="litrosARecargar" 
+                   placeholder="Ej. 5000" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalRecarga()">Cancelar</button>
+          <button type="submit" class="btn-accion btn-guardar">Confirmar Recarga</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ modoEdicion ? 'Editar Tanque' : 'Agregar Nuevo Tanque' }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="guardarTanque()">
+        <div class="form-group"><label>Nombre del Tanque</label><input type="text" class="form-control" [(ngModel)]="tanqueSeleccionado.nombre_tanque" name="nombre_tanque" required></div>
+        <div class="form-group"><label>Ubicación (Corralón)</label>
+            <select class="form-control" [(ngModel)]="tanqueSeleccionado.id_ubicacion" name="id_ubicacion" required>
+                <option [ngValue]="null" disabled>Selecciona una ubicación...</option>
+                <option *ngFor="let u of ubicaciones" [ngValue]="u.id_ubicacion">{{ u.nombre_ubicacion }}</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <div class="form-group col"><label>Capacidad (Litros)</label><input type="number" step="0.01" class="form-control" [(ngModel)]="tanqueSeleccionado.capacidad_litros" name="capacidad_litros"></div>
+            <div class="form-group col"><label>Nivel Actual (Litros)</label><input type="number" step="0.01" class="form-control" [(ngModel)]="tanqueSeleccionado.nivel_actual_litros" name="nivel_actual_litros"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-accion btn-guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{'header-exito': notificacion.tipo === 'exito','header-error': notificacion.tipo === 'error','header-advertencia': notificacion.tipo === 'advertencia'}">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>

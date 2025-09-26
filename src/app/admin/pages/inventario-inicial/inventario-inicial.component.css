@@ -187,9 +187,7 @@ td.stock-critico {
   font-weight: bold;
   font-size: 1.05rem;
 }
-host { /* ... */ }
-.usuarios-container { /* ... */ }
-/* etc... */
+
 
 /* --- Estilos específicos para este componente --- */
 .form-section {

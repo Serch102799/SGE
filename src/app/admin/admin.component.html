@@ -41,6 +41,29 @@
             Histórica</span>
         </a>
       </li>
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+        <a routerLink="/admin/tanques" routerLinkActive="active">
+          <fa-icon [icon]="faTanques"></fa-icon>
+          <span>Tanques</span>
+        </a>
+      </li>
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+        <a routerLink="rutas" routerLinkActive="active">
+          <fa-icon [icon]="faRutas"></fa-icon>
+          <span>Rutas</span>
+        </a>
+      </li>
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+        <a routerLink="/admin/operadores" routerLinkActive="active">
+          <fa-icon [icon]="faOperadores"></fa-icon>
+          <span>Operadores</span>
+        </a>
+      </li>
+      <li *ngIf="authService.hasRole(['SuperUsuario', 'Admin'])">
+        <a routerLink="/admin/registro-carga-combustible" routerLinkActive="active">
+          <fa-icon [icon]="faCargaCombustible"></fa-icon>
+          <span>Carga de Combustible</span></a>
+      </li>
       <li><a routerLink="perfil"><fa-icon [icon]="faMiPerfil"></fa-icon> <span>Mi Perfil</span></a></li>
     </ul>
 

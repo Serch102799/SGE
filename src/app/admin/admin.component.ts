@@ -7,9 +7,9 @@ import {
   ViewEncapsulation, ElementRef
 } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import { faBars, faTachometerAlt, faArrowCircleDown, faArrowCircleUp, faCogs, 
+import {faOilCan,faRoute, faCar, faBars, faTachometerAlt, faArrowCircleDown, faArrowCircleUp, faCogs, 
   faTint, faUsersCog, faBus, faTruck, faChartPie, 
-  faDolly, faHistory, faUserCircle, faSignOutAlt  } from '@fortawesome/free-solid-svg-icons';
+  faDolly, faHistory, faUserCircle, faSignOutAlt, faGasPump  } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-admin',
@@ -21,8 +21,11 @@ import { faBars, faTachometerAlt, faArrowCircleDown, faArrowCircleUp, faCogs,
 export class AdminComponent implements OnInit, AfterViewInit {
 
   isCollapsed = false;
+  faTanques = faOilCan;
   faBars = faBars;
-
+  faRutas = faRoute;
+  faOperadores = faCar;
+  faCargaCombustible = faGasPump;
   faDashboard = faTachometerAlt;
   faEntradas = faArrowCircleDown;
   faSalidas = faArrowCircleUp;

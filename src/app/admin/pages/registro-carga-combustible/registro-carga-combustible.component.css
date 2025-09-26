@@ -1,0 +1,333 @@
+/* ============================================= */
+/* --- ESTILOS BASE Y DE PÁGINA --- */
+/* ============================================= */
+:host {
+  display: block;
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/pantalla1.jpg") no-repeat center center fixed;
+  background-size: cover;
+}
+
+.back-arrow {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  font-size: 2.5rem;
+  color: #cbd5e0;
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+  z-index: 10;
+}
+/* Botones de Acción en tabla */
+.btn-accion {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-accion { padding: 6px 12px; font-size: 0.85rem; border-radius: 5px; border: none; cursor: pointer; }
+.btn-eliminar { background-color: #d9534f; color: white; }
+.btn-estado { background-color: rgba(211, 68, 68, 0.7); color: #ffffff; }
+.btn-estado:hover { background-color: #4480d3; border-color: #6a9edc; }
+.btn-eliminar { background-color: rgba(255, 102, 102, 0.7); color: #ffffff; }
+.btn-eliminar:hover { background-color: #ff6666; border-color: #ff8c8c; }
+.btn-guardar { background-color: #4480d3; color: white; }
+.btn-guardar:hover { background-color: #386bbd; }
+.btn-cancelar { background-color: #555; color: white; }
+.btn-cancelar:hover { background-color: #777; }
+.back-arrow:hover {
+  color: #ffffff;
+}
+/* ============================================= */
+/* --- ESTILOS PARA BOTONES DE ACCIÓN --- */
+/* ============================================= */
+
+/* Estilo base para todos los botones de acción */
+.btn-accion {
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* Espacio entre el icono y el texto, si lo hay */
+}
+
+/* --- Botón Guardar (Principal) --- */
+.btn-guardar {
+  background-color: #007bff; /* Azul primario */
+  color: white;
+}
+.btn-guardar:hover {
+  background-color: #0069d9;
+  transform: translateY(-2px); /* Efecto sutil de "levantarse" */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Botón Agregar (Secundario) --- */
+.btn-agregar-detalle {
+  padding: 8px 16px;
+  background-color: #5cb85c; /* Verde de éxito */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+.btn-agregar-detalle:hover {
+  background-color: #4cae4c;
+}
+
+
+/* --- Botón Cancelar (Secundario) --- */
+.btn-cancelar {
+  background-color: #6c757d; /* Gris secundario */
+  color: white;
+}
+.btn-cancelar:hover {
+  background-color: #5a6268;
+}
+
+/* Estilo para botones deshabilitados */
+.btn-accion:disabled {
+  background-color: #38404a;
+  color: #8a99b0;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+/* ============================================= */
+/* --- CONTENEDOR PRINCIPAL DEL FORMULARIO --- */
+/* ============================================= */
+.form-container {
+  max-width: 1200px;
+  width: 95%;
+  margin: 0 auto;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+.form-group-button {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 15px;
+}
+
+.container-header h2 {
+  text-align: center;
+  color: #ecf0f1;
+  margin: 0 0 2rem 0;
+  font-size: 1.8rem;
+  border-bottom: 1px solid #38404a;
+  padding-bottom: 1rem;
+}
+
+/* ============================================= */
+/* --- SECCIONES (FIELDSET) Y LAYOUT --- */
+/* ============================================= */
+.form-section {
+  border: 1px solid #38404a;
+  border-radius: 8px;
+  padding: 2rem 1.5rem 1.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.form-section legend {
+  padding: 0 10px;
+  width: auto;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #a7b7d2;
+  background-color: #2c3e50; /* Fondo igual al contenedor para "cortar" el borde */
+  position: absolute;
+  top: -14px;
+  left: 20px;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 1rem;
+}
+
+.form-row-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+
+.form-group {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label,
+.alerta-label {
+  color: #a7b7d2;
+  margin-bottom: 8px;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.alerta-label {
+  color: #f0ad4e !important;
+  font-weight: bold;
+}
+
+/* ============================================= */
+/* --- ESTILOS PARA INPUTS Y CONTROLES --- */
+/* ============================================= */
+.form-control {
+  background-color: #1f2937;
+  border: 1px solid #38404a;
+  border-radius: 4px;
+  padding: 10px 12px;
+  color: #ecf0f1;
+  font-size: 1rem;
+  height: 45px; /* Altura consistente */
+  box-sizing: border-box;
+}
+
+.form-control:focus {
+  border-color: #4dabf7;
+  outline: none;
+}
+
+.form-control[readonly] {
+  background-color: #38404a;
+  cursor: not-allowed;
+}
+
+textarea.form-control {
+    height: auto; /* Permite que el textarea crezca */
+    min-height: 80px;
+}
+
+/* Estilos específicos para los buscadores de Angular Material */
+:host ::ng-deep .mat-mdc-form-field {
+  width: 100%;
+}
+
+:host ::ng-deep .mat-mdc-text-field-wrapper {
+  background-color: #1f2937;
+  border-radius: 4px;
+}
+
+:host ::ng-deep .mat-mdc-form-field .mdc-notched-outline > * {
+  border-color: #38404a !important;
+}
+
+:host ::ng-deep .mat-mdc-form-field.mat-focused .mdc-notched-outline > * {
+  border-color: #4dabf7 !important;
+}
+
+:host ::ng-deep .mat-mdc-form-field .mdc-floating-label {
+  color: #a7b7d2 !important;
+}
+
+:host ::ng-deep .mat-mdc-form-field input.mat-mdc-input-element {
+  color: #ecf0f1 !important;
+}
+
+/* ============================================= */
+/* --- TABLA DE RUTAS/ITEMS AGREGADOS --- */
+/* ============================================= */
+.tabla-preview {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.tabla-preview th,
+.tabla-preview td {
+  padding: 12px 15px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid #38404a;
+}
+
+.tabla-preview thead th {
+  color: #a7b7d2;
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.tabla-preview tbody td {
+  color: #e0e0e0;
+}
+
+.tabla-preview tbody tr:hover {
+  background-color: rgba(31, 41, 55, 0.5); /* #1f2937 con transparencia */
+}
+
+/* ============================================= */
+/* --- KPIs DE ANÁLISIS --- */
+/* ============================================= */
+.analysis-section {
+    border-color: #4dabf7; /* Borde azul para destacar */
+}
+
+.analysis-section legend {
+    color: #4dabf7;
+}
+
+.kpi-grid-sm {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.kpi-card-sm {
+  text-align: center;
+}
+
+.kpi-value-sm {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.kpi-label-sm {
+  font-size: 0.8em;
+  color: #a7b7d2;
+}
+
+.kpi-card-sm.kpi-alerta .kpi-value-sm {
+  color: #f0ad4e;
+}
+/* Botón para "Agregar" */
+.btn-agregar {
+  background-color: #4480d3;
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-agregar:hover {
+  background-color: #386bbd;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}

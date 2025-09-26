@@ -23,6 +23,10 @@ import { PerfilComponent } from './pages/perfil/perfil.component';
 import { ReportesComponent } from './pages/reportes/reportes.component';
 import { InventarioInicialComponent } from './pages/inventario-inicial/inventario-inicial.component';
 import { SuperadminPanelComponent } from './pages/superadmin-panel/superadmin-panel.component';
+import { RegistroCargaCombustibleComponent } from './pages/registro-carga-combustible/registro-carga-combustible.component';
+import { OperadoresComponent } from './pages/operadores/operadores.component';
+import { RutasComponent } from './pages/rutas/rutas.component';
+import { TanquesComponent } from './pages/tanques/tanques.component';
 
 const routes: Routes = [
   {
@@ -124,6 +128,30 @@ const routes: Routes = [
         component: InventarioInicialComponent,
         canActivate: [RoleGuard],
         data: { roles: ['Admin', 'SuperUsuario'] } 
+      },
+      {
+        path: 'registro-carga-combustible',
+        component: RegistroCargaCombustibleComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['Admin', 'SuperUsuario','AdminDiesel'] } 
+      },
+      {
+        path: 'operadores',
+        component: OperadoresComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['SuperUsuario','AdminDiesel', 'Admin'] } 
+      },
+      {
+        path: 'rutas',
+        component: RutasComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['SuperUsuario','AdminDiesel', 'Admin'] } 
+      },
+      {
+        path: 'tanques',
+        component: TanquesComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['SuperUsuario','AdminDiesel', 'Admin'] } 
       },
       {
     path: 'superadmin',
