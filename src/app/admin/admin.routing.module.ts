@@ -140,7 +140,7 @@ const routes: Routes = [
         path: 'operadores',
         component: OperadoresComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['SuperUsuario','AdminDiesel', 'Admin'] } 
+        data: { roles: ['SuperUsuario', 'Admin'] } 
       },
       {
         path: 'rutas',
@@ -158,7 +158,7 @@ const routes: Routes = [
         path: 'historial-combustible',
         component: HistorialCombustibleComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin','SuperUsuario'] }
+        data: { roles: ['SuperUsuario','AdminDiesel', 'Admin'] }
       },
       {
     path: 'superadmin',
