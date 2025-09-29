@@ -1,7 +1,7 @@
 <div class="usuarios-container">
   <div class="container-header">
     <h2>Gestión de Tanques de Combustible</h2>
-    <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+    <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel'])">
       <span>&#43;</span> Agregar Tanque
     </button>
   </div>
@@ -53,7 +53,7 @@
                     </div>
                 </div>
                 </td>
-                <td class="acciones" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+                <td class="acciones" *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel'])">
                     <button class="btn-accion btn-estado" (click)="abrirModal('editar', tanque)">Editar</button>
                     <button class="btn-accion btn-recargar" (click)="abrirModalRecarga(tanque)">Recargar</button>
                 </td>

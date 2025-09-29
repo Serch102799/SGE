@@ -116,7 +116,7 @@ const routes: Routes = [
         path: 'perfil',
         component: PerfilComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'SuperUsuario', 'Almacenista'] }
+        data: { roles: ['Admin', 'SuperUsuario', 'Almacenista', 'AdminDiesel'] }
       },
       {
         path: 'reportes',
