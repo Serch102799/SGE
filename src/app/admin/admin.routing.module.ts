@@ -35,12 +35,7 @@ const routes: Routes = [
     component: AdminComponent,
     canActivate: [AuthGuard],
     children: [
-      {
-        path: 'dashboard',
-        component: DashboardComponent,
-        canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista','SuperUsuario', 'AdminDiesel'] }
-      },
+      
       {
         path: 'refacciones',
         component: RefaccionesComponent,
@@ -166,6 +161,12 @@ const routes: Routes = [
     canActivate: [AuthGuard], // El guard que ya usas para proteger rutas
     data: { roles: ['SuperUsuario'] } // Especifica que solo este rol puede entrar
   },
+  {
+        path: 'dashboard',
+        component: DashboardComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['Admin', 'Almacenista','SuperUsuario', 'AdminDiesel'] }
+      },
     ],
   },
 ];
