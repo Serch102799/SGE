@@ -165,7 +165,7 @@ const routes: Routes = [
         path: 'dashboard',
         component: DashboardComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista','SuperUsuario', 'AdminDiesel'] }
+        data: { roles: ['Admin', 'Almacenista','SuperUsuario'] }
       },
     ],
   },
