@@ -27,6 +27,7 @@ import { RegistroCargaCombustibleComponent } from './pages/registro-carga-combus
 import { OperadoresComponent } from './pages/operadores/operadores.component';
 import { RutasComponent } from './pages/rutas/rutas.component';
 import { TanquesComponent } from './pages/tanques/tanques.component';
+import { HistorialCombustibleComponent } from './pages/historial-combustible/historial-combustible.component';
 
 const routes: Routes = [
   {
@@ -152,6 +153,12 @@ const routes: Routes = [
         component: TanquesComponent,
         canActivate: [RoleGuard],
         data: { roles: ['SuperUsuario','AdminDiesel', 'Admin'] } 
+      },
+      {
+        path: 'historial-combustible',
+        component: HistorialCombustibleComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['Admin','SuperUsuario'] }
       },
       {
     path: 'superadmin',
