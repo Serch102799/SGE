@@ -89,11 +89,11 @@ const routes: Routes = [
         canActivate: [RoleGuard],
         data: { roles: ['Admin', 'SuperUsuario'] }
       },
-      {
+      /* {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',
-      },
+      }, */
       {
         path: 'insumos',
         component: InsumosComponent,

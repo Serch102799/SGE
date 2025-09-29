@@ -119,11 +119,6 @@ export class AuthService {
       case 'AdminDiesel':
         this.router.navigate(['/admin/tanques']);
         break;
-      
-      // Puedes añadir más casos para otros roles si es necesario
-      // case 'Almacenista':
-      //   this.router.navigate(['/admin/entradas']);
-      //   break;
 
       default:
         this.router.navigate(['/admin/dashboard']);
