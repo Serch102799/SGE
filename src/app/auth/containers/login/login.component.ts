@@ -5,7 +5,6 @@ import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-login',
-  standalone: false,
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -27,7 +26,6 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  // Los getters para los campos del formulario se mantienen igual
   get nombreUsuario() { return this.loginForm.get('nombreUsuario'); }
   get password() { return this.loginForm.get('password'); }
 
@@ -37,7 +35,7 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    this.errorMessage = null; // Limpia errores previos
+    this.errorMessage = null;
     const { nombreUsuario, password } = this.loginForm.value;
 
     this.authService.login({ 
@@ -45,13 +43,13 @@ export class LoginComponent implements OnInit {
       Contrasena: password 
     }).subscribe({
       next: (response) => {
-        // El login fue exitoso
-        console.log('Login exitoso, redirigiendo...');
-        this.router.navigate(['/admin/dashboard']); 
+        // CAMBIO: Se elimina la redirección explícita de aquí.
+        // Ahora el AuthService se encarga de todo.
+        console.log('Login exitoso, el servicio de autenticación redirigirá...');
       },
       error: (err) => {
         console.error('Error recibido en el componente:', err);
-        this.errorMessage = 'Credenciales incorrectas. Verifica tu usuario y contraseña.';
+        this.errorMessage = err.error?.message || 'Credenciales incorrectas.';
       }
     });
   }
