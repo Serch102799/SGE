@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environments';
 import { forkJoin, Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 interface Tanque {
   id_tanque: number;
@@ -35,14 +36,26 @@ export class TanquesComponent implements OnInit {
   tanques: Tanque[] = [];
   totalesPorUbicacion: TotalPorUbicacion[] = [];
   ubicaciones: Ubicacion[] = [];
-  mostrarModalRecarga = false;
-  tanqueARecargar: Tanque | null = null;
-  litrosARecargar: number | null = null;
 
   // --- Modales y Notificaciones ---
   mostrarModal = false;
   modoEdicion = false;
   tanqueSeleccionado: Partial<Tanque> = {};
+  
+  mostrarModalRecarga = false;
+  tanqueARecargar: Tanque | null = null;
+  litrosARecargar: number | null = null;
+
+  // --- CAMBIO: Propiedades para el nuevo modal de Traslado ---
+  mostrarModalTraslado = false;
+  traslado = {
+    id_tanque_origen: null as number | null,
+    id_tanque_destino: null as number | null,
+    litros_trasladados: null as number | null,
+    fecha_operacion: this.getFormattedCurrentDateTime(),
+    observaciones: ''
+  };
+
   mostrarModalNotificacion = false;
   notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
 
@@ -52,37 +65,40 @@ export class TanquesComponent implements OnInit {
     this.obtenerDatos();
   }
 
+  private getFormattedCurrentDateTime(): string {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  }
+
   obtenerDatos(): void {
-    // Se obtienen tanto los tanques como el catálogo de ubicaciones para el modal
     const tanques$ = this.http.get<{ tanques: Tanque[], totalesPorUbicacion: TotalPorUbicacion[] }>(this.apiUrl);
-    const ubicaciones$ = this.http.get<Ubicacion[]>(`${environment.apiUrl}/ubicaciones`); // Asumiendo que crearás este endpoint
+    const ubicaciones$ = this.http.get<Ubicacion[]>(`${environment.apiUrl}/ubicaciones`).pipe(catchError(() => of([])));
 
     forkJoin([tanques$, ubicaciones$]).subscribe({
       next: ([respuestaTanques, ubicaciones]) => {
         this.tanques = respuestaTanques.tanques;
         this.totalesPorUbicacion = respuestaTanques.totalesPorUbicacion;
-        this.ubicaciones = ubicaciones;
+        this.ubicaciones = (ubicaciones as any).data || ubicaciones;
       },
       error: (err) => this.mostrarNotificacion('Error', 'No se pudieron cargar los datos de los tanques.', 'error')
     });
   }
 
+  // --- Métodos para Modal de Agregar/Editar Tanque ---
   abrirModal(modo: 'agregar' | 'editar', tanque?: Tanque): void {
     this.modoEdicion = modo === 'editar';
     this.tanqueSeleccionado = modo === 'editar' && tanque ? { ...tanque } : { nivel_actual_litros: 0 };
     this.mostrarModal = true;
   }
-
   cerrarModal(): void {
     this.mostrarModal = false;
   }
-
   guardarTanque(): void {
     if (!this.tanqueSeleccionado.nombre_tanque || !this.tanqueSeleccionado.id_ubicacion) {
       this.mostrarNotificacion('Campos Requeridos', 'El nombre del tanque y la ubicación son obligatorios.');
       return;
     }
-
     const request$ = this.modoEdicion
       ? this.http.put(`${this.apiUrl}/${this.tanqueSeleccionado.id_tanque}`, this.tanqueSeleccionado)
       : this.http.post(this.apiUrl, this.tanqueSeleccionado);
@@ -96,38 +112,71 @@ export class TanquesComponent implements OnInit {
       error: (err) => this.mostrarNotificacion('Error', err.error?.message || 'Ocurrió un error al guardar.', 'error')
     });
   }
+  
+  // --- Métodos para Modal de Recargar Tanque ---
   abrirModalRecarga(tanque: Tanque): void {
     this.tanqueARecargar = tanque;
-    this.litrosARecargar = null; // Resetea el campo
+    this.litrosARecargar = null;
     this.mostrarModalRecarga = true;
   }
-
   cerrarModalRecarga(): void {
     this.mostrarModalRecarga = false;
   }
-
   confirmarRecarga(): void {
     if (!this.tanqueARecargar || !this.litrosARecargar || this.litrosARecargar <= 0) {
       this.mostrarNotificacion('Dato Inválido', 'Por favor, ingresa una cantidad de litros válida.');
       return;
     }
-    
     const url = `${this.apiUrl}/recargar/${this.tanqueARecargar.id_tanque}`;
     const payload = { litros_a_cargar: this.litrosARecargar };
-
     this.http.post(url, payload).subscribe({
       next: () => {
         this.mostrarNotificacion('Éxito', 'Tanque recargado correctamente.', 'exito');
         this.cerrarModalRecarga();
-        this.obtenerDatos(); // Refresca la lista de tanques
+        this.obtenerDatos();
+      },
+      error: (err) => this.mostrarNotificacion('Error', err.error?.message || 'No se pudo completar la recarga.', 'error')
+    });
+  }
+
+  // --- CAMBIO: Métodos para el nuevo Modal de Traslado ---
+  abrirModalTraslado(): void {
+    this.traslado = {
+      id_tanque_origen: null,
+      id_tanque_destino: null,
+      litros_trasladados: null,
+      fecha_operacion: this.getFormattedCurrentDateTime(),
+      observaciones: ''
+    };
+    this.mostrarModalTraslado = true;
+  }
+
+  cerrarModalTraslado(): void {
+    this.mostrarModalTraslado = false;
+  }
+
+  guardarTraslado(): void {
+    if (!this.traslado.id_tanque_origen || !this.traslado.id_tanque_destino || !this.traslado.litros_trasladados || this.traslado.litros_trasladados <= 0) {
+      this.mostrarNotificacion('Datos Incompletos', 'Completa todos los campos para realizar el traslado.');
+      return;
+    }
+    this.http.post(`${environment.apiUrl}/traslados`, this.traslado).subscribe({
+      next: () => {
+        this.mostrarNotificacion('Éxito', 'Traslado registrado exitosamente.', 'exito');
+        this.cerrarModalTraslado();
+        this.obtenerDatos(); // Refresca toda la información
       },
       error: (err) => {
-        this.mostrarNotificacion('Error', err.error?.message || 'No se pudo completar la recarga.', 'error');
+        this.mostrarNotificacion('Error', err.error?.message || 'No se pudo registrar el traslado.', 'error');
       }
     });
   }
 
-  // --- Métodos de utilidad ---
-  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') { this.notificacion = { titulo, mensaje, tipo }; this.mostrarModalNotificacion = true; }
-  cerrarModalNotificacion() { this.mostrarModalNotificacion = false; }
+  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
+    this.notificacion = { titulo, mensaje, tipo };
+    this.mostrarModalNotificacion = true;
+  }
+  cerrarModalNotificacion() {
+    this.mostrarModalNotificacion = false;
+  }
 }
