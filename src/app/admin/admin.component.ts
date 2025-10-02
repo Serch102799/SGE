@@ -48,7 +48,9 @@ export class AdminComponent implements OnInit, AfterViewInit {
   ) {
   }
   ngOnInit(): void {
-    this.currentUser = this.authService.getCurrentUser();
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
   }
   toggleSidebar(): void {
     this.isCollapsed = !this.isCollapsed;

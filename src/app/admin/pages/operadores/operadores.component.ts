@@ -37,6 +37,7 @@ export class OperadoresComponent implements OnInit, OnDestroy {
   itemsPerPage: number = 10;
   totalItems: number = 0;
   terminoBusqueda: string = '';
+  filtroEstatus: string = 'Activo';
   private searchSubject: Subject<void> = new Subject<void>();
   private searchSubscription?: Subscription;
 
@@ -71,7 +72,8 @@ export class OperadoresComponent implements OnInit, OnDestroy {
     const params = new HttpParams()
       .set('page', this.currentPage.toString())
       .set('limit', this.itemsPerPage.toString())
-      .set('search', this.terminoBusqueda.trim());
+      .set('search', this.terminoBusqueda.trim())
+      .set('estatus', this.filtroEstatus);
 
     this.http.get<{ total: number, data: Operador[] }>(this.apiUrl, { params }).subscribe({
         next: (response) => {
@@ -149,7 +151,12 @@ export class OperadoresComponent implements OnInit, OnDestroy {
     }
   }
 
-  // --- Métodos de utilidad ---
-  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') { this.notificacion = { titulo, mensaje, tipo }; this.mostrarModalNotificacion = true; }
-  cerrarModalNotificacion() { this.mostrarModalNotificacion = false; }
+ mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
+    this.notificacion = { titulo, mensaje, tipo };
+    this.mostrarModalNotificacion = true;
+  }
+
+  cerrarModalNotificacion() {
+    this.mostrarModalNotificacion = false;
+  }
 }

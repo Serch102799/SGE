@@ -1,7 +1,7 @@
 <div class="usuarios-container">
   <div class="container-header">
     <h2>Gestión de Usuarios</h2>
-    <button class="btn-agregar" (click)="abrirModal()" *ngIf="authService.hasRole(['Admin'])">
+    <button class="btn-agregar" (click)="abrirModal()" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
       <span>&#43;</span> Agregar Usuario
     </button>
   </div>
@@ -30,7 +30,7 @@
               </span>
             </td>
             <td class="acciones">
-              <ng-container *ngIf="authService.hasRole(['Admin'])">
+              <ng-container *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
                 <!-- <button class="btn-accion btn-estado" (click)="cambiarEstadoUsuario(usuario)">Cambiar Estado</button> -->
                 <button class="btn-accion btn-eliminar" (click)="abrirModalBorrado(usuario)">Desactivar</button>
               </ng-container>

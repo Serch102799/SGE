@@ -1,11 +1,9 @@
-
-
 <div class="form-container">
   <div class="container-header">
     <h2>Registrar Carga de Combustible</h2>
     <a routerLink="/admin/historial-combustible" class="btn-historial-header">
-    Ver Historial
-  </a>
+      Ver Historial
+    </a>
   </div>
 
   <div class="container-body">
@@ -14,14 +12,17 @@
       <div class="form-row">
         <div class="form-group col-md-4">
           <label>Fecha de Operación</label>
-          <input type="datetime-local" class="form-control" [(ngModel)]="cargaMaestro.fecha_operacion" name="fecha_operacion" required>
+          <input type="datetime-local" class="form-control" [(ngModel)]="cargaMaestro.fecha_operacion"
+            name="fecha_operacion" required>
         </div>
         <div class="form-group col-md-8">
           <label>Autobús</label>
           <mat-form-field appearance="outline" class="full-width">
-            <input type="text" placeholder="Busca por económico..." matInput [formControl]="autobusControl" [matAutocomplete]="autoAutobus" required>
+            <input type="text" placeholder="Busca por económico..." matInput [formControl]="autobusControl"
+              [matAutocomplete]="autoAutobus" required>
           </mat-form-field>
-          <mat-autocomplete #autoAutobus="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onAutobusSelected($event)">
+          <mat-autocomplete #autoAutobus="matAutocomplete" [displayWith]="displayFn"
+            (optionSelected)="onAutobusSelected($event)">
             <mat-option *ngFor="let autobus of filteredAutobuses$ | async" [value]="autobus">
               {{ autobus.economico }}
             </mat-option>
@@ -35,27 +36,37 @@
         </div>
         <div class="form-group col-md-3">
           <label>KM Final (Actual)</label>
-          <input type="number" class="form-control" [(ngModel)]="cargaMaestro.km_final" name="km_final" (ngModelChange)="recalcularValores()" required>
+          <input type="number" class="form-control" [(ngModel)]="cargaMaestro.km_final" name="km_final"
+            (ngModelChange)="recalcularValores()" required>
         </div>
         <div class="form-group col-md-3">
           <label>Litros Cargados</label>
-          <input type="number" step="0.01" class="form-control" [(ngModel)]="cargaMaestro.litros_cargados" name="litros_cargados" (ngModelChange)="recalcularValores()" required>
+          <input type="number" step="0.01" class="form-control" [(ngModel)]="cargaMaestro.litros_cargados"
+            name="litros_cargados" (ngModelChange)="recalcularValores()" required>
         </div>
         <div class="form-group col-md-3">
           <label>Ubicación de Carga (Corralón)</label>
           <select class="form-control" [(ngModel)]="cargaMaestro.id_ubicacion" name="id_ubicacion" required>
             <option [ngValue]="null" disabled>Selecciona una ubicación...</option>
-            <option *ngFor="let ubicacion of ubicaciones" [ngValue]="ubicacion.id_ubicacion">{{ ubicacion.nombre_ubicacion }}</option>
+            <option *ngFor="let ubicacion of ubicaciones" [ngValue]="ubicacion.id_ubicacion">{{
+              ubicacion.nombre_ubicacion }}</option>
           </select>
         </div>
       </div>
-       <div class="form-group">
-          <label>Operador (Chofer)</label>
-          <select class="form-control" [(ngModel)]="cargaMaestro.id_empleado_operador" name="id_empleado_operador">
-            <option [ngValue]="null">Selecciona un operador...</option>
-            <option *ngFor="let op of operadores" [ngValue]="op.id_operador">{{ op.nombre_completo }}</option>
-          </select>
-        </div>
+      <div class="form-group">
+        <label>Operador (Chofer)</label>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <input type="text" placeholder="Busca por nombre de operador..." matInput [formControl]="operadorControl"
+            [matAutocomplete]="autoOperador">
+        </mat-form-field>
+        <mat-autocomplete #autoOperador="matAutocomplete" [displayWith]="displayFn"
+          (optionSelected)="onOperadorSelected($event)">
+          <mat-option *ngFor="let operador of filteredOperadores$ | async" [value]="operador">
+            {{ operador.nombre_completo }}
+          </mat-option>
+        </mat-autocomplete>
+      </div>
     </fieldset>
 
     <fieldset class="form-section">
@@ -65,7 +76,8 @@
           <label>Ruta</label>
           <select class="form-control" [(ngModel)]="detalleRutaActual.id_ruta" name="id_ruta">
             <option [ngValue]="null" disabled>Selecciona una ruta...</option>
-            <option *ngFor="let ruta of rutas" [ngValue]="ruta.id_ruta">{{ ruta.nombre_ruta }} ({{ ruta.kilometraje_vuelta }} km)</option>
+            <option *ngFor="let ruta of rutas" [ngValue]="ruta.id_ruta">{{ ruta.nombre_ruta }} ({{
+              ruta.kilometraje_vuelta }} km)</option>
           </select>
         </div>
         <div class="form-group col-md-2">
@@ -77,29 +89,49 @@
         </div>
       </div>
       <table class="tabla-preview" *ngIf="rutas_realizadas.length > 0">
-        <thead><tr><th>Ruta</th><th>Vueltas</th><th>Acción</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Ruta</th>
+            <th>Vueltas</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
         <tbody>
           <tr *ngFor="let ruta of rutas_realizadas; let i = index">
             <td>{{ ruta.nombre_ruta }}</td>
             <td>{{ ruta.vueltas }}</td>
-            <td class="acciones"><button type="button" class="btn-accion btn-eliminar-sm" (click)="eliminarRuta(i)">Quitar</button></td>
+            <td class="acciones"><button type="button" class="btn-accion btn-eliminar-sm"
+                (click)="eliminarRuta(i)">Quitar</button></td>
           </tr>
         </tbody>
       </table>
     </fieldset>
-    
+
     <fieldset class="form-section analysis-section">
-        <legend>3. Análisis de Rendimiento</legend>
-        <div class="kpi-grid-sm">
-            <div class="kpi-card-sm"><div class="kpi-value-sm">{{ km_esperados | number:'1.0-0' }} km</div><div class="kpi-label-sm">KM Esperados</div></div>
-            <div class="kpi-card-sm"><div class="kpi-value-sm">{{ km_recorridos | number:'1.0-0' }} km</div><div class="kpi-label-sm">KM Recorridos</div></div>
-            <div class="kpi-card-sm" [ngClass]="{'kpi-alerta': Math.abs(desviacion_km) > umbral_km}"><div class="kpi-value-sm">{{ desviacion_km | number:'1.0-0' }} km</div><div class="kpi-label-sm">Desviación</div></div>
-            <div class="kpi-card-sm"><div class="kpi-value-sm">{{ rendimiento_calculado | number:'1.2-2' }} km/l</div><div class="kpi-label-sm">Rendimiento</div></div>
+      <legend>3. Análisis de Rendimiento</legend>
+      <div class="kpi-grid-sm">
+        <div class="kpi-card-sm">
+          <div class="kpi-value-sm">{{ km_esperados | number:'1.0-0' }} km</div>
+          <div class="kpi-label-sm">KM Esperados</div>
         </div>
-        <div class="form-group" *ngIf="Math.abs(desviacion_km) > umbral_km">
-            <label for="motivo_desviacion" class="alerta-label">⚠️ Motivo de la Desviación (Obligatorio)</label>
-            <textarea id="motivo_desviacion" class="form-control" [(ngModel)]="cargaMaestro.motivo_desviacion" name="motivo_desviacion" rows="2" required></textarea>
+        <div class="kpi-card-sm">
+          <div class="kpi-value-sm">{{ km_recorridos | number:'1.0-0' }} km</div>
+          <div class="kpi-label-sm">KM Recorridos</div>
         </div>
+        <div class="kpi-card-sm" [ngClass]="{'kpi-alerta': Math.abs(desviacion_km) > umbral_km}">
+          <div class="kpi-value-sm">{{ desviacion_km | number:'1.0-0' }} km</div>
+          <div class="kpi-label-sm">Desviación</div>
+        </div>
+        <div class="kpi-card-sm">
+          <div class="kpi-value-sm">{{ rendimiento_calculado | number:'1.2-2' }} km/l</div>
+          <div class="kpi-label-sm">Rendimiento</div>
+        </div>
+      </div>
+      <div class="form-group" *ngIf="Math.abs(desviacion_km) > umbral_km">
+        <label for="motivo_desviacion" class="alerta-label">⚠️ Motivo de la Desviación (Obligatorio)</label>
+        <textarea id="motivo_desviacion" class="form-control" [(ngModel)]="cargaMaestro.motivo_desviacion"
+          name="motivo_desviacion" rows="2" required></textarea>
+      </div>
     </fieldset>
 
     <div class="acciones-finales">
@@ -114,7 +146,8 @@
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3 [ngClass]="{'header-exito': notificacion.tipo === 'exito','header-error': notificacion.tipo === 'error','header-advertencia': notificacion.tipo === 'advertencia'}">
+      <h3
+        [ngClass]="{'header-exito': notificacion.tipo === 'exito','header-error': notificacion.tipo === 'error','header-advertencia': notificacion.tipo === 'advertencia'}">
         {{ notificacion.titulo }}
       </h3>
       <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>

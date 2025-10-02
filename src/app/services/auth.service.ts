@@ -78,6 +78,13 @@ export class AuthService {
     }
     return null;
   }
+  getCurrentUser(): CurrentUser | null {
+    if (this.isBrowser) {
+      const user = localStorage.getItem('current_user');
+      return user ? JSON.parse(user) : null;
+    }
+    return null;
+  }
 
   hasRole(roles: string[]): boolean {
     const user = this.currentUserValue;

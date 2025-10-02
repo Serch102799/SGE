@@ -45,7 +45,9 @@ export class RegistroCargaCombustibleComponent implements OnInit {
 
   // --- Lógica de Autocomplete ---
   autobusControl = new FormControl();
+  operadorControl = new FormControl();
   filteredAutobuses$: Observable<Autobus[]>;
+  filteredOperadores$: Observable<Operador[]>;
 
   // --- Lógica de Rutas ---
   detalleRutaActual = { id_ruta: null as number | null, vueltas: 1 };
@@ -57,7 +59,7 @@ export class RegistroCargaCombustibleComponent implements OnInit {
   km_esperados: number = 0;
   desviacion_km: number = 0;
   rendimiento_calculado: number = 0;
-  umbral_km: number = 15; // Límite de desviación de KM antes de pedir motivo
+  umbral_km: number = 15;
 
   isSaving = false;
   mostrarModalNotificacion = false;
@@ -73,7 +75,13 @@ export class RegistroCargaCombustibleComponent implements OnInit {
       startWith(''),
       debounceTime(300),
       distinctUntilChanged(),
-      switchMap(value => this._buscarAutobuses(value || ''))
+      switchMap(value => this._buscarApi('autobuses', value || ''))
+    );
+    this.filteredOperadores$ = this.operadorControl.valueChanges.pipe(
+      startWith(''),
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(value => this._buscarApi('operadores', value || ''))
     );
   }
 
@@ -87,14 +95,14 @@ export class RegistroCargaCombustibleComponent implements OnInit {
     return now.toISOString().slice(0, 16);
   }
 
-  private _buscarAutobuses(term: any): Observable<Autobus[]> {
-    const searchTerm = typeof term === 'string' ? term : term.economico;
+  private _buscarApi(tipo: 'autobuses' | 'operadores', term: any): Observable<any[]> {
+    const searchTerm = typeof term === 'string' ? term : term.economico || term.nombre_completo;
     if (!searchTerm) { return of([]); }
-    return this.http.get<Autobus[]>(`${this.apiUrl}/autobuses/buscar`, { params: { term: searchTerm } });
+    return this.http.get<any[]>(`${this.apiUrl}/${tipo}/buscar`, { params: { term: searchTerm } });
   }
 
   displayFn(item: any): string {
-    return item ? item.economico : '';
+    return item ? (item.economico || item.nombre_completo) : '';
   }
 
   onAutobusSelected(event: MatAutocompleteSelectedEvent): void {
@@ -104,25 +112,28 @@ export class RegistroCargaCombustibleComponent implements OnInit {
     this.recalcularValores();
   }
 
-  cargarCatalogos() {
-    // CAMBIO: Se llama a los endpoints que devuelven arreglos simples
-    const peticiones: [Observable<Operador[]>, Observable<Ruta[]>, Observable<Ubicacion[]>] = [
-      this.http.get<Operador[]>(`${this.apiUrl}/operadores`),
-      this.http.get<Ruta[]>(`${this.apiUrl}/rutas`),
-      this.http.get<Ubicacion[]>(`${this.apiUrl}/ubicaciones`) 
-    ];
-
-    forkJoin(peticiones).subscribe({
-  next: ([operadores, rutas, ubicaciones]) => {
-    this.operadores = (operadores as any).data || operadores;
-    this.rutas = (rutas as any).data || rutas;
-    this.ubicaciones = (ubicaciones as any).data || ubicaciones;
-  },
-  error: (err) => {
-    this.mostrarNotificacion('Error de Carga', 'No se pudieron cargar los catálogos necesarios.', 'error');
+  onOperadorSelected(event: MatAutocompleteSelectedEvent): void {
+    const operador = event.option.value as Operador;
+    this.cargaMaestro.id_empleado_operador = operador.id_operador;
   }
-});
-}
+
+  cargarCatalogos() {
+    // Solo se cargan los catálogos que se usan en dropdowns estáticos
+    const peticiones: [Observable<Ruta[]>, Observable<Ubicacion[]>] = [
+      this.http.get<Ruta[]>(`${this.apiUrl}/rutas`),
+      this.http.get<Ubicacion[]>(`${this.apiUrl}/ubicaciones`)
+    ];
+    
+    forkJoin(peticiones).subscribe({
+      next: ([rutas, ubicaciones]) => {
+        this.rutas = (rutas as any).data || rutas;
+        this.ubicaciones = (ubicaciones as any).data || ubicaciones;
+      },
+      error: (err) => {
+        this.mostrarNotificacion('Error de Carga', 'No se pudieron cargar los catálogos necesarios.', 'error');
+      }
+    });
+  }
 
   agregarRuta() {
     const { id_ruta, vueltas } = this.detalleRutaActual;
@@ -179,7 +190,7 @@ export class RegistroCargaCombustibleComponent implements OnInit {
     this.http.post(`${this.apiUrl}/cargas-combustible`, payload).subscribe({
       next: () => {
         sessionStorage.setItem('notificacion', '¡Carga de combustible registrada exitosamente!');
-        this.router.navigate(['/admin/tanques']); // O a la página de historial que crearás
+        this.router.navigate(['/admin/historial-combustible']);
       },
       error: err => {
         this.mostrarNotificacion('Error', err.error?.message || 'Error al guardar la carga.', 'error');

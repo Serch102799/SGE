@@ -1,7 +1,7 @@
 <div class="usuarios-container">
   <div class="container-header">
     <h2>Gestión de Autobuses</h2>
-    <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin'])">
+    <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
       <span>&#43;</span> Agregar Autobús
     </button>
   </div>
@@ -78,7 +78,7 @@
             <td>{{ autobus.modelo }}</td>
             <td>{{ autobus.anio }}</td>
             <td>{{ autobus.kilometraje_actual | number }} km</td>
-            <td class="acciones" *ngIf="authService.hasRole(['Admin'])" (click)="$event.stopPropagation()">
+            <td class="acciones" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])" (click)="$event.stopPropagation()">
               <button class="btn-accion btn-historial" (click)="verHistorial(autobus)">Historial</button>
               <button class="btn-accion btn-estado" (click)="abrirModal('editar', autobus)">Editar</button>
               <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(autobus)">Eliminar</button>
