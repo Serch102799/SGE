@@ -1,116 +1,118 @@
 <div class="usuarios-container">
-  <div class="container-header">
-    <h2>Historial de Vales de Salida</h2>
-    <div class="acciones-header">
-      <button class="btn-exportar" (click)="exportarACSV()">
-        <span>&#128196;</span> Exportar a CSV
-      </button>
-      <button class="btn-agregar" (click)="registrarNuevaSalida()">
-        <span>&#43;</span> Registrar Nuevo Vale
-      </button>
-    </div>
-  </div>
-
-  <div class="container-body">
-    <div class="filtros-container">
-      <div class="filtro-item">
-        <input type="text" class="form-control" placeholder="Buscar por económico, tipo o empleado..."
-          [(ngModel)]="terminoBusqueda" (ngModelChange)="onFiltroChange()">
-      </div>
-      <div class="filtro-item">
-        <label>Desde:</label>
-        <input type="date" class="form-control" [(ngModel)]="fechaInicio" (change)="onFiltroChange()">
-      </div>
-      <div class="filtro-item">
-        <label>Hasta:</label>
-        <input type="date" class="form-control" [(ngModel)]="fechaFin" (change)="onFiltroChange()">
-      </div>
+    <div class="container-header">
+        <h2>Historial de Vales de Salida</h2>
+        <div class="acciones-header">
+            <button class="btn-exportar" (click)="exportarACSV()">
+                <span>&#128196;</span> Exportar a CSV
+            </button>
+            <button class="btn-agregar" (click)="registrarNuevaSalida()">
+                <span>&#43;</span> Registrar Nuevo Vale
+            </button>
+        </div>
     </div>
 
-    <div class="contador-resultados">
-      <strong>{{ totalItems }}</strong> vales de salida encontrados
-    </div>
+    <div class="container-body">
+        <div class="filtros-container">
+            <div class="filtro-item">
+                <input type="text" class="form-control" placeholder="Buscar por económico, tipo o empleado..."
+                    [(ngModel)]="terminoBusqueda" (ngModelChange)="onFiltroChange()">
+            </div>
+            <div class="filtro-item">
+                <label>Desde:</label>
+                <input type="date" class="form-control" [(ngModel)]="fechaInicio" (change)="onFiltroChange()">
+            </div>
+            <div class="filtro-item">
+                <label>Hasta:</label>
+                <input type="date" class="form-control" [(ngModel)]="fechaFin" (change)="onFiltroChange()">
+            </div>
+        </div>
 
-    <div class="tabla-responsive-wrapper">
-      <table class="tabla-usuarios">
-        <thead>
-          <tr>
-            <!-- <th>ID</th> -->
-            <th>Fecha Operación</th>
-            <th>Tipo</th>
-            <th>Autobús</th>
-            <th>Kilometraje</th>
-            <th>Solicitado Por</th>
-            <th style="text-align: center;">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let salida of salidas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
-            <!-- <td>{{ salida.idSalida }}</td> -->
-            <td>{{ salida.fechaSalida | date:'dd/MM/yyyy h:mm a' }}</td>
-            <td>{{ salida.tipoSalida }}</td>
-            <td>{{ salida.economicoAutobus }}</td>
-            <td>{{ salida.kilometrajeAutobus | number }} km</td>
-            <td>{{ salida.nombreEmpleado }}</td>
-            <td class="acciones">
-              <button class="btn-accion btn-detalles" (click)="verDetalles(salida)">Ver Detalles</button>
-              <button class="btn-accion btn-agregar-items" (click)="abrirModalAgregarItems(salida)" *ngIf="authService.hasRole(['Admin', 'Almacenista'])">Agregar</button>
-            </td>
-          </tr>
-           <tr *ngIf="salidas.length === 0">
-            <td colspan="7" class="empty-table-message">No se encontraron salidas que coincidan con los filtros.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+        <div class="contador-resultados">
+            <strong>{{ totalItems }}</strong> vales de salida encontrados
+        </div>
 
-    <div class="pagination-controls">
-      <pagination-controls 
-          (pageChange)="onPageChange($event)"
-          previousLabel="Anterior"
-          nextLabel="Siguiente">
-      </pagination-controls>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
-  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-        <h3>Detalles de la Salida #{{ salidaSeleccionadaId }}</h3>
-        <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
-    </div>
-    <div class="modal-body">
         <div class="tabla-responsive-wrapper">
-            <table class="tabla-preview">
+            <table class="tabla-usuarios">
                 <thead>
                     <tr>
+                        <!-- <th>ID</th> -->
+                        <th>Fecha Operación</th>
                         <th>Tipo</th>
-                        <th>Descripción</th>
-                        <th>Cantidad</th>
+                        <th>Autobús</th>
+                        <th>Kilometraje</th>
+                        <th>Solicitado Por</th>
+                        <th style="text-align: center;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let detalle of detallesSeleccionados">
-                        <td>
-                            <span class="badge" [ngClass]="{'badge-refaccion': detalle.tipo_item === 'Refacción', 'badge-insumo': detalle.tipo_item === 'Insumo'}">
-                                {{ detalle.tipo_item }}
-                            </span>
+                    <tr
+                        *ngFor="let salida of salidas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+                        <!-- <td>{{ salida.idSalida }}</td> -->
+                        <td>{{ salida.fechaSalida | date:'dd/MM/yyyy h:mm a' }}</td>
+                        <td>{{ salida.tipoSalida }}</td>
+                        <td>{{ salida.economicoAutobus }}</td>
+                        <td>{{ salida.kilometrajeAutobus | number }} km</td>
+                        <td>{{ salida.nombreEmpleado }}</td>
+                        <td class="acciones">
+                            <button class="btn-accion btn-detalles" (click)="verDetalles(salida)">Ver Detalles</button>
+                            <button class="btn-accion btn-agregar-items" (click)="abrirModalAgregarItems(salida)"
+                                *ngIf="authService.hasRole(['Admin', 'Almacenista'])">Agregar</button>
                         </td>
-                        <td>{{ detalle.nombre }}</td>
-                        <td>{{ detalle.cantidad | number:'1.2-2' }}</td>
                     </tr>
-                    <tr *ngIf="detallesSeleccionados.length === 0">
-                      <td colspan="3" class="empty-table-message">Esta salida no tiene items registrados.</td>
+                    <tr *ngIf="salidas.length === 0">
+                        <td colspan="7" class="empty-table-message">No se encontraron salidas que coincidan con los
+                            filtros.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
+        <div class="pagination-controls">
+            <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente">
+            </pagination-controls>
+        </div>
     </div>
-    <div class="modal-footer">
-        <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalDetalles()">Cerrar</button>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
+    <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Detalles de la Salida #{{ salidaSeleccionadaId }}</h3>
+            <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="tabla-responsive-wrapper">
+                <table class="tabla-preview">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Descripción</th>
+                            <th>Cantidad</th>
+                            <th>Costo Unitario</th>
+                            <th>Costo Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let detalle of detallesSeleccionados">
+                            <td>
+                                <span class="badge"
+                                    [ngClass]="{'badge-refaccion': detalle.tipo_item === 'Refacción', 'badge-insumo': detalle.tipo_item === 'Insumo'}">
+                                    {{ detalle.tipo_item }}
+                                </span>
+                            </td>
+                            <td>{{ detalle.nombre }}</td>
+                            <td>{{ detalle.cantidad | number:'1.2-2' }}</td>
+                            <td>{{ detalle.costo_unitario | currency:'MXN' }}</td>
+                            <td><strong>{{ (detalle.cantidad * detalle.costo_unitario) | currency:'MXN' }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalDetalles()">Cerrar</button>
+        </div>
     </div>
-  </div>
 </div>
 <div class="modal-overlay" *ngIf="mostrarModalAgregarItems" (click)="cerrarModalAgregarItems()">
     <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
@@ -119,12 +121,14 @@
             <button class="btn-cerrar" (click)="cerrarModalAgregarItems()">×</button>
         </div>
         <div class="modal-body">
-            
+
             <fieldset class="form-section-sm">
                 <legend>Items Existentes</legend>
                 <ul class="lista-items-existentes">
                     <li *ngFor="let item of itemsExistentes">
-                        <span class="badge" [ngClass]="{'badge-refaccion': item.tipo_item === 'Refacción', 'badge-insumo': item.tipo_item === 'Insumo'}">{{ item.tipo_item }}</span>
+                        <span class="badge"
+                            [ngClass]="{'badge-refaccion': item.tipo_item === 'Refacción', 'badge-insumo': item.tipo_item === 'Insumo'}">{{
+                            item.tipo_item }}</span>
                         {{ item.nombre_item }} - Cantidad: {{ item.cantidad }}
                     </li>
                     <li *ngIf="itemsExistentes.length === 0">Esta salida aún no tiene items registrados.</li>
@@ -137,9 +141,11 @@
                     <div class="form-group col-md-5">
                         <label>Buscar Refacción</label>
                         <mat-form-field appearance="outline" class="full-width">
-                            <input type="text" placeholder="Escribe para buscar..." matInput [formControl]="refaccionControl" [matAutocomplete]="autoRefaccion">
+                            <input type="text" placeholder="Escribe para buscar..." matInput
+                                [formControl]="refaccionControl" [matAutocomplete]="autoRefaccion">
                         </mat-form-field>
-                        <mat-autocomplete #autoRefaccion="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onRefaccionSelectedEnModal($event)">
+                        <mat-autocomplete #autoRefaccion="matAutocomplete" [displayWith]="displayFn"
+                            (optionSelected)="onRefaccionSelectedEnModal($event)">
                             <mat-option *ngFor="let refaccion of filteredRefacciones$ | async" [value]="refaccion">
                                 {{ refaccion.nombre }} ({{ refaccion.numero_parte || 'S/N' }})
                             </mat-option>
@@ -156,7 +162,9 @@
                     </div>
                     <div class="form-group col-md-2">
                         <label>Cantidad</label>
-                        <input type="number" class="form-control" [(ngModel)]="detalleActualRefaccion.cantidad_despachada" name="cantidad_despachada_modal" min="1">
+                        <input type="number" class="form-control"
+                            [(ngModel)]="detalleActualRefaccion.cantidad_despachada" name="cantidad_despachada_modal"
+                            min="1">
                     </div>
                     <div class="form-group-button">
                         <button type="button" class="btn-agregar-detalle" (click)="agregarNuevaRefaccion()">+</button>
@@ -164,7 +172,8 @@
                 </div>
                 <ul class="lista-items-nuevos">
                     <li *ngFor="let item of itemsNuevosRefacciones">
-                        <span>✅ {{ item.nombre_refaccion }} (Lote: {{ item.nombre_proveedor }}) - Cantidad: {{ item.cantidad_despachada }}</span>
+                        <span>✅ {{ item.nombre_refaccion }} (Lote: {{ item.nombre_proveedor }}) - Cantidad: {{
+                            item.cantidad_despachada }}</span>
                     </li>
                 </ul>
             </fieldset>
@@ -175,9 +184,11 @@
                     <div class="form-group col-md-8">
                         <label>Buscar Insumo</label>
                         <mat-form-field appearance="outline" class="full-width">
-                            <input type="text" placeholder="Escribe para buscar..." matInput [formControl]="insumoControl" [matAutocomplete]="autoInsumo">
+                            <input type="text" placeholder="Escribe para buscar..." matInput
+                                [formControl]="insumoControl" [matAutocomplete]="autoInsumo">
                         </mat-form-field>
-                        <mat-autocomplete #autoInsumo="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onInsumoSelectedEnModal($event)">
+                        <mat-autocomplete #autoInsumo="matAutocomplete" [displayWith]="displayFn"
+                            (optionSelected)="onInsumoSelectedEnModal($event)">
                             <mat-option *ngFor="let insumo of filteredInsumos$ | async" [value]="insumo">
                                 {{ insumo.nombre }} (Stock: {{ insumo.stock_actual }})
                             </mat-option>
@@ -185,7 +196,8 @@
                     </div>
                     <div class="form-group col-md-2">
                         <label>Cantidad</label>
-                        <input type="number" step="0.01" class="form-control" [(ngModel)]="detalleActualInsumo.cantidad_usada" name="cantidad_usada_modal" min="0.01">
+                        <input type="number" step="0.01" class="form-control"
+                            [(ngModel)]="detalleActualInsumo.cantidad_usada" name="cantidad_usada_modal" min="0.01">
                     </div>
                     <div class="form-group-button">
                         <button type="button" class="btn-agregar-detalle" (click)="agregarNuevoInsumo()">+</button>
@@ -200,7 +212,8 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalAgregarItems()">Cancelar</button>
-            <button type="button" class="btn-accion btn-guardar" (click)="guardarItemsAdicionales()">Guardar Items</button>
+            <button type="button" class="btn-accion btn-guardar" (click)="guardarItemsAdicionales()">Guardar
+                Items</button>
         </div>
     </div>
 </div>

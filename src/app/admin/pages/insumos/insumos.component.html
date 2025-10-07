@@ -2,7 +2,7 @@
   <div class="container-header">
     <h2>Catálogo de Insumos y Consumibles</h2>
     <div class="acciones-header">
-      <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'Almacenista'])">
+      <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'Almacenista', 'SuperUsuario'])">
         <span>&#43;</span> Agregar Insumo
       </button>
     </div>
@@ -60,7 +60,7 @@
               {{ insumo.stock_actual | number:'1.2-2' }}
             </td>
             <td>{{ insumo.unidad_medida }}</td>
-            <td class="acciones" *ngIf="authService.hasRole(['Admin', 'Almacenista'])">
+            <td class="acciones" *ngIf="authService.hasRole(['Admin', 'Almacenista', 'SuperUsuario'])">
               <button class="btn-accion btn-estado" (click)="abrirModal('editar', insumo)">Editar</button>
               <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(insumo)">Eliminar</button>
             </td>
