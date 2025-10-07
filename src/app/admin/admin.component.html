@@ -8,9 +8,12 @@
       </button>
     </div>
     <ul class="sidebar-nav">
-      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])"><a routerLink="dashboard"><fa-icon [icon]="faDashboard"></fa-icon> <span>Dashboard</span></a></li>
-      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])"><a routerLink="entradas"><fa-icon [icon]="faEntradas"></fa-icon><span>Entradas</span></a></li>
-      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])"><a routerLink="salidas"><fa-icon [icon]="faSalidas"></fa-icon> <span>Salidas</span></a></li>
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])"><a routerLink="dashboard"><fa-icon
+            [icon]="faDashboard"></fa-icon> <span>Dashboard</span></a></li>
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])"><a routerLink="entradas"><fa-icon
+            [icon]="faEntradas"></fa-icon><span>Entradas</span></a></li>
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])"><a routerLink="salidas"><fa-icon
+            [icon]="faSalidas"></fa-icon> <span>Salidas</span></a></li>
       <!--   <li><a routerLink="registro-entrada-insumo">Entradas I</a></li> -->
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
@@ -39,6 +42,12 @@
         <a routerLink="/admin/superadmin">
           <i class="fas fa-shield-alt"></i> <fa-icon [icon]="faEdicionHistorica"></fa-icon> <span>Edición
             Histórica</span>
+        </a>
+      </li>
+      <li *ngIf="authService.hasRole(['SuperUsuario'])">
+        <a routerLink="/admin/edicion-detalles" routerLinkActive="active">
+          <fa-icon [icon]="faEdicionDetalles"></fa-icon>
+          <span>Corrección de Errores</span>
         </a>
       </li>
       <li *ngIf="authService.hasRole(['AdminDiesel', 'SuperUsuario'])">

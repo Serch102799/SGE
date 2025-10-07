@@ -9,7 +9,7 @@ import {
 import { AuthService } from '../services/auth.service';
 import {faOilCan,faRoute, faCar, faBars, faTachometerAlt, faArrowCircleDown, faArrowCircleUp, faCogs, 
   faTint, faUsersCog, faBus, faTruck, faChartPie, 
-  faDolly, faHistory, faUserCircle, faSignOutAlt, faGasPump  } from '@fortawesome/free-solid-svg-icons';
+  faDolly, faHistory, faUserCircle, faSignOutAlt, faGasPump, faScrewdriverWrench  } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-admin',
@@ -21,6 +21,8 @@ import {faOilCan,faRoute, faCar, faBars, faTachometerAlt, faArrowCircleDown, faA
 export class AdminComponent implements OnInit, AfterViewInit {
 
   isCollapsed = false;
+  faEdicionHistorica = faHistory; 
+  faEdicionDetalles = faScrewdriverWrench; 
   faTanques = faOilCan;
   faBars = faBars;
   faRutas = faRoute;
@@ -36,9 +38,9 @@ export class AdminComponent implements OnInit, AfterViewInit {
   faProveedores = faTruck;
   faReportes = faChartPie;
   faCargaInicial = faDolly;
-  faEdicionHistorica = faHistory;
   faMiPerfil = faUserCircle;
   faCerrarSesion = faSignOutAlt;
+  faTachometerAlt = faTachometerAlt;
 
   currentUser: any;
   constructor(

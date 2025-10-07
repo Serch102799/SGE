@@ -28,6 +28,7 @@ import { OperadoresComponent } from './pages/operadores/operadores.component';
 import { RutasComponent } from './pages/rutas/rutas.component';
 import { TanquesComponent } from './pages/tanques/tanques.component';
 import { HistorialCombustibleComponent } from './pages/historial-combustible/historial-combustible.component';
+import { EdicionDetallesComponent } from './pages/edicion-detalles/edicion-detalles.component';
 
 const routes: Routes = [
   {
@@ -35,36 +36,36 @@ const routes: Routes = [
     component: AdminComponent,
     canActivate: [AuthGuard],
     children: [
-      
+
       {
         path: 'refacciones',
         component: RefaccionesComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista','SuperUsuario'] }
+        data: { roles: ['Admin', 'Almacenista', 'SuperUsuario'] }
       },
       {
         path: 'entradas',
         component: EntradasComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista','SuperUsuario'] }
+        data: { roles: ['Admin', 'Almacenista', 'SuperUsuario'] }
       },
       {
         path: 'registro-entrada',
         component: RegistroEntradaComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista','SuperUsuario'] }
+        data: { roles: ['Admin', 'Almacenista', 'SuperUsuario'] }
       },
       {
         path: 'salidas',
         component: SalidasComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista','SuperUsuario'] }
+        data: { roles: ['Admin', 'Almacenista', 'SuperUsuario'] }
       },
       {
         path: 'registro-salida',
         component: RegistroSalidaComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista','SuperUsuario'] }
+        data: { roles: ['Admin', 'Almacenista', 'SuperUsuario'] }
       },
       {
         path: 'usuarios',
@@ -76,7 +77,7 @@ const routes: Routes = [
         path: 'proveedores',
         component: ProveedoresComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin','SuperUsuario'] }
+        data: { roles: ['Admin', 'SuperUsuario'] }
       },
       {
         path: 'autobuses',
@@ -117,55 +118,61 @@ const routes: Routes = [
         path: 'reportes',
         component: ReportesComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['SuperUsuario'] } 
+        data: { roles: ['SuperUsuario'] }
       },
       {
         path: 'inventario-inicial',
         component: InventarioInicialComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'SuperUsuario'] } 
+        data: { roles: ['Admin', 'SuperUsuario'] }
       },
       {
         path: 'registro-carga-combustible',
         component: RegistroCargaCombustibleComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'SuperUsuario','AdminDiesel'] } 
+        data: { roles: ['Admin', 'SuperUsuario', 'AdminDiesel'] }
       },
       {
         path: 'operadores',
         component: OperadoresComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['SuperUsuario', 'Admin'] } 
+        data: { roles: ['SuperUsuario', 'Admin'] }
       },
       {
         path: 'rutas',
         component: RutasComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['SuperUsuario','AdminDiesel', 'Admin'] } 
+        data: { roles: ['SuperUsuario', 'AdminDiesel', 'Admin'] }
       },
       {
         path: 'tanques',
         component: TanquesComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['SuperUsuario','AdminDiesel', 'Admin'] } 
+        data: { roles: ['SuperUsuario', 'AdminDiesel', 'Admin'] }
       },
       {
         path: 'historial-combustible',
         component: HistorialCombustibleComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['SuperUsuario','AdminDiesel', 'Admin'] }
+        data: { roles: ['SuperUsuario', 'AdminDiesel', 'Admin'] }
       },
       {
-    path: 'superadmin',
-    component: SuperadminPanelComponent,
-    canActivate: [AuthGuard], // El guard que ya usas para proteger rutas
-    data: { roles: ['SuperUsuario'] } // Especifica que solo este rol puede entrar
-  },
-  {
+        path: 'superadmin',
+        component: SuperadminPanelComponent,
+        canActivate: [AuthGuard], 
+        data: { roles: ['SuperUsuario'] } 
+      },
+      {
+        path: 'edicion-detalles',
+        component: EdicionDetallesComponent,
+        canActivate: [AuthGuard], 
+        data: { roles: ['SuperUsuario'] } 
+      },
+      {
         path: 'dashboard',
         component: DashboardComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista','SuperUsuario'] }
+        data: { roles: ['Admin', 'Almacenista', 'SuperUsuario'] }
       },
     ],
   },

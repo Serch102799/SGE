@@ -35,6 +35,7 @@ import { OperadoresComponent } from './pages/operadores/operadores.component';
 import { RutasComponent } from './pages/rutas/rutas.component';
 import { TanquesComponent } from './pages/tanques/tanques.component';
 import { HistorialCombustibleComponent } from './pages/historial-combustible/historial-combustible.component';
+import { EdicionDetallesComponent } from './pages/edicion-detalles/edicion-detalles.component';
 
 @NgModule({
   declarations: [
@@ -59,7 +60,8 @@ import { HistorialCombustibleComponent } from './pages/historial-combustible/his
     OperadoresComponent,
     RutasComponent,
     TanquesComponent,
-    HistorialCombustibleComponent
+    HistorialCombustibleComponent,
+    EdicionDetallesComponent
   ],
   imports: [
     HttpClientModule,
