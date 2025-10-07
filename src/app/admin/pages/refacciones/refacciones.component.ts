@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Location } from '@angular/common';
 import * as Papa from 'papaparse';
 import { AuthService } from '../../../services/auth.service';
@@ -42,6 +42,7 @@ export class RefaccionesComponent implements OnInit {
   categoriasUnicas: string[] = [];
   marcasUnicas: string[] = [];
   
+  // --- Modales y Notificaciones (sin cambios) ---
   mostrarModalAgregar = false;
   mostrarModalEditar = false;
   mostrarModalBorrar = false;
@@ -55,7 +56,6 @@ export class RefaccionesComponent implements OnInit {
     Descripcion: ''
   };
   refaccionAEditar: Refaccion | null = null;
-  datosEditados: { Stock_Actual?: number; Stock_Minimo?: number; Stock_Maximo?: number; Precio_Costo?: number } = {};
   refaccionABorrar: Refaccion | null = null;
   refaccionParaSalida: Refaccion | null = null;
   datosSalida = {
@@ -92,9 +92,14 @@ export class RefaccionesComponent implements OnInit {
   }
 
   obtenerRefacciones() {
-    this.http.get<any[]>(this.apiUrl).subscribe({
-      next: data => {
-        this.refacciones = data.map(item => ({
+    // CAMBIO: Se ajusta la petición para que funcione con el backend mejorado.
+    // Se pide un límite muy alto para traer todos los registros, manteniendo la lógica de filtros en el frontend.
+    const params = new HttpParams().set('limit', '9999');
+
+    this.http.get<{ total: number, data: any[] }>(this.apiUrl, { params }).subscribe({
+      next: response => {
+        // Se mapea la respuesta para que coincida con la interfaz, incluyendo el nuevo campo 'ultimo_costo'
+        this.refacciones = response.data.map(item => ({
           id_refaccion: item.id_refaccion,
           Nombre: item.nombre,
           Numero_Parte: item.numero_parte,
@@ -109,10 +114,10 @@ export class RefaccionesComponent implements OnInit {
           Fecha_Ultima_Entrada: item.fecha_ultima_entrada,
           Proveedor_Principal_ID: item.proveedor_principal_id,
           Descripcion: item.descripcion,
-          ultimo_costo: item.ultimo_costo
+          ultimo_costo: item.ultimo_costo // Se recibe y mapea el nuevo dato
         }));
         this.generarFiltrosUnicos();
-        this.aplicarFiltros();
+        this.aplicarFiltros(); // Se llama a tu filtro del frontend como antes
       },
       error: err => console.error('Error al cargar refacciones', err)
     });
@@ -143,8 +148,10 @@ export class RefaccionesComponent implements OnInit {
     this.refaccionesFiltradas = refaccionesTemp;
   }
 
+  // --- El resto de los métodos para modales, guardado y eliminación no necesitan cambios ---
+  
   abrirModalAgregar(): void {
-    this.nuevaRefaccion = { Nombre: '', Numero_Parte: '', Categoria: '', Marca: '', Stock_Actual: 0, Stock_Minimo: 0, Precio_Costo: 0, Descripcion: '' };
+    this.nuevaRefaccion = { Nombre: '', Numero_Parte: '', Categoria: '', Marca: '', Unidad_Medida: 'Pieza', Ubicacion_Almacen: '', Stock_Minimo: 0 };
     this.mostrarModalAgregar = true;
   }
   cerrarModalAgregar(): void { this.mostrarModalAgregar = false; }
@@ -196,7 +203,7 @@ export class RefaccionesComponent implements OnInit {
 
   confirmarEliminacion(): void {
     if (!this.refaccionABorrar) return;
-    const url = `${this.apiUrl}/nombre/${this.refaccionABorrar.Nombre}`;
+    const url = `${this.apiUrl}/${this.refaccionABorrar.id_refaccion}`;
     this.http.delete(url).subscribe({
       next: () => {
         this.mostrarNotificacion('Éxito', 'Refacción eliminada exitosamente.', 'exito');
