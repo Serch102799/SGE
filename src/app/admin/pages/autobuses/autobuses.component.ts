@@ -25,6 +25,7 @@ export interface Autobus {
   carroceria: string;
   sistema_electrico: string;
   medida_llanta: string;
+  kilometraje_ultima_carga?: number; // Añadido para evitar el error
 }
 
 @Component({
@@ -75,6 +76,10 @@ export class AutobusesComponent implements OnInit, OnDestroy {
   filtroHistorialItem: string = '';
   filtroHistorialFechaInicio: string = '';
   filtroHistorialFechaFin: string = '';
+
+  mostrarModalSyncKm = false;
+  autobusParaSync: Autobus | null = null;
+  kmSincronizar: number | null = null;
   
   mostrarModalNotificacion = false;
   notificacion = {
@@ -294,6 +299,36 @@ export class AutobusesComponent implements OnInit, OnDestroy {
     }
 
     this.historialFiltrado = historialTemp;
+  }
+  abrirModalSyncKm(autobus: Autobus): void {
+    this.autobusParaSync = autobus;
+    this.kmSincronizar = autobus.kilometraje_ultima_carga !== undefined ? autobus.kilometraje_ultima_carga : null; // Precarga el valor actual
+    this.mostrarModalSyncKm = true;
+  }
+
+  cerrarModalSyncKm(): void {
+    this.mostrarModalSyncKm = false;
+  }
+
+  guardarSyncKm(): void {
+    if (!this.autobusParaSync || this.kmSincronizar === null || this.kmSincronizar < 0) {
+      this.mostrarNotificacion('Dato Inválido', 'Ingresa un kilometraje válido.');
+      return;
+    }
+
+    const url = `${this.apiUrl}/${this.autobusParaSync.id_autobus}/sync-km-carga`;
+    const payload = { kilometraje: this.kmSincronizar };
+
+    this.http.post(url, payload).subscribe({
+      next: () => {
+        this.mostrarNotificacion('Éxito', 'Kilometraje para cargas sincronizado.', 'exito');
+        this.cerrarModalSyncKm();
+        this.obtenerAutobuses(); // Refresca la lista
+      },
+      error: (err) => {
+        this.mostrarNotificacion('Error', err.error?.message || 'No se pudo sincronizar.', 'error');
+      }
+    });
   }
 
   mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {

@@ -82,6 +82,7 @@
               <button class="btn-accion btn-historial" (click)="verHistorial(autobus)">Historial</button>
               <button class="btn-accion btn-estado" (click)="abrirModal('editar', autobus)">Editar</button>
               <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(autobus)">Eliminar</button>
+              <button class="btn-accion btn-sync" (click)="abrirModalSyncKm(autobus)">Sincronizar KM</button>
             </td>
           </tr>
           <tr *ngIf="autobuses.length === 0">
@@ -385,6 +386,29 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalHistorial()">Cerrar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="mostrarModalSyncKm" (click)="cerrarModalSyncKm()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 *ngIf="autobusParaSync">Sincronizar KM para Cargas: {{ autobusParaSync.economico }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModalSyncKm()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">
+        Establece el kilometraje inicial que se usará para el próximo cálculo de rendimiento de este autobús.
+      </p>
+      <form (ngSubmit)="guardarSyncKm()">
+        <div class="form-group">
+          <label for="km_sync">Kilometraje de la Última Carga</label>
+          <input id="km_sync" type="number" class="form-control" [(ngModel)]="kmSincronizar" name="kmSincronizar" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalSyncKm()">Cancelar</button>
+          <button type="submit" class="btn-accion btn-guardar">Guardar Kilometraje</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
