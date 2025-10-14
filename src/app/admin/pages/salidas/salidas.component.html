@@ -75,44 +75,51 @@
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
-    <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h3>Detalles de la Salida #{{ salidaSeleccionadaId }}</h3>
-            <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
-        </div>
-        <div class="modal-body">
-            <div class="tabla-responsive-wrapper">
-                <table class="tabla-preview">
-                    <thead>
-                        <tr>
-                            <th>Tipo</th>
-                            <th>Descripción</th>
-                            <th>Cantidad</th>
-                            <th>Costo Unitario</th>
-                            <th>Costo Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let detalle of detallesSeleccionados">
-                            <td>
-                                <span class="badge"
-                                    [ngClass]="{'badge-refaccion': detalle.tipo_item === 'Refacción', 'badge-insumo': detalle.tipo_item === 'Insumo'}">
-                                    {{ detalle.tipo_item }}
-                                </span>
-                            </td>
-                            <td>{{ detalle.nombre }}</td>
-                            <td>{{ detalle.cantidad | number:'1.2-2' }}</td>
-                            <td>{{ detalle.costo_unitario | currency:'MXN' }}</td>
-                            <td><strong>{{ (detalle.cantidad * detalle.costo_unitario) | currency:'MXN' }}</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalDetalles()">Cerrar</button>
-        </div>
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Detalles de la Salida #{{ salidaSeleccionadaId }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
     </div>
+    <div class="modal-body">
+      <div class="tabla-responsive-wrapper">
+        <table class="tabla-preview tabla-ticket">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Descripción</th>
+              <th>Cant. Salida</th>
+              <th>Cant. Devuelta</th>
+              <th>Cant. Neta</th>
+              <th>Costo Unitario</th>
+              <th>Costo Total</th>
+              <th *ngIf="authService.hasRole(['SuperUsuario'])" style="text-align: center;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let detalle of detallesSeleccionados">
+              <td>
+                <span class="badge" [ngClass]="{'badge-refaccion': detalle.tipo_item === 'refaccion', 'badge-insumo': detalle.tipo_item === 'insumo'}">{{ detalle.tipo_item }}</span>
+              </td>
+              <td>{{ detalle.nombre_item }}</td>
+              <td>{{ detalle.cantidad | number:'1.2-2' }}</td>
+              <td>{{ (detalle.cantidad_devuelta || 0) | number:'1.2-2' }}</td>
+              <td><strong>{{ (detalle.cantidad - (detalle.cantidad_devuelta || 0)) | number:'1.2-2' }}</strong></td>
+              <td>{{ detalle.costo_unitario | currency:'MXN' }}</td>
+              <td><strong>{{ ((detalle.cantidad - (detalle.cantidad_devuelta || 0)) * detalle.costo_unitario) | currency:'MXN' }}</strong></td>
+              <td class="acciones" *ngIf="authService.hasRole(['SuperUsuario'])">
+                <button class="btn-accion btn-devolucion" *ngIf="(detalle.cantidad - (detalle.cantidad_devuelta || 0)) > 0" (click)="abrirModalDevolucion(detalle)">
+                  Devolver
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalDetalles()">Cerrar</button>
+    </div>
+  </div>
 </div>
 <div class="modal-overlay" *ngIf="mostrarModalAgregarItems" (click)="cerrarModalAgregarItems()">
     <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
@@ -235,6 +242,36 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+        </div>
+    </div>
+</div>
+<div class="modal-overlay" *ngIf="mostrarModalDevolucion" (click)="cerrarModalDevolucion()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3 *ngIf="itemParaDevolucion">Registrar Devolución de: {{ itemParaDevolucion.nombre }}</h3>
+            <button class="btn-cerrar" (click)="cerrarModalDevolucion()">×</button>
+        </div>
+        <div class="modal-body">
+            <form (ngSubmit)="guardarDevolucion()">
+                <div class="form-group">
+                    <label for="cantidad_devuelta">Cantidad a Devolver (Máx: {{ itemParaDevolucion.cantidad }})</label>
+                    <input id="cantidad_devuelta" type="number" class="form-control"
+                        [(ngModel)]="datosDevolucion.cantidad_devuelta" name="cantidad_devuelta"
+                        [max]="itemParaDevolucion.cantidad" min="0.01" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="motivo_devolucion">Motivo de la Devolución (Obligatorio)</label>
+                    <textarea id="motivo_devolucion" class="form-control" [(ngModel)]="datosDevolucion.motivo"
+                        name="motivo_devolucion" rows="3" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-accion btn-cancelar"
+                        (click)="cerrarModalDevolucion()">Cancelar</button>
+                    <button type="submit" class="btn-accion btn-guardar"
+                        [disabled]="!datosDevolucion.motivo || !datosDevolucion.cantidad_devuelta">Confirmar
+                        Devolución</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

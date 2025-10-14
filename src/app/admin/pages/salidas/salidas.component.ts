@@ -59,6 +59,13 @@ export class SalidasComponent implements OnInit, OnDestroy {
   itemsExistentes: any[] = [];
   itemsNuevosRefacciones: any[] = [];
   itemsNuevosInsumos: any[] = [];
+
+  mostrarModalDevolucion = false;
+  itemParaDevolucion: any = null; // Guardará el detalle seleccionado
+  datosDevolucion = {
+    cantidad_devuelta: null as number | null,
+    motivo: ''
+  };
   
   // --- Lógica de Autocomplete para el Modal ---
   refaccionControl = new FormControl();
@@ -303,5 +310,45 @@ export class SalidasComponent implements OnInit, OnDestroy {
   }
   cerrarModalNotificacion() {
     this.mostrarModalNotificacion = false;
+  }
+  abrirModalDevolucion(detalle: any): void {
+    const cantidadMaxima = detalle.cantidad - (detalle.cantidad_devuelta || 0);
+    this.itemParaDevolucion = { ...detalle, cantidad_maxima: cantidadMaxima };
+    this.datosDevolucion = { cantidad_devuelta: null, motivo: '' };
+    this.mostrarModalDevolucion = true;
+  }
+
+  cerrarModalDevolucion(): void {
+    this.mostrarModalDevolucion = false;
+  }
+
+  guardarDevolucion(): void {
+    if (!this.itemParaDevolucion || !this.datosDevolucion.cantidad_devuelta || this.datosDevolucion.cantidad_devuelta <= 0 || !this.datosDevolucion.motivo.trim()) {
+      this.mostrarNotificacion('Datos Incompletos', 'Debes ingresar una cantidad y un motivo válidos.');
+      return;
+    }
+    if (this.datosDevolucion.cantidad_devuelta > this.itemParaDevolucion.cantidad_maxima) {
+      this.mostrarNotificacion('Cantidad Inválida', `No puedes devolver más de la cantidad pendiente (${this.itemParaDevolucion.cantidad_maxima}).`);
+      return;
+    }
+
+    const payload = {
+      tipo_item: this.itemParaDevolucion.tipo_item,
+      id_detalle_salida: this.itemParaDevolucion.id_detalle,
+      cantidad_devuelta: this.datosDevolucion.cantidad_devuelta,
+      motivo: this.datosDevolucion.motivo
+    };
+
+    this.http.post(`${environment.apiUrl}/superadmin/devolucion`, payload).subscribe({
+      next: () => {
+        this.mostrarNotificacion('Éxito', 'Devolución registrada correctamente. El stock ha sido actualizado.', 'exito');
+        this.cerrarModalDevolucion();
+        this.cerrarModalDetalles();
+        this.obtenerSalidas();
+      },
+      error: (err) => {
+        this.mostrarNotificacion('Error', err.error?.message || 'No se pudo procesar la devolución.', 'error');
+      }
+    });
   }
 }
