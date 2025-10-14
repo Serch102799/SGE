@@ -29,6 +29,8 @@ import { RutasComponent } from './pages/rutas/rutas.component';
 import { TanquesComponent } from './pages/tanques/tanques.component';
 import { HistorialCombustibleComponent } from './pages/historial-combustible/historial-combustible.component';
 import { EdicionDetallesComponent } from './pages/edicion-detalles/edicion-detalles.component';
+import { ProductosCompuestosComponent } from './pages/productos-compuestos/productos-compuestos.component';
+import { RegistroProduccionComponent } from './pages/registro-produccion/registro-produccion.component';
 
 const routes: Routes = [
   {
@@ -167,6 +169,18 @@ const routes: Routes = [
         component: EdicionDetallesComponent,
         canActivate: [AuthGuard], 
         data: { roles: ['SuperUsuario'] } 
+      },
+      {
+        path: 'productos-compuestos',
+        component: ProductosCompuestosComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['Admin', 'Almacenista', 'SuperUsuario'] }
+      },
+      {
+        path: 'registro-produccion',
+        component: RegistroProduccionComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['Admin', 'Almacenista', 'SuperUsuario'] }
       },
       {
         path: 'dashboard',

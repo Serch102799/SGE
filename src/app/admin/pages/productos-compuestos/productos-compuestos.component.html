@@ -1,0 +1,83 @@
+<div class="usuarios-container">
+  <div class="container-header">
+    <h2>Armado de Productos</h2>
+  </div>
+  <div class="container-body">
+    <fieldset class="form-section">
+      <legend>1. Selecciona el Producto a Ensamblar</legend>
+      <div class="form-group">
+        <label>Producto (Ej. Balata Ensamblada)</label>
+        <mat-form-field appearance="outline" class="full-width">
+          <input type="text" placeholder="Busca la refacción a la que le definirás sus componentes..." matInput [formControl]="productoPadreControl" [matAutocomplete]="autoPadre">
+        </mat-form-field>
+        <mat-autocomplete #autoPadre="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onProductoPadreSelected($event)">
+          <mat-option *ngFor="let item of filteredProductosPadre$ | async" [value]="item">{{ item.nombre }}</mat-option>
+        </mat-autocomplete>
+      </div>
+    </fieldset>
+
+    <div *ngIf="productoPadreSeleccionado">
+      <fieldset class="form-section">
+        <legend>2. Componentes del esamble("Hijos")</legend>
+        <div class="form-row align-items-end">
+          <div class="form-group col-md-8">
+            <label>Buscar Componente (Ej. Pasta de Balata)</label>
+            <mat-form-field appearance="outline" class="full-width">
+              <input type="text" placeholder="Busca la refacción que es parte de la receta..." matInput [formControl]="componenteControl" [matAutocomplete]="autoHijo">
+            </mat-form-field>
+            <mat-autocomplete #autoHijo="matAutocomplete" [displayWith]="displayFn">
+              <mat-option *ngFor="let item of filteredComponentes$ | async" [value]="item">{{ item.nombre }}</mat-option>
+            </mat-autocomplete>
+          </div>
+          <div class="form-group col-md-2">
+            <label>Cantidad</label>
+            <input type="number" class="form-control" [(ngModel)]="cantidadComponente" name="cantidad_hijo" min="1">
+          </div>
+          <div class="form-group-button">
+            <button type="button" class="btn-agregar-detalle" (click)="agregarComponente()">Agregar</button>
+          </div>
+        </div>
+
+        <div class="tabla-responsive-wrapper">
+          <table class="tabla-usuarios">
+            <thead><tr><th>Componente</th><th>Cantidad Necesaria</th><th style="text-align: center;">Acción</th></tr></thead>
+            <tbody>
+              <tr *ngIf="componentesReceta.length === 0"><td colspan="3" class="empty-table-message">Aún no has agregado componentes a esta receta.</td></tr>
+              <tr *ngFor="let comp of componentesReceta; let i = index">
+                <td>{{ comp.nombre_componente }}</td>
+                <td>{{ comp.cantidad_necesaria }}</td>
+                <td class="acciones"><button class="btn-accion btn-eliminar-sm" (click)="eliminarComponente(i)">Quitar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </fieldset>
+
+      <div class="acciones-finales">
+        <button class="btn-accion btn-guardar" (click)="guardarReceta()" [disabled]="isSaving">
+          {{ isSaving ? 'Guardando...' : 'Guardar Receta Completa' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{
+        'header-exito': notificacion.tipo === 'exito',
+        'header-error': notificacion.tipo === 'error',
+        'header-advertencia': notificacion.tipo === 'advertencia'
+      }">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>

@@ -36,6 +36,8 @@ import { RutasComponent } from './pages/rutas/rutas.component';
 import { TanquesComponent } from './pages/tanques/tanques.component';
 import { HistorialCombustibleComponent } from './pages/historial-combustible/historial-combustible.component';
 import { EdicionDetallesComponent } from './pages/edicion-detalles/edicion-detalles.component';
+import { ProductosCompuestosComponent } from './pages/productos-compuestos/productos-compuestos.component';
+import { RegistroProduccionComponent } from './pages/registro-produccion/registro-produccion.component';
 
 @NgModule({
   declarations: [
@@ -61,7 +63,9 @@ import { EdicionDetallesComponent } from './pages/edicion-detalles/edicion-detal
     RutasComponent,
     TanquesComponent,
     HistorialCombustibleComponent,
-    EdicionDetallesComponent
+    EdicionDetallesComponent,
+    ProductosCompuestosComponent,
+    RegistroProduccionComponent
   ],
   imports: [
     HttpClientModule,

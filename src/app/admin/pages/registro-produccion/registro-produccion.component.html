@@ -1,0 +1,77 @@
+<div class="usuarios-container">
+  <div class="container-header"><h2>Registrar Orden de Producción</h2></div>
+  <div class="container-body">
+    <fieldset class="form-section">
+      <legend>1. Producto a Ensamblar</legend>
+      <div class="form-row align-items-end">
+        <div class="form-group col-md-8">
+          <label>Producto Compuesto</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input type="text" placeholder="Busca el producto que vas a fabricar..." matInput [formControl]="productoControl" [matAutocomplete]="autoProducto">
+          </mat-form-field>
+          <mat-autocomplete #autoProducto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onProductoSelected($event)">
+            <mat-option *ngFor="let item of filteredProductos$ | async" [value]="item">{{ item.nombre }}</mat-option>
+          </mat-autocomplete>
+        </div>
+        <div class="form-group col-md-4">
+          <label>Cantidad a Producir</label>
+          <input type="number" class="form-control" [(ngModel)]="ordenProduccion.cantidad_producida" name="cantidad_producida" min="1">
+        </div>
+      </div>
+       <div class="form-group">
+        <label>Fecha de Operación</label>
+        <input type="datetime-local" class="form-control" [(ngModel)]="ordenProduccion.fecha_operacion" name="fecha_operacion">
+       </div>
+    </fieldset>
+
+    <div *ngIf="productoSeleccionado">
+      <fieldset class="form-section">
+        <legend>2. Componentes que se Consumirán del Inventario</legend>
+        <div class="tabla-responsive-wrapper">
+          <table class="tabla-usuarios">
+            <thead><tr><th>Componente</th><th>Cantidad por Unidad</th><th>Cantidad Total Requerida</th></tr></thead>
+            <tbody>
+              <tr *ngIf="isLoading"><td colspan="3" class="empty-table-message">Cargando receta...</td></tr>
+              <tr *ngFor="let comp of receta">
+                <td>{{ comp.nombre_componente }}</td>
+                <td>{{ comp.cantidad_necesaria }}</td>
+                <td><strong>{{ comp.cantidad_necesaria * ordenProduccion.cantidad_producida }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </fieldset>
+
+      <div class="form-group">
+        <label>Observaciones</label>
+        <textarea class="form-control" [(ngModel)]="ordenProduccion.observaciones" name="observaciones" rows="3"></textarea>
+      </div>
+
+      <div class="acciones-finales">
+        <button class="btn-accion btn-guardar" (click)="guardarOrden()" [disabled]="isSaving">
+          {{ isSaving ? 'Procesando...' : 'Confirmar y Producir' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{
+        'header-exito': notificacion.tipo === 'exito',
+        'header-error': notificacion.tipo === 'error',
+        'header-advertencia': notificacion.tipo === 'advertencia'
+      }">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>
