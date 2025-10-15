@@ -55,7 +55,6 @@
       </div>
       <div class="form-group">
         <label>Operador (Chofer)</label>
-
         <mat-form-field appearance="outline" class="full-width">
           <input type="text" placeholder="Busca por nombre de operador..." matInput [formControl]="operadorControl"
             [matAutocomplete]="autoOperador">
@@ -69,8 +68,39 @@
       </div>
     </fieldset>
 
+    <!-- SELECTOR DE MODO DE CÁLCULO -->
     <fieldset class="form-section">
-      <legend>2. Rutas y Vueltas Realizadas</legend>
+      <legend>2. Modo de Cálculo</legend>
+      <div class="form-row">
+        <div class="form-group col-md-12">
+          <label>¿Cómo deseas calcular el kilometraje esperado?</label>
+          <div class="modo-selector">
+            <button 
+              type="button" 
+              class="btn-modo" 
+              [ngClass]="{'btn-modo-active': tipo_calculo === 'vueltas'}"
+              (click)="cambiarModoCalculo('vueltas')">
+              <span class="modo-icon">🔄</span>
+              <span class="modo-title">Por Vueltas</span>
+              <span class="modo-desc">Selecciona rutas específicas y el número de vueltas</span>
+            </button>
+            <button 
+              type="button" 
+              class="btn-modo" 
+              [ngClass]="{'btn-modo-active': tipo_calculo === 'dias'}"
+              (click)="cambiarModoCalculo('dias')">
+              <span class="modo-icon">📅</span>
+              <span class="modo-title">Por Días Laborados</span>
+              <span class="modo-desc">Indica la ruta principal y días trabajados</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- SECCIÓN MODO VUELTAS -->
+    <fieldset class="form-section" *ngIf="tipo_calculo === 'vueltas'">
+      <legend>3. Rutas y Vueltas Realizadas</legend>
       <div class="form-row align-items-end">
         <div class="form-group col-md-8">
           <label>Ruta</label>
@@ -93,6 +123,8 @@
           <tr>
             <th>Ruta</th>
             <th>Vueltas</th>
+            <th>KM por Vuelta</th>
+            <th>Total KM</th>
             <th>Acción</th>
           </tr>
         </thead>
@@ -100,15 +132,72 @@
           <tr *ngFor="let ruta of rutas_realizadas; let i = index">
             <td>{{ ruta.nombre_ruta }}</td>
             <td>{{ ruta.vueltas }}</td>
+            <td>{{ ruta.kilometraje }} km</td>
+            <td>{{ ruta.kilometraje * ruta.vueltas }} km</td>
             <td class="acciones"><button type="button" class="btn-accion btn-eliminar-sm"
                 (click)="eliminarRuta(i)">Quitar</button></td>
           </tr>
         </tbody>
       </table>
+      <div class="mensaje-vacio" *ngIf="rutas_realizadas.length === 0">
+        <p>Aún no has agregado rutas. Selecciona una ruta y el número de vueltas para comenzar.</p>
+      </div>
     </fieldset>
 
+    <!-- SECCIÓN MODO DÍAS -->
+    <fieldset class="form-section" *ngIf="tipo_calculo === 'dias'">
+      <legend>3. Información de Días Laborados</legend>
+      <div class="form-row">
+        <div class="form-group col-md-8">
+          <label>Ruta Principal</label>
+          <select class="form-control" [(ngModel)]="id_ruta_principal" name="id_ruta_principal" (change)="onRutaPrincipalSelected($event)">
+            <option [ngValue]="null" disabled>Selecciona la ruta principal...</option>
+            <option *ngFor="let ruta of rutas" [ngValue]="ruta.id_ruta">
+              {{ ruta.nombre_ruta }} ({{ ruta.kilometraje_vuelta }} km | {{ ruta.vueltas_diarias_promedio || 0 }} vueltas/día)
+            </option>
+          </select>
+        </div>
+        <div class="form-group col-md-4">
+          <label>Días Laborados</label>
+          <input 
+            type="number" 
+            class="form-control" 
+            [(ngModel)]="dias_laborados" 
+            name="dias_laborados"
+            (change)="onDiasLaboradosChange()"
+            (input)="onDiasLaboradosChange()"
+            min="1" 
+            required>
+        </div>
+      </div>
+      <div class="info-card" *ngIf="rutaPrincipalSeleccionada">
+        <h4>Resumen de Cálculo</h4>
+        <div class="info-row">
+          <span class="info-label">Ruta Seleccionada:</span>
+          <span class="info-value">{{ rutaPrincipalSeleccionada.nombre_ruta }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">KM por Vuelta:</span>
+          <span class="info-value">{{ rutaPrincipalSeleccionada.kilometraje_vuelta }} km</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Vueltas por Día (Promedio):</span>
+          <span class="info-value">{{ rutaPrincipalSeleccionada.vueltas_diarias_promedio || 0 }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Fórmula:</span>
+          <span class="info-value">
+            {{ dias_laborados }} días × {{ rutaPrincipalSeleccionada.vueltas_diarias_promedio || 0 }} vueltas × 
+            {{ rutaPrincipalSeleccionada.kilometraje_vuelta }} km = 
+            <strong>{{ km_esperados | number:'1.0-0' }} km</strong>
+          </span>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- SECCIÓN ANÁLISIS (COMÚN PARA AMBOS MODOS) -->
     <fieldset class="form-section analysis-section">
-      <legend>3. Análisis de Rendimiento</legend>
+      <legend>{{ tipo_calculo === 'vueltas' ? '4' : '4' }}. Análisis de Rendimiento</legend>
       <div class="kpi-grid-sm">
         <div class="kpi-card-sm">
           <div class="kpi-value-sm">{{ km_esperados | number:'1.0-0' }} km</div>
@@ -134,6 +223,7 @@
       </div>
     </fieldset>
 
+    <!-- ACCIONES FINALES -->
     <div class="acciones-finales">
       <button type="button" class="btn-accion btn-cancelar" (click)="regresar()">Cancelar</button>
       <button type="button" class="btn-accion btn-guardar" (click)="guardarCarga()" [disabled]="isSaving">
@@ -143,6 +233,7 @@
   </div>
 </div>
 
+<!-- MODAL DE NOTIFICACIÓN -->
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">

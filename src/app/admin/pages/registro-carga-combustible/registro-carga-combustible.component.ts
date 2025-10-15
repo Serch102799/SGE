@@ -12,7 +12,7 @@ import { environment } from '../../../../environments/environments';
 // --- Interfaces ---
 interface Operador { id_operador: number; nombre_completo: string; }
 interface Autobus { id_autobus: number; economico: string; kilometraje_ultima_carga: number; }
-interface Ruta { id_ruta: number; nombre_ruta: string; kilometraje_vuelta: number; }
+interface Ruta { id_ruta: number; nombre_ruta: string; kilometraje_vuelta: number; vueltas_diarias_promedio?: number; }
 interface Ubicacion { id_ubicacion: number; nombre_ubicacion: string; }
 interface RutaRealizada { id_ruta: number; nombre_ruta: string; vueltas: number; kilometraje: number; }
 
@@ -43,15 +43,23 @@ export class RegistroCargaCombustibleComponent implements OnInit {
     motivo_desviacion: ''
   };
 
+  // --- Modo de Cálculo ---
+  tipo_calculo: 'dias' | 'vueltas' = 'vueltas'; // Valor por defecto
+
   // --- Lógica de Autocomplete ---
   autobusControl = new FormControl();
   operadorControl = new FormControl();
   filteredAutobuses$: Observable<Autobus[]>;
   filteredOperadores$: Observable<Operador[]>;
 
-  // --- Lógica de Rutas ---
+  // --- Modo VUELTAS (Original) ---
   detalleRutaActual = { id_ruta: null as number | null, vueltas: 1 };
   rutas_realizadas: RutaRealizada[] = [];
+
+  // --- Modo DÍAS ---
+  id_ruta_principal: number | null = null;
+  dias_laborados: number = 1;
+  rutaPrincipalSeleccionada: Ruta | undefined;
 
   // --- Campos Calculados en Tiempo Real ---
   km_inicial: number | null = null;
@@ -87,6 +95,7 @@ export class RegistroCargaCombustibleComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarCatalogos();
+    this.recalcularValores();
   }
 
   private getFormattedCurrentDateTime(): string {
@@ -118,7 +127,6 @@ export class RegistroCargaCombustibleComponent implements OnInit {
   }
 
   cargarCatalogos() {
-    // Solo se cargan los catálogos que se usan en dropdowns estáticos
     const peticiones: [Observable<Ruta[]>, Observable<Ubicacion[]>] = [
       this.http.get<Ruta[]>(`${this.apiUrl}/rutas`),
       this.http.get<Ubicacion[]>(`${this.apiUrl}/ubicaciones`)
@@ -135,6 +143,7 @@ export class RegistroCargaCombustibleComponent implements OnInit {
     });
   }
 
+  // --- MÉTODOS MODO VUELTAS ---
   agregarRuta() {
     const { id_ruta, vueltas } = this.detalleRutaActual;
     if (!id_ruta || !vueltas || vueltas <= 0) return;
@@ -163,29 +172,125 @@ export class RegistroCargaCombustibleComponent implements OnInit {
     this.recalcularValores();
   }
 
+  // --- MÉTODOS MODO DÍAS ---
+  onRutaPrincipalSelected(event: any): void {
+    this.rutaPrincipalSeleccionada = this.rutas.find(r => r.id_ruta === this.id_ruta_principal);
+    this.recalcularValores();
+  }
+
+  onDiasLaboradosChange(): void {
+    this.recalcularValores();
+  }
+
+  // --- RECÁLCULO INTELIGENTE ---
   recalcularValores() {
+    if (this.tipo_calculo === 'dias') {
+      this.recalcularValoresDias();
+    } else {
+      this.recalcularValoresVueltas();
+    }
+  }
+
+  private recalcularValoresVueltas() {
     this.km_esperados = this.rutas_realizadas.reduce((acc, ruta) => acc + (ruta.kilometraje * ruta.vueltas), 0);
     this.km_recorridos = (this.cargaMaestro.km_final && this.km_inicial !== null) ? this.cargaMaestro.km_final - this.km_inicial : 0;
     this.desviacion_km = this.km_recorridos - this.km_esperados;
     this.rendimiento_calculado = (this.cargaMaestro.litros_cargados && this.km_recorridos > 0) ? this.km_recorridos / this.cargaMaestro.litros_cargados : 0;
   }
 
+  private recalcularValoresDias() {
+    // Limpiar valores primero
+    this.km_esperados = 0;
+    this.km_recorridos = 0;
+    this.desviacion_km = 0;
+    this.rendimiento_calculado = 0;
+
+    // Si no hay ruta o días válidos, salir
+    if (!this.id_ruta_principal || this.dias_laborados <= 0) {
+      return;
+    }
+
+    // Buscar la ruta seleccionada
+    const ruta = this.rutas.find(r => r.id_ruta === this.id_ruta_principal);
+    this.rutaPrincipalSeleccionada = ruta;
+    
+    // Si encontramos la ruta y tiene vueltas diarias
+    if (ruta && ruta.vueltas_diarias_promedio) {
+      this.km_esperados = this.dias_laborados * ruta.vueltas_diarias_promedio * ruta.kilometraje_vuelta;
+    }
+
+    // Calcular km recorridos
+    this.km_recorridos = (this.cargaMaestro.km_final && this.km_inicial !== null) ? this.cargaMaestro.km_final - this.km_inicial : 0;
+    this.desviacion_km = this.km_recorridos - this.km_esperados;
+    this.rendimiento_calculado = (this.cargaMaestro.litros_cargados && this.km_recorridos > 0) ? this.km_recorridos / this.cargaMaestro.litros_cargados : 0;
+  }
+
+  // --- CAMBIO DE MODO ---
+  cambiarModoCalculo(nuevoModo: 'dias' | 'vueltas') {
+    this.tipo_calculo = nuevoModo;
+    // Limpiar datos del modo anterior
+    if (nuevoModo === 'dias') {
+      this.rutas_realizadas = [];
+      this.detalleRutaActual = { id_ruta: null, vueltas: 1 };
+    } else {
+      this.id_ruta_principal = null;
+      this.dias_laborados = 1;
+      this.rutaPrincipalSeleccionada = undefined;
+    }
+    this.recalcularValores();
+  }
+
+  // --- VALIDACIÓN Y GUARDADO ---
   guardarCarga() {
     if (this.isSaving) return;
+
+    // Validaciones comunes
     if (!this.cargaMaestro.id_autobus || !this.cargaMaestro.km_final || !this.cargaMaestro.litros_cargados || !this.cargaMaestro.id_ubicacion) {
       this.mostrarNotificacion('Datos Incompletos', 'Autobús, Ubicación, KM Final y Litros son requeridos.');
       return;
     }
+
+    // Validaciones específicas del modo
+    if (this.tipo_calculo === 'dias') {
+      if (!this.id_ruta_principal || this.dias_laborados <= 0) {
+        this.mostrarNotificacion('Datos Incompletos', 'Ruta Principal y Días Laborados son requeridos.');
+        return;
+      }
+    } else {
+      if (this.rutas_realizadas.length === 0) {
+        this.mostrarNotificacion('Datos Incompletos', 'Debes agregar al menos una ruta.');
+        return;
+      }
+    }
+
+    // Validar motivo de desviación si es necesario
     if (Math.abs(this.desviacion_km) > this.umbral_km && !this.cargaMaestro.motivo_desviacion) {
       this.mostrarNotificacion('Motivo Requerido', 'La desviación de kilometraje es alta. Por favor, escribe un motivo.');
       return;
     }
 
     this.isSaving = true;
-    const payload = {
-      ...this.cargaMaestro,
-      rutas_realizadas: this.rutas_realizadas.map(r => ({ id_ruta: r.id_ruta, vueltas: r.vueltas }))
+
+    // Construir payload dinámico según el modo
+    let payload: any = {
+      id_autobus: this.cargaMaestro.id_autobus,
+      id_empleado_operador: this.cargaMaestro.id_empleado_operador,
+      id_ubicacion: this.cargaMaestro.id_ubicacion,
+      fecha_operacion: this.cargaMaestro.fecha_operacion,
+      km_final: this.cargaMaestro.km_final,
+      litros_cargados: this.cargaMaestro.litros_cargados,
+      motivo_desviacion: this.cargaMaestro.motivo_desviacion,
+      tipo_calculo: this.tipo_calculo
     };
+
+    if (this.tipo_calculo === 'dias') {
+      payload.id_ruta_principal = this.id_ruta_principal;
+      payload.dias_laborados = this.dias_laborados;
+    } else {
+      payload.rutas_realizadas = this.rutas_realizadas.map(r => ({ id_ruta: r.id_ruta, vueltas: r.vueltas }));
+    }
+
+    console.log('Payload enviado:', payload);
 
     this.http.post(`${this.apiUrl}/cargas-combustible`, payload).subscribe({
       next: () => {
@@ -193,6 +298,7 @@ export class RegistroCargaCombustibleComponent implements OnInit {
         this.router.navigate(['/admin/historial-combustible']);
       },
       error: err => {
+        console.error('Error del servidor:', err);
         this.mostrarNotificacion('Error', err.error?.message || 'Error al guardar la carga.', 'error');
         this.isSaving = false;
       }

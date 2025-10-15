@@ -447,7 +447,33 @@ td.stock-critico {
   display: flex;
   margin-bottom: 25px;
 }
+.form-row {
+  display: flex;
+  gap: 20px;
+}
 
+.form-row .form-group {
+  flex: 1;
+}
+
+.required {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.info-box {
+  background: rgba(33, 150, 243, 0.1);
+  border-left: 4px solid #2196F3;
+  padding: 12px 16px;
+  margin: 16px 0;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #90caf9;
+}
+
+.info-box p {
+  margin: 0;
+}
 .filtro-item {
   flex: 1;
 }
