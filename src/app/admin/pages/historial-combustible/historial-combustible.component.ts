@@ -8,7 +8,6 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
-
 interface Ruta {
   id_ruta: number;
   nombre_ruta: string;
@@ -32,6 +31,10 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   totalItems: number = 0;
   terminoBusqueda: string = '';
   filtroRutaId: string = '';
+  
+  // Tipo de cálculo (NUEVO)
+  tipoCalculo: 'dias' | 'vueltas' = 'vueltas';
+  
   private searchSubject: Subject<void> = new Subject<void>();
   private searchSubscription?: Subscription;
 
@@ -72,16 +75,25 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     let params = new HttpParams()
       .set('page', this.currentPage.toString())
       .set('limit', this.itemsPerPage.toString())
-      .set('search', this.terminoBusqueda.trim());
+      .set('search', this.terminoBusqueda.trim())
+      .set('tipo_calculo', this.tipoCalculo);
 
-    if (this.filtroRutaId) {
+    // Solo enviar filtro de ruta si está seleccionado Y es tipo "vueltas"
+    if (this.filtroRutaId && this.tipoCalculo === 'vueltas') {
       params = params.set('id_ruta', this.filtroRutaId);
+    } else if (this.tipoCalculo === 'dias') {
+      // Para cálculo por días, podrías usar otro tipo de filtro
+      // Por ejemplo, filtro por rango de fechas
+      params = params.set('id_ruta', ''); // Limpiar si existe
     }
+
+    console.log('Parámetros enviados:', params.toString());
 
     this.http.get<{ total: number, data: any[] }>(this.apiUrl, { params }).subscribe({
       next: (response) => {
         this.cargas = response.data || [];
         this.totalItems = response.total || 0;
+        console.log('Cargas recibidas:', this.cargas);
       },
       error: (err) => {
         console.error("Error al obtener historial de cargas:", err);
@@ -91,6 +103,18 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Cambiar tipo de cálculo (NUEVO)
+  cambiarTipoCalculo(tipo: 'dias' | 'vueltas'): void {
+    this.tipoCalculo = tipo;
+    
+    // Si cambias a "días", limpiar filtro de ruta porque no aplica
+    if (tipo === 'dias') {
+      this.filtroRutaId = '';
+    }
+    
+    this.searchSubject.next();
+  }
+
   onSearchChange(): void {
     this.searchSubject.next();
   }
@@ -98,6 +122,16 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   onPageChange(page: number): void {
     this.currentPage = page;
     this.obtenerCargas();
+  }
+
+  onRutaChange(): void {
+    // Solo permitir filtro de ruta en modo "vueltas"
+    if (this.tipoCalculo === 'dias') {
+      this.filtroRutaId = '';
+      alert('El filtro por ruta no está disponible en cálculo por días');
+      return;
+    }
+    this.searchSubject.next();
   }
 
   // --- EXPORTAR A PDF ---
@@ -121,22 +155,38 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       doc.setTextColor(33, 150, 243);
       doc.text('Historial de Cargas de Combustible', 14, 15);
 
+      // Subtítulo con tipo de cálculo
+      doc.setFontSize(11);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Cálculo por: ${this.tipoCalculo === 'vueltas' ? 'Vueltas' : 'Días'}`, 14, 20);
+
       // Fecha de reporte
       doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text(`Reporte generado: ${new Date().toLocaleString()}`, 14, 22);
+      doc.text(`Reporte generado: ${new Date().toLocaleString()}`, 14, 25);
 
       // Preparar datos para la tabla
-      const columnas = ['Fecha', 'Autobús', 'Operador', 'KM Recorridos', 'Litros', 'Rendimiento', 'Rutas'];
-      const filas = this.cargas.map(carga => [
-        this.formatearFecha(carga.fecha_operacion),
-        carga.economico || '-',
-        carga.nombre_completo || carga.nombre_operador || '-',
-        `${this.obtenerNumero(carga.km_recorridos)}`,
-        `${this.obtenerNumero(carga.litros_cargados).toFixed(2)}`,
-        `${this.obtenerNumero(carga.rendimiento_calculado).toFixed(2)} km/l`,
-        carga.rutas_y_vueltas || carga.rutas_info || '-'
-      ]);
+      const columnas = this.tipoCalculo === 'vueltas'
+        ? ['Fecha', 'Autobús', 'Operador', 'KM Recorridos', 'Litros', 'Rendimiento', 'Rutas']
+        : ['Fecha', 'Autobús', 'Operador', 'KM Recorridos', 'Litros', 'Rendimiento', 'Despachador'];
+
+      const filas = this.cargas.map(carga => {
+        const fila = [
+          this.formatearFecha(carga.fecha_operacion),
+          carga.economico || '-',
+          carga.nombre_completo || carga.nombre_operador || '-',
+          `${this.obtenerNumero(carga.km_recorridos)}`,
+          `${this.obtenerNumero(carga.litros_cargados).toFixed(2)}`,
+          `${this.obtenerNumero(carga.rendimiento_calculado).toFixed(2)} km/l`
+        ];
+
+        if (this.tipoCalculo === 'vueltas') {
+          fila.push(carga.rutas_y_vueltas || carga.rutas_info || '-');
+        } else {
+          fila.push(carga.nombre_despachador || '-');
+        }
+
+        return fila;
+      });
 
       // Crear tabla
       try {
@@ -145,7 +195,7 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
           docWithTable.autoTable({
             head: [columnas],
             body: filas,
-            startY: 30,
+            startY: 35,
             theme: 'grid',
             styles: {
               fontSize: 9,
@@ -183,7 +233,7 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
 
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
-      
+
       const totalLitros = this.cargas.reduce((acc, c) => acc + this.obtenerNumero(c.litros_cargados), 0);
       const totalKm = this.cargas.reduce((acc, c) => acc + this.obtenerNumero(c.km_recorridos), 0);
 
@@ -199,7 +249,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
         doc.text(`Página ${i} de ${pageCount}`, pageWidth / 2, pageHeight - 5, { align: 'center' });
       }
 
-      // Descargar
       const nombreArchivo = `Historial_Combustible_${new Date().getTime()}.pdf`;
       doc.save(nombreArchivo);
 
@@ -221,7 +270,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     this.exportandoExcel = true;
 
     try {
-      // Preparar datos
       const datosExcel = this.cargas.map(carga => ({
         'Fecha': this.formatearFecha(carga.fecha_operacion),
         'Autobús': carga.economico || '-',
@@ -229,29 +277,28 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
         'KM Recorridos': this.obtenerNumero(carga.km_recorridos),
         'Litros': this.obtenerNumero(carga.litros_cargados),
         'Rendimiento (KM/L)': this.obtenerNumero(carga.rendimiento_calculado),
-        'Rutas': carga.rutas_info || carga.rutas_y_vueltas || '-',
-        'Despachador': carga.nombre_despachador || '-'
+        ...(this.tipoCalculo === 'vueltas' ? {
+          'Rutas': carga.rutas_info || carga.rutas_y_vueltas || '-'
+        } : {
+          'Despachador': carga.nombre_despachador || '-'
+        })
       }));
 
-      // Crear workbook
       const worksheet = XLSX.utils.json_to_sheet(datosExcel);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Historial');
 
-      // Ajustar ancho de columnas
       const colWidths = [
-        { wch: 18 },  // Fecha
-        { wch: 12 },  // Autobús
-        { wch: 20 },  // Operador
-        { wch: 15 },  // KM Recorridos
-        { wch: 12 },  // Litros
-        { wch: 16 },  // Rendimiento
-        { wch: 25 },  // Rutas
-        { wch: 18 }   // Despachador
+        { wch: 18 },
+        { wch: 12 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 12 },
+        { wch: 16 },
+        { wch: 25 }
       ];
       worksheet['!cols'] = colWidths;
 
-      // Agregar resumen
       const resumenRow = 10 + datosExcel.length;
       worksheet[`A${resumenRow}`] = 'RESUMEN';
       worksheet[`A${resumenRow + 1}`] = 'Total de Registros:';
@@ -261,7 +308,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       worksheet[`A${resumenRow + 3}`] = 'Total KM:';
       worksheet[`B${resumenRow + 3}`] = datosExcel.reduce((acc, d) => acc + this.obtenerNumero(d['KM Recorridos']), 0).toFixed(0);
 
-      // Descargar
       const nombreArchivo = `Historial_Combustible_${new Date().getTime()}.xlsx`;
       XLSX.writeFile(workbook, nombreArchivo);
 
@@ -297,10 +343,9 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   private dibujarTablaManual(doc: jsPDF, columnas: string[], filas: string[][]): void {
     const margenIzq = 14;
     const anchoColumna = (210 - 28) / columnas.length;
-    let y = 30;
+    let y = 35;
     const alturaFila = 8;
 
-    // Encabezado
     doc.setFillColor(33, 150, 243);
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(9);
@@ -312,7 +357,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
 
     y += alturaFila;
 
-    // Filas
     doc.setTextColor(50, 50, 50);
     doc.setFont('helvetica', 'normal');
     filas.forEach((fila, indexFila) => {
@@ -326,8 +370,8 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
 
       fila.forEach((celda, i) => {
         const alineacion = i >= 3 ? 'right' : 'left';
-        const x = alineacion === 'right' 
-          ? margenIzq + (i + 1) * anchoColumna - 2 
+        const x = alineacion === 'right'
+          ? margenIzq + (i + 1) * anchoColumna - 2
           : margenIzq + i * anchoColumna + 2;
         doc.text(celda, x, y + 5, { align: alineacion as any });
       });

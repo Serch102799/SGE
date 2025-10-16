@@ -25,21 +25,54 @@
   </div>
 
   <div class="container-body">
+    <!-- NUEVO: Selector de Tipo de Cálculo -->
+    <div class="tipo-calculo-selector">
+      <div class="selector-label">Filtrar por tipo de cálculo:</div>
+      <div class="selector-buttons">
+        <button 
+          (click)="cambiarTipoCalculo('vueltas')"
+          [class.active]="tipoCalculo === 'vueltas'"
+          class="btn-tipo-calculo">
+          📍 Por Vueltas
+        </button>
+        <button 
+          (click)="cambiarTipoCalculo('dias')"
+          [class.active]="tipoCalculo === 'dias'"
+          class="btn-tipo-calculo">
+          📅 Por Días
+        </button>
+      </div>
+    </div>
+
     <div class="filtros-container">
       <div class="filtro-item">
-        <input type="text" class="form-control" placeholder="Buscar por económico u operador..."
-          [(ngModel)]="terminoBusqueda" (ngModelChange)="onSearchChange()">
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="Buscar por económico u operador..."
+          [(ngModel)]="terminoBusqueda" 
+          (ngModelChange)="onSearchChange()">
       </div>
       <div class="filtro-item">
-        <select class="form-control" [(ngModel)]="filtroRutaId" (change)="onSearchChange()">
+        <select 
+          class="form-control" 
+          [(ngModel)]="filtroRutaId" 
+          (change)="onRutaChange()"
+          [disabled]="tipoCalculo === 'dias'">
           <option value="">Todas las Rutas</option>
-          <option *ngFor="let ruta of rutas" [value]="ruta.id_ruta">{{ ruta.nombre_ruta }}</option>
+          <option *ngFor="let ruta of rutas" [value]="ruta.id_ruta">
+            {{ ruta.nombre_ruta }}
+          </option>
         </select>
+        <small *ngIf="tipoCalculo === 'dias'" class="hint-text">
+          El filtro por ruta no está disponible en cálculo por días
+        </small>
       </div>
     </div>
 
     <div class="contador-resultados">
       <strong>{{ totalItems }}</strong> cargas encontradas
+      <span class="tipo-calculo-badge">{{ tipoCalculo === 'vueltas' ? '(Por Vueltas)' : '(Por Días)' }}</span>
     </div>
 
     <div class="tabla-responsive-wrapper">
@@ -52,7 +85,9 @@
             <th>KM Recorridos</th>
             <th>Litros</th>
             <th>Rendimiento (KM/L)</th>
-            <th>Rutas y Vueltas</th>
+            <!-- CAMBIO: Columna condicional según tipo_calculo -->
+            <th *ngIf="tipoCalculo === 'vueltas'">Rutas y Vueltas</th>
+            <th *ngIf="tipoCalculo === 'dias'">Ruta Principal</th>
             <th>Despachador</th>
           </tr>
         </thead>
@@ -68,18 +103,30 @@
                 {{ carga.rendimiento_calculado | number:'1.2-2' }}
               </span>
             </td>
-            <td>{{ carga.rutas_info }}</td>
+            <!-- CAMBIO: Mostrar diferentes datos según tipo_calculo -->
+            <td *ngIf="tipoCalculo === 'vueltas'">
+              {{ carga.rutas_y_vueltas || '-' }}
+            </td>
+            <td *ngIf="tipoCalculo === 'dias'">
+              {{ carga.rutas_y_vueltas || '-' }}
+            </td>
             <td>{{ carga.nombre_despachador }}</td>
           </tr>
           <tr *ngIf="cargas.length === 0">
-            <td colspan="8" class="empty-table-message">No se encontraron cargas que coincidan con los filtros.</td>
+            <td [attr.colspan]="tipoCalculo === 'vueltas' ? 9 : 9" class="empty-table-message">
+              No se encontraron cargas que coincidan con los filtros.
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <div class="pagination-controls">
-      <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente"></pagination-controls>
+      <pagination-controls 
+        (pageChange)="onPageChange($event)" 
+        previousLabel="Anterior" 
+        nextLabel="Siguiente">
+      </pagination-controls>
     </div>
   </div>
 </div>
