@@ -3,7 +3,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Slightly more modern sans-serif */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Background and Layout for the Host Component */
@@ -11,223 +11,469 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh; /* Ensures full viewport height */
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/pantalla1.jpg") no-repeat center center fixed;
+  min-height: 100vh;
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
+              url("/assets/img/pantalla1.jpg") no-repeat center center fixed;
   background-size: cover;
-  background-position: center; /* Ensure image is centered */
-  background-attachment: fixed; /* Ensures the background stays fixed during scroll, though min-height makes it less critical here */
+  background-position: center;
+  background-attachment: fixed;
 }
 
-/* Login Container - Card Wrapper */
-.login {
-  max-width: 450px; /* Reduced max-width for a more typical login form size */
-  width: 90%;
-  padding: 25px; /* Added some padding around the card itself */
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); /* Enhanced shadow for depth */
-  border-radius: 12px; /* Slightly more rounded corners */
+/* Login Container */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
 }
 
-/* Card Styling (Login Box) */
+/* Fondo animado con blobs */
+.animated-bg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.1;
+  filter: blur(40px);
+}
+
+.blob-1 {
+  width: 400px;
+  height: 400px;
+  background: #fff;
+  top: -100px;
+  left: -100px;
+  animation: blob-animate 8s ease-in-out infinite;
+}
+
+.blob-2 {
+  width: 300px;
+  height: 300px;
+  background: #ec4899;
+  bottom: -50px;
+  right: -50px;
+  animation: blob-animate 10s ease-in-out infinite reverse;
+}
+
+.blob-3 {
+  width: 350px;
+  height: 350px;
+  background: #667eea;
+  top: 50%;
+  right: 10%;
+  animation: blob-animate 12s ease-in-out infinite;
+}
+
+@keyframes blob-animate {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+/* Wrapper principal */
+.login-wrapper {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 500px;
+  padding: 40px 20px;
+}
+
+/* Contenedor del logo */
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.logo-container.active {
+  pointer-events: none;
+}
+
+.logo {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.logo-container:not(.active) .logo:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: scale(1.05);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.logo svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.logo-text {
+  margin-top: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  animation: pulse-text 2s ease-in-out infinite;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes pulse-text {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Contenedor del formulario */
+.form-container {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 30px 0;
+  text-align: center;
+}
+
+/* Mensaje de error */
+.error-banner {
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 4px solid #ef4444;
+  color: #fca5a5;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Formulario */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Grupos de formulario */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e0e0e0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Contenedor del input */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.input-wrapper svg {
+  color: #9ca3af;
+  flex-shrink: 0;
+  transition: color 0.3s ease;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  font-size: 14px;
+  color: #f3f3f3;
+  background: rgba(74, 142, 206, 0.2);
+  transition: all 0.3s ease;
+  outline: none;
+  font-family: inherit;
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.form-input:focus {
+  background: rgba(74, 142, 206, 0.3);
+  border-color: #4480d3;
+  box-shadow: 0 0 0 3px rgba(68, 128, 211, 0.2);
+}
+
+.form-input.error {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.input-wrapper:has(.form-input:focus) svg {
+  color: #4480d3;
+}
+
+.error-text {
+  font-size: 12px;
+  color: #fca5a5;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Checkbox */
+.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #4480d3;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.form-checkbox:checked {
+  background-color: #4480d3;
+  border-color: #4480d3;
+}
+
+.checkbox-label {
+  font-size: 14px;
+  color: #e0e0e0;
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+/* Botones */
+.btn-submit {
+  width: 100%;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #4480d3 0%, #2e59a0 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(68, 128, 211, 0.4);
+}
+
+.btn-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loader {
+  display: inline-block;
+}
+
+.loader svg {
+  width: 20px;
+  height: 20px;
+  stroke: white;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Botón cerrar */
+.btn-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+  transform: rotate(90deg);
+}
+
+/* Card (Legacy Support) */
 .card {
-  background-color: rgba(0, 0, 0, 0.8); /* Slightly darker for better contrast */
-  color: #e0e0e0; /* Off-white for softer contrast */
-  border: 1px solid rgba(255, 255, 255, 0.3) !important; /* Softer white border */
-  border-radius: 10px; /* Consistent border radius */
-  overflow: hidden; /* Ensures content respects border-radius */
+  background: transparent;
+  border: none;
 }
 
 .card-header {
-  background-color: rgba(28, 28, 28, 0.7); /* Darker header for distinction */
-  padding: 15px 20px; /* Adjusted padding */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle separator */
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 
 .card-header h3 {
-  color: #ffffff; /* Pure white for titles */
-  margin-bottom: 0; /* Remove default margin from h3 */
-  font-size: 1.8rem; /* Slightly larger heading */
-  text-align: center; /* Centered header text */
+  color: #ffffff;
+  margin: 0;
+  font-size: 1.8rem;
+  text-align: center;
 }
 
 .card-body {
-  padding: 70px; /* Increased padding inside the body */
+  padding: 0;
 }
 
-
-
-/* Form Group Styling */
-.form-group {
-  margin-bottom: 25px; /* Increased bottom margin for better spacing */
-}
-
-.form-group label {
-  display: flex;
-  margin-bottom: 20px; /* Slightly reduced margin */
-  color: #ffffff; /* Consistent off-white color */
-  font-size: 10rem; /* Slightly smaller font size */
-}
-
-
-.form-control {
-  background-color: rgba(74, 142, 206, 0.3) !important; /* Slightly more transparent background */
-  border: 1px solid rgba(255, 255, 255, 0.4); /* Softer white border */
-  padding: 12px 15px; /* Adjusted padding */
-  color: #f3f3f3; /* Lighter text color inside input */
-  border-radius: 5px; /* Slightly rounded corners for inputs */
-  font-size: 1rem;
-  transition: all 0.3s ease; /* Smooth transition for focus */
-}
-
-.form-group input::placeholder {
-  color: rgba(255, 255, 255, 0.5); /* Softer placeholder color */
-}
-
-.form-group input:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(68, 128, 211, 0.7); /* A subtle blue glow on focus */
-  border-color: #4480d3; /* Blue border on focus */
-  background-color: rgba(74, 142, 206, 0.4) !important; /* Slightly less transparent on focus */
-}
-
-/* Checkbox Styling */
-.form-check {
-  margin-bottom: 25px; /* Consistent margin */
-  padding-left: 30px; /* Increased padding for checkbox alignment */
-  display: flex; /* Use flexbox for better alignment */
-  align-items: center;
-}
-
-.form-check-input {
-  /* Using standard browser appearance first, then custom if needed */
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  background-color: transparent;
-  border: 1px solid #ffffff; /* White border */
-  border-radius: 4px; /* Slightly rounded checkbox */
-  cursor: pointer;
-  margin-right: 10px; /* Space between checkbox and label */
-  flex-shrink: 0; /* Prevent checkbox from shrinking */
-  transition: all 0.2s ease;
-}
-.form-group label {
-  display: flex;
-  margin-bottom: 20px;
-  color: #ffffff;
-  font-size: 1.3rem; /* Aproximadamente 16px. Originalmente estaba en 10rem. */
-}
-
-.form-check-input:checked {
-  background-color: #4480d3; /* Blue when checked */
-  border-color: #4480d3; /* Blue border when checked */
-}
-
-.form-check-input:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(68, 128, 211, 0.5); /* Focus glow */
-}
-
-.form-check-label {
-  color: #e0e0e0; /* Off-white label color */
-  user-select: none;
-  font-size: 1.0rem;
-  display: block;
-  margin-bottom: 10px;
-  color: white;
-}
-
-/* Primary Button Styling */
-.btn-primary {
-  background-color: #4480d3; /* Primary blue */
-  border: none;
-  color: white;
-  padding: 14px 28px; /* Larger padding for better clickability */
-  font-size: 1.15rem; /* Slightly larger font */
-  width: 100%; /* Full width within the card-body padding */
-  border-radius: 8px; /* Slightly more rounded button */
-  cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.btn-primary:hover {
-  background-color: #386bbd; /* Slightly darker blue on hover */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Subtle shadow on hover */
-}
-
-.btn-primary:active {
-  background-color: #2e59a0; /* Even darker on click */
-}
-
-.btn-primary:disabled {
-  background-color: #6a9edc; /* Lighter blue when disabled */
-  opacity: 0.7; /* Make it more obvious it's disabled */
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-/* Error Text */
-.text-danger {
-  color: #ff6666; /* Slightly softer red for errors */
-  font-size: 0.85rem;
-  margin-top: 8px; /* Adjusted margin */
-  text-align: left;
-  padding-left: 0; /* Remove specific padding-left */
-}
-
-/* Back Arrow (If still present) */
+/* Back Arrow */
 .back-arrow {
   position: fixed;
-  top: 25px; /* Slightly adjusted position */
+  top: 25px;
   left: 25px;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 1000; /* Higher z-index */
+  z-index: 1000;
   color: #ffffff;
-  font-size: 24px; /* Slightly larger icon */
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7); /* Stronger shadow for visibility */
+  font-size: 24px;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
 }
 
 .back-arrow:hover {
   transform: scale(1.2);
-  color: #e0e0e0; /* Subtle color change on hover */
+  color: #e0e0e0;
 }
 
-/* Responsive adjustments */
+/* Responsive */
 @media (max-width: 768px) {
-  .login {
-    max-width: 90%;
+  .login-wrapper {
     padding: 20px;
   }
 
-  .card-body {
-    padding: 25px;
+  .form-container {
+    padding: 30px;
+    max-width: 90%;
   }
 
-  .card-header h3 {
-    font-size: 1.6rem;
+  .form-title {
+    font-size: 24px;
   }
 
-  .btn-primary {
-    padding: 12px 20px;
-    font-size: 1rem;
+  .logo {
+    width: 100px;
+    height: 100px;
   }
 }
 
 @media (max-width: 480px) {
-  .login {
+  .login-wrapper {
     padding: 15px;
   }
 
-  .card-body {
+  .form-container {
     padding: 20px;
   }
 
-  .card-header h3 {
-    font-size: 1.4rem;
+  .form-title {
+    font-size: 20px;
+  }
+
+  .logo {
+    width: 80px;
+    height: 80px;
+  }
+
+  .back-arrow {
+    top: 15px;
+    left: 15px;
+    font-size: 20px;
   }
 }

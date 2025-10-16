@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { AdminModule } from './admin/admin.module';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 
 @NgModule({
@@ -15,6 +16,7 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     AppRoutingModule,
     AuthModule,
     ReactiveFormsModule,
