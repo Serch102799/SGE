@@ -1,10 +1,29 @@
 <div class="usuarios-container">
   <div class="container-header">
     <h2>Historial de Cargas de Combustible</h2>
-    <a routerLink="/admin/registro-carga-combustible" class="btn-agregar">
-      <span>&#43;</span> Registrar Nueva Carga
-    </a>
+    <div class="acciones-header">
+      <button 
+        class="btn-exportar btn-exportar-excel" 
+        (click)="exportarAExcel()"
+        [disabled]="exportandoExcel || cargas.length === 0"
+        title="Descargar datos en formato Excel">
+        <span *ngIf="!exportandoExcel">📊 Exportar a Excel</span>
+        <span *ngIf="exportandoExcel">⏳ Generando Excel...</span>
+      </button>
+      <button 
+        class="btn-exportar btn-exportar-pdf" 
+        (click)="exportarAPDF()"
+        [disabled]="exportando || cargas.length === 0"
+        title="Descargar datos en formato PDF">
+        <span *ngIf="!exportando">📄 Exportar a PDF</span>
+        <span *ngIf="exportando">⏳ Generando PDF...</span>
+      </button>
+      <a routerLink="/admin/registro-carga-combustible" class="btn-agregar">
+        <span>&#43;</span> Registrar Nueva Carga
+      </a>
+    </div>
   </div>
+
   <div class="container-body">
     <div class="filtros-container">
       <div class="filtro-item">
@@ -18,9 +37,11 @@
         </select>
       </div>
     </div>
+
     <div class="contador-resultados">
-        <strong>{{ totalItems }}</strong> cargas encontradas
+      <strong>{{ totalItems }}</strong> cargas encontradas
     </div>
+
     <div class="tabla-responsive-wrapper">
       <table class="tabla-usuarios">
         <thead>
@@ -36,26 +57,27 @@
           </tr>
         </thead>
         <tbody>
-  <tr *ngFor="let carga of cargas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
-    <td>{{ carga.fecha_operacion | date:'dd/MM/yy h:mm a' }}</td>
-    <td>{{ carga.economico }}</td>
-    <td>{{ carga.nombre_operador }}</td>
-    <td>{{ carga.km_recorridos | number }} km</td>
-    <td>{{ carga.litros_cargados | number:'1.2-2' }} Lts</td>
-    <td>
-      <span [ngClass]="{'alerta-rendimiento': carga.alerta_rendimiento}">
-        {{ carga.rendimiento_calculado | number:'1.2-2' }}
-      </span>
-    </td>
-    <td>{{ carga.rutas_info }}</td>
-    <td>{{ carga.nombre_despachador }}</td>
-  </tr>
-  <tr *ngIf="cargas.length === 0">
-    <td colspan="8" class="empty-table-message">No se encontraron cargas que coincidan con los filtros.</td>
-  </tr>
-</tbody>
+          <tr *ngFor="let carga of cargas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+            <td>{{ carga.fecha_operacion | date:'dd/MM/yy h:mm a' }}</td>
+            <td>{{ carga.economico }}</td>
+            <td>{{ carga.nombre_operador }}</td>
+            <td>{{ carga.km_recorridos | number }} km</td>
+            <td>{{ carga.litros_cargados | number:'1.2-2' }} Lts</td>
+            <td>
+              <span [ngClass]="{'alerta-rendimiento': carga.alerta_rendimiento}">
+                {{ carga.rendimiento_calculado | number:'1.2-2' }}
+              </span>
+            </td>
+            <td>{{ carga.rutas_info }}</td>
+            <td>{{ carga.nombre_despachador }}</td>
+          </tr>
+          <tr *ngIf="cargas.length === 0">
+            <td colspan="8" class="empty-table-message">No se encontraron cargas que coincidan con los filtros.</td>
+          </tr>
+        </tbody>
       </table>
     </div>
+
     <div class="pagination-controls">
       <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente"></pagination-controls>
     </div>
