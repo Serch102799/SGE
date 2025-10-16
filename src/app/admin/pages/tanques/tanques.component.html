@@ -39,7 +39,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let tanque of tanques">
+            <tr *ngFor="let tanque of tanques" (click)="abrirModalHistorial(tanque)" style="cursor: pointer;">
               <td>{{ tanque.nombre_tanque }}</td>
               <td>{{ tanque.nombre_ubicacion }}</td>
               <td>{{ tanque.nivel_actual_litros | number:'1.2-2' }} Lts</td>
@@ -56,7 +56,7 @@
                   </div>
                 </div>
               </td>
-              <td class="acciones" *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel'])">
+              <td class="acciones" *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel'])" (click)="$event.stopPropagation()">
                 <button class="btn-accion btn-estado" (click)="abrirModal('editar', tanque)">Editar</button>
                 <button class="btn-accion btn-recargar" (click)="abrirModalRecarga(tanque)">Recargar</button>
               </td>
@@ -70,6 +70,8 @@
     </fieldset>
   </div>
 </div>
+
+<!-- MODAL RECARGA CON FECHA -->
 <div class="modal-overlay" *ngIf="mostrarModalRecarga" (click)="cerrarModalRecarga()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -78,6 +80,11 @@
     </div>
     <div class="modal-body">
       <form (ngSubmit)="confirmarRecarga()">
+        <div class="form-group">
+          <label for="fechaRecarga">Fecha de Operación</label>
+          <input id="fechaRecarga" type="datetime-local" class="form-control" [(ngModel)]="fechaRecarga"
+            name="fechaRecarga" required>
+        </div>
         <div class="form-group">
           <label for="litros">Litros a Cargar</label>
           <input id="litros" type="number" step="0.01" class="form-control" [(ngModel)]="litrosARecargar"
@@ -91,6 +98,44 @@
     </div>
   </div>
 </div>
+
+<!-- MODAL HISTORIAL DE RECARGAS -->
+<div class="modal-overlay" *ngIf="mostrarModalHistorial" (click)="cerrarModalHistorial()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 *ngIf="tanqueSeleccionadoHistorial">Historial de Recargas: {{ tanqueSeleccionadoHistorial.nombre_tanque }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModalHistorial()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="historial-container">
+        <table class="tabla-historial" *ngIf="historialRecargas.length > 0">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Litros Cargados</th>
+              <th>Observaciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let recarga of historialRecargas">
+              <td>{{ recarga.fecha_operacion | date:'short' }}</td>
+              <td>{{ recarga.litros_cargados | number:'1.2-2' }} Lts</td>
+              <td>{{ recarga.observaciones || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="empty-historial" *ngIf="historialRecargas.length === 0">
+          <p>No hay recargas registradas para este tanque.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalHistorial()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AGREGAR/EDITAR TANQUE -->
 <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -123,6 +168,51 @@
   </div>
 </div>
 
+<!-- MODAL TRASLADO CON FECHA -->
+<div class="modal-overlay" *ngIf="mostrarModalTraslado" (click)="cerrarModalTraslado()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Registrar Traslado Interno</h3>
+      <button class="btn-cerrar" (click)="cerrarModalTraslado()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="guardarTraslado()">
+        <div class="form-group">
+          <label>Desde Tanque (Origen)</label>
+          <select class="form-control" [(ngModel)]="traslado.id_tanque_origen" name="origen" required>
+            <option [ngValue]="null" disabled>Selecciona tanque origen...</option>
+            <option *ngFor="let tanque of tanques" [ngValue]="tanque.id_tanque">{{ tanque.nombre_tanque }} (Disp: {{ tanque.nivel_actual_litros | number:'1.0-0' }} Lts)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Hacia Tanque (Destino)</label>
+          <select class="form-control" [(ngModel)]="traslado.id_tanque_destino" name="destino" required>
+            <option [ngValue]="null" disabled>Selecciona tanque destino...</option>
+            <option *ngFor="let tanque of tanques" [ngValue]="tanque.id_tanque">{{ tanque.nombre_tanque }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Litros a Trasladar</label>
+          <input type="number" step="0.01" class="form-control" [(ngModel)]="traslado.litros_trasladados" name="litros" placeholder="Ej. 1000" required>
+        </div>
+        <div class="form-group">
+          <label>Fecha de Operación</label>
+          <input type="datetime-local" class="form-control" [(ngModel)]="traslado.fecha_operacion" name="fecha" required>
+        </div>
+        <div class="form-group">
+          <label>Observaciones (Opcional)</label>
+          <textarea class="form-control" [(ngModel)]="traslado.observaciones" name="observaciones" rows="2"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalTraslado()">Cancelar</button>
+          <button type="submit" class="btn-accion btn-guardar">Confirmar Traslado</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOTIFICACIÓN -->
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -137,34 +227,6 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" *ngIf="mostrarModalTraslado">
-  <div class="modal-content">
-    <div class="modal-header"><h3>Registrar Traslado Interno</h3> ... </div>
-    <div class="modal-body">
-      <form (ngSubmit)="guardarTraslado()">
-        <div class="form-group">
-          <label>Desde Tanque (Origen)</label>
-          <select class="form-control" [(ngModel)]="traslado.id_tanque_origen" name="origen">
-            <option *ngFor="let tanque of tanques" [ngValue]="tanque.id_tanque">{{ tanque.nombre_tanque }} (Disp: {{ tanque.nivel_actual_litros }} Lts)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Hacia Tanque (Destino)</label>
-          <select class="form-control" [(ngModel)]="traslado.id_tanque_destino" name="destino">
-            <option *ngFor="let tanque of tanques" [ngValue]="tanque.id_tanque">{{ tanque.nombre_tanque }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Litros a Trasladar</label>
-          <input type="number" class="form-control" [(ngModel)]="traslado.litros_trasladados" name="litros">
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn-accion btn-guardar">Confirmar Traslado</button>
-        </div>
-      </form>
     </div>
   </div>
 </div>

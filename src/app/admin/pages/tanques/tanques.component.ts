@@ -24,6 +24,13 @@ interface Ubicacion {
   nombre_ubicacion: string;
 }
 
+interface Recarga {
+  id_recarga: number;
+  litros_cargados: number;
+  fecha_operacion: string;
+  observaciones?: string;
+}
+
 @Component({
   selector: 'app-tanques',
   standalone: false,
@@ -45,8 +52,14 @@ export class TanquesComponent implements OnInit {
   mostrarModalRecarga = false;
   tanqueARecargar: Tanque | null = null;
   litrosARecargar: number | null = null;
+  fechaRecarga: string = this.getFormattedCurrentDateTime();
 
-  // --- CAMBIO: Propiedades para el nuevo modal de Traslado ---
+  // --- Modal de Historial ---
+  mostrarModalHistorial = false;
+  historialRecargas: Recarga[] = [];
+  tanqueSeleccionadoHistorial: Tanque | null = null;
+
+  // --- Modal de Traslado ---
   mostrarModalTraslado = false;
   traslado = {
     id_tanque_origen: null as number | null,
@@ -91,9 +104,11 @@ export class TanquesComponent implements OnInit {
     this.tanqueSeleccionado = modo === 'editar' && tanque ? { ...tanque } : { nivel_actual_litros: 0 };
     this.mostrarModal = true;
   }
+
   cerrarModal(): void {
     this.mostrarModal = false;
   }
+
   guardarTanque(): void {
     if (!this.tanqueSeleccionado.nombre_tanque || !this.tanqueSeleccionado.id_ubicacion) {
       this.mostrarNotificacion('Campos Requeridos', 'El nombre del tanque y la ubicación son obligatorios.');
@@ -117,18 +132,30 @@ export class TanquesComponent implements OnInit {
   abrirModalRecarga(tanque: Tanque): void {
     this.tanqueARecargar = tanque;
     this.litrosARecargar = null;
+    this.fechaRecarga = this.getFormattedCurrentDateTime();
     this.mostrarModalRecarga = true;
   }
+
   cerrarModalRecarga(): void {
     this.mostrarModalRecarga = false;
   }
+
   confirmarRecarga(): void {
     if (!this.tanqueARecargar || !this.litrosARecargar || this.litrosARecargar <= 0) {
       this.mostrarNotificacion('Dato Inválido', 'Por favor, ingresa una cantidad de litros válida.');
       return;
     }
+    if (!this.fechaRecarga) {
+      this.mostrarNotificacion('Fecha Requerida', 'Por favor, selecciona una fecha de operación.');
+      return;
+    }
+
     const url = `${this.apiUrl}/recargar/${this.tanqueARecargar.id_tanque}`;
-    const payload = { litros_a_cargar: this.litrosARecargar };
+    const payload = { 
+      litros_a_cargar: this.litrosARecargar,
+      fecha_operacion: this.fechaRecarga
+    };
+    
     this.http.post(url, payload).subscribe({
       next: () => {
         this.mostrarNotificacion('Éxito', 'Tanque recargado correctamente.', 'exito');
@@ -139,7 +166,31 @@ export class TanquesComponent implements OnInit {
     });
   }
 
-  // --- CAMBIO: Métodos para el nuevo Modal de Traslado ---
+  // --- Métodos para Modal de Historial ---
+  abrirModalHistorial(tanque: Tanque): void {
+    this.tanqueSeleccionadoHistorial = tanque;
+    this.mostrarModalHistorial = true;
+    this.cargarHistorialRecargas(tanque.id_tanque);
+  }
+
+  cerrarModalHistorial(): void {
+    this.mostrarModalHistorial = false;
+    this.historialRecargas = [];
+  }
+
+  cargarHistorialRecargas(idTanque: number): void {
+    this.http.get<Recarga[]>(`${this.apiUrl}/${idTanque}/historial-recargas`).subscribe({
+      next: (recargas) => {
+        this.historialRecargas = recargas;
+      },
+      error: (err) => {
+        this.mostrarNotificacion('Error', 'No se pudo cargar el historial de recargas.', 'error');
+        this.historialRecargas = [];
+      }
+    });
+  }
+
+  // --- Métodos para el Modal de Traslado ---
   abrirModalTraslado(): void {
     this.traslado = {
       id_tanque_origen: null,
@@ -160,11 +211,16 @@ export class TanquesComponent implements OnInit {
       this.mostrarNotificacion('Datos Incompletos', 'Completa todos los campos para realizar el traslado.');
       return;
     }
+    if (!this.traslado.fecha_operacion) {
+      this.mostrarNotificacion('Fecha Requerida', 'Por favor, selecciona una fecha de operación.');
+      return;
+    }
+
     this.http.post(`${environment.apiUrl}/traslados`, this.traslado).subscribe({
       next: () => {
         this.mostrarNotificacion('Éxito', 'Traslado registrado exitosamente.', 'exito');
         this.cerrarModalTraslado();
-        this.obtenerDatos(); // Refresca toda la información
+        this.obtenerDatos();
       },
       error: (err) => {
         this.mostrarNotificacion('Error', err.error?.message || 'No se pudo registrar el traslado.', 'error');
@@ -176,6 +232,7 @@ export class TanquesComponent implements OnInit {
     this.notificacion = { titulo, mensaje, tipo };
     this.mostrarModalNotificacion = true;
   }
+
   cerrarModalNotificacion() {
     this.mostrarModalNotificacion = false;
   }
