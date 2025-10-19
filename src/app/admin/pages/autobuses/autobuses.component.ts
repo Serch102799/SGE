@@ -290,12 +290,12 @@ export class AutobusesComponent implements OnInit, OnDestroy {
     }
     if (this.filtroHistorialFechaInicio) {
       const fechaDesde = new Date(this.filtroHistorialFechaInicio);
-      historialTemp = historialTemp.filter(item => new Date(item.fecha_salida) >= fechaDesde);
+      historialTemp = historialTemp.filter(item => new Date(item.fecha) >= fechaDesde);
     }
     if (this.filtroHistorialFechaFin) {
       const fechaHasta = new Date(this.filtroHistorialFechaFin);
       fechaHasta.setDate(fechaHasta.getDate() + 1);
-      historialTemp = historialTemp.filter(item => new Date(item.fecha_salida) < fechaHasta);
+      historialTemp = historialTemp.filter(item => new Date(item.fecha) < fechaHasta);
     }
 
     this.historialFiltrado = historialTemp;
