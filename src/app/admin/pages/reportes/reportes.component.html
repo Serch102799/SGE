@@ -1,86 +1,136 @@
-<div class="main-container">
+
+<div class="usuarios-container">
   <div class="container-header">
     <h2>Módulo de Reportes</h2>
   </div>
 
   <div class="container-body">
+    <!-- Sección de Selección -->
     <div class="report-section">
       <h3>Selecciona un Reporte</h3>
-      <div class="filtros-container">
-        <div class="filtro-item">
-          <label>Tipo de Reporte</label>
-          <select class="form-control" [(ngModel)]="tipoReporteSeleccionado">
-            <option value="stock-bajo">Refacciones con Stock Bajo</option>
-            <option value="costo-por-autobus">Gasto Total por Autobús</option>
-            <option value="mas-utilizadas">Refacciones Más Utilizadas</option>
-            <option value="menos-utilizadas">Refacciones Menos Utilizadas</option>
-            <option value="consumo-insumos-por-autobus">Consumo de Insumos por Autobús</option>
+      <p>{{ descripcionReporte }}</p>
 
+      <div class="filtros-container">
+        <!-- Tipo de Reporte -->
+        <div class="filtro-item">
+          <label for="tipoReporte">Tipo de Reporte</label>
+          <select 
+            id="tipoReporte" 
+            class="form-control" 
+            [(ngModel)]="tipoReporteSeleccionado">
+            <option value="stock-bajo">Stock Bajo</option>
+            <option value="gastos-totales">Gastos Totales</option>
+            <option value="menos-utilizadas">Refacciones Menos Utilizadas</option>
+            <option value="mas-utilizadas">Refacciones Más Utilizadas</option>
+            <option value="costo-autobus">Costo por Autobús</option>
+            <option value="movimientos-refaccion">Movimientos por Refacción</option>
           </select>
         </div>
-        <div class="filtro-item">
-          <label>Desde:</label>
-          <input type="date" class="form-control" [(ngModel)]="fechaInicio">
+
+        <!-- Fecha Inicio (solo si requiere fechas) -->
+        <div class="filtro-item" *ngIf="requiereFechas">
+          <label for="fechaInicio">Desde:</label>
+          <input 
+            type="date" 
+            id="fechaInicio" 
+            class="form-control" 
+            [(ngModel)]="fechaInicio">
         </div>
-        <div class="filtro-item">
-          <label>Hasta:</label>
-          <input type="date" class="form-control" [(ngModel)]="fechaFin">
-        </div>
-        <div class="filtro-item">
-            <button class="btn btn-primary" (click)="generarReporte()" [disabled]="isLoading">
-              {{ isLoading ? 'Generando...' : 'Generar Reporte' }}
-            </button>
+
+        <!-- Fecha Fin (solo si requiere fechas) -->
+        <div class="filtro-item" *ngIf="requiereFechas">
+          <label for="fechaFin">Hasta:</label>
+          <input 
+            type="date" 
+            id="fechaFin" 
+            class="form-control" 
+            [(ngModel)]="fechaFin">
         </div>
       </div>
-      <small class="form-text text-muted">Nota: El filtro de fecha aplica para los reportes de "Refacciones Utilizadas" y "Costo por Autobús".</small>
+
+      <button class="btn-agregar" (click)="generarReporte()" [disabled]="isLoading">
+        <span *ngIf="!isLoading">📊 Generar Reporte</span>
+        <span *ngIf="isLoading">⏳ Cargando...</span>
+      </button>
+      
+      <p *ngIf="requiereFechas" style="margin-top: 15px; font-size: 0.85rem; color: #999;">
+        Nota: El filtro de fecha aplica para este reporte.
+      </p>
     </div>
 
-    <div class="results-container" *ngIf="columnasReporte.length > 0">
+    <!-- Resultados -->
+    <div class="results-container" *ngIf="reporteData.length > 0">
       <div class="results-header">
-        <h4>Resultados</h4>
-        <button class="btn btn-success" (click)="exportarPDF()">
-          <span>&#128196;</span> Exportar a PDF
-        </button>
+        <h4>{{ tituloReporte }}</h4>
+        <div class="export-buttons">
+          <button class="btn-exportar" (click)="exportarPDF()">
+            📄 Exportar a PDF
+          </button>
+          <button class="btn-excel" (click)="exportarExcel()">
+            📊 Exportar a Excel
+          </button>
+        </div>
       </div>
+
+      <!-- Total General (solo para gastos-totales) -->
+      <div class="total-general" *ngIf="tipoReporteSeleccionado === 'gastos-totales' && totalGeneral > 0">
+        Total General: ${{ totalGeneral | number:'1.2-2':'es-MX' }}
+      </div>
+
+      <!-- Tabla de Resultados -->
       <div class="tabla-responsive-wrapper">
-        <table class="custom-table">
+        <table class="tabla-usuarios">
           <thead>
             <tr>
-              <th *ngFor="let columna of columnasReporte">{{ columna.replace('_', ' ') | titlecase }}</th>
+              <th *ngFor="let columna of columnasReporte">
+                {{ formatearColumna(columna) }}
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of reporteData">
-              <td *ngFor="let columna of columnasReporte">{{ item[columna] }}</td>
+            <tr 
+              *ngFor="let fila of reporteData"
+              [class.alerta-stock-bajo]="fila.stock_actual < fila.stock_minimo">
+              <td 
+                *ngFor="let columna of columnasReporte"
+                [class.stock-critico]="columna === 'stock_actual' && fila.stock_actual < fila.stock_minimo">
+                {{ formatearValor(fila[columna], columna) }}
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <div class="results-container" *ngIf="!isLoading && reporteData.length === 0 && columnasReporte.length === 0">
-        <p class="empty-report">No hay datos para mostrar con los filtros seleccionados.</p>
+    <!-- Mensaje cuando no hay datos -->
+    <div class="empty-table-message" *ngIf="reporteData.length === 0 && !isLoading">
+      No hay datos para mostrar. Genera un reporte para ver los resultados.
     </div>
-    
+
+    <!-- Mensaje de carga -->
+    <div class="loading-message" *ngIf="isLoading">
+      Generando reporte...
+    </div>
   </div>
 </div>
+
+
+<!-- Modal de Notificación -->
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
   <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3 [ngClass]="{
-        'header-exito': notificacion.tipo === 'exito',
-        'header-error': notificacion.tipo === 'error',
-        'header-advertencia': notificacion.tipo === 'advertencia'
-      }">
-        {{ notificacion.titulo }}
-      </h3>
-      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    <div class="modal-header" [ngClass]="{
+      'header-exito': notificacion.tipo === 'exito',
+      'header-error': notificacion.tipo === 'error',
+      'header-advertencia': notificacion.tipo === 'advertencia'
+    }">
+      <h3>{{ notificacion.titulo }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">&times;</button>
     </div>
-    <div class="modal-body">
-      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    <div class="confirm-text">
+      {{ notificacion.mensaje }}
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+      <button class="btn-cancelar" (click)="cerrarModalNotificacion()">Cerrar</button>
     </div>
   </div>
 </div>
