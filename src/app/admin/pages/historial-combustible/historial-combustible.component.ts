@@ -12,6 +12,10 @@ interface Ruta {
   id_ruta: number;
   nombre_ruta: string;
 }
+interface jsPDFWithAutoTable extends jsPDF {
+   autoTable: (options: any) => void;
+  lastAutoTable: { finalY: number };
+ }
 
 @Component({
   selector: 'app-historial-combustible',
@@ -135,14 +139,19 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   }
 
   // --- EXPORTAR A PDF ---
-  exportarAPDF(): void {
-    if (!this.cargas || this.cargas.length === 0) {
-      alert('No hay datos para exportar');
-      return;
-    }
+// IMPORTANTE: Asegúrate de tener estos imports al inicio del archivo:
+// import jsPDF from 'jspdf';
+// import autoTable from 'jspdf-autotable';
 
-    this.exportando = true;
+exportarAPDF(): void {
+  if (!this.cargas || this.cargas.length === 0) {
+    alert('No hay datos para exportar');
+    return;
+  }
 
+  this.exportando = true;
+
+  setTimeout(() => {
     try {
       const doc = new jsPDF({
         orientation: 'landscape',
@@ -150,33 +159,36 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
         format: 'a4'
       });
 
-      // Título
-      doc.setFontSize(18);
+      // Título principal
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
       doc.setTextColor(33, 150, 243);
-      doc.text('Historial de Cargas de Combustible', 14, 15);
+      doc.text('HISTORIAL DE CARGAS DE COMBUSTIBLE', 148.5, 15, { align: 'center' });
 
-      // Subtítulo con tipo de cálculo
+      // Subtítulo
       doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
       doc.setTextColor(100, 100, 100);
-      doc.text(`Cálculo por: ${this.tipoCalculo === 'vueltas' ? 'Vueltas' : 'Días'}`, 14, 20);
+      const subtitulo = this.tipoCalculo === 'vueltas' ? 'Cálculo por: Vueltas' : 'Cálculo por: Días';
+      doc.text(subtitulo, 148.5, 21, { align: 'center' });
 
-      // Fecha de reporte
+      // Fecha de generación
       doc.setFontSize(10);
-      doc.text(`Reporte generado: ${new Date().toLocaleString()}`, 14, 25);
+      doc.text(`Generado: ${new Date().toLocaleString('es-MX')}`, 148.5, 26, { align: 'center' });
 
       // Preparar datos para la tabla
       const columnas = this.tipoCalculo === 'vueltas'
-        ? ['Fecha', 'Autobús', 'Operador', 'KM Recorridos', 'Litros', 'Rendimiento', 'Rutas']
-        : ['Fecha', 'Autobús', 'Operador', 'KM Recorridos', 'Litros', 'Rendimiento', 'Despachador'];
+        ? ['Fecha', 'Autobús', 'Operador', 'KM', 'Litros', 'Rendimiento', 'Rutas']
+        : ['Fecha', 'Autobús', 'Operador', 'KM', 'Litros', 'Rendimiento', 'Despachador'];
 
       const filas = this.cargas.map(carga => {
         const fila = [
           this.formatearFecha(carga.fecha_operacion),
           carga.economico || '-',
           carga.nombre_completo || carga.nombre_operador || '-',
-          `${this.obtenerNumero(carga.km_recorridos)}`,
-          `${this.obtenerNumero(carga.litros_cargados).toFixed(2)}`,
-          `${this.obtenerNumero(carga.rendimiento_calculado).toFixed(2)} km/l`
+          this.obtenerNumero(carga.km_recorridos).toString() + ' km',
+          this.obtenerNumero(carga.litros_cargados).toFixed(2) + ' L',
+          this.obtenerNumero(carga.rendimiento_calculado).toFixed(2) + ' km/L'
         ];
 
         if (this.tipoCalculo === 'vueltas') {
@@ -188,78 +200,114 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
         return fila;
       });
 
-      // Crear tabla
-      try {
-        const docWithTable = doc as any;
-        if (docWithTable.autoTable && typeof docWithTable.autoTable === 'function') {
-          docWithTable.autoTable({
-            head: [columnas],
-            body: filas,
-            startY: 35,
-            theme: 'grid',
-            styles: {
-              fontSize: 9,
-              cellPadding: 5,
-              textColor: [50, 50, 50],
-              lineColor: [200, 200, 200]
-            },
-            headStyles: {
-              fillColor: [33, 150, 243],
-              textColor: [255, 255, 255],
-              fontStyle: 'bold'
-            },
-            alternateRowStyles: {
-              fillColor: [245, 245, 245]
-            },
-            columnStyles: {
-              3: { halign: 'right' },
-              4: { halign: 'right' },
-              5: { halign: 'right' }
-            }
-          });
-        } else {
-          throw new Error('autoTable no está disponible');
-        }
-      } catch (tableError) {
-        console.warn('Usando tabla manual:', tableError);
+      // Calcular totales
+      const totalLitros = this.cargas.reduce((acc, c) => 
+        acc + this.obtenerNumero(c.litros_cargados), 0
+      );
+      const totalKm = this.cargas.reduce((acc, c) => 
+        acc + this.obtenerNumero(c.km_recorridos), 0
+      );
+      const promedioRendimiento = totalLitros > 0 ? totalKm / totalLitros : 0;
+
+      // Llamar a autoTable
+      const autoTableConfig = {
+        head: [columnas],
+        body: filas,
+        startY: 30,
+        theme: 'grid',
+        styles: {
+          fontSize: 9,
+          cellPadding: 4,
+          overflow: 'linebreak',
+          halign: 'left',
+          valign: 'middle',
+          textColor: [50, 50, 50],
+          lineColor: [220, 220, 220],
+          lineWidth: 0.2
+        },
+        headStyles: {
+          fillColor: [33, 150, 243],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 10,
+          halign: 'center',
+          cellPadding: 5
+        },
+        alternateRowStyles: {
+          fillColor: [248, 249, 250]
+        },
+        columnStyles: {
+          0: { cellWidth: 32, halign: 'center' },
+          1: { cellWidth: 22, halign: 'center' },
+          2: { cellWidth: 48 },
+          3: { cellWidth: 25, halign: 'right' },
+          4: { cellWidth: 25, halign: 'right' },
+          5: { cellWidth: 28, halign: 'right' },
+          6: { cellWidth: 'auto' }
+        },
+        margin: { left: 10, right: 10 }
+      };
+
+      // Aplicar autoTable
+      if (typeof (doc as any).autoTable === 'function') {
+        (doc as any).autoTable(autoTableConfig);
+      } else {
+        console.error('autoTable no disponible, usando tabla manual');
         this.dibujarTablaManual(doc, columnas, filas);
       }
 
-      // Agregar resumen al pie
+      // Obtener posición final
+      let finalY = 100;
+      if ((doc as any).lastAutoTable && (doc as any).lastAutoTable.finalY) {
+        finalY = (doc as any).lastAutoTable.finalY;
+      }
+
+      // Agregar resumen
+      const pageHeight = 210; // A4 landscape height
+      if (pageHeight - finalY > 30) {
+        doc.setFillColor(240, 248, 255);
+        doc.rect(10, finalY + 5, 277, 20, 'F');
+        
+        doc.setDrawColor(33, 150, 243);
+        doc.setLineWidth(0.5);
+        doc.rect(10, finalY + 5, 277, 20);
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(33, 150, 243);
+        
+        doc.text(`Total de Registros: ${this.cargas.length}`, 15, finalY + 12);
+        doc.text(`Total Litros: ${totalLitros.toFixed(2)} L`, 85, finalY + 12);
+        doc.text(`Total KM: ${totalKm.toFixed(0)} km`, 155, finalY + 12);
+        doc.text(`Rendimiento Promedio: ${promedioRendimiento.toFixed(2)} km/L`, 15, finalY + 20);
+      }
+
+      // Agregar pie de página
       const pageCount = (doc as any).internal.getNumberOfPages();
-      const pageSize = (doc as any).internal.pageSize;
-      const pageHeight = pageSize.height || pageSize.getHeight?.() || 297;
-      const pageWidth = pageSize.width || pageSize.getWidth?.() || 210;
-
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-
-      const totalLitros = this.cargas.reduce((acc, c) => acc + this.obtenerNumero(c.litros_cargados), 0);
-      const totalKm = this.cargas.reduce((acc, c) => acc + this.obtenerNumero(c.km_recorridos), 0);
-
-      doc.text(`Total de Registros: ${this.cargas.length}`, 14, pageHeight - 15);
-      doc.text(`Total Litros: ${totalLitros.toFixed(2)}`, 80, pageHeight - 15);
-      doc.text(`Total KM: ${totalKm.toFixed(0)}`, 150, pageHeight - 15);
-
-      // Pie de página
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
-        doc.text(`Página ${i} de ${pageCount}`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+        doc.text(`Página ${i} de ${pageCount}`, 148.5, 205, { align: 'center' });
       }
 
+      // Guardar PDF
       const nombreArchivo = `Historial_Combustible_${new Date().getTime()}.pdf`;
       doc.save(nombreArchivo);
 
       this.exportando = false;
+      console.log('PDF generado exitosamente');
     } catch (error) {
       console.error('Error detallado al exportar PDF:', error);
-      alert('Error al exportar a PDF. Revisa la consola para más detalles.');
+      if (error instanceof Error) {
+        console.error('Mensaje:', error.message);
+        console.error('Stack:', error.stack);
+      }
+      alert('Error al exportar a PDF: ' + (error instanceof Error ? error.message : 'Error desconocido'));
       this.exportando = false;
     }
-  }
-
+  }, 100);
+}
   // --- EXPORTAR A EXCEL ---
   exportarAExcel(): void {
     if (!this.cargas || this.cargas.length === 0) {
