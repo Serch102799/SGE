@@ -5,6 +5,7 @@ import { debounceTime, startWith } from 'rxjs/operators';
 import { environment } from '../../../../environments/environments';
 import { AuthService } from '../../../services/auth.service';
 import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
@@ -138,10 +139,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     this.searchSubject.next();
   }
 
-  // --- EXPORTAR A PDF ---
-// IMPORTANTE: Asegúrate de tener estos imports al inicio del archivo:
-// import jsPDF from 'jspdf';
-// import autoTable from 'jspdf-autotable';
 
 exportarAPDF(): void {
   if (!this.cargas || this.cargas.length === 0) {
@@ -157,38 +154,37 @@ exportarAPDF(): void {
         orientation: 'landscape',
         unit: 'mm',
         format: 'a4'
-      });
+      }) as jsPDFWithAutoTable;
 
-      // Título principal
-      doc.setFontSize(16);
+      // Encabezado
+      doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(33, 150, 243);
       doc.text('HISTORIAL DE CARGAS DE COMBUSTIBLE', 148.5, 15, { align: 'center' });
 
-      // Subtítulo
+      const subtitulo = this.tipoCalculo === 'vueltas' ? 'Cálculo por: Vueltas' : 'Cálculo por: Días';
       doc.setFontSize(11);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(100, 100, 100);
-      const subtitulo = this.tipoCalculo === 'vueltas' ? 'Cálculo por: Vueltas' : 'Cálculo por: Días';
-      doc.text(subtitulo, 148.5, 21, { align: 'center' });
+      doc.setTextColor(80, 80, 80);
+      doc.text(subtitulo, 148.5, 22, { align: 'center' });
 
-      // Fecha de generación
-      doc.setFontSize(10);
-      doc.text(`Generado: ${new Date().toLocaleString('es-MX')}`, 148.5, 26, { align: 'center' });
+      doc.setFontSize(9);
+      doc.setTextColor(120, 120, 120);
+      doc.text(`Generado: ${new Date().toLocaleString('es-MX')}`, 148.5, 27, { align: 'center' });
 
-      // Preparar datos para la tabla
+      // Preparar columnas y filas
       const columnas = this.tipoCalculo === 'vueltas'
-        ? ['Fecha', 'Autobús', 'Operador', 'KM', 'Litros', 'Rendimiento', 'Rutas']
-        : ['Fecha', 'Autobús', 'Operador', 'KM', 'Litros', 'Rendimiento', 'Despachador'];
+        ? ['Fecha', 'Autobús', 'Operador', 'KM', 'Litros', 'Rend.', 'Rutas']
+        : ['Fecha', 'Autobús', 'Operador', 'KM', 'Litros', 'Rend.', 'Despachador'];
 
       const filas = this.cargas.map(carga => {
         const fila = [
           this.formatearFecha(carga.fecha_operacion),
           carga.economico || '-',
           carga.nombre_completo || carga.nombre_operador || '-',
-          this.obtenerNumero(carga.km_recorridos).toString() + ' km',
+          this.obtenerNumero(carga.km_recorridos) + ' km',
           this.obtenerNumero(carga.litros_cargados).toFixed(2) + ' L',
-          this.obtenerNumero(carga.rendimiento_calculado).toFixed(2) + ' km/L'
+          this.obtenerNumero(carga.rendimiento_calculado).toFixed(2)
         ];
 
         if (this.tipoCalculo === 'vueltas') {
@@ -200,109 +196,104 @@ exportarAPDF(): void {
         return fila;
       });
 
-      // Calcular totales
-      const totalLitros = this.cargas.reduce((acc, c) => 
-        acc + this.obtenerNumero(c.litros_cargados), 0
-      );
-      const totalKm = this.cargas.reduce((acc, c) => 
-        acc + this.obtenerNumero(c.km_recorridos), 0
-      );
+      // Totales
+      const totalLitros = this.cargas.reduce((acc, c) => acc + this.obtenerNumero(c.litros_cargados), 0);
+      const totalKm = this.cargas.reduce((acc, c) => acc + this.obtenerNumero(c.km_recorridos), 0);
       const promedioRendimiento = totalLitros > 0 ? totalKm / totalLitros : 0;
 
-      // Llamar a autoTable
-      const autoTableConfig = {
+      // Tabla con autoTable
+      autoTable(doc, {
         head: [columnas],
         body: filas,
-        startY: 30,
+        startY: 32,
         theme: 'grid',
         styles: {
-          fontSize: 9,
-          cellPadding: 4,
+          fontSize: 8,
+          cellPadding: 2.5,
           overflow: 'linebreak',
           halign: 'left',
           valign: 'middle',
-          textColor: [50, 50, 50],
-          lineColor: [220, 220, 220],
-          lineWidth: 0.2
+          textColor: [40, 40, 40],
+          lineColor: [200, 200, 200],
+          lineWidth: 0.1
         },
         headStyles: {
           fillColor: [33, 150, 243],
           textColor: [255, 255, 255],
           fontStyle: 'bold',
-          fontSize: 10,
+          fontSize: 9,
           halign: 'center',
-          cellPadding: 5
+          cellPadding: 3
         },
         alternateRowStyles: {
-          fillColor: [248, 249, 250]
+          fillColor: [245, 245, 245]
         },
         columnStyles: {
-          0: { cellWidth: 32, halign: 'center' },
-          1: { cellWidth: 22, halign: 'center' },
-          2: { cellWidth: 48 },
-          3: { cellWidth: 25, halign: 'right' },
-          4: { cellWidth: 25, halign: 'right' },
-          5: { cellWidth: 28, halign: 'right' },
-          6: { cellWidth: 'auto' }
+          0: { cellWidth: 32, halign: 'center' },  // Fecha
+          1: { cellWidth: 25, halign: 'center' },  // Autobús
+          2: { cellWidth: 48, halign: 'left' },    // Operador
+          3: { cellWidth: 22, halign: 'right' },   // KM
+          4: { cellWidth: 22, halign: 'right' },   // Litros
+          5: { cellWidth: 20, halign: 'center' },  // Rendimiento
+          6: { cellWidth: 'auto', halign: 'left' } // Rutas/Despachador
         },
-        margin: { left: 10, right: 10 }
-      };
+        margin: { left: 10, right: 10 },
+        didDrawPage: (data: any) => {
+          // Pie de página en cada página
+          const pageHeight = doc.internal.pageSize.height;
+          doc.setDrawColor(200, 200, 200);
+          doc.line(10, pageHeight - 15, 287, pageHeight - 15);
+          doc.setFontSize(8);
+          doc.setTextColor(120, 120, 120);
+          const pageNum = (doc.internal as any).getNumberOfPages();
+          doc.text(`Página ${data.pageNumber} de ${pageNum}`, 148.5, pageHeight - 10, { align: 'center' });
+        }
+      });
 
-      // Aplicar autoTable
-      if (typeof (doc as any).autoTable === 'function') {
-        (doc as any).autoTable(autoTableConfig);
-      } else {
-        console.error('autoTable no disponible, usando tabla manual');
-        this.dibujarTablaManual(doc, columnas, filas);
-      }
+      // Resumen final
+      const finalY = doc.lastAutoTable.finalY || 100;
+      const pageHeight = doc.internal.pageSize.height;
+      const espacioDisponible = pageHeight - finalY;
 
-      // Obtener posición final
-      let finalY = 100;
-      if ((doc as any).lastAutoTable && (doc as any).lastAutoTable.finalY) {
-        finalY = (doc as any).lastAutoTable.finalY;
-      }
-
-      // Agregar resumen
-      const pageHeight = 210; // A4 landscape height
-      if (pageHeight - finalY > 30) {
+      // Si hay espacio suficiente, agregar resumen en la misma página
+      if (espacioDisponible > 35) {
         doc.setFillColor(240, 248, 255);
-        doc.rect(10, finalY + 5, 277, 20, 'F');
-        
+        doc.rect(10, finalY + 8, 277, 25, 'F');
         doc.setDrawColor(33, 150, 243);
         doc.setLineWidth(0.5);
-        doc.rect(10, finalY + 5, 277, 20);
+        doc.rect(10, finalY + 8, 277, 25);
 
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(33, 150, 243);
-        
-        doc.text(`Total de Registros: ${this.cargas.length}`, 15, finalY + 12);
-        doc.text(`Total Litros: ${totalLitros.toFixed(2)} L`, 85, finalY + 12);
-        doc.text(`Total KM: ${totalKm.toFixed(0)} km`, 155, finalY + 12);
-        doc.text(`Rendimiento Promedio: ${promedioRendimiento.toFixed(2)} km/L`, 15, finalY + 20);
+        doc.text(`Total de Registros: ${this.cargas.length}`, 15, finalY + 16);
+        doc.text(`Total Litros: ${totalLitros.toFixed(2)} L`, 90, finalY + 16);
+        doc.text(`Total KM: ${totalKm.toFixed(0)} km`, 180, finalY + 16);
+        doc.text(`Rendimiento Promedio: ${promedioRendimiento.toFixed(2)} km/L`, 15, finalY + 26);
+      } else {
+        // Si no hay espacio, agregar en nueva página
+        doc.addPage();
+        doc.setFillColor(240, 248, 255);
+        doc.rect(10, 20, 277, 25, 'F');
+        doc.setDrawColor(33, 150, 243);
+        doc.setLineWidth(0.5);
+        doc.rect(10, 20, 277, 25);
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(33, 150, 243);
+        doc.text(`Total de Registros: ${this.cargas.length}`, 15, 28);
+        doc.text(`Total Litros: ${totalLitros.toFixed(2)} L`, 90, 28);
+        doc.text(`Total KM: ${totalKm.toFixed(0)} km`, 180, 28);
+        doc.text(`Rendimiento Promedio: ${promedioRendimiento.toFixed(2)} km/L`, 15, 38);
       }
 
-      // Agregar pie de página
-      const pageCount = (doc as any).internal.getNumberOfPages();
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(150, 150, 150);
-        doc.text(`Página ${i} de ${pageCount}`, 148.5, 205, { align: 'center' });
-      }
-
-      // Guardar PDF
       const nombreArchivo = `Historial_Combustible_${new Date().getTime()}.pdf`;
       doc.save(nombreArchivo);
-
       this.exportando = false;
       console.log('PDF generado exitosamente');
     } catch (error) {
-      console.error('Error detallado al exportar PDF:', error);
-      if (error instanceof Error) {
-        console.error('Mensaje:', error.message);
-        console.error('Stack:', error.stack);
-      }
+      console.error('Error al exportar a PDF:', error);
       alert('Error al exportar a PDF: ' + (error instanceof Error ? error.message : 'Error desconocido'));
       this.exportando = false;
     }
