@@ -67,7 +67,7 @@ export class RegistroCargaCombustibleComponent implements OnInit {
   km_esperados: number = 0;
   desviacion_km: number = 0;
   rendimiento_calculado: number = 0;
-  umbral_km: number = 15;
+  umbral_km: number = 22;
 
   isSaving = false;
   mostrarModalNotificacion = false;
