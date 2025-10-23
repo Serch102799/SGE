@@ -31,6 +31,7 @@ import { HistorialCombustibleComponent } from './pages/historial-combustible/his
 import { EdicionDetallesComponent } from './pages/edicion-detalles/edicion-detalles.component';
 import { ProductosCompuestosComponent } from './pages/productos-compuestos/productos-compuestos.component';
 import { RegistroProduccionComponent } from './pages/registro-produccion/registro-produccion.component';
+import { RendimientosComponent } from './pages/rendimientos/rendimientos.component';
 
 const routes: Routes = [
   {
@@ -181,6 +182,12 @@ const routes: Routes = [
         component: RegistroProduccionComponent,
         canActivate: [RoleGuard],
         data: { roles: ['Admin', 'Almacenista', 'SuperUsuario'] }
+      },
+      {
+        path: 'rendimientos',
+        component: RendimientosComponent,
+        canActivate: [AuthGuard], 
+        data: { roles: ['SuperUsuario'] } 
       },
       {
         path: 'dashboard',

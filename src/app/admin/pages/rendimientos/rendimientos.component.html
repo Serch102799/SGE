@@ -1,0 +1,93 @@
+<div class="usuarios-container">
+  <div class="container-header">
+    <h2>Rendimiento</h2>
+    <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+      <span>&#43;</span> Agregar Rendimiento
+    </button>
+  </div>
+  <div class="container-body">
+    <div class="filtros-container">
+      <div class="filtro-item">
+        <input type="text" class="form-control" placeholder="Buscar por modelo o ruta..."
+          [(ngModel)]="terminoBusqueda" (ngModelChange)="onSearchChange()">
+      </div>
+    </div>
+    <div class="contador-resultados"><strong>{{ totalItems }}</strong> Rendimientos encontrados</div>
+    <div class="tabla-responsive-wrapper">
+      <table class="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>Modelo Autobús</th>
+            <th>Ruta</th>
+            <th>Rend. Excelente</th>
+            <th>Rend. Bueno</th>
+            <th>Rend. Regular</th>
+            <th>Estatus</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of rendimientos | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+            <td>{{ item.modelo_autobus }}</td>
+            <td>{{ item.nombre_ruta }}</td>
+            <td>{{ item.rendimiento_excelente | number:'1.2-2' }} km/l</td>
+            <td>{{ item.rendimiento_bueno | number:'1.2-2' }} km/l</td>
+            <td>{{ item.rendimiento_regular | number:'1.2-2' }} km/l</td>
+            <td><span class="badge" [ngClass]="{'badge-activo': item.activo, 'badge-inactivo': !item.activo}">
+                {{ item.activo ? 'Activo' : 'Inactivo' }}
+            </span></td>
+            <td class="acciones">
+              <button class="btn-accion btn-estado" (click)="abrirModal('editar', item)">Editar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination-controls">
+      <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente"></pagination-controls>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ modoEdicion ? 'Editar' : 'Agregar' }} Referencia</h3>
+      <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="guardar()">
+        <div class="form-group">
+          <label>Modelo de Autobús</label>
+          <select class="form-control" [(ngModel)]="seleccionado.modelo_autobus" name="modelo_autobus" required>
+            <option [ngValue]="null" disabled>Selecciona un modelo...</option>
+            <option *ngFor="let modelo of modelos" [value]="modelo">{{ modelo }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Ruta</label>
+          <select class="form-control" [(ngModel)]="seleccionado.id_ruta" name="id_ruta" required>
+            <option [ngValue]="null" disabled>Selecciona una ruta...</option>
+            <option *ngFor="let ruta of rutas" [value]="ruta.id_ruta">{{ ruta.nombre_ruta }}</option>
+          </select>
+        </div>
+        <div class="form-row">
+            <div class="form-group col"><label>Rend. Excelente (>=)</label><input type="number" step="0.1" class="form-control" [(ngModel)]="seleccionado.rendimiento_excelente" name="rend_excelente"></div>
+            <div class="form-group col"><label>Rend. Bueno (>=)</label><input type="number" step="0.1" class="form-control" [(ngModel)]="seleccionado.rendimiento_bueno" name="rend_bueno"></div>
+            <div class="form-group col"><label>Rend. Regular (>=)</label><input type="number" step="0.1" class="form-control" [(ngModel)]="seleccionado.rendimiento_regular" name="rend_regular"></div>
+        </div>
+         <div class="form-group">
+          <label>Estatus</label>
+          <select class="form-control" [(ngModel)]="seleccionado.activo" name="activo" required>
+            <option [ngValue]="true">Activo</option>
+            <option [ngValue]="false">Inactivo</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-accion btn-guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
