@@ -240,16 +240,48 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
             fillColor: [245, 245, 245]
           },
           columnStyles: {
-            0: { cellWidth: 36, halign: 'center' },  // Fecha
-            1: { cellWidth: 20, halign: 'center' },  // Autobús
+            0: { cellWidth: 32, halign: 'center' },  // Fecha
+            1: { cellWidth: 18, halign: 'center' },  // Autobús
             2: { cellWidth: 40, halign: 'left' },    // Operador
             3: { cellWidth: 20, halign: 'right' },   // KM
             4: { cellWidth: 20, halign: 'right' },   // Litros
             5: { cellWidth: 18, halign: 'center' },  // Rendimiento
-            6: { cellWidth: 22, halign: 'center' },  // Calificación
+            6: { cellWidth: 22, halign: 'center', fontStyle: 'bold' },  // Calificación con negrita
             7: { cellWidth: 'auto', halign: 'left' } // Rutas/Despachador
           },
           margin: { left: 10, right: 10 },
+          didDrawCell: (data: any) => {
+            // Colorear la celda de calificación según el valor
+            if (data.column.index === 6 && data.section === 'body') {
+              const clasificacion = data.cell.raw;
+              let color: [number, number, number] = [100, 100, 100]; // gris por defecto
+              
+              if (clasificacion === 'Excelente') {
+                color = [76, 175, 80]; // Verde
+              } else if (clasificacion === 'Bueno') {
+                color = [33, 150, 243]; // Azul
+              } else if (clasificacion === 'Regular') {
+                color = [255, 193, 7]; // Amarillo/Naranja
+              } else if (clasificacion === 'Malo') {
+                color = [244, 67, 54]; // Rojo
+              }
+              
+              // Dibujar fondo de color
+              doc.setFillColor(color[0], color[1], color[2]);
+              doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+              
+              // Texto en blanco sobre el fondo de color
+              doc.setTextColor(255, 255, 255);
+              doc.setFontSize(8);
+              doc.setFont('helvetica', 'bold');
+              doc.text(
+                clasificacion || '-',
+                data.cell.x + data.cell.width / 2,
+                data.cell.y + data.cell.height / 2 + 1.5,
+                { align: 'center' }
+              );
+            }
+          },
           didDrawPage: (data: any) => {
             const pageHeight = doc.internal.pageSize.height;
             doc.setDrawColor(200, 200, 200);
