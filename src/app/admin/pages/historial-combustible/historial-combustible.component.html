@@ -82,6 +82,8 @@
             <th>Fecha</th>
             <th>Autobús</th>
             <th>Operador</th>
+            <th>KM Inicial</th> 
+            <th>KM Final</th>
             <th>KM Recorridos</th>
             <th>Litros</th>
             <th>Rendimiento (KM/L)</th>
@@ -96,6 +98,8 @@
             <td>{{ carga.fecha_operacion | date:'dd/MM/yy h:mm a' }}</td>
             <td>{{ carga.economico }}</td>
             <td>{{ carga.nombre_operador }}</td>
+            <td>{{ carga.km_inicial | number }} km</td> 
+            <td>{{ carga.km_final | number }} km</td>
             <td>{{ carga.km_recorridos | number }} km</td>
             <td>{{ carga.litros_cargados | number:'1.2-2' }} Lts</td>
             <td>
