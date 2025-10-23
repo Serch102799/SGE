@@ -240,8 +240,8 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
             fillColor: [245, 245, 245]
           },
           columnStyles: {
-            0: { cellWidth: 32, halign: 'center' },  // Fecha
-            1: { cellWidth: 18, halign: 'center' },  // Autobús
+            0: { cellWidth: 36, halign: 'center' },  // Fecha
+            1: { cellWidth: 20, halign: 'center' },  // Autobús
             2: { cellWidth: 40, halign: 'left' },    // Operador
             3: { cellWidth: 20, halign: 'right' },   // KM
             4: { cellWidth: 20, halign: 'right' },   // Litros
