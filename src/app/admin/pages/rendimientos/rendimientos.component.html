@@ -1,93 +1,395 @@
-<div class="usuarios-container">
-  <div class="container-header">
-    <h2>Gestión de rendimientos</h2>
-    <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
-      <span>&#43;</span> Agregar Rendimiento
-    </button>
-  </div>
-  <div class="container-body">
-    <div class="filtros-container">
-      <div class="filtro-item">
-        <input type="text" class="form-control" placeholder="Buscar por modelo o ruta..."
-          [(ngModel)]="terminoBusqueda" (ngModelChange)="onSearchChange()">
+<div class="container-fluid">
+  <!-- Card Principal -->
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <h4 class="mb-0">
+        <i class="fas fa-tachometer-alt"></i>
+        Gestión de Rendimientos
+      </h4>
+    </div>
+
+    <div class="card-body">
+      <!-- Filtros y Búsqueda -->
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <label class="form-label">Buscar</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            placeholder="Buscar por modelo o ruta..."
+            [(ngModel)]="terminoBusqueda"
+            (ngModelChange)="onSearchChange()">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Filtrar por Modelo</label>
+          <select 
+            class="form-select"
+            [(ngModel)]="filtroModelo"
+            (ngModelChange)="onSearchChange()">
+            <option value="">Todos los modelos</option>
+            <option *ngFor="let modelo of modelos" [value]="modelo">{{ modelo }}</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label d-block">&nbsp;</label>
+          <button 
+            class="btn btn-primary"
+            (click)="abrirModal('agregar')"
+            *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel'])">
+            <i class="fas fa-plus"></i>
+            Nuevo Rendimiento
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla de Rendimientos -->
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead>
+            <tr>
+              <th class="text-center">Modelo</th>
+              <th class="text-center">Ruta</th>
+              <th class="text-center">
+                <span class="badge bg-success">Excelente</span>
+              </th>
+              <th class="text-center">
+                <span class="badge bg-primary">Bueno</span>
+              </th>
+              <th class="text-center">
+                <span class="badge bg-warning">Regular</span>
+              </th>
+              <th class="text-center">Estado</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let rendimiento of rendimientos">
+              <td class="text-center">
+                <strong>{{ rendimiento.modelo_autobus }}</strong>
+              </td>
+              <td>
+                {{ rendimiento.nombre_ruta || getNombreRuta(rendimiento.id_ruta) }}
+              </td>
+              <td class="text-center">
+                <span class="badge bg-success">
+                  ≥ {{ rendimiento.rendimiento_excelente }} km/L
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-primary">
+                  ≥ {{ rendimiento.rendimiento_bueno }} km/L
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-warning">
+                  ≥ {{ rendimiento.rendimiento_regular }} km/L
+                </span>
+              </td>
+              <td class="text-center">
+                <span 
+                  class="badge"
+                  [ngClass]="rendimiento.activo ? 'bg-success' : 'bg-secondary'">
+                  <i class="fas" [ngClass]="rendimiento.activo ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                  {{ rendimiento.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="text-center">
+                <div class="d-flex gap-2 justify-content-center">
+                  <button 
+                    class="btn btn-sm btn-warning"
+                    (click)="abrirModal('editar', rendimiento)"
+                    *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel'])"
+                    title="Editar">
+                    <i class="fas fa-edit">Editar</i>
+                  </button>
+                  <button 
+                    class="btn btn-sm btn-danger"
+                    (click)="confirmarEliminar(rendimiento)"
+                    *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel'])"
+                    title="Eliminar">
+                    <i class="fas fa-trash">Eliminar</i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Estado vacío -->
+            <tr *ngIf="rendimientos.length === 0">
+              <td colspan="7" class="text-center py-4">
+                <div class="empty-state">
+                  <i class="fas fa-inbox"></i>
+                  <h5>No hay rendimientos de referencia</h5>
+                  <p class="text-muted">Agrega nuevas referencias para comenzar</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="text-muted">
+          Mostrando {{ rendimientos.length }} de {{ totalItems }} registros
+        </div>
+        <nav *ngIf="totalItems > itemsPerPage">
+            <ul class="pagination mb-0">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" (click)="onPageChange(currentPage - 1)">
+                  <i class="fas fa-chevron-left"></i> Anterior
+                </a>
+              </li>
+              <li 
+                class="page-item" 
+                *ngFor="let _ of [].constructor(Math.ceil(totalItems / itemsPerPage)); let i = index"
+                [class.active]="currentPage === i + 1">
+                <a class="page-link" (click)="onPageChange(i + 1)">{{ i + 1 }}</a>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage >= Math.ceil(totalItems / itemsPerPage)">
+                <a class="page-link" (click)="onPageChange(currentPage + 1)">
+                  Siguiente <i class="fas fa-chevron-right"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
       </div>
     </div>
-    <div class="contador-resultados"><strong>{{ totalItems }}</strong> Rendimientos encontrados</div>
-    <div class="tabla-responsive-wrapper">
-      <table class="tabla-usuarios">
-        <thead>
-          <tr>
-            <th>Modelo Autobús</th>
-            <th>Ruta</th>
-            <th>Rend. Excelente</th>
-            <th>Rend. Bueno</th>
-            <th>Rend. Regular</th>
-            <th>Estatus</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of rendimientos | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
-            <td>{{ item.modelo_autobus }}</td>
-            <td>{{ item.nombre_ruta }}</td>
-            <td>{{ item.rendimiento_excelente | number:'1.2-2' }} km/l</td>
-            <td>{{ item.rendimiento_bueno | number:'1.2-2' }} km/l</td>
-            <td>{{ item.rendimiento_regular | number:'1.2-2' }} km/l</td>
-            <td><span class="badge" [ngClass]="{'badge-activo': item.activo, 'badge-inactivo': !item.activo}">
-                {{ item.activo ? 'Activo' : 'Inactivo' }}
-            </span></td>
-            <td class="acciones">
-              <button class="btn-accion btn-estado" (click)="abrirModal('editar', item)">Editar</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="pagination-controls">
-      <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente"></pagination-controls>
+  </div>
+
+  <!-- Card de Leyenda -->
+  <div class="card shadow-sm mt-3">
+    <div class="card-body">
+      <h6 class="mb-3">
+        <i class="fas fa-info-circle text-primary"></i>
+        Información sobre Clasificaciones
+      </h6>
+      <div class="row">
+        <div class="col-md-4 mb-2">
+          <span class="badge bg-success me-2">Excelente</span>
+          <small class="text-muted">Rendimiento igual o superior al valor excelente</small>
+        </div>
+        <div class="col-md-4 mb-2">
+          <span class="badge bg-primary me-2">Bueno</span>
+          <small class="text-muted">Rendimiento entre bueno y excelente</small>
+        </div>
+        <div class="col-md-4 mb-2">
+          <span class="badge bg-warning me-2">Regular</span>
+          <small class="text-muted">Rendimiento entre regular y bueno</small>
+        </div>
+      </div>
+      <div class="mt-2">
+        <span class="badge bg-danger me-2">Malo</span>
+        <small class="text-muted">Rendimiento inferior al valor regular</small>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
+<!-- Modal Agregar/Editar -->
+<div class="modal" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>{{ modoEdicion ? 'Editar' : 'Agregar' }} Referencia</h3>
-      <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+      <h5>
+        <i class="fas" [ngClass]="modoEdicion ? 'fa-edit' : 'fa-plus'"></i>
+        {{ modoEdicion ? 'Editar' : 'Nueva' }} Referencia de Rendimiento
+      </h5>
+      <button type="button" class="btn-close" (click)="cerrarModal()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
+
     <div class="modal-body">
-      <form (ngSubmit)="guardar()">
-        <div class="form-group">
-          <label>Modelo de Autobús</label>
-          <select class="form-control" [(ngModel)]="seleccionado.modelo_autobus" name="modelo_autobus" required>
-            <option [ngValue]="null" disabled>Selecciona un modelo...</option>
-            <option *ngFor="let modelo of modelos" [value]="modelo">{{ modelo }}</option>
-          </select>
+      <!-- Modelo -->
+      <div class="mb-3">
+        <label class="form-label">
+          Modelo del Autobús <span class="text-danger">*</span>
+        </label>
+        <select 
+          class="form-select"
+          [(ngModel)]="seleccionado.modelo_autobus"
+          [disabled]="modoEdicion">
+          <option value="">Seleccione un modelo</option>
+          <option *ngFor="let modelo of modelos" [value]="modelo">{{ modelo }}</option>
+        </select>
+        <small class="text-muted">
+          <i class="fas fa-info-circle"></i>
+          {{ modoEdicion ? 'El modelo no puede cambiar en modo edición' : 'Selecciona el modelo del autobús' }}
+        </small>
+      </div>
+
+      <!-- Ruta -->
+      <div class="mb-3">
+        <label class="form-label">
+          Ruta <span class="text-danger">*</span>
+        </label>
+        <select 
+          class="form-select"
+          [(ngModel)]="seleccionado.id_ruta"
+          [disabled]="modoEdicion">
+          <option value="">Seleccione una ruta</option>
+          <option *ngFor="let ruta of rutas" [value]="ruta.id_ruta">{{ ruta.nombre_ruta }}</option>
+        </select>
+        <small class="text-muted">
+          <i class="fas fa-info-circle"></i>
+          {{ modoEdicion ? 'La ruta no puede cambiar en modo edición' : 'Selecciona la ruta correspondiente' }}
+        </small>
+      </div>
+
+      <!-- Rendimientos -->
+      <div class="row">
+        <div class="col-md-4">
+          <label class="form-label">
+            <span class="badge bg-success">Excelente</span>
+            <span class="text-danger">*</span>
+          </label>
+          <div class="input-group">
+            <input 
+              type="number" 
+              class="form-control"
+              step="0.01"
+              min="0"
+              placeholder="5.50"
+              [(ngModel)]="seleccionado.rendimiento_excelente">
+            <span class="input-group-text">km/L</span>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Ruta</label>
-          <select class="form-control" [(ngModel)]="seleccionado.id_ruta" name="id_ruta" required>
-            <option [ngValue]="null" disabled>Selecciona una ruta...</option>
-            <option *ngFor="let ruta of rutas" [value]="ruta.id_ruta">{{ ruta.nombre_ruta }}</option>
-          </select>
+
+        <div class="col-md-4">
+          <label class="form-label">
+            <span class="badge bg-primary">Bueno</span>
+            <span class="text-danger">*</span>
+          </label>
+          <div class="input-group">
+            <input 
+              type="number" 
+              class="form-control"
+              step="0.01"
+              min="0"
+              placeholder="4.50"
+              [(ngModel)]="seleccionado.rendimiento_bueno">
+            <span class="input-group-text">km/L</span>
+          </div>
         </div>
-        <div class="form-row">
-            <div class="form-group col"><label>Rend. Excelente (>=)</label><input type="number" step="0.1" class="form-control" [(ngModel)]="seleccionado.rendimiento_excelente" name="rend_excelente"></div>
-            <div class="form-group col"><label>Rend. Bueno (>=)</label><input type="number" step="0.1" class="form-control" [(ngModel)]="seleccionado.rendimiento_bueno" name="rend_bueno"></div>
-            <div class="form-group col"><label>Rend. Regular (>=)</label><input type="number" step="0.1" class="form-control" [(ngModel)]="seleccionado.rendimiento_regular" name="rend_regular"></div>
+
+        <div class="col-md-4">
+          <label class="form-label">
+            <span class="badge bg-warning">Regular</span>
+            <span class="text-danger">*</span>
+          </label>
+          <div class="input-group">
+            <input 
+              type="number" 
+              class="form-control"
+              step="0.01"
+              min="0"
+              placeholder="3.50"
+              [(ngModel)]="seleccionado.rendimiento_regular">
+            <span class="input-group-text">km/L</span>
+          </div>
         </div>
-         <div class="form-group">
-          <label>Estatus</label>
-          <select class="form-control" [(ngModel)]="seleccionado.activo" name="activo" required>
-            <option [ngValue]="true">Activo</option>
-            <option [ngValue]="false">Inactivo</option>
-          </select>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
-          <button type="submit" class="btn-accion btn-guardar">Guardar</button>
-        </div>
-      </form>
+      </div>
+
+      <div class="alert alert-info mt-3">
+        <i class="fas fa-lightbulb"></i>
+        <strong>Importante:</strong> Los valores deben cumplir: Excelente &gt; Bueno &gt; Regular
+      </div>
+
+      <!-- Estado -->
+      <div class="form-check form-switch mt-3">
+        <input 
+          class="form-check-input" 
+          type="checkbox" 
+          id="activoSwitch"
+          [(ngModel)]="seleccionado.activo">
+        <label class="form-check-label" for="activoSwitch">
+          <strong>{{ seleccionado.activo ? 'Activo' : 'Inactivo' }}</strong>
+        </label>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
+        <i class="fas fa-times"></i> Cancelar
+      </button>
+      <button type="button" class="btn btn-primary" (click)="guardar()">
+        <i class="fas fa-save"></i> Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal" *ngIf="mostrarModalEliminar" (click)="cerrarModalEliminar()">
+  <div class="modal-dialog" style="max-width: 400px;" (click)="$event.stopPropagation()">
+    <div class="modal-header bg-danger text-white">
+      <h5>
+        <i class="fas fa-exclamation-triangle"></i>
+        Confirmar Eliminación
+      </h5>
+      <button type="button" class="btn-close" (click)="cerrarModalEliminar()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p class="mb-0">
+        ¿Estás seguro de eliminar la referencia de rendimiento para:
+      </p>
+      <div class="alert alert-warning mt-3 mb-0">
+        <strong>Modelo:</strong> {{ itemAEliminar?.modelo_autobus }}<br>
+        <strong>Ruta:</strong> {{ itemAEliminar?.nombre_ruta || getNombreRuta(itemAEliminar?.id_ruta || 0) }}
+      </div>
+      <p class="text-danger mt-3 mb-0">
+        <i class="fas fa-exclamation-circle"></i>
+        <strong>Esta acción no se puede deshacer.</strong>
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="cerrarModalEliminar()">
+        <i class="fas fa-times"></i> Cancelar
+      </button>
+      <button type="button" class="btn btn-danger" (click)="eliminar()">
+        <i class="fas fa-trash"></i> Eliminar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Notificación -->
+<div class="modal" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-dialog" style="max-width: 400px;" (click)="$event.stopPropagation()">
+    <div 
+      class="modal-header"
+      [ngClass]="{
+        'bg-success': notificacion.tipo === 'exito',
+        'bg-danger': notificacion.tipo === 'error',
+        'bg-warning': notificacion.tipo === 'advertencia'
+      }">
+      <h5 class="text-white">
+        <i class="fas" 
+           [ngClass]="{
+             'fa-check-circle': notificacion.tipo === 'exito',
+             'fa-exclamation-circle': notificacion.tipo === 'error',
+             'fa-exclamation-triangle': notificacion.tipo === 'advertencia'
+           }"></i>
+        {{ notificacion.titulo }}
+      </h5>
+      <button type="button" class="btn-close" (click)="cerrarModalNotificacion()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p class="mb-0">{{ notificacion.mensaje }}</p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="cerrarModalNotificacion()">
+        Cerrar
+      </button>
     </div>
   </div>
 </div>
