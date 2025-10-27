@@ -110,6 +110,7 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     });
   }
 
+  
   // Método para construir parámetros de filtrado
   private construirParametros(page: number = 1, limit?: number): HttpParams {
     let params = new HttpParams()
