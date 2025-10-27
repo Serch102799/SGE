@@ -77,11 +77,24 @@
         </div>
       </div>
 
-      <!-- Fila 2: Selección de Rutas (solo en modo vueltas) -->
+      <!-- Fila 2: Selección de Rutas (solo en modo vueltas) - DROPDOWN COLAPSABLE -->
       <div class="filtros-row" *ngIf="tipoCalculo === 'vueltas'">
         <div class="filtro-item filtro-rutas-multiple">
-          <label>🛣️ Filtrar por Rutas:</label>
-          <div class="rutas-checkboxes-container">
+          <div class="dropdown-rutas-header" (click)="toggleRutasDropdown()">
+            <label>🛣️ Filtrar por Rutas:</label>
+            <div class="dropdown-info">
+              <span class="rutas-count" *ngIf="filtroRutasIds.length > 0">
+                {{ filtroRutasIds.length }} seleccionada(s)
+              </span>
+              <span class="dropdown-arrow" [class.rotated]="rutasDropdownOpen">
+                ▼
+              </span>
+            </div>
+          </div>
+          
+          <div class="rutas-checkboxes-container" 
+               [class.open]="rutasDropdownOpen"
+               [@slideDown]="rutasDropdownOpen ? 'open' : 'closed'">
             <div class="ruta-checkbox" *ngFor="let ruta of rutas">
               <label>
                 <input 
@@ -91,9 +104,6 @@
                 <span>{{ ruta.nombre_ruta }}</span>
               </label>
             </div>
-            <small class="rutas-hint" *ngIf="filtroRutasIds.length > 0">
-              {{ filtroRutasIds.length }} ruta(s) seleccionada(s)
-            </small>
           </div>
         </div>
       </div>
@@ -144,10 +154,11 @@
             <th>KM Recorridos</th>
             <th>Litros</th>
             <th>Rendimiento</th>
-            <!-- <th>Calificación</th> -->
+            <th>Calificación</th>
             <th *ngIf="tipoCalculo === 'vueltas'">Rutas y Vueltas</th>
             <th *ngIf="tipoCalculo === 'dias'">Ruta Principal</th>
             <th>Despachador</th>
+           
           </tr>
         </thead>
         <tbody>
@@ -165,7 +176,7 @@
               </span>
             </td>
             <!-- NUEVA COLUMNA: Calificación -->
-            <!-- <td>
+            <td>
               <span 
                 class="badge-clasificacion"
                 [ngClass]="{
@@ -176,7 +187,7 @@
                 }">
                 {{ carga.clasificacion_rendimiento || '-' }}
               </span>
-            </td> -->
+            </td>
             <td *ngIf="tipoCalculo === 'vueltas'">
               {{ carga.rutas_y_vueltas || '-' }}
             </td>
