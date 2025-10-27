@@ -5,17 +5,17 @@
       <button 
         class="btn-exportar btn-exportar-excel" 
         (click)="exportarAExcel()"
-        [disabled]="exportandoExcel || cargas.length === 0"
-        title="Descargar datos en formato Excel">
-        <span *ngIf="!exportandoExcel">📊 Exportar a Excel</span>
+        [disabled]="exportandoExcel || totalItems === 0"
+        title="Descargar TODOS los datos filtrados en formato Excel">
+        <span *ngIf="!exportandoExcel">📊 Exportar Excel ({{ totalItems }} registros)</span>
         <span *ngIf="exportandoExcel">⏳ Generando Excel...</span>
       </button>
       <button 
         class="btn-exportar btn-exportar-pdf" 
         (click)="exportarAPDF()"
-        [disabled]="exportando || cargas.length === 0"
-        title="Descargar datos en formato PDF">
-        <span *ngIf="!exportando">📄 Exportar a PDF</span>
+        [disabled]="exportando || totalItems === 0"
+        title="Descargar TODOS los datos filtrados en formato PDF">
+        <span *ngIf="!exportando">📄 Exportar PDF ({{ totalItems }} registros)</span>
         <span *ngIf="exportando">⏳ Generando PDF...</span>
       </button>
       <a routerLink="/admin/registro-carga-combustible" class="btn-agregar">
@@ -25,9 +25,9 @@
   </div>
 
   <div class="container-body">
-    <!-- NUEVO: Selector de Tipo de Cálculo -->
+    <!-- Selector de Tipo de Cálculo -->
     <div class="tipo-calculo-selector">
-      <div class="selector-label">Filtrar por tipo de cálculo:</div>
+      <div class="selector-label">Tipo de cálculo:</div>
       <div class="selector-buttons">
         <button 
           (click)="cambiarTipoCalculo('vueltas')"
@@ -44,37 +44,104 @@
       </div>
     </div>
 
+    <!-- FILTROS AVANZADOS -->
     <div class="filtros-container">
-      <div class="filtro-item">
-        <input 
-          type="text" 
-          class="form-control" 
-          placeholder="Buscar por económico u operador..."
-          [(ngModel)]="terminoBusqueda" 
-          (ngModelChange)="onSearchChange()">
+      <!-- Fila 1: Búsqueda y Fechas -->
+      <div class="filtros-row">
+        <div class="filtro-item filtro-busqueda">
+          <label>🔍 Buscar:</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            placeholder="Económico u operador..."
+            [(ngModel)]="terminoBusqueda" 
+            (ngModelChange)="onSearchChange()">
+        </div>
+
+        <div class="filtro-item filtro-fecha">
+          <label>📅 Desde:</label>
+          <input 
+            type="date" 
+            class="form-control" 
+            [(ngModel)]="filtroFechaDesde" 
+            (change)="onFechaChange()">
+        </div>
+
+        <div class="filtro-item filtro-fecha">
+          <label>📅 Hasta:</label>
+          <input 
+            type="date" 
+            class="form-control" 
+            [(ngModel)]="filtroFechaHasta" 
+            (change)="onFechaChange()">
+        </div>
       </div>
-      <div class="filtro-item">
-        <select 
-          class="form-control" 
-          [(ngModel)]="filtroRutaId" 
-          (change)="onRutaChange()"
-          [disabled]="tipoCalculo === 'dias'">
-          <option value="">Todas las Rutas</option>
-          <option *ngFor="let ruta of rutas" [value]="ruta.id_ruta">
-            {{ ruta.nombre_ruta }}
-          </option>
-        </select>
-        <small *ngIf="tipoCalculo === 'dias'" class="hint-text">
-          El filtro por ruta no está disponible en cálculo por días
-        </small>
+
+      <!-- Fila 2: Selección de Rutas (solo en modo vueltas) - DROPDOWN COLAPSABLE -->
+      <div class="filtros-row" *ngIf="tipoCalculo === 'vueltas'">
+        <div class="filtro-item filtro-rutas-multiple">
+          <div class="dropdown-rutas-header" (click)="toggleRutasDropdown()">
+            <label>🛣️ Filtrar por Rutas:</label>
+            <div class="dropdown-info">
+              <span class="rutas-count" *ngIf="filtroRutasIds.length > 0">
+                {{ filtroRutasIds.length }} seleccionada(s)
+              </span>
+              <span class="dropdown-arrow" [class.rotated]="rutasDropdownOpen">
+                ▼
+              </span>
+            </div>
+          </div>
+          
+          <div class="rutas-checkboxes-container" 
+               [class.open]="rutasDropdownOpen"
+               [@slideDown]="rutasDropdownOpen ? 'open' : 'closed'">
+            <div class="ruta-checkbox" *ngFor="let ruta of rutas">
+              <label>
+                <input 
+                  type="checkbox" 
+                  [checked]="isRutaSeleccionada(ruta.id_ruta)"
+                  (change)="onRutaToggle(ruta.id_ruta, $event)">
+                <span>{{ ruta.nombre_ruta }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón Limpiar Filtros -->
+      <div class="filtros-row filtros-acciones">
+        <button 
+          class="btn-limpiar-filtros" 
+          (click)="limpiarFiltros()"
+          *ngIf="terminoBusqueda || filtroRutasIds.length > 0 || filtroFechaDesde || filtroFechaHasta">
+          🗑️ Limpiar Filtros
+        </button>
       </div>
     </div>
 
+    <!-- Resumen de Filtros Aplicados -->
+    <div class="resumen-filtros" *ngIf="filtroFechaDesde || filtroFechaHasta || filtroRutasIds.length > 0">
+      <strong>Filtros activos:</strong>
+      <span class="badge-filtro" *ngIf="filtroFechaDesde">
+        Desde: {{ filtroFechaDesde | date:'dd/MM/yyyy' }}
+      </span>
+      <span class="badge-filtro" *ngIf="filtroFechaHasta">
+        Hasta: {{ filtroFechaHasta | date:'dd/MM/yyyy' }}
+      </span>
+      <span class="badge-filtro" *ngIf="filtroRutasIds.length > 0">
+        {{ filtroRutasIds.length }} ruta(s) seleccionada(s)
+      </span>
+    </div>
+
+    <!-- Contador de Resultados -->
     <div class="contador-resultados">
       <strong>{{ totalItems }}</strong> cargas encontradas
-      <span class="tipo-calculo-badge">{{ tipoCalculo === 'vueltas' ? '(Por Vueltas)' : '(Por Días)' }}</span>
+      <span class="tipo-calculo-badge">
+        {{ tipoCalculo === 'vueltas' ? '(Por Vueltas)' : '(Por Días)' }}
+      </span>
     </div>
 
+    <!-- Tabla de Resultados -->
     <div class="tabla-responsive-wrapper">
       <table class="tabla-usuarios">
         <thead>
@@ -86,8 +153,8 @@
             <th>KM Final</th>
             <th>KM Recorridos</th>
             <th>Litros</th>
-            <th>Rendimiento (KM/L)</th>
-            <!-- CAMBIO: Columna condicional según tipo_calculo -->
+            <th>Rendimiento</th>
+            <th>Calificación</th>
             <th *ngIf="tipoCalculo === 'vueltas'">Rutas y Vueltas</th>
             <th *ngIf="tipoCalculo === 'dias'">Ruta Principal</th>
             <th>Despachador</th>
@@ -107,7 +174,19 @@
                 {{ carga.rendimiento_calculado | number:'1.2-2' }}
               </span>
             </td>
-            <!-- CAMBIO: Mostrar diferentes datos según tipo_calculo -->
+            <!-- NUEVA COLUMNA: Calificación -->
+            <td>
+              <span 
+                class="badge-clasificacion"
+                [ngClass]="{
+                  'clasificacion-excelente': carga.clasificacion_rendimiento === 'Excelente',
+                  'clasificacion-bueno': carga.clasificacion_rendimiento === 'Bueno',
+                  'clasificacion-regular': carga.clasificacion_rendimiento === 'Regular',
+                  'clasificacion-malo': carga.clasificacion_rendimiento === 'Malo'
+                }">
+                {{ carga.clasificacion_rendimiento || '-' }}
+              </span>
+            </td>
             <td *ngIf="tipoCalculo === 'vueltas'">
               {{ carga.rutas_y_vueltas || '-' }}
             </td>
@@ -117,7 +196,7 @@
             <td>{{ carga.nombre_despachador }}</td>
           </tr>
           <tr *ngIf="cargas.length === 0">
-            <td [attr.colspan]="tipoCalculo === 'vueltas' ? 9 : 9" class="empty-table-message">
+            <td [attr.colspan]="tipoCalculo === 'vueltas' ? 11 : 11" class="empty-table-message">
               No se encontraron cargas que coincidan con los filtros.
             </td>
           </tr>
@@ -125,6 +204,7 @@
       </table>
     </div>
 
+    <!-- Paginación -->
     <div class="pagination-controls">
       <pagination-controls 
         (pageChange)="onPageChange($event)" 
