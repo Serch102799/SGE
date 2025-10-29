@@ -74,8 +74,21 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
 
   // Estado de edición (Solo SuperUsuario)
   modalEditarVisible: boolean = false;
-  cargaEditando: any = null;
+cargaEditando: any = null;
+cargandoEdicion: boolean = false;
+guardandoEdicion: boolean = false;
+  
   fechaMaxima: string = '';
+  cargaOriginal: any = null;
+
+// Datos del formulario de edición
+formEdicion = {
+  fecha_operacion: '',
+  km_inicial: 0,
+  km_final: 0,
+  litros_cargados: 0,
+  id_ruta: null as number | null
+};
 
   constructor(private http: HttpClient, public authService: AuthService) {
     // Establecer fecha máxima (hoy)
@@ -245,7 +258,234 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     }
     this.searchSubject.next();
   }
+  abrirModalEditar(carga: any): void {
+  if (!carga || carga.id_carga === undefined) {
+    console.error('La carga no tiene id_carga, no se puede editar.');
+    alert('Error: No se puede identificar esta carga para editarla.');
+    return;
+  }
 
+  this.cargaEditando = carga;
+  this.modalEditarVisible = true;
+  this.cargandoEdicion = true;
+  this.cargaOriginal = null;
+
+  // ⭐ BLOQUEAR SCROLL DEL BODY
+  document.body.style.overflow = 'hidden';
+
+  // Llamada a la API para obtener datos crudos
+  this.http.get<any>(`${this.apiUrl}/detalle/${carga.id_carga}`).subscribe({
+    next: (datosCarga) => {
+      this.cargaOriginal = { ...datosCarga };
+      
+      // Poblar el formulario
+      this.formEdicion.fecha_operacion = this.formatearFechaParaInput(datosCarga.fecha_operacion);
+      this.formEdicion.km_inicial = this.obtenerNumero(datosCarga.km_inicial);
+      this.formEdicion.km_final = this.obtenerNumero(datosCarga.km_final);
+      this.formEdicion.litros_cargados = this.obtenerNumero(datosCarga.litros_cargados);
+      this.formEdicion.id_ruta = datosCarga.id_ruta_principal || null;
+
+      this.cargandoEdicion = false;
+    },
+    error: (err) => {
+      console.error("Error al obtener detalle de la carga:", err);
+      alert('Error al cargar los datos para editar. Intente de nuevo.');
+      this.cerrarModalEditar();
+    }
+  });
+}
+
+  /**
+   * Cierra el modal de edición y resetea los estados.
+   */
+  cerrarModalEditar(): void {
+  this.modalEditarVisible = false;
+  this.cargaEditando = null;
+  this.cargaOriginal = null;
+  this.cargandoEdicion = false;
+  this.guardandoEdicion = false;
+  
+  // ⭐ RESTAURAR SCROLL DEL BODY
+  document.body.style.overflow = 'auto';
+  
+  // Resetear formulario
+  this.formEdicion = {
+    fecha_operacion: '',
+    km_inicial: 0,
+    km_final: 0,
+    litros_cargados: 0,
+    id_ruta: null
+  };
+}
+
+  detectarCambios(): boolean {
+  if (!this.cargaOriginal) return false;
+
+  const fechaOriginal = this.formatearFechaParaInput(this.cargaOriginal.fecha_operacion);
+  const cambioFecha = this.formEdicion.fecha_operacion !== fechaOriginal;
+  const cambioKmInicial = this.formEdicion.km_inicial !== this.obtenerNumero(this.cargaOriginal.km_inicial);
+  const cambioKmFinal = this.formEdicion.km_final !== this.obtenerNumero(this.cargaOriginal.km_final);
+  const cambioLitros = this.formEdicion.litros_cargados !== this.obtenerNumero(this.cargaOriginal.litros_cargados);
+  const cambioRuta = this.formEdicion.id_ruta !== (this.cargaOriginal.id_ruta || null);
+
+  return cambioFecha || cambioKmInicial || cambioKmFinal || cambioLitros || cambioRuta;
+}
+
+/**
+ * Obtener resumen de cambios para mostrar al usuario
+ */
+obtenerResumenCambios(): string[] {
+  if (!this.cargaOriginal) return [];
+  
+  const cambios: string[] = [];
+
+  // Cambio de fecha
+  const fechaOriginal = this.formatearFechaParaInput(this.cargaOriginal.fecha_operacion);
+  if (this.formEdicion.fecha_operacion !== fechaOriginal) {
+    cambios.push(`Fecha: ${this.formatearFecha(this.cargaOriginal.fecha_operacion)} → ${this.formatearFecha(this.formEdicion.fecha_operacion)}`);
+  }
+
+  // Cambio de KM Inicial
+  if (this.formEdicion.km_inicial !== this.obtenerNumero(this.cargaOriginal.km_inicial)) {
+    cambios.push(`KM Inicial: ${this.cargaOriginal.km_inicial} → ${this.formEdicion.km_inicial}`);
+  }
+
+  // Cambio de KM Final (y KM Recorridos)
+  if (this.formEdicion.km_final !== this.obtenerNumero(this.cargaOriginal.km_final)) {
+    const kmRecorridosAntes = this.obtenerNumero(this.cargaOriginal.km_recorridos);
+    const kmRecorridosDespues = this.formEdicion.km_final - this.formEdicion.km_inicial;
+    cambios.push(`KM Final: ${this.cargaOriginal.km_final} → ${this.formEdicion.km_final}`);
+    cambios.push(`  → KM Recorridos: ${kmRecorridosAntes} km → ${kmRecorridosDespues} km`);
+  }
+
+  // Cambio de litros
+  if (this.formEdicion.litros_cargados !== this.obtenerNumero(this.cargaOriginal.litros_cargados)) {
+    cambios.push(`Litros: ${this.cargaOriginal.litros_cargados} L → ${this.formEdicion.litros_cargados} L`);
+  }
+
+  // Cambio de ruta
+  const rutaOriginalId = this.cargaOriginal.id_ruta || null;
+  if (this.formEdicion.id_ruta !== rutaOriginalId) {
+    const rutaAntes = rutaOriginalId 
+      ? (this.rutas.find(r => r.id_ruta === rutaOriginalId)?.nombre_ruta || 'Ruta desconocida')
+      : 'Sin ruta (Cálculo por días)';
+    const rutaDespues = this.formEdicion.id_ruta 
+      ? (this.rutas.find(r => r.id_ruta === this.formEdicion.id_ruta)?.nombre_ruta || 'Ruta desconocida')
+      : 'Sin ruta (Cálculo por días)';
+    cambios.push(`Ruta: ${rutaAntes} → ${rutaDespues}`);
+  }
+
+  return cambios;
+}
+
+/**
+ * Calcular KM recorridos en tiempo real
+ */
+calcularKmRecorridos(): number {
+  const kmRecorridos = this.formEdicion.km_final - this.formEdicion.km_inicial;
+  return Math.max(0, kmRecorridos);
+}
+
+/**
+ * Calcular rendimiento estimado en tiempo real
+ */
+calcularRendimientoEstimado(): number {
+  const kmRecorridos = this.calcularKmRecorridos();
+  if (this.formEdicion.litros_cargados <= 0) return 0;
+  return kmRecorridos / this.formEdicion.litros_cargados;
+}
+
+/**
+ * Obtener nombre de ruta por ID
+ */
+obtenerNombreRuta(idRuta: number | null): string {
+  if (!idRuta) return 'Sin ruta (Cálculo por días)';
+  const ruta = this.rutas.find(r => r.id_ruta === idRuta);
+  return ruta ? ruta.nombre_ruta : 'Ruta no encontrada';
+}
+
+/**
+ * Validar si el usuario tiene permisos de SuperUsuario
+ */
+esSuperUsuario(): boolean {
+  return this.authService.hasRole(['SuperUsuario']);
+}
+
+  /**
+   * Envía los datos actualizados al backend.
+   * El backend DEBE encargarse del recálculo (km_recorridos, rendimiento, etc.).
+   */
+  guardarEdicion(): void {
+    if (!this.cargaEditando || !this.cargaEditando.id_carga) {
+      alert('No hay una carga seleccionada para guardar.');
+      return;
+    }
+    
+    // --- Validaciones ---
+    if (this.formEdicion.km_final <= this.formEdicion.km_inicial) {
+       alert('El KM Final debe ser mayor que el KM Inicial.');
+       return;
+    }
+    if (this.formEdicion.litros_cargados <= 0) {
+       alert('Los litros cargados deben ser mayores a 0.');
+       return;
+    }
+    // Si la carga original tenía ruta (o se le asigna una), es tipo 'vueltas'
+    if (this.formEdicion.id_ruta && !this.formEdicion.id_ruta) {
+       alert('Debe seleccionar una ruta.');
+       return;
+    }
+
+    this.guardandoEdicion = true;
+    
+    const idCarga = this.cargaEditando.id_carga;
+    
+    // El backend debe recalcular todo con estos datos
+    const datosAActualizar = {
+       fecha_operacion: new Date(this.formEdicion.fecha_operacion).toISOString(), // Enviar en ISO UTC
+       km_inicial: this.formEdicion.km_inicial,
+       km_final: this.formEdicion.km_final,
+       litros_cargados: this.formEdicion.litros_cargados,
+       id_ruta: this.formEdicion.id_ruta // Puede ser null si es cálculo por días
+    };
+
+    // Usamos PUT para actualizar el recurso completo
+    this.http.put(`${this.apiUrl}/${idCarga}`, datosAActualizar).subscribe({
+      next: (response) => {
+        this.guardandoEdicion = false;
+        alert('Carga actualizada exitosamente. Los datos se han recalculado.');
+        this.cerrarModalEditar();
+        
+        // ¡Importante! Refrescar la vista actual para ver los cambios
+        this.obtenerCargas(); 
+      },
+      error: (err) => {
+        this.guardandoEdicion = false;
+        console.error("Error al guardar la edición:", err);
+        alert(`Error al guardar: ${err.error?.message || 'Error desconocido'}`);
+      }
+    });
+  }
+
+  /**
+   * Helper para formatear fechas al formato 'datetime-local' (YYYY-MM-DDTHH:mm)
+   * respetando la zona horaria local.
+   */
+  private formatearFechaParaInput(fecha: string): string {
+    if (!fecha) {
+      return new Date().toISOString().slice(0, 16);
+    }
+    try {
+      const d = new Date(fecha);
+      // Ajustar a la zona horaria local para el input
+      const offset = d.getTimezoneOffset() * 60000;
+      const localDate = new Date(d.getTime() - offset);
+      return localDate.toISOString().slice(0, 16);
+    } catch (e) {
+      console.error("Error formateando fecha:", e);
+      return new Date().toISOString().slice(0, 16);
+    }
+  }
   // MODIFICADO: Exportar PDF con TODOS los datos filtrados
   async exportarAPDF(): Promise<void> {
     this.exportando = true;
@@ -574,4 +814,5 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     if (rendimiento >= regular) return 'Regular';
     return 'Malo';
   }
+  
 }

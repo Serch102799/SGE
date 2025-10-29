@@ -25,7 +25,6 @@
   </div>
 
   <div class="container-body">
-    <!-- Selector de Tipo de Cálculo -->
     <div class="tipo-calculo-selector">
       <div class="selector-label">Tipo de cálculo:</div>
       <div class="selector-buttons">
@@ -44,9 +43,7 @@
       </div>
     </div>
 
-    <!-- FILTROS AVANZADOS -->
     <div class="filtros-container">
-      <!-- Fila 1: Búsqueda y Fechas -->
       <div class="filtros-row">
         <div class="filtro-item filtro-busqueda">
           <label>🔍 Buscar:</label>
@@ -77,7 +74,6 @@
         </div>
       </div>
 
-      <!-- Fila 2: Selección de Rutas (solo en modo vueltas) - DROPDOWN COLAPSABLE -->
       <div class="filtros-row" *ngIf="tipoCalculo === 'vueltas'">
         <div class="filtro-item filtro-rutas-multiple">
           <div class="dropdown-rutas-header" (click)="toggleRutasDropdown()">
@@ -93,8 +89,8 @@
           </div>
           
           <div class="rutas-checkboxes-container" 
-               [class.open]="rutasDropdownOpen"
-               [@slideDown]="rutasDropdownOpen ? 'open' : 'closed'">
+                [class.open]="rutasDropdownOpen"
+                [@slideDown]="rutasDropdownOpen ? 'open' : 'closed'">
             <div class="ruta-checkbox" *ngFor="let ruta of rutas">
               <label>
                 <input 
@@ -108,7 +104,6 @@
         </div>
       </div>
 
-      <!-- Botón Limpiar Filtros -->
       <div class="filtros-row filtros-acciones">
         <button 
           class="btn-limpiar-filtros" 
@@ -119,7 +114,6 @@
       </div>
     </div>
 
-    <!-- Resumen de Filtros Aplicados -->
     <div class="resumen-filtros" *ngIf="filtroFechaDesde || filtroFechaHasta || filtroRutasIds.length > 0">
       <strong>Filtros activos:</strong>
       <span class="badge-filtro" *ngIf="filtroFechaDesde">
@@ -133,7 +127,6 @@
       </span>
     </div>
 
-    <!-- Contador de Resultados -->
     <div class="contador-resultados">
       <strong>{{ totalItems }}</strong> cargas encontradas
       <span class="tipo-calculo-badge">
@@ -141,7 +134,6 @@
       </span>
     </div>
 
-    <!-- Tabla de Resultados -->
     <div class="tabla-responsive-wrapper">
       <table class="tabla-usuarios">
         <thead>
@@ -158,7 +150,7 @@
             <th *ngIf="tipoCalculo === 'vueltas'">Rutas y Vueltas</th>
             <th *ngIf="tipoCalculo === 'dias'">Ruta Principal</th>
             <th>Despachador</th>
-           
+            <th *ngIf="authService.hasRole(['SuperUsuario'])">Editar</th>
           </tr>
         </thead>
         <tbody>
@@ -175,7 +167,6 @@
                 {{ carga.rendimiento_calculado | number:'1.2-2' }}
               </span>
             </td>
-            <!-- NUEVA COLUMNA: Calificación -->
             <td>
               <span 
                 class="badge-clasificacion"
@@ -195,17 +186,25 @@
               {{ carga.rutas_y_vueltas || '-' }}
             </td>
             <td>{{ carga.nombre_despachador }}</td>
-          </tr>
-          <tr *ngIf="cargas.length === 0">
-            <td [attr.colspan]="tipoCalculo === 'vueltas' ? 11 : 11" class="empty-table-message">
-              No se encontraron cargas que coincidan con los filtros.
+            
+            <td *ngIf="authService.hasRole(['SuperUsuario'])" class="actions-cell">
+              <button (click)="abrirModalEditar(carga)" 
+                      class="btn-icon btn-editar"
+                      title="Editar Carga">
+                <i class="fas fa-pencil-alt">Editar</i>
+              </button>
             </td>
           </tr>
+          
+          <tr *ngIf="cargas.length === 0">
+            <td [attr.colspan]="authService.hasRole(['SuperUsuario']) ? 12 : 11" class="empty-table-message">
+              No se encontraron cargas que coincidan con los filtros.
+            </td>
+            </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Paginación -->
     <div class="pagination-controls">
       <pagination-controls 
         (pageChange)="onPageChange($event)" 
@@ -213,5 +212,303 @@
         nextLabel="Siguiente">
       </pagination-controls>
     </div>
+  </div>
+</div>
+
+<div *ngIf="modalEditarVisible && authService.hasRole(['SuperUsuario'])" class="modal-backdrop-edit" (click)="cerrarModalEditar()">
+  
+  <div class="modal-content-edit" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header-edit">
+      <h3>Editar Carga de Combustible</h3>
+      <button class="modal-close-btn-edit" (click)="cerrarModalEditar()" [disabled]="guardandoEdicion">
+        &times;
+      </button>
+    </div>
+
+    <form *ngIf="cargaEditando" (ngSubmit)="guardarEdicion()" #editForm="ngForm">
+      
+      <div class="modal-body-edit">
+        
+        <div *ngIf="cargandoEdicion" class="loader-container-edit">
+          <p>Cargando datos de la carga...</p>
+        </div>
+
+        <div *ngIf="!cargandoEdicion">
+          <div class="form-group-edit">
+            <label for="editEconomico">Autobús:</label>
+            <input type="text" id="editEconomico" [value]="cargaEditando.economico" class="form-control-edit" readonly disabled>
+          </div>
+
+          <div class="form-group-edit">
+            <label for="editFecha">Fecha y Hora de Operación:</label>
+            <input type="datetime-local" id="editFecha" class="form-control-edit"
+                   [(ngModel)]="formEdicion.fecha_operacion" name="fecha_operacion"
+                   [max]="fechaMaxima" required>
+          </div>
+
+          <div class="form-row-edit">
+            <div class="form-group-edit half-width-edit">
+              <label for="editKmInicial">KM Inicial:</label>
+              <input type="number" id="editKmInicial" class="form-control-edit"
+                     [(ngModel)]="formEdicion.km_inicial" name="km_inicial"
+                     required min="0" step="any">
+            </div>
+            <div class="form-group-edit half-width-edit">
+              <label for="editKmFinal">KM Final:</label>
+              <input type="number" id="editKmFinal" class="form-control-edit"
+                     [(ngModel)]="formEdicion.km_final" name="km_final"
+                     required min="0" step="any">
+            </div>
+          </div>
+          
+          <div *ngIf="formEdicion.km_final > 0 && formEdicion.km_final <= formEdicion.km_inicial" class="text-danger-edit small-edit">
+            El KM Final debe ser mayor al KM Inicial.
+          </div>
+
+          <div class="form-group-edit">
+            <label for="editLitros">Litros Cargados:</label>
+            <input type="number" id="editLitros" class="form-control-edit"
+                   [(ngModel)]="formEdicion.litros_cargados" name="litros_cargados"
+                   required min="0.01" step="0.01">
+          </div>
+
+          <div class="form-group-edit">
+            <label for="editRuta">Ruta:</label>
+            <select id="editRuta" class="form-control-edit"
+                    [(ngModel)]="formEdicion.id_ruta" name="id_ruta">
+              <option [ngValue]="null">-- Cálculo por Días / Sin Ruta --</option>
+              <option *ngFor="let ruta of rutas" [value]="ruta.id_ruta">
+                {{ ruta.nombre_ruta }}
+              </option>
+            </select>
+            <small class="form-text-edit">Seleccione una ruta si esta carga debe calcularse por 'vueltas'. Déjelo en blanco si es por 'días'.</small>
+          </div>
+        </div> </div> <div class="modal-footer-edit">
+        <button type="button" class="btn-edit btn-secondary-edit" (click)="cerrarModalEditar()" [disabled]="guardandoEdicion">
+          Cancelar
+        </button>
+        
+        <button type="submit" class="btn-edit btn-primary-edit"
+                [disabled]="!editForm.form.valid || guardandoEdicion || (formEdicion.km_final <= formEdicion.km_inicial)">
+          <span *ngIf="!guardandoEdicion">Guardar y Recalcular</span>
+          <span *ngIf="guardandoEdicion">Guardando...</span>
+        </button>
+      </div>
+
+    </form> </div> </div>
+    <div *ngIf="modalEditarVisible && esSuperUsuario()" 
+     class="modal-backdrop-edit" 
+     (click)="cerrarModalEditar()">
+  
+  <!-- Contenedor del Modal -->
+  <div class="modal-content-edit" (click)="$event.stopPropagation()">
+    
+    <!-- Header del Modal -->
+    <div class="modal-header-edit">
+      <div class="modal-title-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="modal-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+        <h3>Editar Carga de Combustible</h3>
+      </div>
+      <button class="modal-close-btn-edit" 
+              (click)="cerrarModalEditar()" 
+              [disabled]="guardandoEdicion"
+              title="Cerrar">
+        &times;
+      </button>
+    </div>
+
+    <!-- Body del Modal -->
+    <form *ngIf="cargaEditando" (ngSubmit)="guardarEdicion()" #editForm="ngForm">
+      
+      <div class="modal-body-edit">
+        
+        <!-- Loader mientras carga datos -->
+        <div *ngIf="cargandoEdicion" class="loader-container-edit">
+          <div class="spinner-edit"></div>
+          <p>Cargando datos de la carga...</p>
+        </div>
+
+        <!-- Formulario de edición -->
+        <div *ngIf="!cargandoEdicion">
+          
+          <!-- Información del registro (solo lectura) -->
+          <div class="info-section-edit">
+            <h4>📋 Información del Registro</h4>
+            <div class="info-grid-edit">
+              <div class="info-item-edit">
+                <span class="info-label-edit">ID Carga:</span>
+                <span class="info-value-edit">#{{ cargaEditando.id_carga }}</span>
+              </div>
+              <div class="info-item-edit">
+                <span class="info-label-edit">Autobús:</span>
+                <span class="info-value-edit">{{ cargaEditando.economico || '-' }}</span>
+              </div>
+              <div class="info-item-edit">
+                <span class="info-label-edit">Operador:</span>
+                <span class="info-value-edit">{{ cargaEditando.nombre_operador || cargaEditando.nombre_completo || '-' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fecha de Operación -->
+          <div class="form-group-edit">
+            <label for="editFecha" class="required-label-edit">
+              📅 Fecha y Hora de Operación
+            </label>
+            <input type="datetime-local" 
+                   id="editFecha" 
+                   class="form-control-edit"
+                   [(ngModel)]="formEdicion.fecha_operacion" 
+                   name="fecha_operacion"
+                   [max]="fechaMaxima" 
+                   required>
+            <small class="form-hint-edit">Fecha en la que se realizó la operación</small>
+          </div>
+
+          <!-- Kilometrajes -->
+          <div class="form-row-edit">
+            <div class="form-group-edit half-width-edit">
+              <label for="editKmInicial" class="required-label-edit">
+                🔢 KM Inicial
+              </label>
+              <input type="number" 
+                     id="editKmInicial" 
+                     class="form-control-edit"
+                     [(ngModel)]="formEdicion.km_inicial" 
+                     name="km_inicial"
+                     required 
+                     min="0" 
+                     step="1"
+                     placeholder="Ej: 15000">
+              <small class="form-hint-edit">Kilometraje inicial del autobús</small>
+            </div>
+            
+            <div class="form-group-edit half-width-edit">
+              <label for="editKmFinal" class="required-label-edit">
+                🔢 KM Final
+              </label>
+              <input type="number" 
+                     id="editKmFinal" 
+                     class="form-control-edit"
+                     [(ngModel)]="formEdicion.km_final" 
+                     name="km_final"
+                     required 
+                     min="0" 
+                     step="1"
+                     placeholder="Ej: 15250">
+              <small class="form-hint-edit">Kilometraje final del autobús</small>
+            </div>
+          </div>
+          
+          <!-- Alerta si KM Final <= KM Inicial -->
+          <div *ngIf="formEdicion.km_final > 0 && formEdicion.km_final <= formEdicion.km_inicial" 
+               class="alert-danger-edit">
+            ⚠️ El KM Final debe ser mayor al KM Inicial
+          </div>
+
+          <!-- KM Recorridos (calculado en tiempo real) -->
+          <div class="calculated-box-edit calculated-blue">
+            <div class="calculated-label-edit">📏 KM Recorridos:</div>
+            <div class="calculated-value-edit">{{ calcularKmRecorridos() | number:'1.0-0' }} km</div>
+          </div>
+
+          <!-- Litros Cargados -->
+          <div class="form-group-edit">
+            <label for="editLitros" class="required-label-edit">
+              ⛽ Litros Cargados
+            </label>
+            <input type="number" 
+                   id="editLitros" 
+                   class="form-control-edit"
+                   [(ngModel)]="formEdicion.litros_cargados" 
+                   name="litros_cargados"
+                   required 
+                   min="0.01" 
+                   step="0.01"
+                   placeholder="Ej: 85.50">
+            <small class="form-hint-edit">Cantidad de litros de combustible cargados</small>
+          </div>
+
+          <!-- Rendimiento Estimado (calculado en tiempo real) -->
+          <div class="calculated-box-edit calculated-green">
+            <div class="calculated-label-edit">📊 Rendimiento Estimado:</div>
+            <div class="calculated-value-edit">{{ calcularRendimientoEstimado() | number:'1.2-2' }} km/L</div>
+          </div>
+
+          <!-- Ruta -->
+          <div class="form-group-edit">
+            <label for="editRuta">
+              🛣️ Ruta
+            </label>
+            <select id="editRuta" 
+                    class="form-control-edit"
+                    [(ngModel)]="formEdicion.id_ruta" 
+                    name="id_ruta">
+              <option [ngValue]="null">-- Cálculo por Días / Sin Ruta --</option>
+              <option *ngFor="let ruta of rutas" [value]="ruta.id_ruta">
+                {{ ruta.nombre_ruta }}
+              </option>
+            </select>
+            <small class="form-hint-edit">
+              Seleccione una ruta si esta carga debe calcularse por 'vueltas'. 
+              Déjelo en blanco si es por 'días'.
+            </small>
+          </div>
+
+          <!-- Resumen de Cambios -->
+          <div *ngIf="detectarCambios()" class="changes-summary-edit">
+            <h4>⚠️ Cambios Detectados</h4>
+            <ul class="changes-list-edit">
+              <li *ngFor="let cambio of obtenerResumenCambios()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="change-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+                {{ cambio }}
+              </li>
+            </ul>
+            <div class="recalc-notice-edit">
+              <svg xmlns="http://www.w3.org/2000/svg" class="notice-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <strong>Se recalcularán automáticamente:</strong> KM Recorridos, Rendimiento, Desviación y Clasificación
+            </div>
+          </div>
+
+          <!-- Mensaje si no hay cambios -->
+          <div *ngIf="!detectarCambios() && !cargandoEdicion" class="no-changes-edit">
+            ℹ️ No se han realizado cambios en los datos
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer del Modal -->
+      <div class="modal-footer-edit">
+        <button type="button" 
+                class="btn-edit btn-secondary-edit" 
+                (click)="cerrarModalEditar()" 
+                [disabled]="guardandoEdicion">
+          <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon-edit" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Cancelar
+        </button>
+        
+        <button type="submit" 
+                class="btn-edit btn-primary-edit"
+                [disabled]="!editForm.form.valid || guardandoEdicion || (formEdicion.km_final <= formEdicion.km_inicial) || !detectarCambios()">
+          <svg *ngIf="!guardandoEdicion" xmlns="http://www.w3.org/2000/svg" class="btn-icon-edit" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <div *ngIf="guardandoEdicion" class="spinner-small-edit"></div>
+          <span>{{ guardandoEdicion ? 'Guardando...' : 'Guardar y Recalcular' }}</span>
+        </button>
+      </div>
+
+    </form>
+
   </div>
 </div>
