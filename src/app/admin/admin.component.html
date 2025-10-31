@@ -54,6 +54,12 @@
           <span>Corrección de Errores</span>
         </a>
       </li>
+      <li *ngIf="authService.hasRole(['SuperUsuario'])">
+        <a routerLink="/admin/ajuste-inventario" routerLinkActive="active">
+          <fa-icon [icon]="faEdicionDetalles"></fa-icon>
+          <span>Ajustes CI</span>
+        </a>
+      </li>
       <li *ngIf="authService.hasRole(['AdminDiesel', 'SuperUsuario'])">
         <a routerLink="/admin/tanques" routerLinkActive="active">
           <fa-icon [icon]="faTanques"></fa-icon>

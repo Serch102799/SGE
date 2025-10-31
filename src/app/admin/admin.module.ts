@@ -39,6 +39,7 @@ import { EdicionDetallesComponent } from './pages/edicion-detalles/edicion-detal
 import { ProductosCompuestosComponent } from './pages/productos-compuestos/productos-compuestos.component';
 import { RegistroProduccionComponent } from './pages/registro-produccion/registro-produccion.component';
 import { RendimientosComponent } from './pages/rendimientos/rendimientos.component';
+import { AjusteInventarioComponent } from './pages/ajuste-inventario/ajuste-inventario.component';
 
 @NgModule({
   declarations: [
@@ -67,7 +68,8 @@ import { RendimientosComponent } from './pages/rendimientos/rendimientos.compone
     EdicionDetallesComponent,
     ProductosCompuestosComponent,
     RegistroProduccionComponent,
-    RendimientosComponent
+    RendimientosComponent,
+    AjusteInventarioComponent
   ],
   imports: [
     HttpClientModule,
