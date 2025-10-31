@@ -33,6 +33,7 @@ import { ProductosCompuestosComponent } from './pages/productos-compuestos/produ
 import { RegistroProduccionComponent } from './pages/registro-produccion/registro-produccion.component';
 import { RendimientosComponent } from './pages/rendimientos/rendimientos.component';
 import { AjusteInventarioComponent } from './pages/ajuste-inventario/ajuste-inventario.component';
+import { ConteoInventarioComponent } from './pages/conteo-inventario/conteo-inventario.component';
 
 const routes: Routes = [
   {
@@ -187,6 +188,12 @@ const routes: Routes = [
       {
         path: 'rendimientos',
         component: RendimientosComponent,
+        canActivate: [AuthGuard], 
+        data: { roles: ['SuperUsuario'] } 
+      },
+      {
+        path: 'conteo-inventario',
+        component: ConteoInventarioComponent,
         canActivate: [AuthGuard], 
         data: { roles: ['SuperUsuario'] } 
       },

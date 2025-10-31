@@ -1,0 +1,482 @@
+<div class="contenedor-principal">
+    <!-- Encabezado -->
+    <div class="container-header">
+        <h2>Conteo de Inventario - Insumos</h2>
+        <div class="acciones-header">
+            <button (click)="abrirModalNuevo()" class="btn-agregar">
+                <span>&#43;</span> Nuevo Conteo
+            </button>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="container-body">
+
+        <!-- Filtros -->
+        <div class="filtros-container">
+            <div class="filtros-row">
+                <div class="filtro-item filtro-busqueda">
+                    <label>🔍 Buscar:</label>
+                    <input type="text" class="form-control" placeholder="Buscar por empleado u observaciones..."
+                        [(ngModel)]="terminoBusqueda" (ngModelChange)="onSearchChange()">
+                </div>
+
+                <div class="filtro-item">
+                    <label>Estado:</label>
+                    <select class="form-control" [(ngModel)]="filtroEstado" (change)="onSearchChange()">
+                        <option value="">Todos</option>
+                        <option value="PENDIENTE">Pendiente</option>
+                        <option value="EN_PROCESO">En Proceso</option>
+                        <option value="COMPLETADO">Completado</option>
+                        <option value="CANCELADO">Cancelado</option>
+                    </select>
+                </div>
+
+                <div class="filtro-item filtro-fecha">
+                    <label>📅 Desde:</label>
+                    <input type="date" class="form-control" [(ngModel)]="filtroFechaDesde" (change)="onSearchChange()">
+                </div>
+
+                <div class="filtro-item filtro-fecha">
+                    <label>📅 Hasta:</label>
+                    <input type="date" class="form-control" [(ngModel)]="filtroFechaHasta" (change)="onSearchChange()">
+                </div>
+            </div>
+
+            <div class="filtros-row filtros-acciones">
+                <button class="btn-limpiar-filtros" (click)="limpiarFiltros()"
+                    *ngIf="terminoBusqueda || filtroEstado || filtroFechaDesde || filtroFechaHasta">
+                    🗑️ Limpiar Filtros
+                </button>
+            </div>
+        </div>
+
+        <!-- Contador -->
+        <div class="contador-resultados">
+            <strong>{{ totalItems }}</strong> conteos encontrados
+        </div>
+
+        <!-- Tabla -->
+        <div class="tabla-responsive-wrapper">
+            <table class="tabla-usuarios">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Empleado</th>
+                        <th>Estado</th>
+                        <th>Observaciones</th>
+                        <th># Detalles</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        *ngFor="let conteo of conteos | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+                        <td>{{ conteo.id_conteo }}</td>
+                        <td>{{ formatearFecha(conteo.fecha_conteo) }}</td>
+                        <td>{{ conteo.nombre_empleado || 'N/A' }}</td>
+                        <td>
+                            <span class="badge-estado" [ngClass]="obtenerBadgeEstado(conteo.estado)">
+                                {{ conteo.estado }}
+                            </span>
+                        </td>
+                        <td class="td-observaciones">{{ conteo.observaciones }}</td>
+                        <td>{{ conteo.total_detalles || 0 }}</td>
+
+                        <td class="actions-cell">
+                                          <button                  (click)="abrirModalEditar(conteo)"                  
+                                class="btn-icon btn-editar"                 title="Editar Conteo"
+                                [disabled]="conteo.estado === 'APLICADO'">
+                                                <i class="fas fa-pencil-alt"></i>
+                                              </button>
+
+                            <button *ngIf="conteo.estado === 'COMPLETADO' && esSuperUsuarioOAdmin()"
+                                (click)="aplicarConteo(conteo)" class="btn-icon btn-aplicar"
+                                title="Aplicar conteo al inventario">
+                                <i class="fas fa-check-circle"></i>
+                            </button>
+                                         
+                            <button                  *ngIf="esSuperUsuarioOAdmin()"                
+                                (click)="eliminarConteo(conteo)"                   class="btn-icon btn-eliminar"        
+                                        title="Eliminar Conteo">
+                                                <i class="fas fa-trash"></i>
+                                              </button>
+                                       
+                        </td>
+                    </tr>
+
+                    <tr *ngIf="conteos.length === 0">
+                        <td colspan="7" class="empty-table-message">
+                            No se encontraron conteos que coincidan con los filtros.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="pagination-controls">
+            <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente">
+            </pagination-controls>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL DE CREACIÓN -->
+<!-- ============================================ -->
+<div *ngIf="modalNuevoVisible" class="modal-backdrop-edit" (click)="cerrarModalNuevo()">
+
+    <div class="modal-content-edit modal-large" (click)="$event.stopPropagation()">
+
+        <div class="modal-header-edit">
+            <div class="modal-title-container">
+                <svg xmlns="http://www.w3.org/2000/svg" class="modal-icon" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <h3>Nuevo Conteo de Inventario</h3>
+            </div>
+            <button class="modal-close-btn-edit" (click)="cerrarModalNuevo()" [disabled]="guardandoNuevo">
+                &times;
+            </button>
+        </div>
+
+        <form (ngSubmit)="guardarNuevo()" #nuevoForm="ngForm">
+
+            <div class="modal-body-edit">
+
+                <!-- Datos Maestros -->
+                <div class="seccion-maestro">
+                    <h4 class="subtitulo-seccion">Datos Generales</h4>
+
+                    <div class="form-group-edit">
+                        <label for="nuevoEmpleado" class="required-label-edit">
+                            👤 Empleado Responsable
+                        </label>
+                        <select id="nuevoEmpleado" class="form-control-edit" [(ngModel)]="formNuevoMaestro.id_empleado"
+                            name="id_empleado" required>
+                            <option [ngValue]="null">-- Seleccione un empleado --</option>
+                            <option *ngFor="let emp of empleados" [value]="emp.id_empleado">
+                                {{ emp.nombre }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group-edit">
+                        <label for="nuevoObservaciones">
+                            📝 Observaciones
+                        </label>
+                        <textarea id="nuevoObservaciones" class="form-control-edit textarea-edit"
+                            [(ngModel)]="formNuevoMaestro.observaciones" name="observaciones" rows="3"
+                            placeholder="Observaciones del conteo..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Detalles -->
+                <div class="seccion-detalles">
+                    <div class="header-detalles">
+                        <h4 class="subtitulo-seccion">Detalles del Conteo</h4>
+                        <button type="button" class="btn-agregar-detalle" (click)="agregarDetalleNuevo()"
+                            [disabled]="guardandoNuevo">
+                            <i class="fas fa-plus"></i> Agregar Insumo
+                        </button>
+                    </div>
+
+                    <div class="lista-detalles">
+                        <div *ngFor="let detalle of detallesNuevo; let i = index" class="detalle-card">
+
+                            <div class="detalle-header">
+                                <span class="detalle-numero">Insumo #{{ i + 1 }}</span>
+                                <button type="button" class="btn-eliminar-detalle" (click)="eliminarDetalleNuevo(i)"
+                                    [disabled]="guardandoNuevo">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+
+                            <div class="detalle-body">
+                                <!-- Insumo -->
+                                <div class="form-group-edit">
+                                    <label class="required-label-edit">Insumo:</label>
+                                    <select class="form-control-edit" [(ngModel)]="detalle.id_insumo"
+                                        [name]="'insumo_' + i" (change)="onInsumoChangeNuevo(detalle)" required>
+                                        <option [ngValue]="null">-- Seleccione un insumo --</option>
+                                        <option *ngFor="let ins of insumos" [value]="ins.id_insumo">
+                                            {{ ins.nombre }} (Stock: {{ ins.stock_actual }})
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Stock en Sistema -->
+                                <div class="info-box info-blue" *ngIf="detalle.stock_sistema !== undefined">
+                                    <span class="info-label">Stock en Sistema:</span>
+                                    <span class="info-value">{{ detalle.stock_sistema | number:'1.2-2' }}</span>
+                                </div>
+
+                                <div class="form-row-edit">
+                                    <!-- Cantidad Contada -->
+                                    <div class="form-group-edit">
+                                        <label class="required-label-edit">Cantidad Contada:</label>
+                                        <input type="number" class="form-control-edit"
+                                            [(ngModel)]="detalle.cantidad_contada" [name]="'cantidad_' + i" step="0.01"
+                                            min="0" required>
+                                    </div>
+
+                                    <!-- Costo Unitario -->
+                                    <div class="form-group-edit">
+                                        <label class="required-label-edit">Costo Unitario:</label>
+                                        <input type="number" class="form-control-edit"
+                                            [(ngModel)]="detalle.costo_unitario_asignado" [name]="'costo_' + i"
+                                            step="0.01" min="0" required>
+                                    </div>
+                                </div>
+
+                                <!-- Diferencia -->
+                                <div class="info-box" [ngClass]="{
+                       'info-green': calcularDiferenciaNuevo(detalle) === 0,
+                       'info-yellow': calcularDiferenciaNuevo(detalle) !== 0 && ((calcularDiferenciaNuevo(detalle) > 0 ? calcularDiferenciaNuevo(detalle) : -calcularDiferenciaNuevo(detalle)) <= 5),
+                       'info-red': (calcularDiferenciaNuevo(detalle) > 0 ? calcularDiferenciaNuevo(detalle) : -calcularDiferenciaNuevo(detalle)) > 5
+                     }" *ngIf="detalle.stock_sistema !== undefined">
+                                    <span class="info-label">Diferencia:</span>
+                                    <span class="info-value">
+                                        {{ calcularDiferenciaNuevo(detalle) | number:'1.2-2' }}
+                                        ({{ calcularDiferenciaNuevo(detalle) > 0 ? 'Sobrante' :
+                                        calcularDiferenciaNuevo(detalle) < 0 ? 'Faltante' : 'Exacto' }}) </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div *ngIf="detallesNuevo.length === 0" class="sin-detalles">
+                            ⚠️ No hay detalles. Agregue al menos un insumo para continuar.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer-edit">
+                <button type="button" class="btn-edit btn-secondary-edit" (click)="cerrarModalNuevo()"
+                    [disabled]="guardandoNuevo">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="btn-edit btn-primary-edit"
+                    [disabled]="!nuevoForm.form.valid || guardandoNuevo || detallesNuevo.length === 0">
+                    <div *ngIf="guardandoNuevo" class="spinner-small-edit"></div>
+                    <span>{{ guardandoNuevo ? 'Guardando...' : 'Crear Conteo' }}</span>
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL DE EDICIÓN -->
+<!-- ============================================ -->
+<div *ngIf="modalEditarVisible && esSuperUsuarioOAdmin()" class="modal-backdrop-edit" (click)="cerrarModalEditar()">
+
+    <div class="modal-content-edit modal-large" (click)="$event.stopPropagation()">
+
+        <div class="modal-header-edit">
+            <div class="modal-title-container">
+                <svg xmlns="http://www.w3.org/2000/svg" class="modal-icon" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <h3>Editar Conteo de Inventario</h3>
+            </div>
+            <button class="modal-close-btn-edit" (click)="cerrarModalEditar()" [disabled]="guardandoEdicion">
+                &times;
+            </button>
+        </div>
+
+        <form *ngIf="conteoEditando" (ngSubmit)="guardarEdicion()" #editForm="ngForm">
+
+            <div class="modal-body-edit">
+
+                <!-- Loader -->
+                <div *ngIf="cargandoEdicion" class="loader-container-edit">
+                    <div class="spinner-edit"></div>
+                    <p>Cargando datos del conteo...</p>
+                </div>
+
+                <!-- Formulario -->
+                <div *ngIf="!cargandoEdicion">
+
+                    <!-- Info del Conteo -->
+                    <div class="info-section-edit">
+                        <h4>📋 Información del Conteo</h4>
+                        <div class="info-grid-edit">
+                            <div class="info-item-edit">
+                                <span class="info-label-edit">ID Conteo:</span>
+                                <span class="info-value-edit">#{{ conteoEditando.id_conteo }}</span>
+                            </div>
+                            <div class="info-item-edit">
+                                <span class="info-label-edit">Fecha Creación:</span>
+                                <span class="info-value-edit">{{ formatearFecha(conteoEditando.fecha_conteo) }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Datos Maestros -->
+                    <div class="seccion-maestro">
+                        <h4 class="subtitulo-seccion">Datos Generales</h4>
+
+                        <div class="form-row-edit">
+                            <div class="form-group-edit">
+                                <label for="editEmpleado" class="required-label-edit">
+                                    👤 Empleado Responsable
+                                </label>
+                                <select id="editEmpleado" class="form-control-edit"
+                                    [(ngModel)]="formEdicionMaestro.id_empleado" name="id_empleado" required>
+                                    <option [ngValue]="null">-- Seleccione --</option>
+                                    <option *ngFor="let emp of empleados" [value]="emp.id_empleado">
+                                        {{ emp.nombre }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="form-group-edit">
+                                <label for="editEstado" class="required-label-edit">
+                                    📊 Estado
+                                </label>
+                                <select id="editEstado" class="form-control-edit"
+                                    [(ngModel)]="formEdicionMaestro.estado" name="estado" required>
+                                    <option value="">-- Seleccione --</option>
+                                    <option *ngFor="let estado of estados" [value]="estado.value">
+                                        {{ estado.label }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group-edit">
+                            <label for="editObservaciones">
+                                📝 Observaciones
+                            </label>
+                            <textarea id="editObservaciones" class="form-control-edit textarea-edit"
+                                [(ngModel)]="formEdicionMaestro.observaciones" name="observaciones" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Detalles -->
+                    <div class="seccion-detalles">
+                        <div class="header-detalles">
+                            <h4 class="subtitulo-seccion">Detalles del Conteo</h4>
+                            <button type="button" class="btn-agregar-detalle" (click)="agregarDetalleEdicion()"
+                                [disabled]="guardandoEdicion">
+                                <i class="fas fa-plus"></i> Agregar Insumo
+                            </button>
+                        </div>
+
+                        <div class="lista-detalles">
+                            <div *ngFor="let detalle of detallesEdicion; let i = index" class="detalle-card">
+
+                                <div class="detalle-header">
+                                    <span class="detalle-numero">Insumo #{{ i + 1 }}</span>
+                                    <button type="button" class="btn-eliminar-detalle"
+                                        (click)="eliminarDetalleEdicion(i)" [disabled]="guardandoEdicion">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+
+                                <div class="detalle-body">
+                                    <div class="form-group-edit">
+                                        <label class="required-label-edit">Insumo:</label>
+                                        <select class="form-control-edit" [(ngModel)]="detalle.id_insumo"
+                                            [name]="'insumo_edit_' + i" (change)="onInsumoChangeEdicion(detalle)"
+                                            required>
+                                            <option [ngValue]="null">-- Seleccione --</option>
+                                            <option *ngFor="let ins of insumos" [value]="ins.id_insumo">
+                                                {{ ins.nombre }} (Stock: {{ ins.stock_actual }})
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="info-box info-blue" *ngIf="detalle.stock_sistema !== undefined">
+                                        <span class="info-label">Stock en Sistema:</span>
+                                        <span class="info-value">{{ detalle.stock_sistema | number:'1.2-2' }}</span>
+                                    </div>
+
+                                    <div class="form-row-edit">
+                                        <div class="form-group-edit">
+                                            <label class="required-label-edit">Cantidad Contada:</label>
+                                            <input type="number" class="form-control-edit"
+                                                [(ngModel)]="detalle.cantidad_contada" [name]="'cantidad_edit_' + i"
+                                                (ngModelChange)="recalcularDiferencia(detalle)" step="0.01" min="0"
+                                                required>
+                                        </div>
+
+                                        <div class="form-group-edit">
+                                            <label class="required-label-edit">Costo Unitario:</label>
+                                            <input type="number" class="form-control-edit"
+                                                [(ngModel)]="detalle.costo_unitario_asignado" [name]="'costo_edit_' + i"
+                                                step="0.01" min="0" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="info-box" [ngClass]="{
+                         'info-green': detalle.diferencia === 0,
+                         'info-yellow': detalle.diferencia !== 0 && ((detalle.diferencia > 0 ? detalle.diferencia : -detalle.diferencia) <= 5),
+                         'info-red': (detalle.diferencia > 0 ? detalle.diferencia : -detalle.diferencia) > 5
+                       }" *ngIf="detalle.diferencia !== undefined">
+                                        <span class="info-label">Diferencia:</span>
+                                        <span class="info-value">
+                                            {{ detalle.diferencia | number:'1.2-2' }}
+                                            ({{ detalle.diferencia > 0 ? 'Sobrante' : detalle.diferencia < 0
+                                                ? 'Faltante' : 'Exacto' }}) </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div *ngIf="detallesEdicion.length === 0" class="sin-detalles">
+                                ⚠️ No hay detalles.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumen de Cambios -->
+                    <div *ngIf="detectarCambios()" class="changes-summary-edit">
+                        <h4>⚠️ Cambios Detectados</h4>
+                        <ul class="changes-list-edit">
+                            <li *ngFor="let cambio of obtenerResumenCambios()">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="change-icon" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                                {{ cambio }}
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div *ngIf="!detectarCambios()" class="no-changes-edit">
+                        ℹ️ No se han realizado cambios
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer-edit">
+                <button type="button" class="btn-edit btn-secondary-edit" (click)="cerrarModalEditar()"
+                    [disabled]="guardandoEdicion">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="btn-edit btn-primary-edit"
+                    [disabled]="!editForm.form.valid || guardandoEdicion || !detectarCambios()">
+                    <div *ngIf="guardandoEdicion" class="spinner-small-edit"></div>
+                    <span>{{ guardandoEdicion ? 'Guardando...' : 'Guardar Cambios' }}</span>
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
