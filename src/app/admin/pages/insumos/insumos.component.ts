@@ -9,7 +9,7 @@ export interface Insumo {
   id_insumo: number;
   nombre: string;
   marca: string;
-  tipo_insumo: string; // Columna para la categoría (Fluido, Consumible, etc.)
+  tipo_insumo: string;
   unidad_medida: string;
   stock_actual: number;
   stock_minimo: number;
@@ -49,6 +49,11 @@ export class InsumosComponent implements OnInit, OnDestroy {
   mostrarModalBorrar = false;
   insumoABorrar: Insumo | null = null;
 
+  // --- Modal de Edición de Costo ---
+  mostrarModalCosto = false;
+  insumoEditarCosto: Insumo | null = null;
+  nuevoCosto: number = 0;
+
   mostrarModalNotificacion = false;
   notificacion = {
     titulo: 'Aviso',
@@ -62,7 +67,7 @@ export class InsumosComponent implements OnInit, OnDestroy {
     this.obtenerInsumos();
     
     this.searchSubscription = this.searchSubject.pipe(
-      debounceTime(400) // Espera 400ms antes de buscar
+      debounceTime(400)
     ).subscribe(() => {
       this.currentPage = 1;
       this.obtenerInsumos();
@@ -122,7 +127,12 @@ export class InsumosComponent implements OnInit, OnDestroy {
     if (modo === 'editar' && insumo) {
       this.insumoSeleccionado = { ...insumo };
     } else {
-      this.insumoSeleccionado = { nombre: '', unidad_medida: 'Pieza', tipo_insumo: 'Consumible de Taller' };
+      this.insumoSeleccionado = { 
+        nombre: '', 
+        unidad_medida: 'Pieza', 
+        tipo_insumo: 'Consumible de Taller',
+        costo_unitario_promedio: 0 
+      };
     }
     this.mostrarModal = true;
   }
@@ -144,6 +154,40 @@ export class InsumosComponent implements OnInit, OnDestroy {
     request$.subscribe({
       next: () => this.postGuardado(`Insumo ${this.modoEdicion ? 'actualizado' : 'creado'} exitosamente.`),
       error: (err) => this.mostrarNotificacion('Error', err.error.message || `No se pudo ${this.modoEdicion ? 'actualizar' : 'agregar'} el insumo.`, 'error')
+    });
+  }
+
+  // --- Métodos para Editar Costo Unitario ---
+  abrirModalEditarCosto(insumo: Insumo) {
+    this.insumoEditarCosto = insumo;
+    this.nuevoCosto = insumo.costo_unitario_promedio || 0;
+    this.mostrarModalCosto = true;
+  }
+
+  cerrarModalCosto() {
+    this.mostrarModalCosto = false;
+    this.insumoEditarCosto = null;
+    this.nuevoCosto = 0;
+  }
+
+  guardarCosto() {
+    if (!this.insumoEditarCosto) return;
+    
+    if (this.nuevoCosto < 0) {
+      this.mostrarNotificacion('Error', 'El costo no puede ser negativo.', 'error');
+      return;
+    }
+
+    const url = `${this.apiUrl}/${this.insumoEditarCosto.id_insumo}/costo`;
+    this.http.patch(url, { costo_unitario_promedio: this.nuevoCosto }).subscribe({
+      next: () => {
+        this.mostrarNotificacion('Éxito', 'Costo actualizado exitosamente.', 'exito');
+        this.obtenerInsumos();
+        this.cerrarModalCosto();
+      },
+      error: (err) => {
+        this.mostrarNotificacion('Error', err.error.message || 'No se pudo actualizar el costo.', 'error');
+      }
     });
   }
 
@@ -180,5 +224,13 @@ export class InsumosComponent implements OnInit, OnDestroy {
 
   cerrarModalNotificacion() {
     this.mostrarModalNotificacion = false;
+  }
+
+  // Método auxiliar para formatear moneda
+  formatearMoneda(valor: number): string {
+    return new Intl.NumberFormat('es-MX', { 
+      style: 'currency', 
+      currency: 'MXN' 
+    }).format(valor || 0);
   }
 }

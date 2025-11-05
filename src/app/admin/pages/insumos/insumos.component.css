@@ -447,7 +447,162 @@ td.stock-critico {
   padding: 8px 12px;
   display: block;
 }
+/* Contenedor de costo con botón */
+.costo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
+.btn-editar-costo {
+  padding: 4px 8px;
+  font-size: 12px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-editar-costo:hover {
+  background-color: #218838;
+}
+
+.btn-editar-costo i {
+  font-size: 12px;
+}
+
+/* Modal de edición de costo */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-close:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-body p {
+  margin: 8px 0;
+  color: #555;
+}
+
+.form-group {
+  margin-top: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-text {
+  display: block;
+  margin-top: 5px;
+  color: #666;
+  font-size: 12px;
+}
+
+.modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
 /* Estilo para la página actual (fondo de color para que resalte) */
 :host ::ng-deep .ngx-pagination .current {
   background: #007bff; /* Un azul para destacar la página activa */
@@ -484,4 +639,344 @@ td.stock-critico {
   margin-left: 8px;
   display: inline-block;
   font-size: 0.9em;
+}
+/* =============================================
+   ESTILOS PARA COLUMNA Y MODAL DE COSTO UNITARIO
+   Tema: Oscuro Elegante (consistente con el diseño)
+   ============================================= */
+
+/* Contenedor de costo en la tabla */
+.costo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.costo-valor {
+  font-weight: 500;
+  color: #e0e0e0;
+  font-size: 0.95rem;
+}
+
+/* Botón de editar costo en la tabla */
+.btn-editar-costo {
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  background-color: rgba(92, 184, 92, 0.8);
+  color: white;
+  border: 1px solid rgba(92, 184, 92, 0.5);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.btn-editar-costo:hover {
+  background-color: #5cb85c;
+  border-color: #5cb85c;
+  box-shadow: 0 2px 8px rgba(92, 184, 92, 0.3);
+}
+
+.btn-editar-costo i {
+  font-size: 0.75rem;
+}
+
+/* =============================================
+   MODAL DE EDICIÓN DE COSTO
+   ============================================= */
+
+/* Overlay del modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Contenedor del modal */
+.modal-content {
+  background-color: rgba(25, 28, 36, 0.95);
+  color: #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+  width: 90%;
+  max-width: 500px;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Encabezado del modal */
+.modal-header {
+  padding: 20px 25px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(74, 142, 206, 0.15);
+}
+
+.modal-header h2,
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-header h2 i,
+.modal-header h3 i {
+  color: #5cb85c;
+}
+
+/* Botón de cerrar */
+.btn-cerrar,
+.btn-close {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 1.8rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s ease;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-cerrar:hover,
+.btn-close:hover {
+  color: #ffffff;
+}
+
+/* Cuerpo del modal */
+.modal-body {
+  padding: 25px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.modal-body p {
+  margin: 10px 0;
+  color: #e0e0e0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.modal-body p strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Grupos de formulario */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Inputs del formulario */
+.form-control {
+  width: 100%;
+  background-color: rgba(74, 142, 206, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 12px 15px;
+  color: #f3f3f3 !important;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #4a8ece;
+  box-shadow: 0 0 0 3px rgba(74, 142, 206, 0.2);
+  background-color: rgba(74, 142, 206, 0.25) !important;
+}
+
+.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Texto auxiliar del formulario */
+.form-text {
+  display: block;
+  margin-top: 6px;
+  color: #aaa;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* Pie del modal */
+.modal-footer {
+  padding: 15px 25px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Botones generales */
+.btn,
+.btn-accion {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Botón secundario / cancelar */
+.btn-secondary,
+.btn-cancelar {
+  background-color: #6c757d;
+  color: white;
+  border: 1px solid transparent;
+}
+
+.btn-secondary:hover,
+.btn-cancelar:hover {
+  background-color: #5a6268;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Botón primario / guardar */
+.btn-primary,
+.btn-guardar {
+  background-color: #4480d3;
+  color: white;
+  border: 1px solid transparent;
+}
+
+.btn-primary:hover,
+.btn-guardar:hover {
+  background-color: #386bbd;
+  box-shadow: 0 2px 8px rgba(68, 128, 211, 0.4);
+}
+
+/* =============================================
+   ANIMACIONES
+   ============================================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* =============================================
+   SCROLLBAR PERSONALIZADO PARA MODAL BODY
+   ============================================= */
+
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(74, 142, 206, 0.5);
+  border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 142, 206, 0.7);
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+
+@media (max-width: 768px) {
+  .costo-container {
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+  }
+  
+  .btn-editar-costo {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-width: 100%;
+  }
+
+  .modal-header h2,
+  .modal-header h3 {
+    font-size: 1.2rem;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn,
+  .btn-accion {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header {
+    padding: 15px 20px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .form-control {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+  }
 }
