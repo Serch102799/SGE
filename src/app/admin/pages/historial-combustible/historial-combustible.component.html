@@ -138,7 +138,6 @@
   <table class="tabla-usuarios">
     <thead>
       <tr>
-        <th>Acciones</th>
         <th>Fecha</th>
         <th>Autobús</th>
         <th>Operador</th>
@@ -151,31 +150,13 @@
         <th *ngIf="tipoCalculo === 'vueltas'">Rutas y Vueltas</th>
         <th *ngIf="tipoCalculo === 'dias'">Ruta Principal</th>
         <th>Despachador</th>
+        <th >Acciones</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let carga of cargas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
         
         <!-- Columna de Acciones -->
-        <td class="actions-cell">
-          <div class="actions-container">
-            <!-- Botón de Información (siempre visible) -->
-            <!-- <button (click)="abrirModalInfo(carga)" 
-                    class="btn-icon btn-info"
-                    title="Ver información detallada">
-              <i class="fas fa-info-circle"></i>
-            </button> -->
-            
-            <!-- Botón de Editar (solo SuperUsuario) -->
-            <button *ngIf="authService.hasRole(['SuperUsuario'])"
-                    (click)="abrirModalEditar(carga)" 
-                    class="btn-icon btn-editar"
-                    title="Editar Carga">
-              <i class="fas fa-pencil-alt">Editar</i>
-            </button>
-          </div>
-        </td>
-        
         <td>{{ carga.fecha_operacion | date:'dd/MM/yy h:mm a' }}</td>
         <td>{{ carga.economico }}</td>
         <td>{{ carga.nombre_operador }}</td>
@@ -207,6 +188,24 @@
           {{ carga.rutas_y_vueltas || '-' }}
         </td>
         <td>{{ carga.nombre_despachador }}</td>
+        <td class="actions-cell">
+          <div class="actions-container">
+            <!-- Botón de Información (siempre visible) -->
+            <button (click)="abrirModalInfo(carga)" 
+                    class="btn-icon btn-info"
+                    title="Ver información detallada">
+              <i class="fas fa-info-circle">Info</i>
+            </button>
+            
+            <!-- Botón de Editar (solo SuperUsuario) -->
+            <button *ngIf="authService.hasRole(['SuperUsuario'])"
+                    (click)="abrirModalEditar(carga)" 
+                    class="btn-icon btn-editar"
+                    title="Editar Carga">
+              <i class="fas fa-pencil-alt">Editar</i>
+            </button>
+          </div>
+        </td>
       </tr>
       
       <tr *ngIf="cargas.length === 0">
@@ -575,10 +574,10 @@
             <label class="info-card-label">Operador</label>
             <p class="info-card-value">{{ cargaInfo.nombre_operador || cargaInfo.nombre_completo || '-' }}</p>
           </div>
-          <div class="info-card">
+          <!-- <div class="info-card">
             <label class="info-card-label">Despachador</label>
             <p class="info-card-value">{{ cargaInfo.nombre_despachador || '-' }}</p>
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -621,7 +620,7 @@
             <p class="info-card-value">{{ obtenerNumero(cargaInfo.rendimiento_calculado) | number:'1.2-2' }}</p>
             <span class="info-card-unit">km/L</span>
           </div>
-          <div class="info-card">
+          <!-- <div class="info-card">
             <label class="info-card-label">Calificación</label>
             <div style="margin-top: 8px;">
               <span class="badge-clasificacion clasificacion-badge"
@@ -634,7 +633,7 @@
                 {{ cargaInfo.clasificacion_rendimiento || '-' }}
               </span>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
 
