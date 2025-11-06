@@ -85,6 +85,12 @@
           <span>Operadores</span>
         </a>
       </li>
+      <li *ngIf="authService.hasRole([ 'SuperUsuario'])">
+        <a routerLink="/admin/admin-panel" routerLinkActive="active">
+          <fa-icon [icon]="faTanques"></fa-icon>
+          <span>x</span>
+        </a>
+      </li>
       <li *ngIf="authService.hasRole(['SuperUsuario', 'AdminDiesel'])">
         <a routerLink="/admin/registro-carga-combustible" routerLinkActive="active">
           <fa-icon [icon]="faCargaCombustible"></fa-icon>

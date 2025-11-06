@@ -41,6 +41,7 @@ import { RegistroProduccionComponent } from './pages/registro-produccion/registr
 import { RendimientosComponent } from './pages/rendimientos/rendimientos.component';
 import { AjusteInventarioComponent } from './pages/ajuste-inventario/ajuste-inventario.component';
 import { ConteoInventarioComponent } from './pages/conteo-inventario/conteo-inventario.component';
+import { AdminPanelComponent } from './pages/admin-panel/admin-panel.component';
 
 @NgModule({
   declarations: [
@@ -71,7 +72,8 @@ import { ConteoInventarioComponent } from './pages/conteo-inventario/conteo-inve
     RegistroProduccionComponent,
     RendimientosComponent,
     AjusteInventarioComponent,
-    ConteoInventarioComponent
+    ConteoInventarioComponent,
+    AdminPanelComponent
   ],
   imports: [
     HttpClientModule,

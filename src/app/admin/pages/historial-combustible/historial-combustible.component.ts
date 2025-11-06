@@ -81,6 +81,10 @@ guardandoEdicion: boolean = false;
   fechaMaxima: string = '';
   cargaOriginal: any = null;
 
+  modalInfoVisible: boolean = false;
+cargaInfo: any = null;
+cargandoInfo: boolean = false;
+
 // Datos del formulario de edición
 formEdicion = {
   fecha_operacion: '',
@@ -168,7 +172,7 @@ formEdicion = {
   }
 
   // NUEVO: Obtener TODOS los datos filtrados para exportación
-  private obtenerTodasLasCargas(): Promise<any[]> {
+  public obtenerTodasLasCargas(): Promise<any[]> {
     return new Promise((resolve, reject) => {
       // Solicitar TODAS las páginas (limit muy alto o sin límite según tu backend)
       const params = this.construirParametros(1, 999999);
@@ -471,7 +475,7 @@ esSuperUsuario(): boolean {
    * Helper para formatear fechas al formato 'datetime-local' (YYYY-MM-DDTHH:mm)
    * respetando la zona horaria local.
    */
-  private formatearFechaParaInput(fecha: string): string {
+  public formatearFechaParaInput(fecha: string): string {
     if (!fecha) {
       return new Date().toISOString().slice(0, 16);
     }
@@ -778,7 +782,7 @@ esSuperUsuario(): boolean {
     }
   }
 
-  private formatearFecha(fecha: string): string {
+  public formatearFecha(fecha: string): string {
     if (!fecha) return '-';
     try {
       return new Date(fecha).toLocaleString('es-MX', {
@@ -793,13 +797,13 @@ esSuperUsuario(): boolean {
     }
   }
 
-  private obtenerNumero(valor: any): number {
+  public obtenerNumero(valor: any): number {
     if (valor === null || valor === undefined) return 0;
     const num = parseFloat(valor);
     return isNaN(num) ? 0 : num;
   }
 
-  private clasificarRendimiento(
+  public clasificarRendimiento(
     rendimiento: number,
     excelente?: number,
     bueno?: number,
@@ -814,5 +818,128 @@ esSuperUsuario(): boolean {
     if (rendimiento >= regular) return 'Regular';
     return 'Malo';
   }
+  abrirModalInfo(carga: any): void {
+  if (!carga || carga.id_carga === undefined) {
+    console.error('La carga no tiene id_carga');
+    alert('Error: No se puede obtener la información de esta carga.');
+    return;
+  }
+
+  this.modalInfoVisible = true;
+  this.cargandoInfo = true;
+  this.cargaInfo = null;
+
+  // Bloquear scroll del body
+  document.body.style.overflow = 'hidden';
+
+  // Llamada a la API para obtener datos completos incluyendo motivo de desviación
+  this.http.get<any>(`${this.apiUrl}/detalle/${carga.id_carga}`).subscribe({
+    next: (datos) => {
+      console.log('Datos recibidos del detalle:', datos); // Para debug
+      
+      // Asegurarnos de que la clasificación esté presente
+      if (!datos.clasificacion_rendimiento && datos.rendimiento_calculado) {
+        datos.clasificacion_rendimiento = this.clasificarRendimiento(
+          this.obtenerNumero(datos.rendimiento_calculado),
+          datos.rendimiento_excelente,
+          datos.rendimiento_bueno,
+          datos.rendimiento_regular
+        );
+      }
+      
+      this.cargaInfo = datos;
+      this.cargandoInfo = false;
+      
+      console.log('Despachador:', datos.nombre_despachador);
+      console.log('Clasificación:', datos.clasificacion_rendimiento);
+      console.log('Motivo desviación:', datos.motivo_desviacion);
+      console.log('KM esperados:', datos.km_esperados_ruta);
+    },
+    error: (err) => {
+      console.error("Error al obtener detalle de la carga:", err);
+      alert('Error al cargar la información. Intente de nuevo.');
+      this.cerrarModalInfo();
+    }
+  });
+}
+
+/**
+ * Cierra el modal de información
+ */
+cerrarModalInfo(): void {
+  this.modalInfoVisible = false;
+  this.cargaInfo = null;
+  this.cargandoInfo = false;
+  
+  // Restaurar scroll del body
+  document.body.style.overflow = 'auto';
+}
+
+/**
+ * Calcula la desviación de kilometraje
+ * Solo aplica para cálculo por vueltas cuando hay km_esperados_ruta
+ */
+calcularDesviacion(carga: any): number {
+  if (!carga) return 0;
+  
+  // Solo para modo vueltas
+  if (this.tipoCalculo !== 'vueltas') return 0;
+  
+  // Verificar si tiene km esperados de ruta
+  const kmEsperados = this.obtenerNumero(carga.km_esperados_ruta);
+  if (kmEsperados === 0) return 0;
+  
+  const kmRecorridos = this.obtenerNumero(carga.km_recorridos);
+  const desviacion = kmRecorridos - kmEsperados;
+  
+  console.log('Desviación calculada:', {
+    kmRecorridos,
+    kmEsperados,
+    desviacion,
+    tipoCalculo: this.tipoCalculo
+  });
+  
+  return desviacion;
+}
+
+/**
+ * Determina si hay desviación significativa (>15km)
+ * Solo aplica para cálculo por vueltas
+ */
+tieneDesviacionSignificativa(carga: any): boolean {
+  if (!carga) return false;
+  
+  // Solo aplica para cálculo por vueltas
+  if (this.tipoCalculo !== 'vueltas') return false;
+  
+  // Verificar si tiene km esperados de ruta
+  const kmEsperados = this.obtenerNumero(carga.km_esperados_ruta);
+  if (kmEsperados === 0) return false;
+  
+  const desviacion = Math.abs(this.calcularDesviacion(carga));
+  const tieneDesviacion = desviacion > 15;
+  
+  console.log('Verificando desviación significativa:', {
+    desviacion,
+    tieneDesviacion,
+    kmEsperados,
+    tipoCalculo: this.tipoCalculo
+  });
+  
+  return tieneDesviacion;
+}
+
+/**
+ * Obtiene el color según la clasificación del rendimiento
+ */
+obtenerColorClasificacion(clasificacion: string): string {
+  switch(clasificacion) {
+    case 'Excelente': return 'text-green-600 bg-green-50';
+    case 'Bueno': return 'text-blue-600 bg-blue-50';
+    case 'Regular': return 'text-yellow-600 bg-yellow-50';
+    case 'Malo': return 'text-red-600 bg-red-50';
+    default: return 'text-gray-600 bg-gray-50';
+  }
+}
   
 }

@@ -1,0 +1,163 @@
+<div class="container mx-auto p-6 bg-gray-50 min-h-screen">
+  
+  <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
+    <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-3">
+      <i class="fas fa-user-shield text-blue-600"></i>
+      Panel de Administración de Sesiones
+    </h1>
+    <button (click)="cargarSesionesActivas()" 
+            [disabled]="cargandoSesiones"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition duration-200 disabled:opacity-50 flex items-center gap-2">
+      <i class="fas fa-sync" [ngClass]="{'animate-spin': cargandoSesiones}"></i>
+      Refrescar
+    </button>
+  </div>
+
+  <div *ngIf="cargandoSesiones" class="text-center p-12">
+    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
+    <p class="text-gray-600 text-lg">Cargando sesiones activas...</p>
+  </div>
+
+  <div *ngIf="errorSesiones" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-md" role="alert">
+    <p class="font-bold">Error</p>
+    <p>{{ errorSesiones }}</p>
+  </div>
+
+  <div *ngIf="!cargandoSesiones && !errorSesiones" class="bg-white shadow-xl rounded-lg overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-800 text-white">
+        <tr>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Usuario</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Puesto</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Inicio de Sesión</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">IP / Navegador</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        
+        <tr *ngFor="let sesion of sesionesActivas" 
+            class="hover:bg-gray-50 transition" 
+            [ngClass]="{'opacity-50 pointer-events-none': sesion['cerrando']}">
+          
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm font-semibold text-gray-900">{{ sesion.nombre }}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-700">{{ sesion.puesto || '-' }}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-700">{{ sesion.fecha_login | date:'dd/MM/yy, h:mm:ss a' }}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <div class="font-mono">{{ sesion.ip_address || 'Desconocida' }}</div>
+            <div class="truncate max-w-xs text-xs italic" [title]="sesion.user_agent">{{ sesion.user_agent || '-' }}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+            <button (click)="onVerHistorial(sesion)" 
+                    class="px-3 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-all text-xs font-bold">
+              <i class="fas fa-history mr-1"></i> Historial
+            </button>
+            <button (click)="onForzarCierre(sesion)"
+                    class="px-3 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-all text-xs font-bold">
+              <i class="fas fa-sign-out-alt mr-1"></i> Cerrar Sesión
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="sesionesActivas.length === 0">
+          <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+            <i class="fas fa-check-circle text-green-500 text-3xl mb-3"></i>
+            <p class="text-lg">No hay sesiones activas en este momento.</p>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<div *ngIf="modalVisible" 
+     (click)="cerrarModal()"
+     class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[9999] p-4 overflow-y-auto"
+     style="backdrop-filter: blur(4px);">
+
+  <div (click)="$event.stopPropagation()"
+       class="bg-white rounded-xl shadow-2xl w-full max-w-4xl my-8 transform transition-all"
+       style="max-height: 90vh; display: flex; flex-direction: column;">
+    
+    <div class="bg-gradient-to-r from-blue-700 to-blue-800 text-white px-6 py-5 rounded-t-xl sticky top-0 z-10 shadow-lg">
+      <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold flex items-center gap-3">
+          <i class="fas fa-history"></i>
+          Historial de Acciones: {{ usuarioSeleccionado }}
+        </h2>
+        <button (click)="cerrarModal()" type="button" class="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all duration-200 hover:rotate-90">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="p-6 overflow-y-auto space-y-4" style="flex: 1 1 auto;">
+      
+      <div *ngIf="cargandoModal" class="p-12 text-center">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
+        <p class="text-gray-600 text-lg">Cargando historial...</p>
+      </div>
+      
+      <div *ngIf="!cargandoModal && historialUsuario.length === 0" class="p-12 text-center text-gray-500">
+        <i class="fas fa-folder-open text-3xl mb-3"></i>
+        <p class="text-lg">No se encontraron acciones para este usuario.</p>
+      </div>
+
+      <div *ngIf="!cargandoModal && historialUsuario.length > 0" class="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Fecha y Hora</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Acción</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Recurso Afectado</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Detalles</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let accion of historialUsuario" class="hover:bg-gray-50">
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                {{ accion.timestamp | date:'dd/MM/yy, h:mm:ss a' }}
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold">
+                <span class="px-2.5 py-1 rounded-full text-xs font-bold"
+                      [ngClass]="{
+                        'bg-green-100 text-green-800': accion.tipo_accion === 'CREAR' || accion.tipo_accion === 'LOGIN_EXITOSO',
+                        'bg-yellow-100 text-yellow-800': accion.tipo_accion === 'ACTUALIZAR',
+                        'bg-red-100 text-red-800': accion.tipo_accion === 'ELIMINAR' || accion.tipo_accion === 'LOGIN_FALLIDO',
+                        'bg-purple-100 text-purple-800': accion.tipo_accion === 'SESION_CERRADA',
+                        'bg-blue-100 text-blue-800': accion.tipo_accion === 'LEER_DETALLE'
+                      }">
+                  {{ accion.tipo_accion }}
+                </span>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                {{ accion.recurso_afectado }}
+                <span *ngIf="accion.id_recurso_afectado" class="text-gray-500 font-mono text-xs">
+                  (ID: {{ accion.id_recurso_afectado }})
+                </span>
+              </td>
+              <td class="px-4 py-3 text-sm text-gray-500">
+                <pre *ngIf="accion.detalles_cambio" class="bg-gray-100 p-2 rounded text-xs font-mono overflow-auto">{{ accion.detalles_cambio | json }}</pre>
+                <span *ngIf="!accion.detalles_cambio" class="text-xs italic">N/A</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bg-gray-100 px-6 py-4 rounded-b-xl flex justify-end border-t border-gray-300 sticky bottom-0">
+      <button (click)="cerrarModal()" type="button" class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all duration-200 font-semibold">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>

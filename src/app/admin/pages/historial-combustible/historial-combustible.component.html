@@ -135,75 +135,88 @@
     </div>
 
     <div class="tabla-responsive-wrapper">
-      <table class="tabla-usuarios">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Autobús</th>
-            <th>Operador</th>
-            <th>KM Inicial</th> 
-            <th>KM Final</th>
-            <th>KM Recorridos</th>
-            <th>Litros</th>
-            <th>Rendimiento</th>
-            <th>Estatus</th>
-            <th *ngIf="tipoCalculo === 'vueltas'">Rutas y Vueltas</th>
-            <th *ngIf="tipoCalculo === 'dias'">Ruta Principal</th>
-            <th>Despachador</th>
-            <th *ngIf="authService.hasRole(['SuperUsuario'])">Editar</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let carga of cargas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
-            <td>{{ carga.fecha_operacion | date:'dd/MM/yy h:mm a' }}</td>
-            <td>{{ carga.economico }}</td>
-            <td>{{ carga.nombre_operador }}</td>
-            <td>{{ carga.km_inicial | number }} km</td> 
-            <td>{{ carga.km_final | number }} km</td>
-            <td>{{ carga.km_recorridos | number }} km</td>
-            <td>{{ carga.litros_cargados | number:'1.2-2' }} Lts</td>
-            <td>
-              <span [ngClass]="{'alerta-rendimiento': carga.alerta_rendimiento}">
-                {{ carga.rendimiento_calculado | number:'1.2-2' }}
-              </span>
-            </td>
-            <td>
-              <span 
-                class="badge-clasificacion"
-                [ngClass]="{
-                  'clasificacion-excelente': carga.clasificacion_rendimiento === 'Excelente',
-                  'clasificacion-bueno': carga.clasificacion_rendimiento === 'Bueno',
-                  'clasificacion-regular': carga.clasificacion_rendimiento === 'Regular',
-                  'clasificacion-malo': carga.clasificacion_rendimiento === 'Malo'
-                }">
-                {{ carga.clasificacion_rendimiento || '-' }}
-              </span>
-            </td>
-            <td *ngIf="tipoCalculo === 'vueltas'">
-              {{ carga.rutas_y_vueltas || '-' }}
-            </td>
-            <td *ngIf="tipoCalculo === 'dias'">
-              {{ carga.rutas_y_vueltas || '-' }}
-            </td>
-            <td>{{ carga.nombre_despachador }}</td>
+  <table class="tabla-usuarios">
+    <thead>
+      <tr>
+        <th>Acciones</th>
+        <th>Fecha</th>
+        <th>Autobús</th>
+        <th>Operador</th>
+        <th>KM Inicial</th> 
+        <th>KM Final</th>
+        <th>KM Recorridos</th>
+        <th>Litros</th>
+        <th>Rendimiento</th>
+        <th>Estatus</th>
+        <th *ngIf="tipoCalculo === 'vueltas'">Rutas y Vueltas</th>
+        <th *ngIf="tipoCalculo === 'dias'">Ruta Principal</th>
+        <th>Despachador</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let carga of cargas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+        
+        <!-- Columna de Acciones -->
+        <td class="actions-cell">
+          <div class="actions-container">
+            <!-- Botón de Información (siempre visible) -->
+            <!-- <button (click)="abrirModalInfo(carga)" 
+                    class="btn-icon btn-info"
+                    title="Ver información detallada">
+              <i class="fas fa-info-circle"></i>
+            </button> -->
             
-            <td *ngIf="authService.hasRole(['SuperUsuario'])" class="actions-cell">
-              <button (click)="abrirModalEditar(carga)" 
-                      class="btn-icon btn-editar"
-                      title="Editar Carga">
-                <i class="fas fa-pencil-alt">Editar</i>
-              </button>
-            </td>
-          </tr>
-          
-          <tr *ngIf="cargas.length === 0">
-            <td [attr.colspan]="authService.hasRole(['SuperUsuario']) ? 12 : 11" class="empty-table-message">
-              No se encontraron cargas que coincidan con los filtros.
-            </td>
-            </tr>
-        </tbody>
-      </table>
-    </div>
+            <!-- Botón de Editar (solo SuperUsuario) -->
+            <button *ngIf="authService.hasRole(['SuperUsuario'])"
+                    (click)="abrirModalEditar(carga)" 
+                    class="btn-icon btn-editar"
+                    title="Editar Carga">
+              <i class="fas fa-pencil-alt">Editar</i>
+            </button>
+          </div>
+        </td>
+        
+        <td>{{ carga.fecha_operacion | date:'dd/MM/yy h:mm a' }}</td>
+        <td>{{ carga.economico }}</td>
+        <td>{{ carga.nombre_operador }}</td>
+        <td>{{ carga.km_inicial | number }} km</td> 
+        <td>{{ carga.km_final | number }} km</td>
+        <td>{{ carga.km_recorridos | number }} km</td>
+        <td>{{ carga.litros_cargados | number:'1.2-2' }} Lts</td>
+        <td>
+          <span [ngClass]="{'alerta-rendimiento': carga.alerta_rendimiento}">
+            {{ carga.rendimiento_calculado | number:'1.2-2' }}
+          </span>
+        </td>
+        <td>
+          <span 
+            class="badge-clasificacion"
+            [ngClass]="{
+              'clasificacion-excelente': carga.clasificacion_rendimiento === 'Excelente',
+              'clasificacion-bueno': carga.clasificacion_rendimiento === 'Bueno',
+              'clasificacion-regular': carga.clasificacion_rendimiento === 'Regular',
+              'clasificacion-malo': carga.clasificacion_rendimiento === 'Malo'
+            }">
+            {{ carga.clasificacion_rendimiento || '-' }}
+          </span>
+        </td>
+        <td *ngIf="tipoCalculo === 'vueltas'">
+          {{ carga.rutas_y_vueltas || '-' }}
+        </td>
+        <td *ngIf="tipoCalculo === 'dias'">
+          {{ carga.rutas_y_vueltas || '-' }}
+        </td>
+        <td>{{ carga.nombre_despachador }}</td>
+      </tr>
+      
+      <tr *ngIf="cargas.length === 0">
+        <td [attr.colspan]="12" class="empty-table-message">
+          No se encontraron cargas que coincidan con los filtros.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
     <div class="pagination-controls">
       <pagination-controls 
@@ -509,6 +522,231 @@
       </div>
 
     </form>
+
+  </div>
+</div>
+<!-- Modal de Información Detallada - AGREGAR EN EL TEMPLATE -->
+<div *ngIf="modalInfoVisible" 
+     class="modal-info-overlay"
+     (click)="cerrarModalInfo()">
+  
+  <div class="modal-info-container" (click)="$event.stopPropagation()">
+    
+    <!-- Header -->
+    <div class="modal-info-header">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>
+          <i class="fas fa-info-circle"></i>
+          Información Detallada de Carga
+        </h2>
+        <button (click)="cerrarModalInfo()" 
+                type="button"
+                class="modal-close-btn">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="cargandoInfo" class="modal-loading">
+      <div class="modal-loading-spinner"></div>
+      <p>Cargando información...</p>
+    </div>
+
+    <!-- Contenido -->
+    <div *ngIf="!cargandoInfo && cargaInfo" class="modal-info-content">
+      
+      <!-- Información General -->
+      <div class="info-section">
+        <h3 class="info-section-title">
+          <i class="fas fa-clipboard-list"></i>
+          Información General
+        </h3>
+        <div class="info-grid">
+          <div class="info-card">
+            <label class="info-card-label">Fecha de Operación</label>
+            <p class="info-card-value">{{ formatearFecha(cargaInfo.fecha_operacion) }}</p>
+          </div>
+          <div class="info-card">
+            <label class="info-card-label">Autobús</label>
+            <p class="info-card-value">{{ cargaInfo.economico || '-' }}</p>
+          </div>
+          <div class="info-card">
+            <label class="info-card-label">Operador</label>
+            <p class="info-card-value">{{ cargaInfo.nombre_operador || cargaInfo.nombre_completo || '-' }}</p>
+          </div>
+          <div class="info-card">
+            <label class="info-card-label">Despachador</label>
+            <p class="info-card-value">{{ cargaInfo.nombre_despachador || '-' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kilometraje -->
+      <div class="info-section seccion-kilometraje">
+        <h3 class="info-section-title">
+          <i class="fas fa-road"></i>
+          Kilometraje
+        </h3>
+        <div class="info-grid">
+          <div class="info-card">
+            <label class="info-card-label">KM Inicial</label>
+            <p class="info-card-value">{{ obtenerNumero(cargaInfo.km_inicial) | number:'1.0-0' }} km</p>
+          </div>
+          <div class="info-card">
+            <label class="info-card-label">KM Final</label>
+            <p class="info-card-value">{{ obtenerNumero(cargaInfo.km_final) | number:'1.0-0' }} km</p>
+          </div>
+          <div class="info-card info-card-destacado">
+            <label class="info-card-label">KM Recorridos</label>
+            <p class="info-card-value">{{ obtenerNumero(cargaInfo.km_recorridos) | number:'1.0-0' }}</p>
+            <span class="info-card-unit">kilómetros</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Combustible y Rendimiento -->
+      <div class="info-section seccion-combustible">
+        <h3 class="info-section-title">
+          <i class="fas fa-gas-pump"></i>
+          Combustible y Rendimiento
+        </h3>
+        <div class="info-grid">
+          <div class="info-card">
+            <label class="info-card-label">Litros Cargados</label>
+            <p class="info-card-value">{{ obtenerNumero(cargaInfo.litros_cargados) | number:'1.2-2' }} L</p>
+          </div>
+          <div class="info-card info-card-destacado info-card-combustible">
+            <label class="info-card-label">Rendimiento</label>
+            <p class="info-card-value">{{ obtenerNumero(cargaInfo.rendimiento_calculado) | number:'1.2-2' }}</p>
+            <span class="info-card-unit">km/L</span>
+          </div>
+          <div class="info-card">
+            <label class="info-card-label">Calificación</label>
+            <div style="margin-top: 8px;">
+              <span class="badge-clasificacion clasificacion-badge"
+                    [ngClass]="{
+                      'clasificacion-excelente': cargaInfo.clasificacion_rendimiento === 'Excelente',
+                      'clasificacion-bueno': cargaInfo.clasificacion_rendimiento === 'Bueno',
+                      'clasificacion-regular': cargaInfo.clasificacion_rendimiento === 'Regular',
+                      'clasificacion-malo': cargaInfo.clasificacion_rendimiento === 'Malo'
+                    }">
+                {{ cargaInfo.clasificacion_rendimiento || '-' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rutas (solo en modo vueltas) -->
+      <div *ngIf="tipoCalculo === 'vueltas'" 
+           class="info-section seccion-rutas">
+        <h3 class="info-section-title">
+          <i class="fas fa-route"></i>
+          Rutas Realizadas
+        </h3>
+        <div class="info-card" style="margin-bottom: 20px;">
+          <label class="info-card-label">Detalle de Rutas y Vueltas</label>
+          <p class="info-card-value" style="font-size: 16px;">
+            {{ cargaInfo.rutas_y_vueltas || cargaInfo.rutas_info || '-' }}
+          </p>
+        </div>
+        <div *ngIf="cargaInfo.km_esperados_ruta && obtenerNumero(cargaInfo.km_esperados_ruta) > 0" 
+             class="info-card info-card-destacado info-card-rutas">
+          <label class="info-card-label">KM Esperados (según rutas)</label>
+          <p class="info-card-value">{{ obtenerNumero(cargaInfo.km_esperados_ruta) | number:'1.0-0' }}</p>
+          <span class="info-card-unit">kilómetros</span>
+        </div>
+      </div>
+
+      <!-- Desviación Significativa -->
+      <div *ngIf="tieneDesviacionSignificativa(cargaInfo)" class="seccion-desviacion">
+        <h3 class="info-section-title">
+          <i class="fas fa-exclamation-triangle"></i>
+          Desviación de Kilometraje Detectada
+        </h3>
+        
+        <div class="desviacion-valor">
+          <label class="info-card-label">Desviación</label>
+          <p class="desviacion-valor-numero">
+            {{ calcularDesviacion(cargaInfo) > 0 ? '+' : '' }}{{ calcularDesviacion(cargaInfo) | number:'1.0-0' }} km
+          </p>
+          <span class="desviacion-badge">
+            {{ calcularDesviacion(cargaInfo) > 0 ? 'Exceso de kilometraje' : 'Faltante de kilometraje' }}
+          </span>
+        </div>
+        
+        <div class="motivo-desviacion">
+          <div class="motivo-desviacion-titulo">
+            <i class="fas fa-comment-alt"></i>
+            Motivo de la Desviación
+          </div>
+          <p *ngIf="cargaInfo.motivo_desviacion && cargaInfo.motivo_desviacion.trim()" 
+             class="motivo-desviacion-texto">
+            "{{ cargaInfo.motivo_desviacion }}"
+          </p>
+          <div *ngIf="!cargaInfo.motivo_desviacion || !cargaInfo.motivo_desviacion.trim()" 
+               class="motivo-desviacion-vacio">
+            <i class="fas fa-info-circle"></i>
+            No se registró motivo de desviación
+          </div>
+        </div>
+      </div>
+
+      <!-- Sin Desviación -->
+      <div *ngIf="!tieneDesviacionSignificativa(cargaInfo) && (cargaInfo.km_esperados_ruta || cargaInfo.km_esperados) && tipoCalculo === 'vueltas'" 
+           class="seccion-sin-desviacion">
+        <div class="sin-desviacion-content">
+          <div class="sin-desviacion-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="sin-desviacion-text">
+            <h3>Kilometraje Normal</h3>
+            <p>
+              La desviación de <strong>{{ calcularDesviacion(cargaInfo) | number:'1.0-0' }} km</strong> 
+              está dentro del rango aceptable (±15 km).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información Adicional -->
+      <div class="info-section">
+        <h3 class="info-section-title">
+          <i class="fas fa-info"></i>
+          Información Adicional
+        </h3>
+        <div class="info-grid">
+          <div class="info-card">
+            <label class="info-card-label">ID de Carga</label>
+            <p class="info-card-value">#{{ cargaInfo.id_carga }}</p>
+          </div>
+          <div class="info-card">
+            <label class="info-card-label">Tipo de Cálculo</label>
+            <p class="info-card-value">{{ tipoCalculo === 'vueltas' ? 'Por Vueltas' : 'Por Días' }}</p>
+          </div>
+          <div *ngIf="cargaInfo.created_at" class="info-card">
+            <label class="info-card-label">Fecha de Registro</label>
+            <p class="info-card-value" style="font-size: 14px;">{{ formatearFecha(cargaInfo.created_at) }}</p>
+          </div>
+          <div *ngIf="cargaInfo.updated_at" class="info-card">
+            <label class="info-card-label">Última Actualización</label>
+            <p class="info-card-value" style="font-size: 14px;">{{ formatearFecha(cargaInfo.updated_at) }}</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-info-footer">
+      <button (click)="cerrarModalInfo()" 
+              type="button"
+              class="modal-btn-cerrar">
+        <i class="fas fa-times"></i>
+        Cerrar
+      </button>
+    </div>
 
   </div>
 </div>

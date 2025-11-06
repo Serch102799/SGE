@@ -34,6 +34,7 @@ import { RegistroProduccionComponent } from './pages/registro-produccion/registr
 import { RendimientosComponent } from './pages/rendimientos/rendimientos.component';
 import { AjusteInventarioComponent } from './pages/ajuste-inventario/ajuste-inventario.component';
 import { ConteoInventarioComponent } from './pages/conteo-inventario/conteo-inventario.component';
+import { AdminPanelComponent } from './pages/admin-panel/admin-panel.component';
 
 const routes: Routes = [
   {
@@ -188,6 +189,12 @@ const routes: Routes = [
       {
         path: 'rendimientos',
         component: RendimientosComponent,
+        canActivate: [AuthGuard], 
+        data: { roles: ['SuperUsuario'] } 
+      },
+      {
+        path: 'admin-panel',
+        component: AdminPanelComponent,
         canActivate: [AuthGuard], 
         data: { roles: ['SuperUsuario'] } 
       },
