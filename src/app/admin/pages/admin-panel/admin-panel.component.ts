@@ -4,12 +4,13 @@ import { AdminService, SesionActiva, AccionAuditoria } from '../../../services/a
 @Component({
   selector: 'app-admin-panel',
   standalone: false,
-  templateUrl: './admin-panel.component.html'
+  templateUrl: './admin-panel.component.html',
+  styleUrls: ['./admin-panel.component.css']
 })
 export class AdminPanelComponent implements OnInit {
 
   // ---- Estado de Sesiones ----
-  sesionesActivas: SesionActiva[] = [];
+  sesionesActivas: any[] = []; // (Usar 'any' temporalmente para 'cerrando')
   cargandoSesiones: boolean = false;
   errorSesiones: string | null = null;
 

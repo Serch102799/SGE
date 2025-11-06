@@ -28,7 +28,7 @@ export interface AccionAuditoria {
   providedIn: 'root'
 })
 export class AdminService {
-  private apiUrl = `${environment.apiUrl}/admin`; // Ej: 'http://localhost:3000/api/admin'
+  private apiUrl = `${environment.apiUrl}/superadmin`; 
 
   constructor(private http: HttpClient) { }
 
