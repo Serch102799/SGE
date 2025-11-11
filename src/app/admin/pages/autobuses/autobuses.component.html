@@ -210,80 +210,189 @@
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
-  <div class="modal-content modal-lg" (click)="$event.stopPropagation()" *ngIf="autobusParaDetalles">
-    <div class="modal-header modal-header-detalles">
-      <h3>🚌 Ficha Ténica del Autobús: {{ autobusParaDetalles.economico }}</h3>
-      <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="detalles-grid">
-        <div class="detalle-columna">
-          <div class="detalle-item">
-            <span class="detalle-label">Placa:</span>
-            <span class="detalle-valor">{{ autobusParaDetalles.placa }}</span>
-          </div>
-          <div class="detalle-item">
-            <span class="detalle-label">VIN:</span>
-            <span class="detalle-valor">{{ autobusParaDetalles.vin }}</span>
-          </div>
-          <div class="detalle-item">
-            <span class="detalle-label">Chasis:</span>
-            <span class="detalle-valor">{{ autobusParaDetalles.chasis }}</span>
-          </div>
-          <div class="detalle-item">
-            <span class="detalle-label">Motor:</span>
-            <span class="detalle-valor">{{ autobusParaDetalles.motor }}</span>
-          </div>
-           <div class="detalle-item">
-            <span class="detalle-label">HP:</span>
-            <span class="detalle-valor">{{ autobusParaDetalles.hp }}</span>
-          </div>
-          <div class="detalle-item">
-            <span class="detalle-label">Tarjeta de Circulación:</span>
-            <span class="detalle-valor">{{ autobusParaDetalles.tarjeta_circulacion }}</span>
-          </div>
+  <div class="modal-content-ficha" (click)="$event.stopPropagation()" *ngIf="autobusParaDetalles">
+    
+    <!-- Header con diseño mejorado -->
+    <div class="modal-header-ficha">
+      <div class="header-content">
+        <div class="header-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="6" width="18" height="13" rx="2"/>
+            <circle cx="8.5" cy="18" r="2"/>
+            <circle cx="15.5" cy="18" r="2"/>
+            <path d="M3 11h18"/>
+          </svg>
         </div>
-        <div class="detalle-columna">
-          <div class="detalle-item">
-            <span class="detalle-label">Razón Social:</span>
-            <span class="detalle-valor">{{ autobusParaDetalles.razon_social }}</span>
+        <div class="header-text">
+          <h2>Ficha Técnica del Autobús</h2>
+          <span class="economico-badge">No. {{ autobusParaDetalles.economico }}</span>
+        </div>
+      </div>
+      <button class="btn-cerrar-ficha" (click)="cerrarModalDetalles()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body con cards organizadas -->
+    <div class="modal-body-ficha">
+      
+      <!-- Información Principal -->
+      <div class="info-section">
+        <div class="section-title">
+          <div class="title-icon">📋</div>
+          <h3>Información General</h3>
+        </div>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-icon">🎫</div>
+            <div class="info-content">
+              <span class="info-label">Placa</span>
+              <span class="info-value">{{ autobusParaDetalles.placa }}</span>
+            </div>
           </div>
-          <div class="detalle-item">
-            <span class="detalle-label">Marca / Modelo:</span>
-            <span class="detalle-valor">{{ autobusParaDetalles.marca }} / {{ autobusParaDetalles.modelo }}</span>
+          <div class="info-card">
+            <div class="info-icon">🏢</div>
+            <div class="info-content">
+              <span class="info-label">Razón Social</span>
+              <span class="info-value">{{ autobusParaDetalles.razon_social }}</span>
+            </div>
           </div>
-          <div class="detalle-item">
-            <span class="detalle-label">Año:</span>
-            <span class="detalle-valor">{{ autobusParaDetalles.anio }}</span>
+          <div class="info-card">
+            <div class="info-icon">🚍</div>
+            <div class="info-content">
+              <span class="info-label">Marca / Modelo</span>
+              <span class="info-value">{{ autobusParaDetalles.marca }} / {{ autobusParaDetalles.modelo }}</span>
+            </div>
           </div>
-          <div class="detalle-item">
-            <span class="detalle-label">Kilometraje Actual:</span>
-            <span class="detalle-valor">{{ autobusParaDetalles.kilometraje_actual | number }} km</span>
-          </div>
-          <div class="detalle-item">
-            <span class="detalle-label">Sistema Emisiones:</span>
-            <span class="detalle-valor">{{ autobusParaDetalles.sistema }}</span>
-          </div>
-           <div class="detalle-item">
-            <span class="detalle-label">Carrocería:</span>
-            <span class="detalle-valor">{{ autobusParaDetalles.carroceria }}</span>
-          </div>
-           <div class="detalle-item">
-            <span class="detalle-label">Sistema Eléctrico:</span>
-            <span class="detalle-valor">{{ autobusParaDetalles.sistema_electrico }}</span>
-          </div>
-           <div class="detalle-item">
-            <span class="detalle-label">Medida de Llanta:</span>
-            <span class="detalle-valor">{{ autobusParaDetalles.medida_llanta }}</span>
+          <div class="info-card">
+            <div class="info-icon">📅</div>
+            <div class="info-content">
+              <span class="info-label">Año</span>
+              <span class="info-value">{{ autobusParaDetalles.anio }}</span>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- Especificaciones Técnicas -->
+      <div class="info-section">
+        <div class="section-title">
+          <div class="title-icon">⚙️</div>
+          <h3>Especificaciones Técnicas</h3>
+        </div>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-icon">🔢</div>
+            <div class="info-content">
+              <span class="info-label">VIN</span>
+              <span class="info-value small">{{ autobusParaDetalles.vin }}</span>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-icon">🔩</div>
+            <div class="info-content">
+              <span class="info-label">Chasis</span>
+              <span class="info-value">{{ autobusParaDetalles.chasis }}</span>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-icon">🔧</div>
+            <div class="info-content">
+              <span class="info-label">Motor</span>
+              <span class="info-value">{{ autobusParaDetalles.motor }}</span>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-icon">⚡</div>
+            <div class="info-content">
+              <span class="info-label">Potencia (HP)</span>
+              <span class="info-value">{{ autobusParaDetalles.hp }}</span>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-icon">💨</div>
+            <div class="info-content">
+              <span class="info-label">Sistema Emisiones</span>
+              <span class="info-value">{{ autobusParaDetalles.sistema }}</span>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-icon">🔌</div>
+            <div class="info-content">
+              <span class="info-label">Sistema Eléctrico</span>
+              <span class="info-value">{{ autobusParaDetalles.sistema_electrico }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Características Físicas -->
+      <div class="info-section">
+        <div class="section-title">
+          <div class="title-icon">📏</div>
+          <h3>Características Físicas</h3>
+        </div>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-icon">🚪</div>
+            <div class="info-content">
+              <span class="info-label">Carrocería</span>
+              <span class="info-value">{{ autobusParaDetalles.carroceria }}</span>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-icon">🛞</div>
+            <div class="info-content">
+              <span class="info-label">Medida de Llanta</span>
+              <span class="info-value">{{ autobusParaDetalles.medida_llanta }}</span>
+            </div>
+          </div>
+          <div class="info-card highlight-card">
+            <div class="info-icon">📍</div>
+            <div class="info-content">
+              <span class="info-label">Kilometraje Actual</span>
+              <span class="info-value large">{{ autobusParaDetalles.kilometraje_actual | number }} km</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documentación -->
+      <div class="info-section">
+        <div class="section-title">
+          <div class="title-icon">📄</div>
+          <h3>Documentación</h3>
+        </div>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-icon">📃</div>
+            <div class="info-content">
+              <span class="info-label">Tarjeta de Circulación</span>
+              <span class="info-value">{{ autobusParaDetalles.tarjeta_circulacion }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-historial" (click)="verHistorialDesdeDetalles()">Ver Historial</button>
-      <button type="button" class="btn-accion btn-estado" (click)="editarDesdeDetalles()">Editar Autobús</button>
-      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalDetalles()">Cerrar</button>
+
+    <!-- Footer con acciones -->
+    <div class="modal-footer-ficha">
+      <button class="btn-secondary-ficha" (click)="cerrarModalDetalles()">
+        Cerrar
+      </button>
+      <button class="btn-primary-ficha" (click)="editarDesdeDetalles()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Editar Autobús
+      </button>
     </div>
+
   </div>
 </div>
 
