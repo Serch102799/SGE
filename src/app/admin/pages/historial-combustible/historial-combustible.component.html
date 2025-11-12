@@ -574,10 +574,10 @@
             <label class="info-card-label">Operador</label>
             <p class="info-card-value">{{ cargaInfo.nombre_operador || cargaInfo.nombre_completo || '-' }}</p>
           </div>
-          <!-- <div class="info-card">
+          <div class="info-card">
             <label class="info-card-label">Despachador</label>
             <p class="info-card-value">{{ cargaInfo.nombre_despachador || '-' }}</p>
-          </div> -->
+          </div>
         </div>
       </div>
 
@@ -659,37 +659,50 @@
       </div>
 
       <!-- Desviación Significativa -->
-      <div *ngIf="tieneDesviacionSignificativa(cargaInfo)" class="seccion-desviacion">
-        <h3 class="info-section-title">
+      <div *ngIf="tieneDesviacionSignificativa(cargaInfo)" class="seccion-desviacion" style="background-color: #fff3f3; border: 1px solid #ffa4a4; border-radius: 8px; padding: 16px; margin-top: 16px;">
+        
+        <h3 class="info-section-title" style="color: #dc3545; margin-top: 0; display: flex; align-items: center; gap: 8px;">
           <i class="fas fa-exclamation-triangle"></i>
           Desviación de Kilometraje Detectada
         </h3>
         
-        <div class="desviacion-valor">
-          <label class="info-card-label">Desviación</label>
-          <p class="desviacion-valor-numero">
-            {{ calcularDesviacion(cargaInfo) > 0 ? '+' : '' }}{{ calcularDesviacion(cargaInfo) | number:'1.0-0' }} km
+        <div class="desviacion-valor" style="text-align: center; margin: 16px 0;">
+          <label class="info-card-label" style="display: block; color: #666; font-size: 0.9rem; font-weight: 600;">Diferencia</label>
+          
+          <p class="desviacion-valor-numero" style="font-size: 2rem; font-weight: 800; color: #dc3545; margin: 4px 0;">
+            {{ calcularDesviacion(cargaInfo) > 0 ? '+' : '' }}{{ calcularDesviacion(cargaInfo) | number:'1.0-2' }} km
           </p>
-          <span class="desviacion-badge">
+          
+          <p style="font-size: 0.95rem; color: #555; margin-bottom: 12px;">
+             Esperado: <strong>{{ (obtenerNumero(cargaInfo.km_esperados) || obtenerNumero(cargaInfo.km_esperados_ruta)) | number:'1.0-0' }} km</strong>
+             <span style="margin: 0 5px; color: #ccc;">|</span>
+             Real: <strong>{{ obtenerNumero(cargaInfo.km_recorridos) | number:'1.0-0' }} km</strong>
+          </p>
+
+          <span class="desviacion-badge" 
+                [style.background-color]="calcularDesviacion(cargaInfo) > 0 ? '#fff3cd' : '#f8d7da'"
+                [style.color]="calcularDesviacion(cargaInfo) > 0 ? '#856404' : '#721c24'"
+                style="padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; display: inline-block;">
             {{ calcularDesviacion(cargaInfo) > 0 ? 'Exceso de kilometraje' : 'Faltante de kilometraje' }}
           </span>
         </div>
         
-        <div class="motivo-desviacion">
-          <div class="motivo-desviacion-titulo">
+        <div class="motivo-desviacion" style="border-top: 1px solid #ffcfcf; padding-top: 12px; margin-top: 12px;">
+          <div class="motivo-desviacion-titulo" style="font-weight: 600; color: #dc3545; margin-bottom: 6px;">
             <i class="fas fa-comment-alt"></i>
-            Motivo de la Desviación
+            Motivo Registrado
           </div>
-          <p *ngIf="cargaInfo.motivo_desviacion && cargaInfo.motivo_desviacion.trim()" 
-             class="motivo-desviacion-texto">
+          
+          <p *ngIf="cargaInfo.motivo_desviacion" class="motivo-desviacion-texto" style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #e0e0e0; font-style: italic; color: #333; margin: 0;">
             "{{ cargaInfo.motivo_desviacion }}"
           </p>
-          <div *ngIf="!cargaInfo.motivo_desviacion || !cargaInfo.motivo_desviacion.trim()" 
-               class="motivo-desviacion-vacio">
+          
+          <div *ngIf="!cargaInfo.motivo_desviacion" class="motivo-desviacion-vacio" style="color: #888; font-style: italic;">
             <i class="fas fa-info-circle"></i>
             No se registró motivo de desviación
           </div>
         </div>
+
       </div>
 
       <!-- Sin Desviación -->

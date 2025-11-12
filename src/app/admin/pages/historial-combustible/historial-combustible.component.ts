@@ -881,22 +881,26 @@ cerrarModalInfo(): void {
  */
 calcularDesviacion(carga: any): number {
   if (!carga) return 0;
+
+  // 1. Prioridad: Usar el valor calculado que viene de la Base de Datos
+  // El backend lo envía como 'desviacion_km'
+  if (carga.desviacion_km !== undefined && carga.desviacion_km !== null) {
+    return this.obtenerNumero(carga.desviacion_km);
+  }
   
-  // Solo para modo vueltas
-  if (this.tipoCalculo !== 'vueltas') return 0;
+  // 2. Fallback: Calcularlo manualmente si falta el dato directo.
+  // CORRECCIÓN: El backend envía 'km_esperados', el nombre anterior era 'km_esperados_ruta'
+  const kmEsperados = this.obtenerNumero(carga.km_esperados) || this.obtenerNumero(carga.km_esperados_ruta);
   
-  // Verificar si tiene km esperados de ruta
-  const kmEsperados = this.obtenerNumero(carga.km_esperados_ruta);
   if (kmEsperados === 0) return 0;
   
   const kmRecorridos = this.obtenerNumero(carga.km_recorridos);
   const desviacion = kmRecorridos - kmEsperados;
   
-  console.log('Desviación calculada:', {
+  console.log('Desviación calculada (fallback):', {
     kmRecorridos,
     kmEsperados,
-    desviacion,
-    tipoCalculo: this.tipoCalculo
+    desviacion
   });
   
   return desviacion;
@@ -909,24 +913,25 @@ calcularDesviacion(carga: any): number {
 tieneDesviacionSignificativa(carga: any): boolean {
   if (!carga) return false;
   
-  // Solo aplica para cálculo por vueltas
-  if (this.tipoCalculo !== 'vueltas') return false;
+  // Obtenemos la desviación (ya sea de la BD o calculada)
+  const desviacion = this.calcularDesviacion(carga);
   
-  // Verificar si tiene km esperados de ruta
-  const kmEsperados = this.obtenerNumero(carga.km_esperados_ruta);
-  if (kmEsperados === 0) return false;
+  // Calculamos valor absoluto para detectar tanto faltantes como sobrantes
+  const valorAbsoluto = Math.abs(desviacion);
   
-  const desviacion = Math.abs(this.calcularDesviacion(carga));
-  const tieneDesviacion = desviacion > 15;
+  // El umbral es 15km
+  const esSignificativa = valorAbsoluto > 15;
   
-  console.log('Verificando desviación significativa:', {
-    desviacion,
-    tieneDesviacion,
-    kmEsperados,
-    tipoCalculo: this.tipoCalculo
-  });
+  // Debug para ver qué está pasando
+  if (esSignificativa) {
+     console.log('Desviación significativa detectada:', {
+        id: carga.id_carga,
+        desviacion: desviacion,
+        motivo: carga.motivo_desviacion
+     });
+  }
   
-  return tieneDesviacion;
+  return esSignificativa;
 }
 
 /**
