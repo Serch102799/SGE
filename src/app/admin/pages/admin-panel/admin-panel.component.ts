@@ -14,6 +14,13 @@ export class AdminPanelComponent implements OnInit {
   cargandoSesiones: boolean = false;
   errorSesiones: string | null = null;
 
+  auditoriaGeneral: AccionAuditoria[] = [];
+  cargandoAuditoria: boolean = false;
+  pageAuditoria: number = 1;
+  limitAuditoria: number = 15;
+  totalAuditoria: number = 0;
+  searchAuditoria: string = '';
+
   // ---- Estado del Modal de Auditoría ----
   modalVisible: boolean = false;
   cargandoModal: boolean = false;
@@ -24,6 +31,7 @@ export class AdminPanelComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarSesionesActivas();
+    this.cargarAuditoriaGeneral();
   }
 
   /**
@@ -69,6 +77,49 @@ export class AdminPanelComponent implements OnInit {
     });
   }
 
+  cargarAuditoriaGeneral(): void {
+    this.cargandoAuditoria = true;
+    this.adminService.getAuditoriaGeneral(this.pageAuditoria, this.limitAuditoria, this.searchAuditoria)
+      .subscribe({
+        next: (response) => {
+          // Asumiendo que el backend devuelve { total: number, data: [...] }
+          // Si tu backend devuelve solo el array, ajusta esto.
+          this.auditoriaGeneral = response.data; 
+          this.totalAuditoria = response.total;
+          this.cargandoAuditoria = false;
+        },
+        error: (err) => {
+          console.error('Error al cargar auditoría general:', err);
+          this.cargandoAuditoria = false;
+        }
+      });
+  }
+
+  onPageChangeAuditoria(page: number): void {
+    this.pageAuditoria = page;
+    this.cargarAuditoriaGeneral();
+  }
+
+  onSearchAuditoria(): void {
+    this.pageAuditoria = 1; // Resetear a página 1 al buscar
+    this.cargarAuditoriaGeneral();
+  }
+
+  // Helper para formatear el JSON de detalles en el HTML
+  formatDetalles(detalles: any): string {
+    if (!detalles) return '-';
+    try {
+      // Si es un string JSON, lo parseamos, si ya es objeto lo usamos
+      const obj = typeof detalles === 'string' ? JSON.parse(detalles) : detalles;
+      
+      // Formateo simple para lectura humana
+      return Object.entries(obj)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(', ');
+    } catch (e) {
+      return JSON.stringify(detalles);
+    }
+  }
   // --- Métodos del Modal ---
 
   /**

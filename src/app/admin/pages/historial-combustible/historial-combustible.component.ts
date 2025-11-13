@@ -490,6 +490,28 @@ esSuperUsuario(): boolean {
       return new Date().toISOString().slice(0, 16);
     }
   }
+  private registrarAuditoriaExportacion(tipo: 'PDF' | 'EXCEL', totalRegistros: number): void {
+    const detalles = {
+      total_registros: totalRegistros,
+      filtros_aplicados: {
+        busqueda: this.terminoBusqueda,
+        tipo_calculo: this.tipoCalculo,
+        fecha_desde: this.filtroFechaDesde,
+        fecha_hasta: this.filtroFechaHasta,
+        rutas_ids: this.filtroRutasIds
+      }
+    };
+
+    // Se envía a la ruta 'superAdmin'
+    this.http.post(`${environment.apiUrl}/superAdmin/registrar-evento`, {
+      tipo_accion: `EXPORTAR_${tipo}`,
+      modulo: 'HISTORIAL_COMBUSTIBLE',
+      detalles: detalles
+    }).subscribe({
+      next: () => console.log(`Auditoría de exportación ${tipo} registrada.`),
+      error: (err) => console.warn('No se pudo registrar la auditoría de exportación', err)
+    });
+  }
   // MODIFICADO: Exportar PDF con TODOS los datos filtrados
   async exportarAPDF(): Promise<void> {
     this.exportando = true;
@@ -692,6 +714,7 @@ esSuperUsuario(): boolean {
 
       const nombreArchivo = `Historial_Combustible_${new Date().getTime()}.pdf`;
       doc.save(nombreArchivo);
+      this.registrarAuditoriaExportacion('PDF', todasLasCargas.length);
       console.log('PDF generado exitosamente con', todasLasCargas.length, 'registros');
     } catch (error) {
       console.error('Error al exportar a PDF:', error);
@@ -772,7 +795,7 @@ esSuperUsuario(): boolean {
 
       const nombreArchivo = `Historial_Combustible_${new Date().getTime()}.xlsx`;
       XLSX.writeFile(workbook, nombreArchivo);
-
+      this.registrarAuditoriaExportacion('PDF', todasLasCargas.length);
       console.log('Excel generado exitosamente con', todasLasCargas.length, 'registros');
     } catch (error) {
       console.error('Error detallado al exportar Excel:', error);
@@ -818,6 +841,7 @@ esSuperUsuario(): boolean {
     if (rendimiento >= regular) return 'Regular';
     return 'Malo';
   }
+  
   abrirModalInfo(carga: any): void {
   if (!carga || carga.id_carga === undefined) {
     console.error('La carga no tiene id_carga');

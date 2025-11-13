@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http'; // <-- Agregado HttpParams
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environments'; // Asumiendo que tienes tu apiUrl aquí
+import { environment } from '../../environments/environments';
 
-// (Opcional) Define interfaces para los datos
+// Define interfaces para los datos
 export interface SesionActiva {
   id_sesion: number;
   fecha_login: string;
@@ -12,7 +12,7 @@ export interface SesionActiva {
   nombre: string;
   puesto: string;
   id_usuario: number;
-  cerrando?: boolean; // Necesitaremos esto para el modal
+  cerrando?: boolean;
 }
 
 export interface AccionAuditoria {
@@ -22,6 +22,12 @@ export interface AccionAuditoria {
   id_recurso_afectado: number;
   detalles_cambio: any;
   ip_address: string;
+  nombre_usuario?: string;
+}
+
+export interface RespuestaAuditoria {
+  total: number;
+  data: AccionAuditoria[];
 }
 
 @Injectable({
@@ -32,28 +38,41 @@ export class AdminService {
 
   constructor(private http: HttpClient) { }
 
-  // 1. Obtener la lista de sesiones activas
-  getSesionesActivas(): Observable<SesionActiva[]> {
-    // El token se debe añadir con un HttpInterceptor, pero lo pongo aquí por claridad
-    const headers = new HttpHeaders({
+  // Helper para headers (si no usas interceptor)
+  private getHeaders(): HttpHeaders {
+    return new HttpHeaders({
       'Authorization': `Bearer ${localStorage.getItem('token')}`
     });
-    return this.http.get<SesionActiva[]>(`${this.apiUrl}/sesiones`, { headers });
+  }
+
+  // 1. Obtener la lista de sesiones activas
+  getSesionesActivas(): Observable<SesionActiva[]> {
+    return this.http.get<SesionActiva[]>(`${this.apiUrl}/sesiones`, { headers: this.getHeaders() });
   }
 
   // 2. Forzar el cierre de una sesión
   forzarCierreSesion(id_sesion: number): Observable<any> {
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
-    });
-    return this.http.post(`${this.apiUrl}/sesiones/cerrar/${id_sesion}`, {}, { headers });
+    return this.http.post(`${this.apiUrl}/sesiones/cerrar/${id_sesion}`, {}, { headers: this.getHeaders() });
   }
 
-  // 3. Obtener el historial de auditoría de un usuario
+  // 3. Obtener el historial de auditoría de un usuario específico
   getAuditoriaUsuario(id_usuario: number): Observable<AccionAuditoria[]> {
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    return this.http.get<AccionAuditoria[]>(`${this.apiUrl}/auditoria/${id_usuario}`, { headers: this.getHeaders() });
+  }
+
+  // 4. NUEVO: Obtener auditoría general (paginada y filtrada)
+  getAuditoriaGeneral(page: number = 1, limit: number = 20, search: string = ''): Observable<RespuestaAuditoria> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+    
+    if (search) {
+      params = params.set('search', search);
+    }
+
+    return this.http.get<RespuestaAuditoria>(`${this.apiUrl}/auditoria`, { 
+      headers: this.getHeaders(),
+      params: params 
     });
-    return this.http.get<AccionAuditoria[]>(`${this.apiUrl}/auditoria/${id_usuario}`, { headers });
   }
 }

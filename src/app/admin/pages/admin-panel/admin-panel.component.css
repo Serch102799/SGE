@@ -756,3 +756,23 @@ small {
   outline: 2px solid #2196f3;
   outline-offset: 2px;
 }
+.badge-accion {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  background-color: #e2e3e5;
+  color: #383d41;
+}
+.badge-crear { background-color: #d4edda; color: #155724; }
+.badge-editar { background-color: #fff3cd; color: #856404; }
+.badge-eliminar { background-color: #f8d7da; color: #721c24; }
+.badge-exportar { background-color: #cce5ff; color: #004085; }
+
+.td-detalles {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.85rem;
+}

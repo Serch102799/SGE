@@ -1,95 +1,177 @@
-<div class="card">
+<div class="contenedor-principal">
   
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <h4>
-      <i class="fas fa-user-shield"></i>
-      Panel de Administración de Sesiones
-    </h4>
-    <button (click)="cargarSesionesActivas()" 
-            [disabled]="cargandoSesiones"
-            class="btn btn-primary">
-      <i class="fas fa-sync" [ngClass]="{'spinner-border spinner-border-sm': cargandoSesiones}"></i>
-      <span *ngIf="!cargandoSesiones">Refrescar</span>
-    </button>
-  </div>
-
-  <div class="card-body">
-
-    <div *ngIf="cargandoSesiones" class="empty-state">
-      <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
-      <h5 class="mt-3">Cargando sesiones activas...</h5>
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h4>
+        <i class="fas fa-user-shield"></i>
+        Panel de Administración de Sesiones
+      </h4>
+      <button (click)="cargarSesionesActivas()" 
+              [disabled]="cargandoSesiones"
+              class="btn btn-primary">
+        <i class="fas fa-sync" [ngClass]="{'spinner-border spinner-border-sm': cargandoSesiones}"></i>
+        <span *ngIf="!cargandoSesiones">Refrescar</span>
+      </button>
     </div>
 
-    <div *ngIf="errorSesiones" class="alert alert-danger">
-      <i class="fas fa-exclamation-triangle"></i>
-      <div>
-        <h5 class="mb-0">Error</h5>
-        <p class="mb-0">{{ errorSesiones }}</p>
+    <div class="card-body">
+      <div *ngIf="cargandoSesiones" class="empty-state">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+        <h5 class="mt-3">Cargando sesiones activas...</h5>
+      </div>
+
+      <div *ngIf="errorSesiones" class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <h5 class="mb-0">Error</h5>
+          <p class="mb-0">{{ errorSesiones }}</p>
+        </div>
+      </div>
+
+      <div *ngIf="!cargandoSesiones && !errorSesiones && sesionesActivas.length === 0" class="empty-state">
+        <i class="fas fa-check-circle"></i>
+        <h5>No hay sesiones activas</h5>
+        <p>Todo está tranquilo por ahora.</p>
+      </div>
+
+      <div *ngIf="!cargandoSesiones && !errorSesiones && sesionesActivas.length > 0" class="table-responsive">
+        <table class="table table-hover table-striped">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Puesto</th>
+              <th>Inicio de Sesión</th>
+              <th>IP / Navegador</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let sesion of sesionesActivas" [class.loading]="sesion.cerrando">
+              <td data-label="Usuario">
+                <strong>{{ sesion.nombre }}</strong>
+              </td>
+              <td data-label="Puesto">
+                {{ sesion.puesto || '-' }}
+              </td>
+              <td data-label="Inicio de Sesión">
+                {{ sesion.fecha_login | date:'dd/MM/yy, h:mm:ss a' }}
+              </td>
+              <td data-label="IP / Navegador">
+                <small class="d-block">{{ sesion.ip_address || 'Desconocida' }}</small>
+                <small class="text-muted d-block text-truncate" style="max-width: 300px;" [title]="sesion.user_agent">
+                  {{ sesion.user_agent || '-' }}
+                </small>
+              </td>
+              <td data-label="Acciones" class="d-flex gap-2">
+                <button (click)="onVerHistorial(sesion)" 
+                        [disabled]="sesion.cerrando"
+                        class="btn btn-info btn-sm text-white">
+                  <i class="fas fa-history"></i> Historial
+                </button>
+                <button (click)="onForzarCierre(sesion)"
+                        [disabled]="sesion.cerrando"
+                        class="btn btn-danger btn-sm">
+                  <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <h4>
+        <i class="fas fa-list-alt"></i>
+        Registro Global de Auditoría
+      </h4>
+      
+      <div class="search-box d-flex gap-2">
+        <input type="text" 
+               class="form-control form-control-sm" 
+               placeholder="Buscar usuario, acción..." 
+               [(ngModel)]="searchAuditoria"
+               (keyup.enter)="onSearchAuditoria()">
+        <button class="btn btn-secondary btn-sm" (click)="onSearchAuditoria()">
+          <i class="fas fa-search"></i>
+        </button>
       </div>
     </div>
 
-    <div *ngIf="!cargandoSesiones && !errorSesiones && sesionesActivas.length === 0" class="empty-state">
-      <i class="fas fa-check-circle"></i>
-      <h5>No hay sesiones activas</h5>
-      <p>Todo está tranquilo por ahora.</p>
+    <div class="card-body">
+      <div *ngIf="cargandoAuditoria" class="empty-state">
+        <div class="spinner-border text-secondary"></div>
+        <p class="mt-2">Cargando registros...</p>
+      </div>
+
+      <div *ngIf="!cargandoAuditoria" class="table-responsive">
+        <table class="table table-hover table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>Fecha</th>
+              <th>Usuario</th>
+              <th>Acción</th>
+              <th>Recurso</th>
+              <th>Detalles</th>
+              <th>IP</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let accion of auditoriaGeneral | paginate: { itemsPerPage: limitAuditoria, currentPage: pageAuditoria, totalItems: totalAuditoria, id: 'audit_pagination' }">
+              <td style="font-size: 0.85rem; white-space: nowrap;">
+                {{ accion.timestamp | date:'dd/MM/yy HH:mm' }}
+              </td>
+              <td style="font-weight: 600; color: #0d6efd;">
+                {{ accion.nombre_usuario || 'Sistema' }}
+              </td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'bg-success': accion.tipo_accion.includes('CREAR') || accion.tipo_accion.includes('LOGIN'),
+                  'bg-warning text-dark': accion.tipo_accion.includes('EDITAR') || accion.tipo_accion.includes('ACTUALIZAR'),
+                  'bg-danger': accion.tipo_accion.includes('ELIMINAR'),
+                  'bg-info text-dark': accion.tipo_accion.includes('EXPORTAR')
+                }">
+                  {{ accion.tipo_accion }}
+                </span>
+              </td>
+              <td style="font-style: italic; color: #555;">
+                {{ accion.recurso_afectado }} 
+                <small *ngIf="accion.id_recurso_afectado" class="text-muted">#{{ accion.id_recurso_afectado }}</small>
+              </td>
+              <td class="text-truncate" style="max-width: 250px;" [title]="accion.detalles_cambio | json">
+                <small>{{ formatDetalles(accion.detalles_cambio) }}</small>
+              </td>
+              <td style="font-size: 0.8rem; color: #888;">
+                {{ accion.ip_address }}
+              </td>
+            </tr>
+            
+            <tr *ngIf="auditoriaGeneral.length === 0">
+              <td colspan="6" class="text-center py-4 text-muted">
+                No hay registros que coincidan con la búsqueda.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-end mt-3" *ngIf="totalAuditoria > 0">
+        <pagination-controls 
+          id="audit_pagination"
+          (pageChange)="onPageChangeAuditoria($event)"
+          previousLabel="Anterior"
+          nextLabel="Siguiente">
+        </pagination-controls>
+      </div>
     </div>
+  </div>
 
-    <div *ngIf="!cargandoSesiones && !errorSesiones && sesionesActivas.length > 0" class="table-responsive">
-      <table class="table table-hover table-striped">
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Puesto</th>
-            <th>Inicio de Sesión</th>
-            <th>IP / Navegador</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-          <tr *ngFor="let sesion of sesionesActivas" [class.loading]="sesion.cerrando">
-            
-            <td data-label="Usuario">
-              <strong>{{ sesion.nombre }}</strong>
-            </td>
-            
-            <td data-label="Puesto">
-              {{ sesion.puesto || '-' }}
-            </td>
-            
-            <td data-label="Inicio de Sesión">
-              {{ sesion.fecha_login | date:'dd/MM/yy, h:mm:ss a' }}
-            </td>
-            
-            <td data-label="IP / Navegador">
-              <small class="d-block">{{ sesion.ip_address || 'Desconocida' }}</small>
-              <small class="text-muted d-block" style="font-size: 0.8em; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="sesion.user_agent">
-                {{ sesion.user_agent || '-' }}
-              </small>
-            </td>
-            
-            <td data-label="Acciones" class="d-flex gap-2">
-              <button (click)="onVerHistorial(sesion)" 
-                      [disabled]="sesion.cerrando"
-                      class="btn btn-info btn-sm">
-                <i class="fas fa-history"></i> Historial
-              </button>
-              <button (click)="onForzarCierre(sesion)"
-                      [disabled]="sesion.cerrando"
-                      class="btn btn-danger btn-sm">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-              </button>
-            </td>
-          </tr>
+</div>
 
-        </tbody>
-      </table>
-    </div>
-
-  </div> </div> <div *ngIf="modalVisible" class="modal" (click)="cerrarModal()">
-  
+<div *ngIf="modalVisible" class="modal" (click)="cerrarModal()">
   <div class="modal-dialog" (click)="$event.stopPropagation()">
-    
     <div class="modal-header">
       <h5>
         <i class="fas fa-history"></i>
@@ -101,7 +183,6 @@
     </div>
 
     <div class="modal-body">
-      
       <div *ngIf="cargandoModal" class="empty-state">
         <div class="spinner-border text-primary"></div>
         <p class="mt-3">Cargando historial...</p>
@@ -128,29 +209,27 @@
               <td data-label="Fecha" class="text-muted">
                 <small>{{ accion.timestamp | date:'dd/MM/yy, h:mm:ss a' }}</small>
               </td>
-              
               <td data-label="Acción">
                 <span class="badge"
                       [ngClass]="{
-                        'bg-success': accion.tipo_accion === 'CREAR' || accion.tipo_accion === 'LOGIN_EXITOSO',
-                        'bg-warning': accion.tipo_accion === 'ACTUALIZAR',
-                        'bg-danger': accion.tipo_accion === 'ELIMINAR' || accion.tipo_accion === 'LOGIN_FALLIDO',
+                        'bg-success': accion.tipo_accion.includes('CREAR'),
+                        'bg-warning text-dark': accion.tipo_accion.includes('ACTUALIZAR'),
+                        'bg-danger': accion.tipo_accion.includes('ELIMINAR'),
                         'bg-secondary': accion.tipo_accion === 'SESION_CERRADA'
                       }">
                   {{ accion.tipo_accion }}
                 </span>
               </td>
-              
               <td data-label="Recurso">
                 {{ accion.recurso_afectado }}
                 <span *ngIf="accion.id_recurso_afectado" class="text-muted d-block" style="font-size: 0.8em;">
                   (ID: {{ accion.id_recurso_afectado }})
                 </span>
               </td>
-              
               <td data-label="Detalles">
-                <pre *ngIf="accion.detalles_cambio" style="font-size: 0.75rem; background-color: #212529; padding: 5px; border-radius: 4px; max-width: 250px; overflow: auto;">{{ accion.detalles_cambio | json }}</pre>
-                <span *ngIf="!accion.detalles_cambio" class_alias="text-muted">N/A</span>
+                <small style="display:block; max-width:200px; overflow:hidden; text-overflow:ellipsis;" [title]="accion.detalles_cambio | json">
+                    {{ formatDetalles(accion.detalles_cambio) }}
+                </small>
               </td>
             </tr>
           </tbody>
