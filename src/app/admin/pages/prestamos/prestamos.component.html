@@ -1,0 +1,205 @@
+<div class="usuarios-container">
+  <div class="container-header">
+    <h2>Control de Préstamos</h2>
+    <button class="btn-agregar" (click)="abrirModalNuevo()">
+      <span>&#43;</span> Prestar Herramienta/Insumo
+    </button>
+  </div>
+
+  <div class="container-body">
+    <div class="tabla-responsive-wrapper">
+      <table class="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Mecánico</th>
+            <th>Ítem</th>
+            <th>Tipo</th>
+            <th>Prestado</th>
+            <th>Devuelto</th>
+            <th>Pendiente</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of prestamosActivos">
+            <td>{{ item.fecha_prestamo | date:'dd/MM/yy HH:mm' }}</td>
+            <td>{{ item.solicitante }}</td>
+            <td style="font-weight: bold; color: #fff;">{{ item.nombre_item }}</td>
+            <td>
+                <span class="badge" [ngClass]="{'badge-refaccion': item.tipo_item === 'refaccion', 'badge-insumo': item.tipo_item === 'insumo'}">
+                    {{ item.tipo_item | uppercase }}
+                </span>
+            </td>
+            <td>{{ item.cantidad_prestada }}</td>
+            <td>{{ item.cantidad_devuelta }}</td>
+            <td style="color: #f0ad4e; font-weight: bold;">{{ item.pendiente }}</td>
+            <td class="acciones">
+              <button class="btn-accion btn-estado" (click)="abrirModalDevolucion(item)">
+                Devolver
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="prestamosActivos.length === 0 && !loading">
+            <td colspan="8" class="empty-table-message">No hay préstamos activos. Todo el material está en almacén.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNuevo" (click)="mostrarModalNuevo = false">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Registrar Nuevo Préstamo</h3>
+      <button class="btn-cerrar" (click)="mostrarModalNuevo = false">×</button>
+    </div>
+    
+    <div class="modal-body">
+      
+      <fieldset class="form-section">
+        <legend>1. ¿Quién solicita?</legend>
+        <div class="form-group">
+            <label>Nombre del Mecánico / Solicitante</label>
+            <input type="text" class="form-control" 
+                   placeholder="Escribe el nombre completo..." 
+                   [(ngModel)]="nuevoPrestamo.nombre_solicitante_manual" 
+                   name="nombreSolicitante"
+                   autocomplete="off">
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>2. Selección de Material</legend>
+        
+        <div class="modo-selector" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+            <button type="button" class="btn-tipo-calculo" 
+                    [class.active]="tipoItemBusqueda === 'insumo'" 
+                    (click)="cambiarTipoBusqueda('insumo')">
+                Insumos
+            </button>
+            <button type="button" class="btn-tipo-calculo" 
+                    [class.active]="tipoItemBusqueda === 'refaccion'" 
+                    (click)="cambiarTipoBusqueda('refaccion')">
+                Refacciones
+            </button>
+            <!-- <button type="button" class="btn-tipo-calculo" 
+                    [class.active]="tipoItemBusqueda === 'herramienta'" 
+                    (click)="cambiarTipoBusqueda('herramienta')">
+                Herramientas
+            </button> -->
+        </div>
+
+        <div class="form-row align-items-end">
+            <div class="form-group col-md-8">
+                <label>Buscar {{ tipoItemBusqueda | titlecase }}</label>
+                <mat-form-field appearance="outline" class="full-width">
+                    <input type="text" placeholder="Escribe para buscar..." matInput [formControl]="itemControl" [matAutocomplete]="autoItem">
+                </mat-form-field>
+                <mat-autocomplete #autoItem="matAutocomplete" [displayWith]="displayFnItem" (optionSelected)="seleccionarItem($event)">
+                    <mat-option *ngFor="let i of filteredItems$ | async" [value]="i">
+                        {{ i.nombre }} (Disp: {{ i.stock_actual || i.cantidad_disponible }})
+                    </mat-option>
+                </mat-autocomplete>
+            </div>
+            <div class="form-group col-md-2">
+                <label>Cant.</label>
+                <input type="number" class="form-control" [(ngModel)]="cantidadAPrestar" min="1">
+            </div>
+            <div class="form-group-button">
+                <button type="button" class="btn-agregar-detalle" (click)="agregarAlCarrito()">Agregar</button>
+            </div>
+        </div>
+
+        <table class="tabla-preview" *ngIf="nuevoPrestamo.items.length > 0" style="margin-top: 15px;">
+            <thead>
+                <tr>
+                    <th>Ítem</th>
+                    <th>Tipo</th>
+                    <th>Cant.</th>
+                    <th style="text-align: center;">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of nuevoPrestamo.items; let i = index">
+                    <td>{{ item.nombre }}</td>
+                    <td>
+                        <span class="badge" [ngClass]="{
+                            'badge-insumo': item.tipo === 'insumo', 
+                            'badge-refaccion': item.tipo === 'refaccion' || item.tipo === 'herramienta'
+                        }">{{ item.tipo | uppercase }}</span>
+                    </td>
+                    <td>{{ item.cantidad }}</td>
+                    <td class="acciones">
+                        <button class="btn-eliminar-sm" (click)="eliminarDelCarrito(i)">Quitar</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+      </fieldset>
+      
+      <div class="form-group">
+          <label>Observaciones (Opcional)</label>
+          <textarea class="form-control" [(ngModel)]="nuevoPrestamo.observaciones" rows="2" placeholder="Ej. Préstamo por el día..."></textarea>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-accion btn-cancelar" (click)="mostrarModalNuevo = false">Cancelar</button>
+      <button class="btn-accion btn-guardar" (click)="guardarPrestamo()">Confirmar Préstamo</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalDevolucion" (click)="mostrarModalDevolucion = false">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Registrar Devolución</h3>
+            <button class="btn-cerrar" (click)="mostrarModalDevolucion = false">×</button>
+        </div>
+        <div class="modal-body" *ngIf="itemParaDevolver">
+            <p style="color: #e0e0e0; font-size: 1.1rem; text-align: center;">
+                Devolviendo: <strong>{{ itemParaDevolver.nombre_item }}</strong><br>
+                Responsable: {{ itemParaDevolver.solicitante }}
+            </p>
+
+            <div class="form-group">
+                <label>Cantidad a Devolver (Pendiente: {{ itemParaDevolver.pendiente }})</label>
+                <input type="number" class="form-control" [(ngModel)]="datosDevolucion.cantidad" [max]="itemParaDevolver.pendiente" min="0.1">
+            </div>
+
+            <div class="form-group">
+                <label>Condición de entrega</label>
+                <select class="form-control" [(ngModel)]="datosDevolucion.estado">
+                    <option value="BUENO">BUENO (Regresa al Stock)</option>
+                    <option value="ROTO">DAÑADO / ROTO (Se descarta)</option>
+                    <option value="VACIO">CONSUMIDO / VACÍO (Se descarta)</option>
+                </select>
+                <small style="color: #a7b7d2; display: block; margin-top: 5px;">
+                    * Si seleccionas "DAÑADO" o "CONSUMIDO", el ítem NO se sumará al inventario.
+                </small>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-accion btn-cancelar" (click)="mostrarModalDevolucion = false">Cancelar</button>
+            <button class="btn-accion btn-guardar" (click)="confirmarDevolucion()">Confirmar Devolución</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarNotificacion()">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3 [ngClass]="{'header-exito': notificacion.tipo === 'exito', 'header-error': notificacion.tipo === 'error', 'header-advertencia': notificacion.tipo === 'advertencia'}">
+                {{ notificacion.titulo }}
+            </h3>
+        </div>
+        <div class="modal-body">
+            <p class="confirm-text">{{ notificacion.mensaje }}</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-accion btn-guardar" (click)="cerrarNotificacion()">Aceptar</button>
+        </div>
+    </div>
+</div>

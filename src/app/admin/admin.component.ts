@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import {faOilCan,faRoute, faCar, faBars, faTachometerAlt, faArrowCircleDown, faArrowCircleUp, faCogs, 
-  faTint, faUsersCog, faBus, faTruck, faChartPie, 
+  faTint, faUsersCog, faBus,  faTruck, faChartPie, 
   faDolly, faHistory, faUserCircle, faSignOutAlt, faGasPump, faScrewdriverWrench, faProjectDiagram, faTools, faGauge   } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -44,6 +44,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
   faRecetas = faProjectDiagram;
   faArmado = faTools;
   faRendimientos = faGauge;
+  faPrestamos = faTools; 
 
   currentUser: any;
   constructor(

@@ -20,6 +20,12 @@
             [icon]="faSalidas"></fa-icon> <span>Salidas</span></a></li>
       <!--   <li><a routerLink="registro-entrada-insumo">Entradas I</a></li> -->
 
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'Almacenista'])">
+        <a routerLink="prestamos" routerLinkActive="active">
+          <fa-icon [icon]="faPrestamos"></fa-icon>
+          <span>Préstamos</span>
+        </a>
+      </li>
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="refacciones"><fa-icon [icon]="faRefacciones"></fa-icon><span>Gestión de Refacciones</span></a>
       </li>
