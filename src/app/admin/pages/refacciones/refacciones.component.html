@@ -70,7 +70,7 @@
             <td>{{ refaccion.Ubicacion_Almacen }}</td>
             <!-- <td>{{ refaccion.ultimo_costo | currency:'MXN' }}</td>  -->
             <td class="acciones" (click)="$event.stopPropagation()">
-              <button class="btn-accion btn-historial" (click)="verHistorial(refaccion)">Historial</button>
+              <button class="btn-accion btn-accion" (click)="verHistorial(refaccion)">Historial</button>
               <button class="btn-accion btn-estado" (click)="abrirModalEditar(refaccion)">Editar</button> 
               <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(refaccion)">Eliminar</button>
             </td>
