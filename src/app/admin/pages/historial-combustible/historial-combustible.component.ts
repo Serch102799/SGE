@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Subject, Subscription } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { environment } from '../../../../environments/environments';
 import { AuthService } from '../../../services/auth.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
@@ -65,10 +65,12 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   // Tipo de cálculo
   tipoCalculo: 'dias' | 'vueltas' = 'vueltas';
   
-  // ⭐ NUEVO: Control de carga
-  private cargando: boolean = false;
+  // ⭐ MODIFICADO: Control de carga más granular
+  private cargandoPagina: boolean = false;
+  private ultimaLlamada: number = 0;
+  private readonly DELAY_MINIMO = 100; // ms entre llamadas
   
-  private searchSubject: Subject<void> = new Subject<void>();
+  private searchSubject: Subject<string> = new Subject<string>();
   private searchSubscription?: Subscription;
 
   // Estado de exportación
@@ -98,7 +100,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   };
 
   constructor(private http: HttpClient, public authService: AuthService) {
-    // Establecer fecha máxima (hoy)
     const ahora = new Date();
     this.fechaMaxima = ahora.toISOString().slice(0, 16);
   }
@@ -106,15 +107,16 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.cargarRutas();
     
-    // ⭐ OPTIMIZADO: Sin startWith, solo debounce
+    // ⭐ MODIFICADO: Usar distinctUntilChanged para evitar duplicados
     this.searchSubscription = this.searchSubject.pipe(
-      debounceTime(300)
+      debounceTime(300),
+      distinctUntilChanged()
     ).subscribe(() => {
       this.currentPage = 1;
       this.obtenerCargas();
     });
     
-    // ⭐ Carga inicial explícita
+    // Carga inicial
     this.obtenerCargas();
   }
 
@@ -135,7 +137,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Método para construir parámetros de filtrado
   private construirParametros(page: number = 1, limit?: number): HttpParams {
     let params = new HttpParams()
       .set('page', page.toString())
@@ -159,15 +160,19 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     return params;
   }
 
-  // ⭐ OPTIMIZADO: Prevenir llamadas múltiples
+  // ⭐ REDISEÑADO: Mejor control de llamadas simultáneas
   obtenerCargas(): void {
-    // Prevenir llamadas múltiples simultáneas
-    if (this.cargando) {
-      console.log('⚠️ Llamada a obtenerCargas ignorada - ya hay una en proceso');
+    const ahora = Date.now();
+    
+    // Si hay una carga en proceso y no ha pasado el tiempo mínimo, ignorar
+    if (this.cargandoPagina && (ahora - this.ultimaLlamada) < this.DELAY_MINIMO) {
+      console.log('⏳ Esperando a que termine la carga anterior...');
       return;
     }
 
-    this.cargando = true;
+    this.cargandoPagina = true;
+    this.ultimaLlamada = ahora;
+    
     const params = this.construirParametros(this.currentPage);
     
     console.log('🔍 Parámetros enviados:', params.toString());
@@ -176,19 +181,18 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       next: (response) => {
         this.cargas = response.data || [];
         this.totalItems = response.total || 0;
-        this.cargando = false;
+        this.cargandoPagina = false;
         console.log('✅ Cargas recibidas:', this.cargas.length, 'registros de', this.totalItems, 'totales');
       },
       error: (err) => {
         console.error("❌ Error al obtener historial de cargas:", err);
         this.cargas = [];
         this.totalItems = 0;
-        this.cargando = false;
+        this.cargandoPagina = false;
       }
     });
   }
 
-  // Obtener TODOS los datos filtrados para exportación
   public obtenerTodasLasCargas(): Promise<any[]> {
     return new Promise((resolve, reject) => {
       const params = this.construirParametros(1, 999999);
@@ -206,13 +210,12 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ⭐ OPTIMIZADO: Mejor manejo del cambio de tipo
   cambiarTipoCalculo(tipo: 'dias' | 'vueltas'): void {
     console.log('🔄 Cambio de tipo de cálculo:', tipo);
     
     if (this.tipoCalculo === tipo) {
       console.log('⚠️ Mismo tipo de cálculo, ignorando');
-      return; // Evitar recarga innecesaria
+      return;
     }
     
     this.tipoCalculo = tipo;
@@ -222,15 +225,14 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       console.log('🗑️ Filtro de rutas limpiado (modo días)');
     }
     
-    // Búsqueda inmediata
     this.currentPage = 1;
     this.obtenerCargas();
   }
 
-  // ⭐ OPTIMIZADO: Mejor logging
   onSearchChange(): void {
     console.log('🔍 Búsqueda cambiada:', this.terminoBusqueda);
-    this.searchSubject.next();
+    // ⭐ MODIFICADO: Enviar un valor único cada vez
+    this.searchSubject.next(Date.now().toString());
   }
 
   onPageChange(page: number): void {
@@ -239,15 +241,18 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     this.obtenerCargas();
   }
 
-  // Toggle del dropdown de rutas
   toggleRutasDropdown(): void {
     this.rutasDropdownOpen = !this.rutasDropdownOpen;
     console.log('🔽 Dropdown rutas:', this.rutasDropdownOpen ? 'abierto' : 'cerrado');
   }
 
-  // ⭐ OPTIMIZADO: Manejo inmutable de selección de rutas
+  // ⭐ COMPLETAMENTE REDISEÑADO: Mejor manejo de checkboxes
   onRutaToggle(rutaId: number, event: any): void {
-    console.log('🔄 Toggle ruta:', rutaId, event.target.checked);
+    // Prevenir el comportamiento predeterminado
+    event.stopPropagation();
+    
+    const isChecked = event.target.checked;
+    console.log('🔄 Toggle ruta:', rutaId, 'checked:', isChecked);
     
     if (this.tipoCalculo === 'dias') {
       alert('El filtro por ruta no está disponible en cálculo por días');
@@ -255,27 +260,37 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Actualizar el array de forma inmutable
-    if (event.target.checked) {
+    // Crear nuevo array sin mutación
+    let nuevasRutas: number[];
+    
+    if (isChecked) {
+      // Agregar ruta si no existe
       if (!this.filtroRutasIds.includes(rutaId)) {
-        this.filtroRutasIds = [...this.filtroRutasIds, rutaId];
+        nuevasRutas = [...this.filtroRutasIds, rutaId];
+      } else {
+        nuevasRutas = this.filtroRutasIds;
       }
     } else {
-      this.filtroRutasIds = this.filtroRutasIds.filter(id => id !== rutaId);
+      // Remover ruta
+      nuevasRutas = this.filtroRutasIds.filter(id => id !== rutaId);
     }
     
-    console.log('📋 Rutas seleccionadas:', this.filtroRutasIds);
-    
-    // Disparar búsqueda con debounce
-    this.searchSubject.next();
+    // Solo actualizar si hay cambios
+    if (JSON.stringify(nuevasRutas) !== JSON.stringify(this.filtroRutasIds)) {
+      this.filtroRutasIds = nuevasRutas;
+      console.log('📋 Rutas seleccionadas actualizadas:', this.filtroRutasIds);
+      
+      // ⭐ MODIFICADO: Enviar señal única
+      this.searchSubject.next(Date.now().toString());
+    } else {
+      console.log('⚠️ Sin cambios en las rutas seleccionadas');
+    }
   }
 
-  // Verificar si una ruta está seleccionada
   isRutaSeleccionada(rutaId: number): boolean {
     return this.filtroRutasIds.includes(rutaId);
   }
 
-  // ⭐ OPTIMIZADO: Limpiar filtros
   limpiarFiltros(): void {
     console.log('🧹 Limpiando todos los filtros');
     
@@ -285,15 +300,12 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     this.filtroFechaHasta = '';
     this.currentPage = 1;
     
-    // Búsqueda inmediata
     this.obtenerCargas();
   }
 
-  // ⭐ OPTIMIZADO: Aplicar filtros de fecha con validación
   onFechaChange(): void {
     console.log('📅 Fechas cambiadas:', this.filtroFechaDesde, '->', this.filtroFechaHasta);
     
-    // Validar que fecha desde no sea mayor que fecha hasta
     if (this.filtroFechaDesde && this.filtroFechaHasta) {
       if (new Date(this.filtroFechaDesde) > new Date(this.filtroFechaHasta)) {
         alert('La fecha "Desde" no puede ser mayor que la fecha "Hasta"');
@@ -302,7 +314,8 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       }
     }
     
-    this.searchSubject.next();
+    // ⭐ MODIFICADO: Enviar señal única
+    this.searchSubject.next(Date.now().toString());
   }
 
   abrirModalEditar(carga: any): void {
@@ -319,15 +332,12 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     this.cargandoEdicion = true;
     this.cargaOriginal = null;
 
-    // Bloquear scroll del body
     document.body.style.overflow = 'hidden';
 
-    // Llamada a la API para obtener datos crudos
     this.http.get<any>(`${this.apiUrl}/detalle/${carga.id_carga}`).subscribe({
       next: (datosCarga) => {
         this.cargaOriginal = { ...datosCarga };
         
-        // Poblar el formulario
         this.formEdicion.fecha_operacion = this.formatearFechaParaInput(datosCarga.fecha_operacion);
         this.formEdicion.km_inicial = this.obtenerNumero(datosCarga.km_inicial);
         this.formEdicion.km_final = this.obtenerNumero(datosCarga.km_final);
@@ -354,10 +364,8 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     this.cargandoEdicion = false;
     this.guardandoEdicion = false;
     
-    // Restaurar scroll del body
     document.body.style.overflow = 'auto';
     
-    // Resetear formulario
     this.formEdicion = {
       fecha_operacion: '',
       km_inicial: 0,
@@ -385,18 +393,15 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     
     const cambios: string[] = [];
 
-    // Cambio de fecha
     const fechaOriginal = this.formatearFechaParaInput(this.cargaOriginal.fecha_operacion);
     if (this.formEdicion.fecha_operacion !== fechaOriginal) {
       cambios.push(`Fecha: ${this.formatearFecha(this.cargaOriginal.fecha_operacion)} → ${this.formatearFecha(this.formEdicion.fecha_operacion)}`);
     }
 
-    // Cambio de KM Inicial
     if (this.formEdicion.km_inicial !== this.obtenerNumero(this.cargaOriginal.km_inicial)) {
       cambios.push(`KM Inicial: ${this.cargaOriginal.km_inicial} → ${this.formEdicion.km_inicial}`);
     }
 
-    // Cambio de KM Final (y KM Recorridos)
     if (this.formEdicion.km_final !== this.obtenerNumero(this.cargaOriginal.km_final)) {
       const kmRecorridosAntes = this.obtenerNumero(this.cargaOriginal.km_recorridos);
       const kmRecorridosDespues = this.formEdicion.km_final - this.formEdicion.km_inicial;
@@ -404,12 +409,10 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       cambios.push(`  → KM Recorridos: ${kmRecorridosAntes} km → ${kmRecorridosDespues} km`);
     }
 
-    // Cambio de litros
     if (this.formEdicion.litros_cargados !== this.obtenerNumero(this.cargaOriginal.litros_cargados)) {
       cambios.push(`Litros: ${this.cargaOriginal.litros_cargados} L → ${this.formEdicion.litros_cargados} L`);
     }
 
-    // Cambio de ruta
     const rutaOriginalId = this.cargaOriginal.id_ruta || null;
     if (this.formEdicion.id_ruta !== rutaOriginalId) {
       const rutaAntes = rutaOriginalId 
@@ -451,7 +454,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       return;
     }
     
-    // Validaciones
     if (this.formEdicion.km_final <= this.formEdicion.km_inicial) {
        alert('El KM Final debe ser mayor que el KM Inicial.');
        return;
@@ -486,7 +488,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
         console.log('✅ Carga actualizada correctamente');
         this.cerrarModalEditar();
         
-        // Refrescar la vista actual
         this.obtenerCargas(); 
       },
       error: (err) => {
@@ -553,7 +554,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
         format: 'a4'
       }) as jsPDFWithAutoTable;
 
-      // Encabezado
       doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(33, 150, 243);
@@ -565,7 +565,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       doc.setTextColor(80, 80, 80);
       doc.text(subtitulo, 148.5, 22, { align: 'center' });
 
-      // Mostrar filtros aplicados
       let yPos = 27;
       doc.setFontSize(8);
       doc.setTextColor(120, 120, 120);
@@ -587,7 +586,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
 
       doc.text(`Generado: ${new Date().toLocaleString('es-MX')}`, 148.5, yPos, { align: 'center' });
 
-      // Preparar columnas y filas
       const columnas = this.tipoCalculo === 'vueltas'
         ? ['Fecha', 'Autobús', 'Operador', 'KM', 'Litros', 'Rend.', 'Calific.', 'Rutas']
         : ['Fecha', 'Autobús', 'Operador', 'KM', 'Litros', 'Rend.', 'Calific.', 'Despachador'];
@@ -619,12 +617,10 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
         return fila;
       });
 
-      // Totales
       const totalLitros = todasLasCargas.reduce((acc, c) => acc + this.obtenerNumero(c.litros_cargados), 0);
       const totalKm = todasLasCargas.reduce((acc, c) => acc + this.obtenerNumero(c.km_recorridos), 0);
       const promedioRendimiento = totalLitros > 0 ? totalKm / totalLitros : 0;
 
-      // Tabla con autoTable
       autoTable(doc, {
         head: [columnas],
         body: filas,
@@ -697,7 +693,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
         }
       });
 
-      // Resumen final
       const finalY = doc.lastAutoTable.finalY || 100;
       const pageHeight = doc.internal.pageSize.height;
       const espacioDisponible = pageHeight - finalY;
@@ -875,14 +870,12 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     this.cargandoInfo = true;
     this.cargaInfo = null;
 
-    // Bloquear scroll del body
     document.body.style.overflow = 'hidden';
 
     this.http.get<any>(`${this.apiUrl}/detalle/${carga.id_carga}`).subscribe({
       next: (datos) => {
         console.log('✅ Datos recibidos del detalle:', datos);
         
-        // Asegurarnos de que la clasificación esté presente
         if (!datos.clasificacion_rendimiento && datos.rendimiento_calculado) {
           datos.clasificacion_rendimiento = this.clasificarRendimiento(
             this.obtenerNumero(datos.rendimiento_calculado),
@@ -910,19 +903,16 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     this.cargaInfo = null;
     this.cargandoInfo = false;
     
-    // Restaurar scroll del body
     document.body.style.overflow = 'auto';
   }
 
   calcularDesviacion(carga: any): number {
     if (!carga) return 0;
 
-    // Prioridad: Usar el valor calculado que viene de la BD
     if (carga.desviacion_km !== undefined && carga.desviacion_km !== null) {
       return this.obtenerNumero(carga.desviacion_km);
     }
     
-    // Fallback: Calcularlo manualmente
     const kmEsperados = this.obtenerNumero(carga.km_esperados) || this.obtenerNumero(carga.km_esperados_ruta);
     
     if (kmEsperados === 0) return 0;
