@@ -1,43 +1,54 @@
-<div class="usuarios-container">
-  <div class="container-header">
-    <h2>Gestión de Usuarios</h2>
-    <button class="btn-agregar" (click)="abrirModal()" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
-      <span>&#43;</span> Agregar Usuario
-    </button>
-  </div>
+<div class="page-background">
+  <div class="usuarios-container">
+    <div class="container-header">
+      <h2>Gestión de Usuarios</h2>
+      <button class="btn-agregar" (click)="abrirModal()" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+        <span>&#43;</span> Agregar Usuario
+      </button>
+    </div>
 
-  <div class="container-body">
-    <div class="tabla-responsive-wrapper">
-      <table class="tabla-usuarios">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Usuario</th>
-            <th>Puesto</th>
-            <th>Rol</th> <th>Estado</th>
-            <th style="text-align: center;">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let usuario of usuariosFiltrados">
-            <td>{{ usuario.nombre }}</td>
-            <td>{{ usuario.nombre_usuario }}</td>
-            <td>{{ usuario.puesto }}</td>
-            <td>{{ usuario.rol }}</td> <td>
-              <span [class.estado-activo]="usuario.estado_cuenta === 'Activo'"
-                    [class.estado-inactivo]="usuario.estado_cuenta === 'Inactivo'">
-                {{ usuario.estado_cuenta }}
-              </span>
-            </td>
-            <td class="acciones">
-              <ng-container *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
-                <!-- <button class="btn-accion btn-estado" (click)="cambiarEstadoUsuario(usuario)">Cambiar Estado</button> -->
-                <button class="btn-accion btn-eliminar" (click)="abrirModalBorrado(usuario)">Desactivar</button>
-              </ng-container>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="container-body">
+      <div class="tabla-responsive-wrapper">
+        <table class="tabla-usuarios">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Usuario</th>
+              <th>Puesto</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th style="text-align: center;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let usuario of usuariosFiltrados">
+              <td>{{ usuario.nombre }}</td>
+              <td>{{ usuario.nombre_usuario }}</td>
+              <td>{{ usuario.puesto }}</td>
+              <td>
+                <span class="rol-badge" [ngClass]="{
+                  'admin': usuario.rol === 'Admin',
+                  'superusuario': usuario.rol === 'SuperUsuario',
+                  'usuario': usuario.rol === 'Usuario'
+                }">
+                  {{ usuario.rol }}
+                </span>
+              </td>
+              <td>
+                <span [class.estado-activo]="usuario.estado_cuenta === 'Activo'"
+                      [class.estado-inactivo]="usuario.estado_cuenta === 'Inactivo'">
+                  {{ usuario.estado_cuenta }}
+                </span>
+              </td>
+              <td class="acciones">
+                <ng-container *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+                  <button class="btn-accion btn-eliminar" (click)="abrirModalBorrado(usuario)">Desactivar</button>
+                </ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -110,22 +121,22 @@
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3 [ngClass]="{
-          'header-exito': notificacion.tipo === 'exito',
-          'header-error': notificacion.tipo === 'error',
-          'header-advertencia': notificacion.tipo === 'advertencia'
-        }">
-          {{ notificacion.titulo }}
-        </h3>
-        <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
-      </div>
-      <div class="modal-body">
-        <p class="confirm-text">{{ notificacion.mensaje }}</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
-      </div>
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{
+        'header-exito': notificacion.tipo === 'exito',
+        'header-error': notificacion.tipo === 'error',
+        'header-advertencia': notificacion.tipo === 'advertencia'
+      }">
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
     </div>
   </div>
+</div>

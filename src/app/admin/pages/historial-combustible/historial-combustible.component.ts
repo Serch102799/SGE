@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Subject, Subscription } from 'rxjs';
-import { debounceTime, startWith } from 'rxjs/operators';
+import { debounceTime } from 'rxjs/operators';
 import { environment } from '../../../../environments/environments';
 import { AuthService } from '../../../services/auth.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
@@ -54,8 +54,8 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   totalItems: number = 0;
   terminoBusqueda: string = '';
   
-  // NUEVOS FILTROS
-  filtroRutasIds: number[] = []; // Array para múltiples rutas
+  // Filtros
+  filtroRutasIds: number[] = [];
   filtroFechaDesde: string = '';
   filtroFechaHasta: string = '';
   
@@ -64,6 +64,9 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   
   // Tipo de cálculo
   tipoCalculo: 'dias' | 'vueltas' = 'vueltas';
+  
+  // ⭐ NUEVO: Control de carga
+  private cargando: boolean = false;
   
   private searchSubject: Subject<void> = new Subject<void>();
   private searchSubscription?: Subscription;
@@ -74,25 +77,25 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
 
   // Estado de edición (Solo SuperUsuario)
   modalEditarVisible: boolean = false;
-cargaEditando: any = null;
-cargandoEdicion: boolean = false;
-guardandoEdicion: boolean = false;
+  cargaEditando: any = null;
+  cargandoEdicion: boolean = false;
+  guardandoEdicion: boolean = false;
   
   fechaMaxima: string = '';
   cargaOriginal: any = null;
 
   modalInfoVisible: boolean = false;
-cargaInfo: any = null;
-cargandoInfo: boolean = false;
+  cargaInfo: any = null;
+  cargandoInfo: boolean = false;
 
-// Datos del formulario de edición
-formEdicion = {
-  fecha_operacion: '',
-  km_inicial: 0,
-  km_final: 0,
-  litros_cargados: 0,
-  id_ruta: null as number | null
-};
+  // Datos del formulario de edición
+  formEdicion = {
+    fecha_operacion: '',
+    km_inicial: 0,
+    km_final: 0,
+    litros_cargados: 0,
+    id_ruta: null as number | null
+  };
 
   constructor(private http: HttpClient, public authService: AuthService) {
     // Establecer fecha máxima (hoy)
@@ -102,13 +105,17 @@ formEdicion = {
 
   ngOnInit(): void {
     this.cargarRutas();
+    
+    // ⭐ OPTIMIZADO: Sin startWith, solo debounce
     this.searchSubscription = this.searchSubject.pipe(
-      debounceTime(300),
-      startWith(undefined)
+      debounceTime(300)
     ).subscribe(() => {
       this.currentPage = 1;
       this.obtenerCargas();
     });
+    
+    // ⭐ Carga inicial explícita
+    this.obtenerCargas();
   }
 
   ngOnDestroy(): void {
@@ -119,15 +126,15 @@ formEdicion = {
     this.http.get<Ruta[]>(`${environment.apiUrl}/rutas/lista-simple`).subscribe({
       next: (data) => {
         this.rutas = data;
+        console.log('✅ Rutas cargadas:', this.rutas.length);
       },
       error: (err) => {
-        console.error("Error al cargar rutas:", err);
+        console.error("❌ Error al cargar rutas:", err);
         this.rutas = [];
       }
     });
   }
 
-  
   // Método para construir parámetros de filtrado
   private construirParametros(page: number = 1, limit?: number): HttpParams {
     let params = new HttpParams()
@@ -152,69 +159,95 @@ formEdicion = {
     return params;
   }
 
+  // ⭐ OPTIMIZADO: Prevenir llamadas múltiples
   obtenerCargas(): void {
+    // Prevenir llamadas múltiples simultáneas
+    if (this.cargando) {
+      console.log('⚠️ Llamada a obtenerCargas ignorada - ya hay una en proceso');
+      return;
+    }
+
+    this.cargando = true;
     const params = this.construirParametros(this.currentPage);
     
-    console.log('Parámetros enviados:', params.toString());
+    console.log('🔍 Parámetros enviados:', params.toString());
 
     this.http.get<{ total: number, data: any[] }>(this.apiUrl, { params }).subscribe({
       next: (response) => {
         this.cargas = response.data || [];
         this.totalItems = response.total || 0;
-        console.log('Cargas recibidas:', this.cargas);
+        this.cargando = false;
+        console.log('✅ Cargas recibidas:', this.cargas.length, 'registros de', this.totalItems, 'totales');
       },
       error: (err) => {
-        console.error("Error al obtener historial de cargas:", err);
+        console.error("❌ Error al obtener historial de cargas:", err);
         this.cargas = [];
         this.totalItems = 0;
+        this.cargando = false;
       }
     });
   }
 
-  // NUEVO: Obtener TODOS los datos filtrados para exportación
+  // Obtener TODOS los datos filtrados para exportación
   public obtenerTodasLasCargas(): Promise<any[]> {
     return new Promise((resolve, reject) => {
-      // Solicitar TODAS las páginas (limit muy alto o sin límite según tu backend)
       const params = this.construirParametros(1, 999999);
       
       this.http.get<{ total: number, data: any[] }>(this.apiUrl, { params }).subscribe({
         next: (response) => {
-          console.log(`Obtenidos ${response.data.length} registros para exportación`);
+          console.log(`📊 Obtenidos ${response.data.length} registros para exportación`);
           resolve(response.data || []);
         },
         error: (err) => {
-          console.error("Error al obtener datos para exportación:", err);
+          console.error("❌ Error al obtener datos para exportación:", err);
           reject(err);
         }
       });
     });
   }
 
+  // ⭐ OPTIMIZADO: Mejor manejo del cambio de tipo
   cambiarTipoCalculo(tipo: 'dias' | 'vueltas'): void {
+    console.log('🔄 Cambio de tipo de cálculo:', tipo);
+    
+    if (this.tipoCalculo === tipo) {
+      console.log('⚠️ Mismo tipo de cálculo, ignorando');
+      return; // Evitar recarga innecesaria
+    }
+    
     this.tipoCalculo = tipo;
+    
     if (tipo === 'dias') {
       this.filtroRutasIds = [];
+      console.log('🗑️ Filtro de rutas limpiado (modo días)');
     }
-    this.searchSubject.next();
+    
+    // Búsqueda inmediata
+    this.currentPage = 1;
+    this.obtenerCargas();
   }
 
+  // ⭐ OPTIMIZADO: Mejor logging
   onSearchChange(): void {
+    console.log('🔍 Búsqueda cambiada:', this.terminoBusqueda);
     this.searchSubject.next();
   }
 
   onPageChange(page: number): void {
+    console.log('📄 Cambio de página:', page);
     this.currentPage = page;
     this.obtenerCargas();
   }
 
-  // NUEVO: Toggle del dropdown de rutas
+  // Toggle del dropdown de rutas
   toggleRutasDropdown(): void {
     this.rutasDropdownOpen = !this.rutasDropdownOpen;
+    console.log('🔽 Dropdown rutas:', this.rutasDropdownOpen ? 'abierto' : 'cerrado');
   }
 
-  // NUEVO: Manejo de selección múltiple de rutas
+  // ⭐ OPTIMIZADO: Manejo inmutable de selección de rutas
   onRutaToggle(rutaId: number, event: any): void {
-    console.log('onRutaToggle llamado:', rutaId, event.target.checked);
+    console.log('🔄 Toggle ruta:', rutaId, event.target.checked);
     
     if (this.tipoCalculo === 'dias') {
       alert('El filtro por ruta no está disponible en cálculo por días');
@@ -222,36 +255,44 @@ formEdicion = {
       return;
     }
 
+    // Actualizar el array de forma inmutable
     if (event.target.checked) {
       if (!this.filtroRutasIds.includes(rutaId)) {
-        this.filtroRutasIds.push(rutaId);
+        this.filtroRutasIds = [...this.filtroRutasIds, rutaId];
       }
     } else {
       this.filtroRutasIds = this.filtroRutasIds.filter(id => id !== rutaId);
     }
     
-    console.log('filtroRutasIds actualizado:', this.filtroRutasIds);
+    console.log('📋 Rutas seleccionadas:', this.filtroRutasIds);
     
-    // IMPORTANTE: Disparar el searchSubject para actualizar la búsqueda
+    // Disparar búsqueda con debounce
     this.searchSubject.next();
   }
 
-  // NUEVO: Verificar si una ruta está seleccionada
+  // Verificar si una ruta está seleccionada
   isRutaSeleccionada(rutaId: number): boolean {
     return this.filtroRutasIds.includes(rutaId);
   }
 
-  // NUEVO: Limpiar filtros
+  // ⭐ OPTIMIZADO: Limpiar filtros
   limpiarFiltros(): void {
+    console.log('🧹 Limpiando todos los filtros');
+    
     this.terminoBusqueda = '';
     this.filtroRutasIds = [];
     this.filtroFechaDesde = '';
     this.filtroFechaHasta = '';
-    this.searchSubject.next();
+    this.currentPage = 1;
+    
+    // Búsqueda inmediata
+    this.obtenerCargas();
   }
 
-  // NUEVO: Aplicar filtros de fecha
+  // ⭐ OPTIMIZADO: Aplicar filtros de fecha con validación
   onFechaChange(): void {
+    console.log('📅 Fechas cambiadas:', this.filtroFechaDesde, '->', this.filtroFechaHasta);
+    
     // Validar que fecha desde no sea mayor que fecha hasta
     if (this.filtroFechaDesde && this.filtroFechaHasta) {
       if (new Date(this.filtroFechaDesde) > new Date(this.filtroFechaHasta)) {
@@ -260,172 +301,157 @@ formEdicion = {
         return;
       }
     }
+    
     this.searchSubject.next();
   }
+
   abrirModalEditar(carga: any): void {
-  if (!carga || carga.id_carga === undefined) {
-    console.error('La carga no tiene id_carga, no se puede editar.');
-    alert('Error: No se puede identificar esta carga para editarla.');
-    return;
+    if (!carga || carga.id_carga === undefined) {
+      console.error('❌ La carga no tiene id_carga, no se puede editar.');
+      alert('Error: No se puede identificar esta carga para editarla.');
+      return;
+    }
+
+    console.log('✏️ Abriendo modal de edición para carga:', carga.id_carga);
+
+    this.cargaEditando = carga;
+    this.modalEditarVisible = true;
+    this.cargandoEdicion = true;
+    this.cargaOriginal = null;
+
+    // Bloquear scroll del body
+    document.body.style.overflow = 'hidden';
+
+    // Llamada a la API para obtener datos crudos
+    this.http.get<any>(`${this.apiUrl}/detalle/${carga.id_carga}`).subscribe({
+      next: (datosCarga) => {
+        this.cargaOriginal = { ...datosCarga };
+        
+        // Poblar el formulario
+        this.formEdicion.fecha_operacion = this.formatearFechaParaInput(datosCarga.fecha_operacion);
+        this.formEdicion.km_inicial = this.obtenerNumero(datosCarga.km_inicial);
+        this.formEdicion.km_final = this.obtenerNumero(datosCarga.km_final);
+        this.formEdicion.litros_cargados = this.obtenerNumero(datosCarga.litros_cargados);
+        this.formEdicion.id_ruta = datosCarga.id_ruta_principal || null;
+
+        this.cargandoEdicion = false;
+        console.log('✅ Datos de carga cargados para edición');
+      },
+      error: (err) => {
+        console.error("❌ Error al obtener detalle de la carga:", err);
+        alert('Error al cargar los datos para editar. Intente de nuevo.');
+        this.cerrarModalEditar();
+      }
+    });
   }
 
-  this.cargaEditando = carga;
-  this.modalEditarVisible = true;
-  this.cargandoEdicion = true;
-  this.cargaOriginal = null;
-
-  // ⭐ BLOQUEAR SCROLL DEL BODY
-  document.body.style.overflow = 'hidden';
-
-  // Llamada a la API para obtener datos crudos
-  this.http.get<any>(`${this.apiUrl}/detalle/${carga.id_carga}`).subscribe({
-    next: (datosCarga) => {
-      this.cargaOriginal = { ...datosCarga };
-      
-      // Poblar el formulario
-      this.formEdicion.fecha_operacion = this.formatearFechaParaInput(datosCarga.fecha_operacion);
-      this.formEdicion.km_inicial = this.obtenerNumero(datosCarga.km_inicial);
-      this.formEdicion.km_final = this.obtenerNumero(datosCarga.km_final);
-      this.formEdicion.litros_cargados = this.obtenerNumero(datosCarga.litros_cargados);
-      this.formEdicion.id_ruta = datosCarga.id_ruta_principal || null;
-
-      this.cargandoEdicion = false;
-    },
-    error: (err) => {
-      console.error("Error al obtener detalle de la carga:", err);
-      alert('Error al cargar los datos para editar. Intente de nuevo.');
-      this.cerrarModalEditar();
-    }
-  });
-}
-
-  /**
-   * Cierra el modal de edición y resetea los estados.
-   */
   cerrarModalEditar(): void {
-  this.modalEditarVisible = false;
-  this.cargaEditando = null;
-  this.cargaOriginal = null;
-  this.cargandoEdicion = false;
-  this.guardandoEdicion = false;
-  
-  // ⭐ RESTAURAR SCROLL DEL BODY
-  document.body.style.overflow = 'auto';
-  
-  // Resetear formulario
-  this.formEdicion = {
-    fecha_operacion: '',
-    km_inicial: 0,
-    km_final: 0,
-    litros_cargados: 0,
-    id_ruta: null
-  };
-}
+    console.log('❌ Cerrando modal de edición');
+    
+    this.modalEditarVisible = false;
+    this.cargaEditando = null;
+    this.cargaOriginal = null;
+    this.cargandoEdicion = false;
+    this.guardandoEdicion = false;
+    
+    // Restaurar scroll del body
+    document.body.style.overflow = 'auto';
+    
+    // Resetear formulario
+    this.formEdicion = {
+      fecha_operacion: '',
+      km_inicial: 0,
+      km_final: 0,
+      litros_cargados: 0,
+      id_ruta: null
+    };
+  }
 
   detectarCambios(): boolean {
-  if (!this.cargaOriginal) return false;
+    if (!this.cargaOriginal) return false;
 
-  const fechaOriginal = this.formatearFechaParaInput(this.cargaOriginal.fecha_operacion);
-  const cambioFecha = this.formEdicion.fecha_operacion !== fechaOriginal;
-  const cambioKmInicial = this.formEdicion.km_inicial !== this.obtenerNumero(this.cargaOriginal.km_inicial);
-  const cambioKmFinal = this.formEdicion.km_final !== this.obtenerNumero(this.cargaOriginal.km_final);
-  const cambioLitros = this.formEdicion.litros_cargados !== this.obtenerNumero(this.cargaOriginal.litros_cargados);
-  const cambioRuta = this.formEdicion.id_ruta !== (this.cargaOriginal.id_ruta || null);
+    const fechaOriginal = this.formatearFechaParaInput(this.cargaOriginal.fecha_operacion);
+    const cambioFecha = this.formEdicion.fecha_operacion !== fechaOriginal;
+    const cambioKmInicial = this.formEdicion.km_inicial !== this.obtenerNumero(this.cargaOriginal.km_inicial);
+    const cambioKmFinal = this.formEdicion.km_final !== this.obtenerNumero(this.cargaOriginal.km_final);
+    const cambioLitros = this.formEdicion.litros_cargados !== this.obtenerNumero(this.cargaOriginal.litros_cargados);
+    const cambioRuta = this.formEdicion.id_ruta !== (this.cargaOriginal.id_ruta || null);
 
-  return cambioFecha || cambioKmInicial || cambioKmFinal || cambioLitros || cambioRuta;
-}
-
-/**
- * Obtener resumen de cambios para mostrar al usuario
- */
-obtenerResumenCambios(): string[] {
-  if (!this.cargaOriginal) return [];
-  
-  const cambios: string[] = [];
-
-  // Cambio de fecha
-  const fechaOriginal = this.formatearFechaParaInput(this.cargaOriginal.fecha_operacion);
-  if (this.formEdicion.fecha_operacion !== fechaOriginal) {
-    cambios.push(`Fecha: ${this.formatearFecha(this.cargaOriginal.fecha_operacion)} → ${this.formatearFecha(this.formEdicion.fecha_operacion)}`);
+    return cambioFecha || cambioKmInicial || cambioKmFinal || cambioLitros || cambioRuta;
   }
 
-  // Cambio de KM Inicial
-  if (this.formEdicion.km_inicial !== this.obtenerNumero(this.cargaOriginal.km_inicial)) {
-    cambios.push(`KM Inicial: ${this.cargaOriginal.km_inicial} → ${this.formEdicion.km_inicial}`);
+  obtenerResumenCambios(): string[] {
+    if (!this.cargaOriginal) return [];
+    
+    const cambios: string[] = [];
+
+    // Cambio de fecha
+    const fechaOriginal = this.formatearFechaParaInput(this.cargaOriginal.fecha_operacion);
+    if (this.formEdicion.fecha_operacion !== fechaOriginal) {
+      cambios.push(`Fecha: ${this.formatearFecha(this.cargaOriginal.fecha_operacion)} → ${this.formatearFecha(this.formEdicion.fecha_operacion)}`);
+    }
+
+    // Cambio de KM Inicial
+    if (this.formEdicion.km_inicial !== this.obtenerNumero(this.cargaOriginal.km_inicial)) {
+      cambios.push(`KM Inicial: ${this.cargaOriginal.km_inicial} → ${this.formEdicion.km_inicial}`);
+    }
+
+    // Cambio de KM Final (y KM Recorridos)
+    if (this.formEdicion.km_final !== this.obtenerNumero(this.cargaOriginal.km_final)) {
+      const kmRecorridosAntes = this.obtenerNumero(this.cargaOriginal.km_recorridos);
+      const kmRecorridosDespues = this.formEdicion.km_final - this.formEdicion.km_inicial;
+      cambios.push(`KM Final: ${this.cargaOriginal.km_final} → ${this.formEdicion.km_final}`);
+      cambios.push(`  → KM Recorridos: ${kmRecorridosAntes} km → ${kmRecorridosDespues} km`);
+    }
+
+    // Cambio de litros
+    if (this.formEdicion.litros_cargados !== this.obtenerNumero(this.cargaOriginal.litros_cargados)) {
+      cambios.push(`Litros: ${this.cargaOriginal.litros_cargados} L → ${this.formEdicion.litros_cargados} L`);
+    }
+
+    // Cambio de ruta
+    const rutaOriginalId = this.cargaOriginal.id_ruta || null;
+    if (this.formEdicion.id_ruta !== rutaOriginalId) {
+      const rutaAntes = rutaOriginalId 
+        ? (this.rutas.find(r => r.id_ruta === rutaOriginalId)?.nombre_ruta || 'Ruta desconocida')
+        : 'Sin ruta (Cálculo por días)';
+      const rutaDespues = this.formEdicion.id_ruta 
+        ? (this.rutas.find(r => r.id_ruta === this.formEdicion.id_ruta)?.nombre_ruta || 'Ruta desconocida')
+        : 'Sin ruta (Cálculo por días)';
+      cambios.push(`Ruta: ${rutaAntes} → ${rutaDespues}`);
+    }
+
+    return cambios;
   }
 
-  // Cambio de KM Final (y KM Recorridos)
-  if (this.formEdicion.km_final !== this.obtenerNumero(this.cargaOriginal.km_final)) {
-    const kmRecorridosAntes = this.obtenerNumero(this.cargaOriginal.km_recorridos);
-    const kmRecorridosDespues = this.formEdicion.km_final - this.formEdicion.km_inicial;
-    cambios.push(`KM Final: ${this.cargaOriginal.km_final} → ${this.formEdicion.km_final}`);
-    cambios.push(`  → KM Recorridos: ${kmRecorridosAntes} km → ${kmRecorridosDespues} km`);
+  calcularKmRecorridos(): number {
+    const kmRecorridos = this.formEdicion.km_final - this.formEdicion.km_inicial;
+    return Math.max(0, kmRecorridos);
   }
 
-  // Cambio de litros
-  if (this.formEdicion.litros_cargados !== this.obtenerNumero(this.cargaOriginal.litros_cargados)) {
-    cambios.push(`Litros: ${this.cargaOriginal.litros_cargados} L → ${this.formEdicion.litros_cargados} L`);
+  calcularRendimientoEstimado(): number {
+    const kmRecorridos = this.calcularKmRecorridos();
+    if (this.formEdicion.litros_cargados <= 0) return 0;
+    return kmRecorridos / this.formEdicion.litros_cargados;
   }
 
-  // Cambio de ruta
-  const rutaOriginalId = this.cargaOriginal.id_ruta || null;
-  if (this.formEdicion.id_ruta !== rutaOriginalId) {
-    const rutaAntes = rutaOriginalId 
-      ? (this.rutas.find(r => r.id_ruta === rutaOriginalId)?.nombre_ruta || 'Ruta desconocida')
-      : 'Sin ruta (Cálculo por días)';
-    const rutaDespues = this.formEdicion.id_ruta 
-      ? (this.rutas.find(r => r.id_ruta === this.formEdicion.id_ruta)?.nombre_ruta || 'Ruta desconocida')
-      : 'Sin ruta (Cálculo por días)';
-    cambios.push(`Ruta: ${rutaAntes} → ${rutaDespues}`);
+  obtenerNombreRuta(idRuta: number | null): string {
+    if (!idRuta) return 'Sin ruta (Cálculo por días)';
+    const ruta = this.rutas.find(r => r.id_ruta === idRuta);
+    return ruta ? ruta.nombre_ruta : 'Ruta no encontrada';
   }
 
-  return cambios;
-}
+  esSuperUsuario(): boolean {
+    return this.authService.hasRole(['SuperUsuario']);
+  }
 
-/**
- * Calcular KM recorridos en tiempo real
- */
-calcularKmRecorridos(): number {
-  const kmRecorridos = this.formEdicion.km_final - this.formEdicion.km_inicial;
-  return Math.max(0, kmRecorridos);
-}
-
-/**
- * Calcular rendimiento estimado en tiempo real
- */
-calcularRendimientoEstimado(): number {
-  const kmRecorridos = this.calcularKmRecorridos();
-  if (this.formEdicion.litros_cargados <= 0) return 0;
-  return kmRecorridos / this.formEdicion.litros_cargados;
-}
-
-/**
- * Obtener nombre de ruta por ID
- */
-obtenerNombreRuta(idRuta: number | null): string {
-  if (!idRuta) return 'Sin ruta (Cálculo por días)';
-  const ruta = this.rutas.find(r => r.id_ruta === idRuta);
-  return ruta ? ruta.nombre_ruta : 'Ruta no encontrada';
-}
-
-/**
- * Validar si el usuario tiene permisos de SuperUsuario
- */
-esSuperUsuario(): boolean {
-  return this.authService.hasRole(['SuperUsuario']);
-}
-
-  /**
-   * Envía los datos actualizados al backend.
-   * El backend DEBE encargarse del recálculo (km_recorridos, rendimiento, etc.).
-   */
   guardarEdicion(): void {
     if (!this.cargaEditando || !this.cargaEditando.id_carga) {
       alert('No hay una carga seleccionada para guardar.');
       return;
     }
     
-    // --- Validaciones ---
+    // Validaciones
     if (this.formEdicion.km_final <= this.formEdicion.km_inicial) {
        alert('El KM Final debe ser mayor que el KM Inicial.');
        return;
@@ -434,62 +460,58 @@ esSuperUsuario(): boolean {
        alert('Los litros cargados deben ser mayores a 0.');
        return;
     }
-    // Si la carga original tenía ruta (o se le asigna una), es tipo 'vueltas'
     if (this.formEdicion.id_ruta && !this.formEdicion.id_ruta) {
        alert('Debe seleccionar una ruta.');
        return;
     }
 
+    console.log('💾 Guardando edición de carga:', this.cargaEditando.id_carga);
+
     this.guardandoEdicion = true;
     
     const idCarga = this.cargaEditando.id_carga;
     
-    // El backend debe recalcular todo con estos datos
     const datosAActualizar = {
-       fecha_operacion: new Date(this.formEdicion.fecha_operacion).toISOString(), // Enviar en ISO UTC
+       fecha_operacion: new Date(this.formEdicion.fecha_operacion).toISOString(),
        km_inicial: this.formEdicion.km_inicial,
        km_final: this.formEdicion.km_final,
        litros_cargados: this.formEdicion.litros_cargados,
-       id_ruta: this.formEdicion.id_ruta // Puede ser null si es cálculo por días
+       id_ruta: this.formEdicion.id_ruta
     };
 
-    // Usamos PUT para actualizar el recurso completo
     this.http.put(`${this.apiUrl}/${idCarga}`, datosAActualizar).subscribe({
       next: (response) => {
         this.guardandoEdicion = false;
         alert('Carga actualizada exitosamente. Los datos se han recalculado.');
+        console.log('✅ Carga actualizada correctamente');
         this.cerrarModalEditar();
         
-        // ¡Importante! Refrescar la vista actual para ver los cambios
+        // Refrescar la vista actual
         this.obtenerCargas(); 
       },
       error: (err) => {
         this.guardandoEdicion = false;
-        console.error("Error al guardar la edición:", err);
+        console.error("❌ Error al guardar la edición:", err);
         alert(`Error al guardar: ${err.error?.message || 'Error desconocido'}`);
       }
     });
   }
 
-  /**
-   * Helper para formatear fechas al formato 'datetime-local' (YYYY-MM-DDTHH:mm)
-   * respetando la zona horaria local.
-   */
   public formatearFechaParaInput(fecha: string): string {
     if (!fecha) {
       return new Date().toISOString().slice(0, 16);
     }
     try {
       const d = new Date(fecha);
-      // Ajustar a la zona horaria local para el input
       const offset = d.getTimezoneOffset() * 60000;
       const localDate = new Date(d.getTime() - offset);
       return localDate.toISOString().slice(0, 16);
     } catch (e) {
-      console.error("Error formateando fecha:", e);
+      console.error("❌ Error formateando fecha:", e);
       return new Date().toISOString().slice(0, 16);
     }
   }
+
   private registrarAuditoriaExportacion(tipo: 'PDF' | 'EXCEL', totalRegistros: number): void {
     const detalles = {
       total_registros: totalRegistros,
@@ -502,22 +524,21 @@ esSuperUsuario(): boolean {
       }
     };
 
-    // Se envía a la ruta 'superAdmin'
     this.http.post(`${environment.apiUrl}/superAdmin/registrar-evento`, {
       tipo_accion: `EXPORTAR_${tipo}`,
       modulo: 'HISTORIAL_COMBUSTIBLE',
       detalles: detalles
     }).subscribe({
-      next: () => console.log(`Auditoría de exportación ${tipo} registrada.`),
-      error: (err) => console.warn('No se pudo registrar la auditoría de exportación', err)
+      next: () => console.log(`✅ Auditoría de exportación ${tipo} registrada.`),
+      error: (err) => console.warn('⚠️ No se pudo registrar la auditoría de exportación', err)
     });
   }
-  // MODIFICADO: Exportar PDF con TODOS los datos filtrados
+
   async exportarAPDF(): Promise<void> {
     this.exportando = true;
+    console.log('📄 Iniciando exportación a PDF...');
 
     try {
-      // Obtener TODOS los registros filtrados
       const todasLasCargas = await this.obtenerTodasLasCargas();
 
       if (!todasLasCargas || todasLasCargas.length === 0) {
@@ -715,21 +736,20 @@ esSuperUsuario(): boolean {
       const nombreArchivo = `Historial_Combustible_${new Date().getTime()}.pdf`;
       doc.save(nombreArchivo);
       this.registrarAuditoriaExportacion('PDF', todasLasCargas.length);
-      console.log('PDF generado exitosamente con', todasLasCargas.length, 'registros');
+      console.log('✅ PDF generado exitosamente con', todasLasCargas.length, 'registros');
     } catch (error) {
-      console.error('Error al exportar a PDF:', error);
+      console.error('❌ Error al exportar a PDF:', error);
       alert('Error al exportar a PDF: ' + (error instanceof Error ? error.message : 'Error desconocido'));
     } finally {
       this.exportando = false;
     }
   }
 
-  // MODIFICADO: Exportar Excel con TODOS los datos filtrados
   async exportarAExcel(): Promise<void> {
     this.exportandoExcel = true;
+    console.log('📊 Iniciando exportación a Excel...');
 
     try {
-      // Obtener TODOS los registros filtrados
       const todasLasCargas = await this.obtenerTodasLasCargas();
 
       if (!todasLasCargas || todasLasCargas.length === 0) {
@@ -795,10 +815,10 @@ esSuperUsuario(): boolean {
 
       const nombreArchivo = `Historial_Combustible_${new Date().getTime()}.xlsx`;
       XLSX.writeFile(workbook, nombreArchivo);
-      this.registrarAuditoriaExportacion('PDF', todasLasCargas.length);
-      console.log('Excel generado exitosamente con', todasLasCargas.length, 'registros');
+      this.registrarAuditoriaExportacion('EXCEL', todasLasCargas.length);
+      console.log('✅ Excel generado exitosamente con', todasLasCargas.length, 'registros');
     } catch (error) {
-      console.error('Error detallado al exportar Excel:', error);
+      console.error('❌ Error detallado al exportar Excel:', error);
       alert('Error al exportar a Excel. Revisa la consola para más detalles.');
     } finally {
       this.exportandoExcel = false;
@@ -843,132 +863,101 @@ esSuperUsuario(): boolean {
   }
   
   abrirModalInfo(carga: any): void {
-  if (!carga || carga.id_carga === undefined) {
-    console.error('La carga no tiene id_carga');
-    alert('Error: No se puede obtener la información de esta carga.');
-    return;
-  }
-
-  this.modalInfoVisible = true;
-  this.cargandoInfo = true;
-  this.cargaInfo = null;
-
-  // Bloquear scroll del body
-  document.body.style.overflow = 'hidden';
-
-  // Llamada a la API para obtener datos completos incluyendo motivo de desviación
-  this.http.get<any>(`${this.apiUrl}/detalle/${carga.id_carga}`).subscribe({
-    next: (datos) => {
-      console.log('Datos recibidos del detalle:', datos); // Para debug
-      
-      // Asegurarnos de que la clasificación esté presente
-      if (!datos.clasificacion_rendimiento && datos.rendimiento_calculado) {
-        datos.clasificacion_rendimiento = this.clasificarRendimiento(
-          this.obtenerNumero(datos.rendimiento_calculado),
-          datos.rendimiento_excelente,
-          datos.rendimiento_bueno,
-          datos.rendimiento_regular
-        );
-      }
-      
-      this.cargaInfo = datos;
-      this.cargandoInfo = false;
-      
-      console.log('Despachador:', datos.nombre_despachador);
-      console.log('Clasificación:', datos.clasificacion_rendimiento);
-      console.log('Motivo desviación:', datos.motivo_desviacion);
-      console.log('KM esperados:', datos.km_esperados_ruta);
-    },
-    error: (err) => {
-      console.error("Error al obtener detalle de la carga:", err);
-      alert('Error al cargar la información. Intente de nuevo.');
-      this.cerrarModalInfo();
+    if (!carga || carga.id_carga === undefined) {
+      console.error('❌ La carga no tiene id_carga');
+      alert('Error: No se puede obtener la información de esta carga.');
+      return;
     }
-  });
-}
 
-/**
- * Cierra el modal de información
- */
-cerrarModalInfo(): void {
-  this.modalInfoVisible = false;
-  this.cargaInfo = null;
-  this.cargandoInfo = false;
-  
-  // Restaurar scroll del body
-  document.body.style.overflow = 'auto';
-}
+    console.log('ℹ️ Abriendo modal de información para carga:', carga.id_carga);
 
-/**
- * Calcula la desviación de kilometraje
- * Solo aplica para cálculo por vueltas cuando hay km_esperados_ruta
- */
-calcularDesviacion(carga: any): number {
-  if (!carga) return 0;
+    this.modalInfoVisible = true;
+    this.cargandoInfo = true;
+    this.cargaInfo = null;
 
-  // 1. Prioridad: Usar el valor calculado que viene de la Base de Datos
-  // El backend lo envía como 'desviacion_km'
-  if (carga.desviacion_km !== undefined && carga.desviacion_km !== null) {
-    return this.obtenerNumero(carga.desviacion_km);
+    // Bloquear scroll del body
+    document.body.style.overflow = 'hidden';
+
+    this.http.get<any>(`${this.apiUrl}/detalle/${carga.id_carga}`).subscribe({
+      next: (datos) => {
+        console.log('✅ Datos recibidos del detalle:', datos);
+        
+        // Asegurarnos de que la clasificación esté presente
+        if (!datos.clasificacion_rendimiento && datos.rendimiento_calculado) {
+          datos.clasificacion_rendimiento = this.clasificarRendimiento(
+            this.obtenerNumero(datos.rendimiento_calculado),
+            datos.rendimiento_excelente,
+            datos.rendimiento_bueno,
+            datos.rendimiento_regular
+          );
+        }
+        
+        this.cargaInfo = datos;
+        this.cargandoInfo = false;
+      },
+      error: (err) => {
+        console.error("❌ Error al obtener detalle de la carga:", err);
+        alert('Error al cargar la información. Intente de nuevo.');
+        this.cerrarModalInfo();
+      }
+    });
   }
-  
-  // 2. Fallback: Calcularlo manualmente si falta el dato directo.
-  // CORRECCIÓN: El backend envía 'km_esperados', el nombre anterior era 'km_esperados_ruta'
-  const kmEsperados = this.obtenerNumero(carga.km_esperados) || this.obtenerNumero(carga.km_esperados_ruta);
-  
-  if (kmEsperados === 0) return 0;
-  
-  const kmRecorridos = this.obtenerNumero(carga.km_recorridos);
-  const desviacion = kmRecorridos - kmEsperados;
-  
-  console.log('Desviación calculada (fallback):', {
-    kmRecorridos,
-    kmEsperados,
-    desviacion
-  });
-  
-  return desviacion;
-}
 
-/**
- * Determina si hay desviación significativa (>15km)
- * Solo aplica para cálculo por vueltas
- */
-tieneDesviacionSignificativa(carga: any): boolean {
-  if (!carga) return false;
-  
-  // Obtenemos la desviación (ya sea de la BD o calculada)
-  const desviacion = this.calcularDesviacion(carga);
-  
-  // Calculamos valor absoluto para detectar tanto faltantes como sobrantes
-  const valorAbsoluto = Math.abs(desviacion);
-  
-  // El umbral es 15km
-  const esSignificativa = valorAbsoluto > 15;
-  
-  // Debug para ver qué está pasando
-  if (esSignificativa) {
-     console.log('Desviación significativa detectada:', {
-        id: carga.id_carga,
-        desviacion: desviacion,
-        motivo: carga.motivo_desviacion
-     });
+  cerrarModalInfo(): void {
+    console.log('❌ Cerrando modal de información');
+    
+    this.modalInfoVisible = false;
+    this.cargaInfo = null;
+    this.cargandoInfo = false;
+    
+    // Restaurar scroll del body
+    document.body.style.overflow = 'auto';
   }
-  
-  return esSignificativa;
-}
 
-/**
- * Obtiene el color según la clasificación del rendimiento
- */
-obtenerColorClasificacion(clasificacion: string): string {
-  switch(clasificacion) {
-    case 'Excelente': return 'text-green-600 bg-green-50';
-    case 'Bueno': return 'text-blue-600 bg-blue-50';
-    case 'Regular': return 'text-yellow-600 bg-yellow-50';
-    case 'Malo': return 'text-red-600 bg-red-50';
-    default: return 'text-gray-600 bg-gray-50';
+  calcularDesviacion(carga: any): number {
+    if (!carga) return 0;
+
+    // Prioridad: Usar el valor calculado que viene de la BD
+    if (carga.desviacion_km !== undefined && carga.desviacion_km !== null) {
+      return this.obtenerNumero(carga.desviacion_km);
+    }
+    
+    // Fallback: Calcularlo manualmente
+    const kmEsperados = this.obtenerNumero(carga.km_esperados) || this.obtenerNumero(carga.km_esperados_ruta);
+    
+    if (kmEsperados === 0) return 0;
+    
+    const kmRecorridos = this.obtenerNumero(carga.km_recorridos);
+    const desviacion = kmRecorridos - kmEsperados;
+    
+    return desviacion;
   }
-}
-  
+
+  tieneDesviacionSignificativa(carga: any): boolean {
+    if (!carga) return false;
+    
+    const desviacion = this.calcularDesviacion(carga);
+    const valorAbsoluto = Math.abs(desviacion);
+    const esSignificativa = valorAbsoluto > 15;
+    
+    if (esSignificativa) {
+       console.log('⚠️ Desviación significativa detectada:', {
+          id: carga.id_carga,
+          desviacion: desviacion,
+          motivo: carga.motivo_desviacion
+       });
+    }
+    
+    return esSignificativa;
+  }
+
+  obtenerColorClasificacion(clasificacion: string): string {
+    switch(clasificacion) {
+      case 'Excelente': return 'text-green-600 bg-green-50';
+      case 'Bueno': return 'text-blue-600 bg-blue-50';
+      case 'Regular': return 'text-yellow-600 bg-yellow-50';
+      case 'Malo': return 'text-red-600 bg-red-50';
+      default: return 'text-gray-600 bg-gray-50';
+    }
+  }
 }

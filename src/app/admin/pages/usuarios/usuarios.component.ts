@@ -18,7 +18,7 @@ export interface Empleado {
   selector: 'app-usuarios',
   standalone: false,
   templateUrl: './usuarios.component.html',
-  styleUrls: ['./usuarios.component.css']
+  styleUrls: ['./usuarios.component.css' ]
 })
 export class UsuariosComponent implements OnInit {
   usuarios: Empleado[] = [];
