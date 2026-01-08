@@ -95,7 +95,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 500px;
+  max-width: 600px;
   padding: 40px 20px;
 }
 
@@ -130,13 +130,13 @@
 
 .logo-container:not(.active) .logo:hover {
   background: rgba(0, 0, 0, 0.4);
-  transform: scale(1.1);
+  transform: scale(1.4);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 
 .logo svg {
-  width: 140%;
-  height: 140%;
+  width: 180%;
+  height: 180%;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
