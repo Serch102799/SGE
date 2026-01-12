@@ -36,12 +36,14 @@
             <th>NSS</th>
             <th>Edad</th>
             <th>Antigüedad</th>
-            <th>Estatus</th> <th style="text-align: center;">Acciones</th>
+            <th>Estatus</th>
+            <th style="text-align: center;">Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr
-            *ngFor="let operador of operadores | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+            *ngFor="let operador of operadores | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }"
+            (click)="verLicencia(operador)" style="cursor: pointer;" title="Clic para ver Licencia Digital">
             <td>{{ operador.nombre_completo }}</td>
             <td>{{ operador.numero_empleado }}</td>
             <td>{{ operador.numero_licencia }} ({{ operador.tipo_licencia }})</td>
@@ -56,7 +58,7 @@
             </td>
             <td class="acciones" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
               <button class="btn-accion btn-estado" (click)="abrirModal('editar', operador)">Editar</button>
-              
+
               <button class="btn-accion btn-eliminar" *ngIf="operador.esta_activo"
                 (click)="abrirModalBaja(operador)">Desactivar</button>
 
@@ -118,8 +120,8 @@
               [(ngModel)]="operadorSeleccionado.fecha_nacimiento" name="fecha_nacimiento"></div>
           <div class="form-group col-md-4"><label>Fecha de Ingreso</label><input type="date" class="form-control"
               [(ngModel)]="operadorSeleccionado.fecha_ingreso" name="fecha_ingreso"></div>
-          
-          </div>
+
+        </div>
         <div class="modal-footer">
           <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
           <button type="submit" class="btn-accion btn-guardar">Guardar</button>
@@ -131,32 +133,33 @@
 
 <div class="modal-overlay" *ngIf="mostrarModalBaja" (click)="cerrarModalBaja()">
   <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header header-advertencia"> <h3>Desactivar Operador</h3>
+    <div class="modal-header header-advertencia">
+      <h3>Desactivar Operador</h3>
       <button class="btn-cerrar" (click)="cerrarModalBaja()">×</button>
     </div>
     <div class="modal-body">
-      <p class="confirm-text">¿Estás seguro de que deseas desactivar a <strong>{{ operadorParaBaja?.nombre_completo }}</strong>?</p>
+      <p class="confirm-text">¿Estás seguro de que deseas desactivar a <strong>{{ operadorParaBaja?.nombre_completo
+          }}</strong>?</p>
       <p class="confirm-text">Por favor, proporciona los detalles de la baja:</p>
-      
+
       <form (ngSubmit)="confirmarBaja()">
         <div class="form-group">
           <label for="fecha_baja">Fecha de Baja</label>
-          <input type="date" id="fecha_baja" class="form-control" 
-                 [(ngModel)]="datosBaja.fecha_baja" name="fecha_baja" required>
+          <input type="date" id="fecha_baja" class="form-control" [(ngModel)]="datosBaja.fecha_baja" name="fecha_baja"
+            required>
         </div>
         <div class="form-group">
           <label for="motivo_baja">Motivo de la Baja</label>
-          <textarea id="motivo_baja" class="form-control" rows="3" 
-                    [(ngModel)]="datosBaja.motivo_baja" name="motivo_baja" 
-                    placeholder="Ej: Renuncia voluntaria, fin de contrato, etc." required></textarea>
+          <textarea id="motivo_baja" class="form-control" rows="3" [(ngModel)]="datosBaja.motivo_baja"
+            name="motivo_baja" placeholder="Ej: Renuncia voluntaria, fin de contrato, etc." required></textarea>
         </div>
-        
+
         <div class="modal-footer">
           <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBaja()">Cancelar</button>
           <button type="submit" class="btn-accion btn-eliminar">Confirmar Baja</button>
         </div>
       </form>
-      
+
     </div>
   </div>
 </div>
@@ -167,7 +170,8 @@
       <button class="btn-cerrar" (click)="cerrarModalReactivar()">×</button>
     </div>
     <div class="modal-body">
-      <p class="confirm-text">¿Estás seguro de que deseas reactivar a <strong>{{ operadorParaReactivar?.nombre_completo }}</strong>?</p>
+      <p class="confirm-text">¿Estás seguro de que deseas reactivar a <strong>{{ operadorParaReactivar?.nombre_completo
+          }}</strong>?</p>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalReactivar()">Cancelar</button>
@@ -190,5 +194,82 @@
     </div>
   </div>
 </div>
+<div class="modal-overlay" *ngIf="mostrarModalLicencia" (click)="cerrarModalLicencia()">
+  <div class="license-card-wrapper" (click)="$event.stopPropagation()">
+    
+    <div class="license-bg-pattern"></div>
 
+    <div class="license-header">
+      <div class="header-left">
+        <div class="license-logo">
+          <i class="fas fa-bus"></i> </div>
+        <div class="license-org">
+          <h2>TRANSPORTE OFICIAL</h2>
+          <span>LICENCIA DE OPERADOR CERTIFICADO</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="license-type">TIPO {{ operadorParaLicencia?.tipo_licencia || 'A' }}</span>
+      </div>
+    </div>
 
+    <div class="license-body">
+      
+      <div class="license-photo-section">
+        <div class="photo-frame">
+          <img [src]="'https://ui-avatars.com/api/?name=' + (operadorParaLicencia?.nombre_completo || 'User') + '&background=random&size=150'" 
+               alt="Foto Operador" class="operator-photo">
+        </div>
+        <div class="active-badge" [class.inactive]="!operadorParaLicencia?.esta_activo">
+          {{ operadorParaLicencia?.esta_activo ? 'VIGENTE' : 'BAJA' }}
+        </div>
+      </div>
+
+      <div class="license-data-section">
+        <div class="data-group full-width">
+          <label>NOMBRE DEL CONDUCTOR</label>
+          <div class="data-value highlight">{{ operadorParaLicencia?.nombre_completo }}</div>
+        </div>
+
+        <div class="data-grid">
+          <div class="data-group">
+            <label>N° LICENCIA</label>
+            <div class="data-value code">{{ operadorParaLicencia?.numero_licencia || 'PENDIENTE' }}</div>
+          </div>
+          <div class="data-group">
+            <label>VENCE</label>
+            <div class="data-value">{{ operadorParaLicencia?.licencia_vencimiento | date:'dd/MM/yyyy' }}</div>
+          </div>
+          <div class="data-group">
+            <label>N° EMPLEADO</label>
+            <div class="data-value">{{ operadorParaLicencia?.numero_empleado }}</div>
+          </div>
+          <div class="data-group">
+            <label>ANTIGÜEDAD</label>
+            <div class="data-value">{{ operadorParaLicencia?.antiguedad_anios }} Años</div>
+          </div>
+          <div class="data-group">
+            <label>NSS</label>
+            <div class="data-value small">{{ operadorParaLicencia?.nss }}</div>
+          </div>
+          <div class="data-group">
+            <label>EDAD</label>
+            <div class="data-value">{{ operadorParaLicencia?.edad }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="license-footer">
+      <div class="signature-area">
+        <span>Firma Autorizada</span>
+      </div>
+      <div class="barcode-area">
+        <div class="barcode-lines"></div>
+        <span class="id-ref">{{ operadorParaLicencia?.id_operador | number:'5.0-0' }}</span>
+      </div>
+    </div>
+
+    <button class="btn-close-license" (click)="cerrarModalLicencia()">×</button>
+  </div>
+</div>

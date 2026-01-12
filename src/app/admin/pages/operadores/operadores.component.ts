@@ -63,6 +63,8 @@ export class OperadoresComponent implements OnInit, OnDestroy {
   mostrarModalReactivar = false;
   operadorParaReactivar: Operador | null = null;
 
+  mostrarModalLicencia: boolean = false;
+  operadorParaLicencia: any = null;
 
   // --- NUEVO: Estado para el modal de "Dar de Baja" ---
   mostrarModalBaja = false;
@@ -145,9 +147,15 @@ export class OperadoresComponent implements OnInit, OnDestroy {
     this.mostrarModal = false;
   }
 
-  // --- SIN CAMBIOS ---
-  // Esta lógica sigue siendo válida. El backend (PUT/POST)
-  // ignorará los campos que no necesita (como 'esta_activo', 'edad', etc.)
+  verLicencia(operador: any) {
+  this.operadorParaLicencia = operador;
+  this.mostrarModalLicencia = true;
+}
+
+cerrarModalLicencia() {
+  this.mostrarModalLicencia = false;
+  this.operadorParaLicencia = null;
+}
   guardarOperador(): void {
     if (!this.operadorSeleccionado.nombre_completo) {
       this.mostrarNotificacion('Campo Requerido', 'El nombre completo es obligatorio.');

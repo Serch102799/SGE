@@ -1,4 +1,6 @@
-/* Base y Fondo */
+/* ===================================
+   BASE Y RESET
+   =================================== */
 * {
   margin: 0;
   padding: 0;
@@ -6,253 +8,519 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* ===================================
+   CONTENEDOR HOST
+   =================================== */
 :host {
-  display: block; /* Cambiado de flex a block para un layout de página normal */
+  display: block;
   min-height: 100vh;
-  padding: 40px 20px; /* Espacio para que el contenedor no pegue a los bordes */
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/pantalla1.jpg") no-repeat center center fixed;
+  padding: 40px 20px;
+  /* Mantenemos tu fondo original */
+  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), 
+              url("/assets/img/pantalla1.jpg") no-repeat center center fixed;
   background-size: cover;
 }
 
-/* Contenedor Principal de Usuarios */
-.usuarios-container {
-  max-width: 1200px;
-  width: 95%;
-  margin: 0 auto; /* Centrar el contenedor principal */
-  background-color: rgba(0, 0, 0, 0.8);
-  color: #e0e0e0;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-  overflow: hidden; /* Importante para que la tabla no se salga de los bordes redondeados */
+/* ===================================
+   CONTENEDOR PRINCIPAL
+   =================================== */
+.page-background {
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: transparent;
 }
 
-/* Encabezado del Contenedor */
+.usuarios-container {
+  max-width: 1400px;
+  width: 95%;
+  margin: 0 auto;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: #e0e0e0;
+  border: 1px solid rgba(68, 128, 211, 0.4);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 
+              0 0 20px rgba(68, 128, 211, 0.2);
+  overflow: hidden;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===================================
+   HEADER Y BUSCADOR (MEJORADO)
+   =================================== */
 .container-header {
-  background-color: rgba(28, 28, 28, 0.7);
-  padding: 20px 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(68, 128, 211, 0.3) 0%, rgba(74, 142, 206, 0.2) 100%);
+  padding: 25px 35px;
+  border-bottom: 2px solid rgba(68, 128, 211, 0.5);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  backdrop-filter: blur(10px);
+  flex-wrap: wrap; /* Para móviles */
+  gap: 20px;
+}
+
+.header-title-group {
+    display: flex;
+    flex-direction: column;
 }
 
 .container-header h2 {
   color: #ffffff;
+  font-size: 2rem;
+  font-weight: 700;
   margin: 0;
-  font-size: 1.8rem;
-}
-
-/* Cuerpo del Contenedor (donde va la tabla) */
-.container-body {
-  padding: 30px;
-}
-
-/* Botón para "Agregar Usuario" */
-.btn-agregar {
-  background-color: #4480d3; /* Color primario del login */
-  border: none;
-  color: white;
-  padding: 12px 24px;
-  font-size: 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px; /* Espacio entre el ícono y el texto */
-}
-
-.btn-agregar:hover {
-  background-color: #386bbd;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-/* Estilo de la Tabla de Usuarios */
-.tabla-usuarios {
-  width: 100%;
-  border-collapse: collapse; /* Bordes limpios */
-  margin-top: 25px;
-}
-
-.tabla-usuarios th, .tabla-usuarios td {
-  padding: 15px;
-  text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.tabla-usuarios thead th {
-  background-color: rgba(74, 142, 206, 0.3); /* Fondo azulado transparente */
-  color: #f3f3f3;
-  font-size: 1rem;
-  text-transform: uppercase;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
   letter-spacing: 0.5px;
 }
 
-.tabla-usuarios tbody tr {
-  background-color: transparent;
-  transition: background-color 0.2s ease-in-out;
+.container-header p {
+    color: #a0c4ff;
+    font-size: 0.9rem;
+    margin-top: 5px;
 }
 
-.tabla-usuarios tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.05); /* Resaltado sutil al pasar el mouse */
+/* --- NUEVO: BARRA DE BÚSQUEDA --- */
+.search-wrapper {
+    position: relative;
+    max-width: 400px;
+    width: 100%;
 }
 
-.tabla-usuarios td {
-  color: #e0e0e0;
+.search-input {
+    width: 100%;
+    padding: 10px 15px 10px 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(68, 128, 211, 0.4);
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    transition: all 0.3s ease;
 }
 
-/* Celda de Acciones */
-.acciones {
-  text-align: center;
-  display: flex;
-  gap: 10px; /* Espacio entre botones */
-  justify-content: center;
+.search-input:focus {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: #4480d3;
+    outline: none;
+    box-shadow: 0 0 10px rgba(68, 128, 211, 0.3);
 }
 
-/* Botones de Acción dentro de la tabla */
-.btn-accion {
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  border-radius: 5px;
-  border: 1px solid transparent;
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* BOTÓN AGREGAR */
+.btn-agregar {
+  background: linear-gradient(135deg, #4480d3 0%, #386bbd 100%);
+  border: 1px solid rgba(68, 128, 211, 0.6);
+  color: white;
+  padding: 10px 24px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(68, 128, 211, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
-/* Botón para cambiar estado */
-.btn-estado {
-  background-color: rgba(68, 128, 211, 0.7);
-  color: #ffffff;
-}
-
-.btn-estado:hover {
-  background-color: #4480d3;
+.btn-agregar:hover {
+  background: linear-gradient(135deg, #5690e3 0%, #4480d3 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(68, 128, 211, 0.6);
   border-color: #6a9edc;
 }
 
-/* Botón para eliminar */
+.btn-agregar span {
+  font-size: 1.3rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* ===================================
+   BODY Y TABLA
+   =================================== */
+.container-body {
+  padding: 30px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.tabla-responsive-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.tabla-usuarios {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.95rem;
+}
+
+/* ENCABEZADOS */
+.tabla-usuarios thead {
+  background: linear-gradient(135deg, rgba(68, 128, 211, 0.4) 0%, rgba(74, 142, 206, 0.3) 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tabla-usuarios thead th {
+  padding: 18px 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #f3f3f3;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  border-bottom: 2px solid rgba(68, 128, 211, 0.6);
+  background: rgba(28, 28, 28, 0.6);
+  backdrop-filter: blur(5px);
+}
+
+/* FILAS */
+.tabla-usuarios tbody tr {
+  transition: all 0.3s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.tabla-usuarios tbody tr:hover {
+  background: linear-gradient(90deg, 
+    rgba(68, 128, 211, 0.15) 0%, 
+    rgba(74, 142, 206, 0.1) 50%,
+    rgba(68, 128, 211, 0.15) 100%);
+  transform: translateX(5px);
+  box-shadow: 0 4px 20px rgba(68, 128, 211, 0.3);
+  border-left: 3px solid #4480d3;
+}
+
+.tabla-usuarios tbody td {
+  padding: 15px 15px;
+  vertical-align: middle;
+  color: #e0e0e0;
+}
+
+/* --- NUEVO: ESTILO PARA AVATAR + NOMBRE EN TABLA --- */
+.user-info-cell {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #4480d3;
+    box-shadow: 0 0 10px rgba(68, 128, 211, 0.4);
+    background-color: #1a1c24;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 0.95rem;
+}
+
+.user-email {
+    font-size: 0.8rem;
+    color: #a0c4ff;
+}
+
+/* ===================================
+   BADGES DE ROL
+   =================================== */
+.rol-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid transparent;
+  min-width: 100px;
+}
+
+.rol-badge.admin {
+  background: rgba(255, 102, 102, 0.15);
+  color: #ff8c8c;
+  border-color: rgba(255, 102, 102, 0.4);
+}
+
+.rol-badge.superusuario {
+  background: rgba(68, 128, 211, 0.15);
+  color: #6a9edc;
+  border-color: rgba(68, 128, 211, 0.4);
+}
+
+.rol-badge.usuario {
+  background: rgba(99, 212, 113, 0.15);
+  color: #7ed888;
+  border-color: rgba(99, 212, 113, 0.4);
+}
+
+/* ===================================
+   ESTADOS (ACTIVO / INACTIVO)
+   =================================== */
+.estado-activo,
+.estado-inactivo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px;
+  border-radius: 6px;       /* Bordes suaves */
+  font-size: 0.8rem;
+  font-weight: 700;         /* Letra gruesa */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid transparent;
+  min-width: 90px;          /* Ancho mínimo uniforme */
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px); /* Efecto vidrio */
+}
+
+/* --- ESTADO ACTIVO (Verde Neón) --- */
+.estado-activo {
+  background: rgba(99, 212, 113, 0.15); /* Fondo verde transparente */
+  color: #63d471;                       /* Texto verde brillante */
+  border-color: rgba(99, 212, 113, 0.5); /* Borde sutil */
+  box-shadow: 0 0 12px rgba(99, 212, 113, 0.25); /* Resplandor (Glow) */
+}
+
+.estado-activo:hover {
+  background: rgba(99, 212, 113, 0.25);
+  box-shadow: 0 0 15px rgba(99, 212, 113, 0.4);
+  transform: translateY(-1px);
+}
+
+/* --- ESTADO INACTIVO (Rojo Neón) --- */
+.estado-inactivo {
+  background: rgba(255, 102, 102, 0.15); /* Fondo rojo transparente */
+  color: #ff8c8c;                        /* Texto rojo suave */
+  border-color: rgba(255, 102, 102, 0.5);
+  box-shadow: 0 0 12px rgba(255, 102, 102, 0.25);
+}
+
+.estado-inactivo:hover {
+  background: rgba(255, 102, 102, 0.25);
+  box-shadow: 0 0 15px rgba(255, 102, 102, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Eliminar los estilos antiguos si tenías puntos (::before) */
+.estado-activo::before,
+.estado-inactivo::before {
+  content: none;
+  display: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.9); }
+}
+
+/* ===================================
+   ACCIONES
+   =================================== */
+.acciones {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start; /* Alineado a la izquierda para mejor lectura */
+}
+
+.btn-accion {
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .btn-eliminar {
-  background-color: rgba(255, 102, 102, 0.7);
-  color: #ffffff;
+  background: rgba(217, 83, 79, 0.2);
+  color: #ff8c8c;
+  border-color: rgba(217, 83, 79, 0.4);
 }
 
 .btn-eliminar:hover {
-  background-color: #ff6666;
-  border-color: #ff8c8c;
-}
-
-/* Estilo para el Estado de la cuenta */
-.estado-activo {
-  color: #63d471; /* Verde brillante */
-  font-weight: bold;
-}
-
-.estado-inactivo {
-  color: #ff6666; /* Rojo suave */
-  font-weight: bold;
-}
-
-/* Contenedor para hacer la tabla responsive */
-.tabla-responsive-wrapper {
-  overflow-x: auto; /* Permite scroll horizontal en pantallas pequeñas */
-}
-
-/* Flecha para regresar */
-.back-arrow {
-  position: fixed;
-  top: 25px;
-  left: 25px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 1000;
+  background: rgba(217, 83, 79, 0.4);
   color: #ffffff;
-  font-size: 24px;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+  border-color: #ff6666;
 }
 
-.back-arrow:hover {
-  transform: scale(1.2);
+.btn-editar {
+  background: rgba(68, 128, 211, 0.2);
+  color: #6a9edc;
+  border-color: rgba(68, 128, 211, 0.4);
 }
 
-/* Ajustes Responsivos */
-@media (max-width: 768px) {
-  :host {
-    padding: 20px 10px;
-  }
-  .container-header {
-    flex-direction: column;
-    gap: 15px;
-    padding: 15px;
-  }
-  .container-header h2 {
-    font-size: 1.5rem;
-  }
-  .container-body {
-    padding: 15px;
-  }
-  .tabla-usuarios th, .tabla-usuarios td {
-    padding: 10px 8px;
+.btn-editar:hover {
+  background: rgba(68, 128, 211, 0.4);
+  color: #ffffff;
+  border-color: #4480d3;
+}
+
+/* ===================================
+   PAGINACIÓN (NUEVO)
+   =================================== */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 10px;
+    color: #a0c4ff;
     font-size: 0.9rem;
-  }
-  .acciones {
-    flex-direction: column; /* Apila los botones en pantallas pequeñas */
-  }
 }
-/* ... (tus estilos existentes) ... */
 
-/* AÑADIDO: Estilos para el Modal */
+.pagination-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.page-btn {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(68, 128, 211, 0.3);
+    color: #e0e0e0;
+    width: 35px;
+    height: 35px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-btn:hover:not(:disabled) {
+    border-color: #4480d3;
+    color: white;
+    background: rgba(68, 128, 211, 0.2);
+}
+
+.page-btn.active {
+    background: linear-gradient(135deg, #4480d3 0%, #386bbd 100%);
+    border-color: #4480d3;
+    color: white;
+    box-shadow: 0 0 10px rgba(68, 128, 211, 0.4);
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===================================
+   MODALES (AJUSTADO PARA FORMULARIOS DE USUARIO)
+   =================================== */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7); /* Fondo oscuro semitransparente */
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: fadeIn 0.3s ease;
 }
 
 .modal-content {
-  background-color: rgba(25, 28, 36, 0.95); /* Color de fondo oscuro para el modal */
-  padding: 25px 35px;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, rgba(25, 28, 36, 0.98) 0%, rgba(28, 28, 28, 0.98) 100%);
+  border: 2px solid rgba(68, 128, 211, 0.5);
+  border-radius: 16px;
   width: 90%;
-  max-width: 500px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  animation: fadeIn 0.3s ease-out;
+  max-width: 600px; /* Un poco más ancho para formularios de usuario */
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(68, 128, 211, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(50px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modal-header {
+  background: linear-gradient(135deg, rgba(68, 128, 211, 0.4) 0%, rgba(74, 142, 206, 0.3) 100%);
+  padding: 20px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 15px;
-  margin-bottom: 20px;
+  border-bottom: 2px solid rgba(68, 128, 211, 0.5);
 }
 
 .modal-header h3 {
-  margin: 0;
   color: #ffffff;
-  font-size: 1.5rem;
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .btn-cerrar {
-  background: none;
-  border: none;
-  color: #aaa;
-  font-size: 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 1.5rem;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
   cursor: pointer;
-  line-height: 1;
-  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
 .btn-cerrar:hover {
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
+  box-shadow: 0 0 15px rgba(68, 128, 211, 0.5);
+}
+
+.modal-body {
+  padding: 30px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* FORMULARIOS ESTILIZADOS */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
 }
 
 .form-group {
@@ -262,91 +530,231 @@
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  color: #e0e0e0;
-  font-size: 0.9rem;
+  color: #a0c4ff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .form-control {
   width: 100%;
-  background-color: rgba(74, 142, 206, 0.2) !important;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  padding: 12px;
-  color: #f3f3f3;
-  border-radius: 5px;
+  padding: 12px 15px;
+  border: 2px solid rgba(68, 128, 211, 0.3);
+  border-radius: 8px;
   font-size: 1rem;
+  transition: all 0.3s ease;
+  background: rgba(20, 20, 30, 0.6) !important;
+  color: #ffffff !important;
 }
 
+.form-control:focus {
+  outline: none;
+  border-color: #4480d3;
+  background: rgba(20, 20, 30, 0.8) !important;
+  box-shadow: 0 0 0 3px rgba(68, 128, 211, 0.2);
+}
+
+/* TOGGLE SWITCH (Para activar/desactivar usuario) */
+.switch-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: .4s;
+  border-radius: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #4480d3;
+  border-color: #4480d3;
+  box-shadow: 0 0 10px rgba(68, 128, 211, 0.5);
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+/* FOOTER DEL MODAL */
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 15px;
-  margin-top: 30px;
-}
-
-.btn-guardar {
-  background-color: #4480d3;
-  color: white;
-}
-.btn-guardar:hover {
-  background-color: #386bbd;
-}
-
-.btn-cancelar {
-  background-color: #555;
-  color: white;
-}
-.btn-cancelar:hover {
-  background-color: #777;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-.modal-header .header-eliminar {
-  color: #ff6666; /* Rojo para indicar peligro */
-}
-
-/* Estilo para el texto de confirmación */
-.confirm-text {
-  color: #e0e0e0;
-  font-size: 1.1rem;
-  line-height: 1.6;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.confirm-text strong {
-  color: #ffffff;
-  font-weight: 600;
-}
-
-/* Estilo para la advertencia */
-.confirm-warning {
-  color: #aaa;
-  font-size: 0.9rem;
-  text-align: center;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 2px solid rgba(68, 128, 211, 0.2);
   margin-top: 20px;
 }
 
-/* Estilo específico para el botón de confirmar eliminación */
-.btn-confirmar-eliminar {
-  background-color: #d9534f; /* Rojo */
-  color: white;
-  border: 1px solid #d43f3a;
+.btn-cancelar {
+  background: transparent;
+  color: #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-.btn-confirmar-eliminar:hover {
-  background-color: #c9302c; /* Rojo más oscuro */
-  border-color: #ac2925;
+.btn-cancelar:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
 }
-select.form-control option {
-  background-color: #ffffff; 
-  color: #000000; 
+
+.btn-guardar {
+  background: linear-gradient(135deg, #4480d3 0%, #386bbd 100%);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(68, 128, 211, 0.4);
+  transition: 0.3s;
+}
+
+.btn-guardar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(68, 128, 211, 0.6);
+}
+
+/* ===================================
+   RESPONSIVE
+   =================================== */
+@media (max-width: 768px) {
+  .container-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-wrapper {
+      max-width: 100%;
+  }
+  
+  .btn-agregar {
+      width: 100%;
+      justify-content: center;
+  }
+  
+  .form-grid {
+      grid-template-columns: 1fr;
+  }
+  
+  .tabla-responsive-wrapper {
+      overflow-x: scroll;
+  }
+  
+  .pagination-container {
+      flex-direction: column;
+      gap: 15px;
+  }
+}
+.grid-detalles {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Dos columnas exactas */
+  gap: 15px 20px; /* Espacio vertical y horizontal */
+  background: rgba(0, 0, 0, 0.25);
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Cada celda de información */
+.detalle-item {
+  display: flex;
+  flex-direction: column; /* IMPORTANTE: Pone la etiqueta arriba del valor */
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden; /* Evita que textos largos rompan el diseño */
+}
+
+/* La etiqueta pequeña (Ej: USUARIO) */
+.detalle-item .label {
+  font-size: 0.65rem;
+  color: #888; /* Color gris para diferenciar */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px; /* Separación entre etiqueta y valor */
+  font-weight: 600;
+}
+
+/* El valor real (Ej: @Tatiana) */
+.detalle-item .valor {
+  font-size: 0.95rem;
+  color: #fff;
+  font-weight: 500;
+  white-space: nowrap; /* Evita que se rompa en dos líneas si es posible */
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* Ajuste del Avatar para que se vea más pro */
+.avatar-img {
+  width: 110px;
+  height: 110px;
+  border-radius: 12px; /* Cuadrado con bordes suaves estilo ID corporativo */
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+/* Botones de Filtro */
+.filtro-estado-group {
+    display: flex;
+    background: rgba(0,0,0,0.3);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid rgba(68, 128, 211, 0.3);
+}
+
+.btn-filtro {
+    background: transparent;
+    border: none;
+    color: #a0c4ff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-filtro:hover {
+    color: white;
+}
+
+.btn-filtro.active {
+    background: rgba(68, 128, 211, 0.4);
+    color: white;
+    box-shadow: 0 0 10px rgba(68, 128, 211, 0.2);
 }

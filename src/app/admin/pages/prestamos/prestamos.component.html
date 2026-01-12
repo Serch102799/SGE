@@ -22,7 +22,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of prestamosActivos">
+          <tr *ngFor="let item of prestamosActivos | paginate: { itemsPerPage: itemsPerPage, currentPage: page }">
             <td>{{ item.fecha_prestamo | date:'dd/MM/yy HH:mm' }}</td>
             <td>{{ item.solicitante }}</td>
             <td style="font-weight: bold; color: #fff;">{{ item.nombre_item }}</td>
@@ -45,6 +45,14 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="pagination-controls">
+        <pagination-controls 
+            (pageChange)="page = $event"
+            previousLabel="Anterior"
+            nextLabel="Siguiente">
+        </pagination-controls>
     </div>
   </div>
 </div>
@@ -84,12 +92,7 @@
                     (click)="cambiarTipoBusqueda('refaccion')">
                 Refacciones
             </button>
-            <!-- <button type="button" class="btn-tipo-calculo" 
-                    [class.active]="tipoItemBusqueda === 'herramienta'" 
-                    (click)="cambiarTipoBusqueda('herramienta')">
-                Herramientas
-            </button> -->
-        </div>
+            </div>
 
         <div class="form-row align-items-end">
             <div class="form-group col-md-8">

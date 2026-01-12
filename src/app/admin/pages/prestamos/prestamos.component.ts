@@ -11,9 +11,8 @@ import { environment } from '../../../../environments/environments';
 interface PrestamoActivo {
   id_prestamo: number;
   fecha_prestamo: string;
-  // Ahora puede venir el nombre manual o el de un empleado registrado
   nombre_solicitante_manual?: string; 
-  solicitante?: string; // Para compatibilidad con la vista SQL
+  solicitante?: string; 
   id_detalle_prestamo: number;
   tipo_item: string;
   nombre_item: string;
@@ -25,8 +24,8 @@ interface PrestamoActivo {
 interface ItemBusqueda {
   id: number;
   nombre: string;
-  stock_actual?: number;      // Para insumos
-  cantidad_disponible?: number; // Para refacciones/herramientas
+  stock_actual?: number;
+  cantidad_disponible?: number;
   tipo: 'insumo' | 'refaccion' | 'herramienta';
 }
 
@@ -44,6 +43,10 @@ export class PrestamosComponent implements OnInit {
   prestamosActivos: PrestamoActivo[] = [];
   loading = false;
 
+  // --- Paginación (Cliente) ---
+  page: number = 1;
+  itemsPerPage: number = 10;
+
   // --- Modales ---
   mostrarModalNuevo = false;
   mostrarModalDevolucion = false;
@@ -52,24 +55,22 @@ export class PrestamosComponent implements OnInit {
   itemControl = new FormControl();
   filteredItems$: Observable<ItemBusqueda[]>;
   
-  // Objeto principal para el nuevo préstamo
   nuevoPrestamo = {
-    nombre_solicitante_manual: '', // CAMBIO: Nombre manual (texto libre)
+    nombre_solicitante_manual: '', 
     observaciones: '',
-    items: [] as any[] // Carrito de items
+    items: [] as any[] 
   };
   
   itemSeleccionadoTemporal: ItemBusqueda | null = null;
   cantidadAPrestar: number = 1;
   
-  // Controla qué botón está activo (Insumo, Refacción o Herramienta)
   tipoItemBusqueda: 'insumo' | 'refaccion' | 'herramienta' = 'insumo'; 
 
   // --- Formulario Devolución ---
   itemParaDevolver: PrestamoActivo | null = null;
   datosDevolucion = {
     cantidad: 0,
-    estado: 'BUENO' // 'BUENO', 'ROTO', 'VACIO'
+    estado: 'BUENO' 
   };
 
   // Notificaciones
@@ -77,7 +78,6 @@ export class PrestamosComponent implements OnInit {
   notificacion = { titulo: '', mensaje: '', tipo: 'exito' as 'exito' | 'error' | 'advertencia' };
 
   constructor(private http: HttpClient, public authService: AuthService) {
-    // Configuración del Autocomplete para Items
     this.filteredItems$ = this.itemControl.valueChanges.pipe(
       startWith(''),
       debounceTime(300),
@@ -95,12 +95,13 @@ export class PrestamosComponent implements OnInit {
     this.loading = true;
     this.http.get<PrestamoActivo[]>(`${this.apiUrl}/prestamos/activos`).subscribe({
       next: (data) => {
-        // Mapeamos para asegurar que se muestre el nombre correcto (manual o registrado)
         this.prestamosActivos = data.map(p => ({
             ...p,
             solicitante: p.nombre_solicitante_manual || p.solicitante || 'Desconocido'
         }));
         this.loading = false;
+        // Reiniciar a página 1 al recargar datos
+        this.page = 1; 
       },
       error: (err) => {
         console.error('Error cargando préstamos:', err);
@@ -112,7 +113,7 @@ export class PrestamosComponent implements OnInit {
   // --- Lógica del Buscador ---
   cambiarTipoBusqueda(tipo: 'insumo' | 'refaccion' | 'herramienta') {
     this.tipoItemBusqueda = tipo;
-    this.itemControl.setValue(''); // Limpiar búsqueda al cambiar de pestaña
+    this.itemControl.setValue('');
     this.itemSeleccionadoTemporal = null;
   }
 
@@ -120,16 +121,13 @@ export class PrestamosComponent implements OnInit {
     const searchTerm = typeof term === 'string' ? term : term.nombre;
     if (!searchTerm || searchTerm.length < 2) return of([]);
     
-    // Si buscamos 'herramienta', usamos el endpoint de 'refacciones' (asumiendo que ahí están)
     const endpoint = this.tipoItemBusqueda === 'insumo' ? 'insumos' : 'refacciones';
     
     return this.http.get<any[]>(`${this.apiUrl}/${endpoint}/buscar`, { params: { term: searchTerm } })
       .pipe(map(items => items.map(i => ({
         id: this.tipoItemBusqueda === 'insumo' ? i.id_insumo : i.id_refaccion,
         nombre: i.nombre,
-        // Normalizamos el campo de stock para mostrarlo en el dropdown
         stock_actual: this.tipoItemBusqueda === 'insumo' ? i.stock_actual : i.cantidad_disponible,
-        // Asignamos el tipo actual para que el carrito sepa qué es
         tipo: this.tipoItemBusqueda 
       }))));
   }
@@ -151,7 +149,6 @@ export class PrestamosComponent implements OnInit {
   agregarAlCarrito() {
     if (!this.itemSeleccionadoTemporal || this.cantidadAPrestar <= 0) return;
     
-    // Validación visual de stock
     const stock = this.itemSeleccionadoTemporal.stock_actual !== undefined 
         ? this.itemSeleccionadoTemporal.stock_actual 
         : (this.itemSeleccionadoTemporal.cantidad_disponible || 0);
@@ -166,7 +163,6 @@ export class PrestamosComponent implements OnInit {
       cantidad: this.cantidadAPrestar
     });
 
-    // Resetear inputs de item para seguir agregando
     this.itemControl.setValue('');
     this.itemSeleccionadoTemporal = null;
     this.cantidadAPrestar = 1;
@@ -177,7 +173,6 @@ export class PrestamosComponent implements OnInit {
   }
 
   guardarPrestamo() {
-    // CAMBIO: Validación usando nombre manual
     if (!this.nuevoPrestamo.nombre_solicitante_manual.trim()) {
         this.mostrarNotificacion('Faltan Datos', 'Escribe el nombre del mecánico.', 'advertencia');
         return;
@@ -187,15 +182,12 @@ export class PrestamosComponent implements OnInit {
       return;
     }
 
-    // Preparamos el payload
     const payload = {
         nombre_solicitante_manual: this.nuevoPrestamo.nombre_solicitante_manual,
         observaciones: this.nuevoPrestamo.observaciones,
         items: this.nuevoPrestamo.items.map(i => ({
             id: i.id,
             cantidad: i.cantidad,
-            // TRUCO: Si es 'herramienta', le decimos al backend que es 'refaccion' 
-            // para que sepa descontar de la tabla lote_refaccion.
             tipo: i.tipo === 'herramienta' ? 'refaccion' : i.tipo
         }))
     };
