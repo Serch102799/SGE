@@ -44,10 +44,10 @@
         <a routerLink="reportes" routerLinkActive="active"><fa-icon [icon]="faReportes"></fa-icon>
           <span>Reportes</span></a>
       </li>
-      <!-- <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="inventario-inicial" routerLinkActive="active"><fa-icon [icon]="faCargaInicial"></fa-icon>
           <span>Carga Inicial</span></a>
-      </li> -->
+      </li>
       <li *ngIf="authService.hasRole(['SuperUsuario'])">
         <a routerLink="/admin/superadmin">
           <i class="fas fa-shield-alt"></i> <fa-icon [icon]="faEdicionHistorica"></fa-icon> <span>Edición
