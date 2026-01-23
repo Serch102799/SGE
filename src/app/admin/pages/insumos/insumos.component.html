@@ -2,7 +2,11 @@
   <div class="container-header">
     <h2>Catálogo de Insumos y Consumibles</h2>
     <div class="acciones-header">
-      <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'Almacenista', 'SuperUsuario'])">
+      <button class="btn-exportar" (click)="exportarAExcel()">
+        <span>&#128196;</span> EXPORTAR A EXCEL
+      </button>
+      <button class="btn-agregar" (click)="abrirModal('agregar')"
+        *ngIf="authService.hasRole(['Admin', 'Almacenista', 'SuperUsuario'])">
         <span>&#43;</span> Agregar Insumo
       </button>
     </div>
@@ -11,11 +15,7 @@
   <div class="container-body">
     <div class="filtros-container">
       <div class="filtro-item">
-        <input 
-          type="text" 
-          class="form-control" 
-          placeholder="Buscar por nombre o marca..."
-          [(ngModel)]="terminoBusqueda"
+        <input type="text" class="form-control" placeholder="Buscar por nombre o marca..." [(ngModel)]="terminoBusqueda"
           (ngModelChange)="onFiltroChange()">
       </div>
       <div class="filtro-item">
@@ -31,97 +31,92 @@
     </div>
 
     <div class="tabla-responsive-wrapper">
-  <table class="tabla-usuarios">
-    <thead>
-      <tr>
-        <th>
-          <button (click)="onSort('nombre')">
-            Nombre 
-            <span *ngIf="sortField === 'nombre'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
-          </button>
-        </th>
-        <th>
-          <button (click)="onSort('marca')">
-            Marca 
-            <span *ngIf="sortField === 'marca'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
-          </button>
-        </th>
-        <th>
-          <button (click)="onSort('tipo_insumo')">
-            Tipo 
-            <span *ngIf="sortField === 'tipo_insumo'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
-          </button>
-        </th>
-        <th>
-          <button (click)="onSort('stock_actual')">
-            Stock Actual 
-            <span *ngIf="sortField === 'stock_actual'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
-          </button>
-        </th>
-        <th>
-          <button (click)="onSort('unidad_medida')">
-            Unidad 
-            <span *ngIf="sortField === 'unidad_medida'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
-          </button>
-        </th>
-        <th>
-          <button (click)="onSort('costo_unitario_promedio')">
-            Costo Unitario 
-            <span *ngIf="sortField === 'costo_unitario_promedio'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
-          </button>
-        </th>
-        <th style="text-align: center;">Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let insumo of insumos | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
-        <td>{{ insumo.nombre }}</td>
-        <td>{{ insumo.marca || '-' }}</td>
-        <td>
-          <span class="badge" [ngClass]="{
+      <table class="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>
+              <button (click)="onSort('nombre')">
+                Nombre
+                <span *ngIf="sortField === 'nombre'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+              </button>
+            </th>
+            <th>
+              <button (click)="onSort('marca')">
+                Marca
+                <span *ngIf="sortField === 'marca'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+              </button>
+            </th>
+            <th>
+              <button (click)="onSort('tipo_insumo')">
+                Tipo
+                <span *ngIf="sortField === 'tipo_insumo'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+              </button>
+            </th>
+            <th>
+              <button (click)="onSort('stock_actual')">
+                Stock Actual
+                <span *ngIf="sortField === 'stock_actual'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+              </button>
+            </th>
+            <th>
+              <button (click)="onSort('unidad_medida')">
+                Unidad
+                <span *ngIf="sortField === 'unidad_medida'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+              </button>
+            </th>
+            <th>
+              <button (click)="onSort('costo_unitario_promedio')">
+                Costo Unitario
+                <span *ngIf="sortField === 'costo_unitario_promedio'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+              </button>
+            </th>
+            <th style="text-align: center;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let insumo of insumos | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+            <td>{{ insumo.nombre }}</td>
+            <td>{{ insumo.marca || '-' }}</td>
+            <td>
+              <span class="badge" [ngClass]="{
             'badge-fluido': insumo.tipo_insumo === 'Fluido', 
             'badge-consumible': insumo.tipo_insumo === 'Consumible de Taller',
             'badge-limpieza': insumo.tipo_insumo === 'Limpieza',
             'badge-seguridad': insumo.tipo_insumo === 'Seguridad'
           }">
-            {{ insumo.tipo_insumo }}
-          </span>
-        </td>
-        <td [class.stock-critico]="insumo.stock_actual <= insumo.stock_minimo && insumo.stock_minimo > 0">
-          {{ insumo.stock_actual | number:'1.2-2' }}
-        </td>
-        <td>{{ insumo.unidad_medida }}</td>
-        <td>
-          <div class="costo-container">
-            <span class="costo-valor">{{ formatearMoneda(insumo.costo_unitario_promedio) }}</span>
-            <button 
-              *ngIf="authService.hasRole(['SuperUsuario'])"
-              class="btn-icon btn-editar-costo" 
-              (click)="abrirModalEditarCosto(insumo)"
-              title="Editar costo unitario">
-              <i class="fas fa-dollar-sign">Editar</i>
-            </button>
-          </div>
-        </td>
-        <td class="acciones" *ngIf="authService.hasRole(['Admin', 'Almacenista', 'SuperUsuario'])">
-          <button class="btn-accion btn-estado" (click)="abrirModal('editar', insumo)">Editar</button>
-          <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(insumo)">Eliminar</button>
-        </td>
-      </tr>
-      <tr *ngIf="insumos.length === 0">
-        <td colspan="7" class="empty-table-message">
-          No se encontraron insumos que coincidan con los filtros.
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+                {{ insumo.tipo_insumo }}
+              </span>
+            </td>
+            <td [class.stock-critico]="insumo.stock_actual <= insumo.stock_minimo && insumo.stock_minimo > 0">
+              {{ insumo.stock_actual | number:'1.2-2' }}
+            </td>
+            <td>{{ insumo.unidad_medida }}</td>
+            <td>
+              <div class="costo-container">
+                <span class="costo-valor">{{ formatearMoneda(insumo.costo_unitario_promedio) }}</span>
+                <button *ngIf="authService.hasRole(['SuperUsuario'])" class="btn-icon btn-editar-costo"
+                  (click)="abrirModalEditarCosto(insumo)" title="Editar costo unitario">
+                  <i class="fas fa-dollar-sign">Editar</i>
+                </button>
+              </div>
+            </td>
+            <td class="acciones" *ngIf="authService.hasRole(['Admin', 'Almacenista', 'SuperUsuario'])">
+              <button class="btn-accion btn-estado" (click)="abrirModal('editar', insumo)">Editar</button>
+              <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(insumo)">Eliminar</button>
+            </td>
+          </tr>
+          <tr *ngIf="insumos.length === 0">
+            <td colspan="7" class="empty-table-message">
+              No se encontraron insumos que coincidan con los filtros.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <div class="pagination-controls">
-      <pagination-controls 
-          (pageChange)="onPageChange($event)"
-          previousLabel="Anterior"
-          nextLabel="Siguiente">
+      <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente">
       </pagination-controls>
     </div>
   </div>
@@ -152,7 +147,8 @@
         </div>
         <div class="form-group">
           <label>Unidad de Medida</label>
-          <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.unidad_medida" name="unidad_medida" required>
+          <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.unidad_medida" name="unidad_medida"
+            required>
         </div>
         <div class="form-group">
           <label>Stock Mínimo</label>
@@ -174,12 +170,14 @@
       <button class="btn-cerrar" (click)="cerrarModalBorrar()">×</button>
     </div>
     <div class="modal-body">
-      <p class="confirm-text" *ngIf="insumoABorrar">¿Estás seguro de que deseas eliminar <strong>{{ insumoABorrar.nombre }}</strong>?</p>
+      <p class="confirm-text" *ngIf="insumoABorrar">¿Estás seguro de que deseas eliminar <strong>{{ insumoABorrar.nombre
+          }}</strong>?</p>
       <p class="confirm-warning">Esta acción no se puede deshacer.</p>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBorrar()">Cancelar</button>
-      <button type="button" class="btn-accion btn-confirmar-eliminar" (click)="confirmarEliminacion()">Sí, Eliminar</button>
+      <button type="button" class="btn-accion btn-confirmar-eliminar" (click)="confirmarEliminacion()">Sí,
+        Eliminar</button>
     </div>
   </div>
 </div>
@@ -210,27 +208,20 @@
       <h2>Editar Costo Unitario</h2>
       <button class="btn-close" (click)="cerrarModalCosto()">&times;</button>
     </div>
-    
+
     <div class="modal-body">
       <p><strong>Insumo:</strong> {{ insumoEditarCosto?.nombre }}</p>
       <p><strong>Marca:</strong> {{ insumoEditarCosto?.marca || 'Sin marca' }}</p>
       <p><strong>Costo actual:</strong> {{ formatearMoneda(insumoEditarCosto?.costo_unitario_promedio || 0) }}</p>
-      
+
       <div class="form-group">
         <label for="nuevoCosto">Nuevo Costo Unitario Promedio</label>
-        <input 
-          type="number" 
-          id="nuevoCosto"
-          class="form-control" 
-          [(ngModel)]="nuevoCosto"
-          min="0"
-          step="0.01"
-          placeholder="0.00"
-        />
+        <input type="number" id="nuevoCosto" class="form-control" [(ngModel)]="nuevoCosto" min="0" step="0.01"
+          placeholder="0.00" />
         <small class="form-text">Formato: {{ formatearMoneda(nuevoCosto) }}</small>
       </div>
     </div>
-    
+
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="cerrarModalCosto()">Cancelar</button>
       <button class="btn btn-primary" (click)="guardarCosto()">Guardar Cambios</button>

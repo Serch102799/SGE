@@ -4,6 +4,7 @@ import { Location } from '@angular/common';
 import * as Papa from 'papaparse';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environments';
+import * as XLSX from 'xlsx';
 
 export interface Refaccion {
   id_refaccion: number;
@@ -41,6 +42,8 @@ export class RefaccionesComponent implements OnInit {
   filtroMarca: string = '';
   categoriasUnicas: string[] = [];
   marcasUnicas: string[] = [];
+  sortField: string = '';
+  sortDirection: string = 'asc';
   
   // --- Modales y Notificaciones (sin cambios) ---
   mostrarModalAgregar = false;
@@ -266,30 +269,71 @@ export class RefaccionesComponent implements OnInit {
     this.refaccionSeleccionadaNombre = null;
   }
 
-  exportarACSV() {
-    if (this.refaccionesFiltradas.length === 0) {
-      this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.');
-      return;
+  exportarAExcel() {
+  this.mostrarNotificacion('Generando...', 'Preparando archivo Excel, por favor espere...', 'exito');
+
+  // 1. Preparar parámetros para pedir TODO (sin paginación)
+  let params = new HttpParams()
+    .set('page', '1')
+    .set('limit', '100000') // Límite alto para traer todo
+    .set('search', this.terminoBusqueda)
+    .set('sortBy', this.sortField)
+    .set('sortOrder', this.sortDirection);
+
+  if (this.filtroCategoria) params = params.set('filtroCategoria', this.filtroCategoria);
+  if (this.filtroMarca) params = params.set('filtroMarca', this.filtroMarca);
+
+  // 2. Solicitar datos al backend
+  this.http.get<{ data: any[] }>(this.apiUrl, { params }).subscribe({
+    next: (response) => {
+      const datosCompletos = response.data;
+
+      if (!datosCompletos || datosCompletos.length === 0) {
+        this.mostrarNotificacion('Sin Datos', 'No hay registros para exportar con los filtros actuales.', 'advertencia');
+        return;
+      }
+
+      // 3. Mapear datos para el Excel (Columnas bonitas)
+      const datosExcel = datosCompletos.map(ref => ({
+        'Nombre': ref.nombre,
+        'N° Parte': ref.numero_parte,
+        'Categoría': ref.categoria,
+        'Marca': ref.marca,
+        'Stock Actual': ref.stock_actual,
+        'Stock Mínimo': ref.stock_minimo,
+        'Ubicación': ref.ubicacion_almacen,
+        'Último Costo': ref.ultimo_costo ? `$${Number(ref.ultimo_costo).toFixed(2)}` : 'N/A'
+      }));
+
+      // 4. Crear Hoja de Trabajo (Worksheet)
+      const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(datosExcel);
+
+      // (Opcional) Ajustar ancho de columnas
+      const wscols = [
+        { wch: 30 }, // Nombre
+        { wch: 15 }, // N Parte
+        { wch: 15 }, // Categoria
+        { wch: 15 }, // Marca
+        { wch: 10 }, // Stock
+        { wch: 10 }, // Minimo
+        { wch: 15 }, // Ubicacion
+        { wch: 12 }  // Costo
+      ];
+      ws['!cols'] = wscols;
+
+      // 5. Crear Libro (Workbook) y guardar
+      const wb: XLSX.WorkBook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Refacciones');
+
+      // Nombre del archivo con fecha
+      const fecha = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `Inventario_Refacciones_${fecha}.xlsx`);
+
+      this.mostrarNotificacion('Éxito', 'Archivo Excel descargado correctamente.', 'exito');
+    },
+    error: (err) => {
+      console.error(err);
+      this.mostrarNotificacion('Error', 'No se pudieron descargar los datos para el reporte.', 'error');
     }
-    const dataParaExportar = this.refaccionesFiltradas.map(refaccion => ({
-      'Nombre': refaccion.Nombre,
-      'Numero de Parte': refaccion.Numero_Parte,
-      'Categoria': refaccion.Categoria,
-      'Marca': refaccion.Marca,
-      'Stock Actual': refaccion.Stock_Actual,
-      'Stock Minimo': refaccion.Stock_Minimo,
-      'Ubicacion': refaccion.Ubicacion_Almacen,
-      'Precio de Costo': refaccion.Precio_Costo
-    }));
-    const csv = Papa.unparse(dataParaExportar);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'reporte_refacciones.csv');
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-}
+  });
+  }}

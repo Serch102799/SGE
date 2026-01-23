@@ -4,6 +4,7 @@ import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environments';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import * as XLSX from 'xlsx';
 
 export interface Insumo {
   id_insumo: number;
@@ -233,4 +234,71 @@ export class InsumosComponent implements OnInit, OnDestroy {
       currency: 'MXN' 
     }).format(valor || 0);
   }
+
+  exportarAExcel() {
+  // Notificar al usuario que el proceso inició
+  this.mostrarNotificacion('Generando...', 'Preparando archivo Excel, por favor espere...', 'exito');
+
+  // 1. Configurar parámetros para traer TODO (sin paginación real)
+  let params = new HttpParams()
+    .set('page', '1')
+    .set('limit', '100000') // Límite alto para obtener todos los registros
+    .set('search', this.terminoBusqueda)
+    .set('tipo', this.filtroTipo) // Tu endpoint usa 'tipo' para el filtro de categoría
+    .set('sortBy', this.sortField)
+    .set('sortOrder', this.sortDirection);
+
+  // 2. Petición al Backend
+  this.http.get<{ data: any[] }>(this.apiUrl, { params }).subscribe({
+    next: (response) => {
+      const datosCompletos = response.data;
+
+      if (!datosCompletos || datosCompletos.length === 0) {
+        this.mostrarNotificacion('Sin Datos', 'No hay registros para exportar con los filtros actuales.', 'advertencia');
+        return;
+      }
+
+      // 3. Mapear los datos para que el Excel se vea profesional
+      const datosExcel = datosCompletos.map(item => ({
+        'Nombre': item.nombre,
+        'Marca': item.marca || 'N/A',
+        'Tipo': item.tipo_insumo,
+        'Stock Actual': item.stock_actual,
+        'Stock Mínimo': item.stock_minimo,
+        'Unidad': item.unidad_medida,
+        'Costo Promedio': item.costo_unitario_promedio 
+          ? `$${Number(item.costo_unitario_promedio).toFixed(2)}` 
+          : '$0.00'
+      }));
+
+      // 4. Crear la Hoja de Cálculo
+      const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(datosExcel);
+
+      // (Opcional) Ajustar ancho de columnas para que se lea bien
+      const wscols = [
+        { wch: 30 }, // Nombre
+        { wch: 15 }, // Marca
+        { wch: 20 }, // Tipo
+        { wch: 12 }, // Stock Actual
+        { wch: 12 }, // Stock Minimo
+        { wch: 10 }, // Unidad
+        { wch: 15 }  // Costo
+      ];
+      ws['!cols'] = wscols;
+
+      // 5. Crear el Libro y Guardar
+      const wb: XLSX.WorkBook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Insumos');
+
+      const fecha = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `Inventario_Insumos_${fecha}.xlsx`);
+
+      this.mostrarNotificacion('Éxito', 'Archivo Excel descargado correctamente.', 'exito');
+    },
+    error: (err) => {
+      console.error(err);
+      this.mostrarNotificacion('Error', 'No se pudieron descargar los datos.', 'error');
+    }
+  });
+}
 }
