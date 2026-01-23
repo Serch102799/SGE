@@ -5,6 +5,9 @@ import { environment } from '../../../../environments/environments';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // --- Interfaces ---
 export interface Autobus {
@@ -276,30 +279,36 @@ export class AutobusesComponent implements OnInit, OnDestroy {
     this.filtroHistorialFechaFin = '';
   }
   
-  aplicarFiltroHistorial(): void {
-    let historialTemp = [...this.historialCompleto];
-    const busqueda = this.filtroHistorialItem.toLowerCase();
+  aplicarFiltroHistorial() {
+  // 1. Filtrar la lista
+  this.historialFiltrado = this.historialCompleto.filter(item => {
+    // Filtro de Texto (nombre, marca o tipo)
+    const coincideTexto = !this.filtroHistorialItem || 
+      item.nombre.toLowerCase().includes(this.filtroHistorialItem.toLowerCase()) ||
+      item.tipo_item.toLowerCase().includes(this.filtroHistorialItem.toLowerCase()) ||
+      item.marca?.toLowerCase().includes(this.filtroHistorialItem.toLowerCase());
 
-    if (busqueda) {
-      historialTemp = historialTemp.filter(item => 
-        (item.nombre_refaccion && item.nombre_refaccion.toLowerCase().includes(busqueda))||
-        (item.nombre && item.nombre.toLowerCase().includes(busqueda)) ||
-        (item.marca && item.marca.toLowerCase().includes(busqueda)) ||
-        (item.tipo_item && item.tipo_item.toLowerCase().includes(busqueda))
-      );
-    }
-    if (this.filtroHistorialFechaInicio) {
-      const fechaDesde = new Date(this.filtroHistorialFechaInicio);
-      historialTemp = historialTemp.filter(item => new Date(item.fecha) >= fechaDesde);
-    }
+    // Filtro de Fechas
+    const fechaItem = new Date(item.fecha).getTime();
+    const fechaInicio = this.filtroHistorialFechaInicio ? new Date(this.filtroHistorialFechaInicio).getTime() : 0;
+    
+    // Para fecha fin, ajustamos al final del día
+    let fechaFin = Infinity;
     if (this.filtroHistorialFechaFin) {
-      const fechaHasta = new Date(this.filtroHistorialFechaFin);
-      fechaHasta.setDate(fechaHasta.getDate() + 1);
-      historialTemp = historialTemp.filter(item => new Date(item.fecha) < fechaHasta);
+        const fin = new Date(this.filtroHistorialFechaFin);
+        fin.setHours(23, 59, 59, 999);
+        fechaFin = fin.getTime();
     }
 
-    this.historialFiltrado = historialTemp;
-  }
+    const coincideFecha = fechaItem >= fechaInicio && fechaItem <= fechaFin;
+
+    return coincideTexto && coincideFecha;
+  });
+
+  this.costoTotalHistorial = this.historialFiltrado.reduce((acumulado, item) => {
+    return acumulado + (Number(item.costo) || 0);
+  }, 0);
+}
   abrirModalSyncKm(autobus: Autobus): void {
     this.autobusParaSync = autobus;
     this.kmSincronizar = autobus.kilometraje_ultima_carga !== undefined ? autobus.kilometraje_ultima_carga : null; // Precarga el valor actual
@@ -339,4 +348,72 @@ export class AutobusesComponent implements OnInit, OnDestroy {
   cerrarModalNotificacion() {
     this.mostrarModalNotificacion = false;
   }
+  exportarHistorialExcel() {
+  if (this.historialFiltrado.length === 0) {
+    this.mostrarNotificacion('Sin datos', 'No hay registros para exportar.', 'advertencia');
+    return;
+  }
+
+  // Mapear datos
+  const data = this.historialFiltrado.map(item => ({
+    'Fecha': new Date(item.fecha).toLocaleDateString(),
+    'Kilometraje': item.kilometraje,
+    'Tipo': item.tipo_item,
+    'Descripción': item.nombre,
+    'Marca': item.marca || '-',
+    'Cantidad': item.cantidad,
+    'Costo Unitario': (item.costo / item.cantidad) || 0, // Cálculo aproximado si tienes el total
+    'Costo Total': item.costo,
+    'Solicitado Por': item.solicitado_por
+  }));
+
+  // Crear hoja y libro
+  const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
+  const wb: XLSX.WorkBook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Historial');
+
+  // Guardar
+  XLSX.writeFile(wb, `Historial_Bus_${this.autobusSeleccionadoEconomico}.xlsx`);
+}
+
+// 2. Exportar a PDF
+exportarHistorialPDF() {
+  if (this.historialFiltrado.length === 0) {
+    this.mostrarNotificacion('Sin datos', 'No hay registros para exportar.', 'advertencia');
+    return;
+  }
+
+  const doc = new jsPDF();
+
+  // Encabezado del PDF
+  doc.setFontSize(18);
+  doc.text(`Historial de Mantenimiento: Autobús #${this.autobusSeleccionadoEconomico}`, 14, 20);
+  
+  doc.setFontSize(12);
+  doc.text(`Costo Total del Periodo: $${this.costoTotalHistorial.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, 14, 30);
+  
+  doc.setFontSize(10);
+  doc.text(`Fecha de reporte: ${new Date().toLocaleDateString()}`, 14, 36);
+
+  // Generar tabla
+  autoTable(doc, {
+    startY: 40,
+    head: [['Fecha', 'KM', 'Tipo', 'Descripción', 'Cant.', 'Costo', 'Solicitante']],
+    body: this.historialFiltrado.map(item => [
+      new Date(item.fecha).toLocaleDateString(),
+      item.kilometraje,
+      item.tipo_item,
+      item.nombre,
+      item.cantidad,
+      `$${Number(item.costo).toFixed(2)}`,
+      item.solicitado_por
+    ]),
+    theme: 'grid',
+    headStyles: { fillColor: [44, 62, 80] }, // Color oscuro azulado
+    styles: { fontSize: 8 }
+  });
+
+  // Guardar
+  doc.save(`Historial_Bus_${this.autobusSeleccionadoEconomico}.pdf`);
+}
 }

@@ -88,6 +88,7 @@
   box-shadow: 0 6px 20px rgba(68, 128, 211, 0.6);
 }
 
+
 /* ===================================
    BODY, FILTROS Y BUSCADOR
    =================================== */
@@ -319,6 +320,78 @@
   color: #5cb85c; /* VERDE NEÓN */
   font-weight: 700; font-size: 1.8rem; margin-left: 10px;
   text-shadow: 0 0 10px rgba(92, 184, 92, 0.3);
+}
+.costo-total-container {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px 25px;
+  margin-bottom: 25px;
+  border-radius: 12px;
+  border: 1px solid rgba(68, 128, 211, 0.2);
+  display: flex; /* Flexbox para separar texto y botones */
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.costo-info h4 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #e0e0e0;
+  font-weight: 400;
+}
+
+.costo-info span {
+  color: #5cb85c; /* Verde neón para el dinero */
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin-left: 10px;
+  text-shadow: 0 0 10px rgba(92, 184, 92, 0.3);
+}
+.export-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Estilo base de los botones mini */
+.btn-mini-export {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  color: white;
+}
+
+/* Botón Excel (Verde Tech) */
+.btn-excel {
+  background: rgba(33, 115, 70, 0.2);
+  border-color: rgba(33, 115, 70, 0.5);
+  color: #2ecc71;
+}
+.btn-excel:hover {
+  background: rgba(33, 115, 70, 0.6);
+  color: white;
+  box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Botón PDF (Rojo Intenso) */
+.btn-pdf {
+  background: rgba(200, 35, 51, 0.2);
+  border-color: rgba(200, 35, 51, 0.5);
+  color: #ff6b6b;
+}
+.btn-pdf:hover {
+  background: rgba(200, 35, 51, 0.6);
+  color: white;
+  box-shadow: 0 0 15px rgba(255, 107, 107, 0.4);
+  transform: translateY(-2px);
 }
 
 /* Filtros en Modal */

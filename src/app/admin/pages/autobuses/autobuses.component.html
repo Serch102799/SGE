@@ -443,6 +443,14 @@
     <div class="modal-body">
       <div class="costo-total-container">
         <h4>Costo Total en Mantenimiento: <span>{{ costoTotalHistorial | currency:'MXN' }}</span></h4>
+        <div class="export-actions">
+    <button class="btn-mini-export btn-excel" (click)="exportarHistorialExcel()" title="Descargar Excel">
+      <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
+    </button>
+    <button class="btn-mini-export btn-pdf" (click)="exportarHistorialPDF()" title="Descargar PDF">
+      <i class="fas fa-file-pdf"></i> EXPORTAR PDF
+    </button>
+  </div>
       </div>
       <div class="filtros-container-modal">
         <div class="filtro-item">
