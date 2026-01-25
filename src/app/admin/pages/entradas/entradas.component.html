@@ -2,8 +2,11 @@
   <div class="container-header">
     <h2>Historial de Entradas a Almacén</h2>
     <div class="acciones-header">
-      <button class="btn-exportar" (click)="exportarACSV()">
-        <span>&#128196;</span> Exportar a CSV
+      <button class="btn-exportar" (click)="exportarAExcelCompleto()">
+        <span>&#128196;</span> EXPORTAR EXCEL
+      </button>
+      <button class="btn-exportar btn-pdf" (click)="exportarAPDFCompleto()">
+        <span>&#128462;</span> EXPORTAR PDF
       </button>
       <button class="btn-agregar" (click)="registrarNuevaEntrada()">
         <span>&#43;</span> Registrar Nueva Entrada
@@ -42,7 +45,8 @@
       </thead>
       <tbody>
         <tr
-          *ngFor="let entrada of entradas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+          *ngFor="let entrada of entradas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }"
+          [class.fila-cancelada]="entrada.estado === 'CANCELADO'">
           <td>{{ entrada.fechaEntrada | date:'dd/MM/yyyy h:mm a' }}</td>
           <td>{{ entrada.nombreProveedor }}</td>
           <td>
@@ -54,27 +58,49 @@
             </div>
           </td>
           <td>{{ entrada.nombreEmpleado }}</td>
-          <td>{{ entrada.observaciones }}</td>
+          <td>
+            <span *ngIf="entrada.estado === 'CANCELADO'" class="badge bg-danger me-1">CANCELADO</span>
+            {{ entrada.observaciones }}
+          </td>
           <td><strong>{{ entrada.valor_neto | currency:'MXN' }}</strong></td>
+
           <td class="acciones">
-            <button class="btn-accion btn-estado" (click)="verDetalles(entrada)">Ver Detalles</button>
+            <div class="btn-group">
+
+              <button class="btn-accion btn-estado" (click)="verDetalles(entrada)" title="Ver Detalles">
+                <span class="d-none d-md-inline">Detalles</span>Ver Detalles
+              </button>
+
+              <ng-container
+                *ngIf="authService.hasRole(['SuperUsuario', 'SuperAdmin', 'Admin']) && entrada.estado !== 'CANCELADO'">
+
+                <!-- <button class="btn-accion btn-editar" (click)="abrirEdicionHistorica(entrada)" title="Editar Entrada">
+                  <i class="fas fa-edit"></i>Editar
+                </button>
+
+                <button class="btn-accion btn-cancelar-icon" (click)="cancelarEntrada(entrada)"
+                  title="Cancelar Entrada">
+                  <i class="fas fa-ban"></i>Cancelar
+                </button> -->
+
+              </ng-container>
+
+            </div>
           </td>
         </tr>
+
         <tr *ngIf="entradas.length === 0">
           <td colspan="7" class="empty-table-message">No se encontraron entradas que coincidan con los filtros.</td>
         </tr>
       </tbody>
     </table>
   </div>
-  <div class="pagination-controls">
-        <pagination-controls 
-            (pageChange)="onPageChange($event)"
-            previousLabel="Anterior"
-            nextLabel="Siguiente">
-        </pagination-controls>
-    </div>
 
+  <div class="pagination-controls">
+    <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente">
+    </pagination-controls>
   </div>
+</div>
 
 <div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
   <div class="modal-content" (click)="$event.stopPropagation()">
@@ -96,7 +122,8 @@
           <tbody>
             <tr *ngFor="let detalle of detallesSeleccionados">
               <td>
-                <span class="badge" [ngClass]="{'badge-refaccion': detalle.tipo_item === 'Refacción', 'badge-insumo': detalle.tipo_item === 'Insumo'}">
+                <span class="badge"
+                  [ngClass]="{'badge-refaccion': detalle.tipo_item === 'Refacción', 'badge-insumo': detalle.tipo_item === 'Insumo'}">
                   {{ detalle.tipo_item }}
                 </span>
               </td>
@@ -123,23 +150,111 @@
   </div>
 </div>
 
-  <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3 [ngClass]="{
+<div class="modal-overlay" *ngIf="mostrarModalEdicion" (click)="cerrarModalEdicion()">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header bg-warning-dark">
+      <h3><i class="fas fa-tools"></i> Edición Histórica - Entrada #{{ entradaEdicion.id_entrada }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModalEdicion()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="alert alert-warning d-flex align-items-center mb-3">
+        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+        <div>
+          <strong>¡Cuidado!</strong> Estás editando un registro histórico.
+          Cambiar cantidades ajustará el stock actual automáticamente.
+          <br><em>No podrás disminuir cantidades por debajo de lo que ya se ha consumido.</em>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label">Proveedor</label>
+          <select class="form-select" [(ngModel)]="entradaEdicion.id_proveedor">
+            <option *ngFor="let p of proveedores" [value]="p.id_proveedor">{{p.nombre_proveedor}}</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Fecha Operación</label>
+          <input type="datetime-local" class="form-control" [(ngModel)]="entradaEdicion.fecha_operacion">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Factura / Vale</label>
+          <input type="text" class="form-control" [(ngModel)]="entradaEdicion.factura_proveedor">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Observaciones</label>
+          <input type="text" class="form-control" [(ngModel)]="entradaEdicion.observaciones">
+        </div>
+      </div>
+
+      <h5 class="border-bottom pb-2 mb-3">Items de la Entrada</h5>
+      <div class="tabla-responsive-wrapper" style="max-height: 300px; overflow-y: auto;">
+        <table class="tabla-usuarios table-sm">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th class="text-center" width="120">Cant. Original</th>
+              <th class="text-center" width="120">Nueva Cant.</th>
+              <th class="text-center" width="120">Costo Original</th>
+              <th class="text-center" width="120">Nuevo Costo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of entradaEdicion.items">
+              <td>
+                <div class="fw-bold">{{ item.nombre }}</div>
+                <small class="text-muted">{{ item.tipo | uppercase }}</small>
+              </td>
+
+              <td class="text-center text-muted">{{ item.cantidad_original }}</td>
+              <td>
+                <input type="number" class="form-control form-control-sm text-center" [(ngModel)]="item.cantidad_nueva"
+                  [min]="item.cantidad_usada" [title]="'Mínimo permitido: ' + item.cantidad_usada">
+                <div *ngIf="item.cantidad_usada > 0" class="text-danger" style="font-size: 0.7rem;">
+                  Min: {{item.cantidad_usada}} (Usados)
+                </div>
+              </td>
+
+              <td class="text-center text-muted">{{ item.costo_original | currency }}</td>
+              <td>
+                <input type="number" class="form-control form-control-sm text-center" [(ngModel)]="item.costo_nuevo">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-footer justify-content-between">
+      <small class="text-muted">ID Auditoría: {{ entradaEdicion.id_entrada }}</small>
+      <div>
+        <button type="button" class="btn-accion btn-cancelar me-2" (click)="cerrarModalEdicion()">Cancelar</button>
+        <button type="button" class="btn-accion btn-guardar" (click)="guardarEdicionHistorica()">
+          <i class="fas fa-save"></i> Guardar Cambios
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 [ngClass]="{
         'header-exito': notificacion.tipo === 'exito',
         'header-error': notificacion.tipo === 'error',
         'header-advertencia': notificacion.tipo === 'advertencia'
       }">
-          {{ notificacion.titulo }}
-        </h3>
-        <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
-      </div>
-      <div class="modal-body">
-        <p class="confirm-text">{{ notificacion.mensaje }}</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
-      </div>
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
     </div>
   </div>
+</div>

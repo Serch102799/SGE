@@ -9,19 +9,34 @@ import { AdminService, SesionActiva, AccionAuditoria } from '../../../services/a
 })
 export class AdminPanelComponent implements OnInit {
 
-  // ---- Estado de Sesiones ----
-  sesionesActivas: any[] = []; // (Usar 'any' temporalmente para 'cerrando')
+  // ==========================================
+  // 1. ESTADO DE SESIONES ACTIVAS
+  // ==========================================
+  sesionesActivas: any[] = []; 
   cargandoSesiones: boolean = false;
   errorSesiones: string | null = null;
 
+  // PAGINACIÓN SESIONES (Cliente)
+  // Estas variables controlan la tabla de arriba
+  pageSesiones: number = 1;
+  limitSesiones: number = 5; // Muestra 5 sesiones por página
+
+  // ==========================================
+  // 2. ESTADO DE AUDITORÍA GLOBAL
+  // ==========================================
   auditoriaGeneral: AccionAuditoria[] = [];
   cargandoAuditoria: boolean = false;
-  pageAuditoria: number = 1;
-  limitAuditoria: number = 15;
-  totalAuditoria: number = 0;
   searchAuditoria: string = '';
 
-  // ---- Estado del Modal de Auditoría ----
+  // PAGINACIÓN AUDITORÍA (Servidor)
+  // Estas variables controlan la tabla de abajo y la API
+  pageAuditoria: number = 1;
+  limitAuditoria: number = 10;
+  totalAuditoria: number = 0;
+
+  // ==========================================
+  // 3. ESTADO DEL MODAL (HISTORIAL)
+  // ==========================================
   modalVisible: boolean = false;
   cargandoModal: boolean = false;
   historialUsuario: AccionAuditoria[] = [];
@@ -34,16 +49,19 @@ export class AdminPanelComponent implements OnInit {
     this.cargarAuditoriaGeneral();
   }
 
-  /**
-   * Carga la lista de sesiones activas desde el backend
-   */
+  // ----------------------------------------------------------------
+  // LÓGICA: SESIONES ACTIVAS
+  // ----------------------------------------------------------------
   cargarSesionesActivas(): void {
     this.cargandoSesiones = true;
     this.errorSesiones = null;
+    
     this.adminService.getSesionesActivas().subscribe({
       next: (data) => {
         this.sesionesActivas = data;
         this.cargandoSesiones = false;
+        // Reiniciamos a la página 1 al refrescar para evitar quedar en una página vacía
+        this.pageSesiones = 1; 
       },
       error: (err) => {
         console.error(err);
@@ -53,78 +71,78 @@ export class AdminPanelComponent implements OnInit {
     });
   }
 
-  /**
-   * Llama al servicio para forzar el cierre de una sesión
-   */
   onForzarCierre(sesion: SesionActiva): void {
     if (!confirm(`¿Estás seguro de cerrar la sesión de ${sesion.nombre} (${sesion.ip_address})?`)) {
       return;
     }
 
-    // Deshabilita la fila (opcional)
+    // Efecto visual de carga en la fila específica
     sesion['cerrando'] = true; 
 
     this.adminService.forzarCierreSesion(sesion.id_sesion).subscribe({
       next: () => {
-        // Éxito: recarga la lista para que desaparezca la sesión cerrada
-        this.cargarSesionesActivas();
+        // Eliminamos localmente para feedback inmediato
+        this.sesionesActivas = this.sesionesActivas.filter(s => s.id_sesion !== sesion.id_sesion);
         alert('Sesión cerrada exitosamente.');
       },
       error: (err) => {
         alert('Error al cerrar la sesión: ' + (err.error?.message || err.message));
-        delete sesion['cerrando']; // Reactiva la fila si falla
+        delete sesion['cerrando']; // Quitamos el estado de carga si falló
       }
     });
   }
 
+  // ----------------------------------------------------------------
+  // LÓGICA: AUDITORÍA (SERVER-SIDE PAGINATION)
+  // ----------------------------------------------------------------
   cargarAuditoriaGeneral(): void {
     this.cargandoAuditoria = true;
+    
+    // Llamamos al servicio pasando página, límite y búsqueda
     this.adminService.getAuditoriaGeneral(this.pageAuditoria, this.limitAuditoria, this.searchAuditoria)
       .subscribe({
         next: (response) => {
-          // Asumiendo que el backend devuelve { total: number, data: [...] }
-          // Si tu backend devuelve solo el array, ajusta esto.
+          // Asumiendo que tu API devuelve { total: number, data: [] }
           this.auditoriaGeneral = response.data; 
           this.totalAuditoria = response.total;
           this.cargandoAuditoria = false;
         },
         error: (err) => {
-          console.error('Error al cargar auditoría general:', err);
+          console.error('Error al cargar auditoría:', err);
           this.cargandoAuditoria = false;
         }
       });
   }
 
-  onPageChangeAuditoria(page: number): void {
-    this.pageAuditoria = page;
+  // Evento al cambiar de página en la tabla de Auditoría
+  onPageChangeAuditoria(newPage: number): void {
+    this.pageAuditoria = newPage;
     this.cargarAuditoriaGeneral();
   }
 
+  // Evento al buscar en Auditoría
   onSearchAuditoria(): void {
-    this.pageAuditoria = 1; // Resetear a página 1 al buscar
+    this.pageAuditoria = 1; // Importante: Resetear a página 1 nueva búsqueda
     this.cargarAuditoriaGeneral();
   }
 
-  // Helper para formatear el JSON de detalles en el HTML
+  // Helper para formatear JSON en la vista
   formatDetalles(detalles: any): string {
     if (!detalles) return '-';
     try {
-      // Si es un string JSON, lo parseamos, si ya es objeto lo usamos
       const obj = typeof detalles === 'string' ? JSON.parse(detalles) : detalles;
-      
-      // Formateo simple para lectura humana
+      // Intenta convertir objeto a string legible "Clave: Valor"
       return Object.entries(obj)
         .map(([key, value]) => `${key}: ${value}`)
         .join(', ');
     } catch (e) {
-      return JSON.stringify(detalles);
+      return String(detalles);
     }
   }
-  // --- Métodos del Modal ---
 
-  /**
-   * Abre el modal y carga el historial del usuario seleccionado
-   */
+  // ----------------------------------------------------------------
+  // LÓGICA: MODAL HISTORIAL USUARIO
+  // ----------------------------------------------------------------
   onVerHistorial(sesion: SesionActiva): void {
     this.modalVisible = true;
     this.cargandoModal = true;
@@ -137,16 +155,13 @@ export class AdminPanelComponent implements OnInit {
         this.cargandoModal = false;
       },
       error: (err) => {
-        alert('Error al cargar el historial: ' + (err.error?.message || err.message));
+        alert('Error al cargar historial: ' + (err.error?.message || err.message));
         this.cargandoModal = false;
-        this.modalVisible = false; // Cierra el modal si falla
+        this.modalVisible = false;
       }
     });
   }
 
-  /**
-   * Cierra el modal de historial
-   */
   cerrarModal(): void {
     this.modalVisible = false;
     this.historialUsuario = [];

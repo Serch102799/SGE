@@ -305,8 +305,8 @@ export class AutobusesComponent implements OnInit, OnDestroy {
     return coincideTexto && coincideFecha;
   });
 
-  this.costoTotalHistorial = this.historialFiltrado.reduce((acumulado, item) => {
-    return acumulado + (Number(item.costo) || 0);
+  this.costoTotalHistorial = this.historialFiltrado.reduce((acc, item) => {
+    return acc + (Number(item.costo_total) || 0);
   }, 0);
 }
   abrirModalSyncKm(autobus: Autobus): void {
@@ -362,8 +362,8 @@ export class AutobusesComponent implements OnInit, OnDestroy {
     'Descripción': item.nombre,
     'Marca': item.marca || '-',
     'Cantidad': item.cantidad,
-    'Costo Unitario': (item.costo / item.cantidad) || 0, // Cálculo aproximado si tienes el total
-    'Costo Total': item.costo,
+    'Costo Unitario': Number(item.costo_unitario), 
+    'Costo Total': Number(item.costo_total),
     'Solicitado Por': item.solicitado_por
   }));
 
@@ -398,14 +398,15 @@ exportarHistorialPDF() {
   // Generar tabla
   autoTable(doc, {
     startY: 40,
-    head: [['Fecha', 'KM', 'Tipo', 'Descripción', 'Cant.', 'Costo', 'Solicitante']],
+    head: [['Fecha', 'KM', 'Tipo', 'Descripción', 'Cant.', 'Costo U.', 'Total', 'Solicitante']],
     body: this.historialFiltrado.map(item => [
       new Date(item.fecha).toLocaleDateString(),
       item.kilometraje,
       item.tipo_item,
       item.nombre,
       item.cantidad,
-      `$${Number(item.costo).toFixed(2)}`,
+      `$${Number(item.costo_unitario).toFixed(2)}`,
+      `$${Number(item.costo_total).toFixed(2)}`,
       item.solicitado_por
     ]),
     theme: 'grid',
@@ -413,7 +414,6 @@ exportarHistorialPDF() {
     styles: { fontSize: 8 }
   });
 
-  // Guardar
   doc.save(`Historial_Bus_${this.autobusSeleccionadoEconomico}.pdf`);
 }
 }

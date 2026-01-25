@@ -131,6 +131,42 @@
   box-shadow: 0 6px 20px rgba(68, 128, 211, 0.6);
 }
 
+/* Estilo base (Por defecto verde/Excel) */
+.btn-exportar {
+  background: rgba(40, 167, 69, 0.15);
+  border: 1px solid rgba(40, 167, 69, 0.4);
+  color: #2ecc71;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-exportar:hover {
+  background: rgba(40, 167, 69, 0.3);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Modificador para PDF (Rojo) */
+.btn-pdf {
+  background: rgba(220, 53, 69, 0.15);
+  border-color: rgba(220, 53, 69, 0.4);
+  color: #ff6b6b;
+}
+
+.btn-pdf:hover {
+  background: rgba(220, 53, 69, 0.3);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
+  /* translateY se hereda */
+}
 /* ===================================
    FILTROS (ESTILO PILL/DARK)
    =================================== */
@@ -253,16 +289,46 @@
 }
 
 /* Botón Ver Detalles (Tabla) */
+/* =========================================
+   COLUMNA DE ACCIONES
+   ========================================= */
+.acciones {
+  vertical-align: middle;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Grupo para alinear los botones */
+.btn-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* Separación entre botones */
+}
+
+/* =========================================
+   ESTILOS DE BOTONES (Basado en tu referencia)
+   ========================================= */
+
+/* Estilo Base común (Estructura idéntica a btn-estado) */
+.btn-accion {
+  padding: 6px 12px;       /* Un poco menos ancho si son solo iconos */
+  border-radius: 6px;      /* De tu referencia */
+  cursor: pointer;         /* De tu referencia */
+  font-weight: 600;        /* De tu referencia */
+  font-size: 0.85rem;      /* De tu referencia */
+  transition: all 0.3s ease; /* De tu referencia */
+  display: inline-flex;    
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;         /* Para que no queden muy aplastados si solo tienen icono */
+}
+
+/* --- 1. VER DETALLES (Azul - Tu referencia exacta) --- */
 .btn-estado {
   background: rgba(68, 128, 211, 0.2);
   color: #6a9edc;
   border: 1px solid rgba(68, 128, 211, 0.4);
-  padding: 6px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.85rem;
-  transition: all 0.3s ease;
 }
 
 .btn-estado:hover {
@@ -272,6 +338,50 @@
   box-shadow: 0 0 10px rgba(68, 128, 211, 0.3);
 }
 
+/* --- 2. EDITAR (Ámbar/Dorado) --- */
+.btn-editar {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+.btn-editar:hover {
+  background: rgba(255, 193, 7, 0.4);
+  color: white;
+  border-color: #ffca2c;
+  box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+  transform: translateY(-2px); /* Pequeño efecto de elevación */
+}
+
+/* --- 3. CANCELAR (Rojo) --- */
+.btn-cancelar-icon {
+  background: rgba(220, 53, 69, 0.2);
+  color: #ff6b6b;
+  border: 1px solid rgba(220, 53, 69, 0.4);
+}
+
+.btn-cancelar-icon:hover {
+  background: rgba(220, 53, 69, 0.4);
+  color: white;
+  border-color: #dc3545;
+  box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+  transform: translateY(-2px);
+}
+
+/* --- ESTADO CANCELADO (Para la fila) --- */
+.fila-cancelada td {
+  color: #777 !important;
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+.fila-cancelada .btn-group {
+  opacity: 0.5;
+  pointer-events: none; /* Deshabilita clics en una fila cancelada */
+}
+.fila-cancelada .badge {
+  text-decoration: none !important;
+  opacity: 1 !important;
+}
 .empty-table-message {
   text-align: center;
   font-style: italic;

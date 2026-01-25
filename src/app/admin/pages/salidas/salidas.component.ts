@@ -2,12 +2,15 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Subject, Subscription, forkJoin, Observable, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, startWith, switchMap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, startWith, switchMap, map, catchError } from 'rxjs/operators';
 import * as Papa from 'papaparse';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environments';
 import { FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // --- Interfaces ---
 export interface Salida {
@@ -178,23 +181,204 @@ export class SalidasComponent implements OnInit, OnDestroy {
   
   registrarNuevaSalida() { this.router.navigate(['/admin/registro-salida']); }
 
-  exportarACSV() {
-    if (this.salidas.length === 0) { this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.'); return; }
-    const dataParaExportar = this.salidas.map(salida => ({
-      'ID Salida': salida.idSalida, 'Fecha': salida.fechaSalida, 'Tipo de Salida': salida.tipoSalida,
-      'Autobús': salida.economicoAutobus, 'Kilometraje': salida.kilometrajeAutobus, 'Solicitado Por': salida.nombreEmpleado, 'Observaciones': salida.observaciones
-    }));
-    const csv = Papa.unparse(dataParaExportar);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'reporte_salidas.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
+ exportarAExcelCompleto() {
+  this.mostrarNotificacion('Generando Excel', 'Recopilando información, por favor espere...', 'exito');
 
+  // 1. Preparar filtros
+  let params = new HttpParams()
+    .set('page', '1')
+    .set('limit', '100000') 
+    .set('search', this.terminoBusqueda.trim());
+
+  if (this.fechaInicio) params = params.set('fechaInicio', this.fechaInicio);
+  if (this.fechaFin) params = params.set('fechaFin', this.fechaFin);
+
+  this.http.get<{ data: any[] }>(this.apiUrl, { params }).pipe(
+    switchMap(response => {
+      const salidas = response.data || [];
+      if (salidas.length === 0) throw new Error('No hay datos');
+
+      // 2. Obtener detalles de cada salida
+      const peticionesDetalles = salidas.map(salida => {
+        // CORRECCIÓN 1: Usar 'id_salida' que es como viene de tu Postgres
+        const id = salida.id_salida; 
+
+        if (!id) {
+            console.warn('Salida sin ID:', salida);
+            return of({ cabecera: salida, detalles: [] });
+        }
+
+        // CORRECCIÓN 2: La ruta en tu backend es /detalles/:id
+        // Tu backend: router.get('/detalles/:idSalida', ...)
+        return this.http.get<any[]>(`${this.apiUrl}/detalles/${id}`).pipe(
+          map(detalles => ({ cabecera: salida, detalles: detalles || [] })),
+          catchError((err) => {
+            console.error(`Error detalles ${id}`, err);
+            return of({ cabecera: salida, detalles: [] });
+          })
+        );
+      });
+
+      return forkJoin(peticionesDetalles);
+    })
+  ).subscribe({
+    next: (dataCompleta) => {
+      const filasExcel: any[] = [];
+
+      dataCompleta.forEach(item => {
+        const cab = (item as { cabecera: any; detalles: any[] }).cabecera;
+        
+        // Fila Cabecera (Datos generales)
+        filasExcel.push({
+          'ID Vale': cab.id_salida,
+          'Fecha': new Date(cab.fecha_operacion).toLocaleString(), // Tu backend usa fecha_operacion
+          'Tipo': cab.tipo_salida,
+          'Autobús': cab.economico_autobus,
+          'Solicitante': cab.nombre_empleado,
+          'Tipo Item': '', 'Descripción': '', 'Cant. Neta': '', 'Costo U.': '', 'Subtotal': ''
+        });
+
+        // Fila Detalles (Datos de tu endpoint /detalles/:id)
+        (item as { cabecera: any; detalles: any[] }).detalles.forEach((det: any) => {
+          // Tu endpoint devuelve: cantidad, cantidad_devuelta, tipo_item, nombre_item, costo_unitario
+          const cantidadNeta = (Number(det.cantidad) || 0) - (Number(det.cantidad_devuelta) || 0);
+          const costo = Number(det.costo_unitario) || 0;
+
+          filasExcel.push({
+            'ID Vale': '', 'Fecha': '', 'Tipo': '', 'Autobús': '', 'Solicitante': '',
+            'Tipo Item': det.tipo_item,   // refaccion / insumo
+            'Descripción': det.nombre_item,
+            'Cant. Neta': cantidadNeta,
+            'Costo U.': costo,
+            'Subtotal': cantidadNeta * costo
+          });
+        });
+
+        filasExcel.push({}); // Espacio visual
+      });
+
+      // Generar archivo
+      const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(filasExcel);
+      const wscols = [{wch:10}, {wch:20}, {wch:15}, {wch:10}, {wch:20}, {wch:12}, {wch:30}, {wch:10}, {wch:10}, {wch:12}];
+      ws['!cols'] = wscols;
+
+      const wb: XLSX.WorkBook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Reporte Salidas');
+      
+      const fecha = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `Salidas_Detalladas_${fecha}.xlsx`);
+      
+      this.mostrarNotificacion('Éxito', 'Excel generado correctamente.', 'exito');
+    },
+    error: (err) => {
+      console.error(err);
+      this.mostrarNotificacion('Error', 'No se pudo generar el reporte.', 'error');
+    }
+  });
+}
+exportarAPDFCompleto() {
+  this.mostrarNotificacion('Generando PDF', 'Procesando formato...', 'exito');
+
+  let params = new HttpParams()
+    .set('page', '1').set('limit', '100000').set('search', this.terminoBusqueda.trim());
+    
+  if (this.fechaInicio) params = params.set('fechaInicio', this.fechaInicio);
+  if (this.fechaFin) params = params.set('fechaFin', this.fechaFin);
+
+  this.http.get<{ data: any[] }>(this.apiUrl, { params }).pipe(
+    switchMap(response => {
+      const salidas = response.data || [];
+      if (salidas.length === 0) throw new Error('No hay datos');
+
+      const peticionesDetalles = salidas.map(salida => {
+        const id = salida.id_salida; // Corrección ID
+        if (!id) return of({ cabecera: salida, detalles: [] });
+
+        // Corrección URL: /detalles/:id
+        return this.http.get<any[]>(`${this.apiUrl}/detalles/${id}`).pipe(
+          map(detalles => ({ cabecera: salida, detalles: detalles || [] })),
+          catchError(() => of({ cabecera: salida, detalles: [] }))
+        );
+      });
+      return forkJoin(peticionesDetalles);
+    })
+  ).subscribe({
+    next: (dataCompleta) => {
+      const doc = new jsPDF();
+      let yPos = 20;
+
+      // Título
+      doc.setFontSize(18);
+      doc.text('Reporte de Vales de Salida', 14, yPos);
+      yPos += 10;
+      doc.setFontSize(10);
+      doc.text(`Generado: ${new Date().toLocaleString()}`, 14, yPos);
+      yPos += 15;
+
+      dataCompleta.forEach(item => {
+        const cab = item.cabecera;
+        
+        // Control de salto de página
+        if (yPos > 270) { doc.addPage(); yPos = 20; }
+
+        // Cabecera del Vale (Gris)
+        doc.setFillColor(240, 240, 240);
+        doc.rect(14, yPos - 5, 182, 18, 'F');
+        
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        // Usamos fecha_operacion que viene de tu DB
+        doc.text(`Vale #${cab.id_salida} | ${new Date(cab.fecha_operacion).toLocaleDateString()}`, 16, yPos);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.text(`Tipo: ${cab.tipo_salida}`, 16, yPos + 6);
+        doc.text(`Bus: ${cab.economico_autobus || 'N/A'}`, 80, yPos + 6);
+        doc.text(`Solicitó: ${cab.nombre_empleado || 'N/A'}`, 130, yPos + 6);
+        
+        yPos += 15;
+
+        // Tabla de Items
+        const bodyData = item.detalles.map((det: any) => {
+          const neto = (Number(det.cantidad) || 0) - (Number(det.cantidad_devuelta) || 0);
+          const costo = Number(det.costo_unitario) || 0;
+          return [
+              det.tipo_item,      // refaccion / insumo
+              det.nombre_item,    // nombre
+              neto,               // cantidad neta
+              `$${costo.toFixed(2)}`,
+              `$${(neto * costo).toFixed(2)}`
+          ];
+        });
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Tipo', 'Descripción', 'Cant. Neta', 'Costo U.', 'Subtotal']],
+          body: bodyData,
+          theme: 'grid',
+          styles: { fontSize: 8, cellPadding: 1 },
+          headStyles: { fillColor: [68, 128, 211], textColor: 255 },
+          margin: { left: 20 },
+          didDrawPage: (data) => { if (data.cursor) { yPos = data.cursor.y; } } // Actualizar posición
+        });
+
+        // Espacio tras la tabla
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+        
+        // Línea separadora
+        doc.setDrawColor(200);
+        doc.line(14, yPos - 5, 196, yPos - 5);
+      });
+
+      doc.save(`Salidas_Reporte_${new Date().toISOString().slice(0,10)}.pdf`);
+      this.mostrarNotificacion('Éxito', 'PDF generado correctamente.', 'exito');
+    },
+    error: (err) => {
+      console.error(err);
+      this.mostrarNotificacion('Error', 'No se pudo generar el PDF.', 'error');
+    }
+  });
+}
   verDetalles(salida: Salida) {
     this.salidaSeleccionadaId = salida.idSalida;
     this.http.get<any[]>(`${this.apiUrl}/detalles/${salida.idSalida}`).subscribe({

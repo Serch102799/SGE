@@ -2,8 +2,12 @@
     <div class="container-header">
         <h2>Historial de Vales de Salida</h2>
         <div class="acciones-header">
-            <button class="btn-exportar" (click)="exportarACSV()">
-                <span>&#128196;</span> Exportar a CSV
+            <button class="btn-exportar" (click)="exportarAExcelCompleto()">
+                <span>&#128196;</span> EXPORTAR EXCEL
+            </button>
+
+            <button class="btn-exportar btn-pdf" (click)="exportarAPDFCompleto()">
+                <span>&#128462;</span> EXPORTAR PDF
             </button>
             <button class="btn-agregar" (click)="registrarNuevaSalida()">
                 <span>&#43;</span> Registrar Nuevo Vale
@@ -75,51 +79,57 @@
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
-  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Detalles de la Salida #{{ salidaSeleccionadaId }}</h3>
-      <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
+    <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Detalles de la Salida #{{ salidaSeleccionadaId }}</h3>
+            <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="tabla-responsive-wrapper">
+                <table class="tabla-preview tabla-ticket">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Descripción</th>
+                            <th>Cant. Salida</th>
+                            <th>Cant. Devuelta</th>
+                            <th>Cant. Neta</th>
+                            <th>Costo Unitario</th>
+                            <th>Costo Total</th>
+                            <th *ngIf="authService.hasRole(['SuperUsuario'])" style="text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let detalle of detallesSeleccionados">
+                            <td>
+                                <span class="badge"
+                                    [ngClass]="{'badge-refaccion': detalle.tipo_item === 'refaccion', 'badge-insumo': detalle.tipo_item === 'insumo'}">{{
+                                    detalle.tipo_item }}</span>
+                            </td>
+                            <td>{{ detalle.nombre_item }}</td>
+                            <td>{{ detalle.cantidad | number:'1.2-2' }}</td>
+                            <td>{{ (detalle.cantidad_devuelta || 0) | number:'1.2-2' }}</td>
+                            <td><strong>{{ (detalle.cantidad - (detalle.cantidad_devuelta || 0)) | number:'1.2-2'
+                                    }}</strong></td>
+                            <td>{{ detalle.costo_unitario | currency:'MXN' }}</td>
+                            <td><strong>{{ ((detalle.cantidad - (detalle.cantidad_devuelta || 0)) *
+                                    detalle.costo_unitario) | currency:'MXN' }}</strong></td>
+                            <td class="acciones" *ngIf="authService.hasRole(['SuperUsuario'])">
+                                <button class="btn-accion btn-devolucion"
+                                    *ngIf="(detalle.cantidad - (detalle.cantidad_devuelta || 0)) > 0"
+                                    (click)="abrirModalDevolucion(detalle)">
+                                    Devolver
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalDetalles()">Cerrar</button>
+        </div>
     </div>
-    <div class="modal-body">
-      <div class="tabla-responsive-wrapper">
-        <table class="tabla-preview tabla-ticket">
-          <thead>
-            <tr>
-              <th>Tipo</th>
-              <th>Descripción</th>
-              <th>Cant. Salida</th>
-              <th>Cant. Devuelta</th>
-              <th>Cant. Neta</th>
-              <th>Costo Unitario</th>
-              <th>Costo Total</th>
-              <th *ngIf="authService.hasRole(['SuperUsuario'])" style="text-align: center;">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let detalle of detallesSeleccionados">
-              <td>
-                <span class="badge" [ngClass]="{'badge-refaccion': detalle.tipo_item === 'refaccion', 'badge-insumo': detalle.tipo_item === 'insumo'}">{{ detalle.tipo_item }}</span>
-              </td>
-              <td>{{ detalle.nombre_item }}</td>
-              <td>{{ detalle.cantidad | number:'1.2-2' }}</td>
-              <td>{{ (detalle.cantidad_devuelta || 0) | number:'1.2-2' }}</td>
-              <td><strong>{{ (detalle.cantidad - (detalle.cantidad_devuelta || 0)) | number:'1.2-2' }}</strong></td>
-              <td>{{ detalle.costo_unitario | currency:'MXN' }}</td>
-              <td><strong>{{ ((detalle.cantidad - (detalle.cantidad_devuelta || 0)) * detalle.costo_unitario) | currency:'MXN' }}</strong></td>
-              <td class="acciones" *ngIf="authService.hasRole(['SuperUsuario'])">
-                <button class="btn-accion btn-devolucion" *ngIf="(detalle.cantidad - (detalle.cantidad_devuelta || 0)) > 0" (click)="abrirModalDevolucion(detalle)">
-                  Devolver
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalDetalles()">Cerrar</button>
-    </div>
-  </div>
 </div>
 <div class="modal-overlay" *ngIf="mostrarModalAgregarItems" (click)="cerrarModalAgregarItems()">
     <div class="modal-content modal-lg" (click)="$event.stopPropagation()">

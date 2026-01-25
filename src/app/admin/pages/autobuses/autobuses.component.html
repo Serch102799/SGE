@@ -29,10 +29,10 @@
               </button>
             </th>
             <th>
-                <button (click)="onSort('razon_social')">
-                  Razón Social
-                  <span *ngIf="sortField === 'razon_social'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
-                </button>
+              <button (click)="onSort('razon_social')">
+                Razón Social
+                <span *ngIf="sortField === 'razon_social'">{{ sortDirection === 'asc' ? '🔼' : '🔽' }}</span>
+              </button>
             </th>
             <th>
               <button (click)="onSort('placa')">
@@ -68,9 +68,9 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let autobus of autobuses | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }" 
-              (click)="abrirModalDetalles(autobus)" 
-              class="fila-clickable">
+          <tr
+            *ngFor="let autobus of autobuses | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }"
+            (click)="abrirModalDetalles(autobus)" class="fila-clickable">
             <td>{{ autobus.economico }}</td>
             <td>{{ autobus.razon_social }}</td>
             <td>{{ autobus.placa }}</td>
@@ -78,7 +78,8 @@
             <td>{{ autobus.modelo }}</td>
             <td>{{ autobus.anio }}</td>
             <td>{{ autobus.kilometraje_actual | number }} km</td>
-            <td class="acciones" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])" (click)="$event.stopPropagation()">
+            <td class="acciones" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])"
+              (click)="$event.stopPropagation()">
               <button class="btn-accion btn-historial" (click)="verHistorial(autobus)">Historial</button>
               <button class="btn-accion btn-estado" (click)="abrirModal('editar', autobus)">Editar</button>
               <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(autobus)">Eliminar</button>
@@ -93,14 +94,10 @@
     </div>
 
     <div class="pagination-controls">
-        <pagination-controls 
-            (pageChange)="onPageChange($event)"
-            previousLabel="Anterior"
-            nextLabel="Siguiente"
-            screenReaderPaginationLabel="Paginación"
-            screenReaderPageLabel="página"
-            screenReaderCurrentLabel="Estás en la página">
-        </pagination-controls>
+      <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente"
+        screenReaderPaginationLabel="Paginación" screenReaderPageLabel="página"
+        screenReaderCurrentLabel="Estás en la página">
+      </pagination-controls>
     </div>
   </div>
 </div>
@@ -114,91 +111,97 @@
     <div class="modal-body">
       <form (ngSubmit)="guardarAutobus()">
         <div class="form-row">
-            <div class="form-group col">
-                <label>N° Económico</label>
-                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.economico" name="economico" [disabled]="modoEdicion" required>
-            </div>
-            <div class="form-group col">
-                <label>VIN (Número de Serie)</label>
-                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.vin" name="vin" [disabled]="modoEdicion" required minlength="17" maxlength="17">
-            </div>
+          <div class="form-group col">
+            <label>N° Económico</label>
+            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.economico" name="economico"
+              [disabled]="modoEdicion" required>
+          </div>
+          <div class="form-group col">
+            <label>VIN (Número de Serie)</label>
+            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.vin" name="vin"
+              [disabled]="modoEdicion" required minlength="17" maxlength="17">
+          </div>
         </div>
         <div class="form-row">
-            <div class="form-group col">
-                <label>Placa</label>
-                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.placa" name="placa" required>
-            </div>
-            <div class="form-group col">
-                <label>Modelo Chasis</label>
-                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.chasis" name="chasis">
-            </div>
+          <div class="form-group col">
+            <label>Placa</label>
+            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.placa" name="placa" required>
+          </div>
+          <div class="form-group col">
+            <label>Modelo Chasis</label>
+            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.chasis" name="chasis">
+          </div>
         </div>
         <div class="form-row">
-            <div class="form-group col">
-                <label>Motor</label>
-                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.motor" name="motor">
-            </div>
-            <div class="form-group col">
-                <label>Tarjeta de Circulación</label>
-                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.tarjeta_circulacion" name="tarjeta_circulacion">
-            </div>
+          <div class="form-group col">
+            <label>Motor</label>
+            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.motor" name="motor">
+          </div>
+          <div class="form-group col">
+            <label>Tarjeta de Circulación</label>
+            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.tarjeta_circulacion"
+              name="tarjeta_circulacion">
+          </div>
         </div>
         <hr>
         <div class="form-row">
-            <div class="form-group col">
-                <label>Razón Social</label>
-                <select class="form-control" [(ngModel)]="autobusSeleccionado.razon_social" name="razon_social" required>
-                    <option value="" disabled>Selecciona una opción</option>
-                    <option *ngFor="let rs of razonesSociales" [value]="rs">{{ rs }}</option>
-                </select>
-            </div>
-            <div class="form-group col">
-                <label>Sistema de Emisiones</label>
-                <select class="form-control" [(ngModel)]="autobusSeleccionado.sistema" name="sistema">
-                    <option value="" disabled>Selecciona una opción</option>
-                    <option *ngFor="let sistema of sistemasEmisiones" [value]="sistema">{{ sistema }}</option>
-                </select>
-            </div>
+          <div class="form-group col">
+            <label>Razón Social</label>
+            <select class="form-control" [(ngModel)]="autobusSeleccionado.razon_social" name="razon_social" required>
+              <option value="" disabled>Selecciona una opción</option>
+              <option *ngFor="let rs of razonesSociales" [value]="rs">{{ rs }}</option>
+            </select>
+          </div>
+          <div class="form-group col">
+            <label>Sistema de Emisiones</label>
+            <select class="form-control" [(ngModel)]="autobusSeleccionado.sistema" name="sistema">
+              <option value="" disabled>Selecciona una opción</option>
+              <option *ngFor="let sistema of sistemasEmisiones" [value]="sistema">{{ sistema }}</option>
+            </select>
+          </div>
         </div>
         <div class="form-row">
-            <div class="form-group col">
-                <label>Marca</label>
-                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.marca" name="marca">
-            </div>
-            <div class="form-group col">
-                <label>Modelo</label>
-                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.modelo" name="modelo">
-            </div>
+          <div class="form-group col">
+            <label>Marca</label>
+            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.marca" name="marca">
+          </div>
+          <div class="form-group col">
+            <label>Modelo</label>
+            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.modelo" name="modelo">
+          </div>
         </div>
         <div class="form-row">
-            <div class="form-group col">
-                <label>Año</label>
-                <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.anio" name="anio">
-            </div>
-            <div class="form-group col">
-                <label>Kilometraje Actual</label>
-                <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.kilometraje_actual" name="kilometraje_actual">
-            </div>
+          <div class="form-group col">
+            <label>Año</label>
+            <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.anio" name="anio">
+          </div>
+          <div class="form-group col">
+            <label>Kilometraje Actual</label>
+            <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.kilometraje_actual"
+              name="kilometraje_actual">
+          </div>
         </div>
         <div class="form-row">
-            <div class="form-group col">
-                <label>HP (Caballos de Fuerza)</label>
-                <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.hp" name="hp">
-            </div>
-            <div class="form-group col">
-                <label>Carrocería</label>
-                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.carroceria" name="carroceria">
-            </div>
+          <div class="form-group col">
+            <label>HP (Caballos de Fuerza)</label>
+            <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.hp" name="hp">
+          </div>
+          <div class="form-group col">
+            <label>Carrocería</label>
+            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.carroceria" name="carroceria">
+          </div>
         </div>
         <div class="form-row">
-            <div class="form-group col">
-                <label>Sistema Eléctrico</label>
-                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.sistema_electrico" name="sistema_electrico">
-            </div>
-            <div class="form-group col">
-                <label>Medida de Llanta</label>
-                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.medida_llanta" name="medida_llanta">
-            </div>
+          <div class="form-group col">
+            <label>Sistema Eléctrico</label>
+            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.sistema_electrico"
+              name="sistema_electrico">
+          </div>
+          <div class="form-group col">
+            <label>Medida de Llanta</label>
+            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.medida_llanta"
+              name="medida_llanta">
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
@@ -211,16 +214,16 @@
 
 <div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
   <div class="modal-content-ficha" (click)="$event.stopPropagation()" *ngIf="autobusParaDetalles">
-    
+
     <!-- Header con diseño mejorado -->
     <div class="modal-header-ficha">
       <div class="header-content">
         <div class="header-icon">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="6" width="18" height="13" rx="2"/>
-            <circle cx="8.5" cy="18" r="2"/>
-            <circle cx="15.5" cy="18" r="2"/>
-            <path d="M3 11h18"/>
+            <rect x="3" y="6" width="18" height="13" rx="2" />
+            <circle cx="8.5" cy="18" r="2" />
+            <circle cx="15.5" cy="18" r="2" />
+            <path d="M3 11h18" />
           </svg>
         </div>
         <div class="header-text">
@@ -230,15 +233,15 @@
       </div>
       <button class="btn-cerrar-ficha" (click)="cerrarModalDetalles()">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </button>
     </div>
 
     <!-- Body con cards organizadas -->
     <div class="modal-body-ficha">
-      
+
       <!-- Información Principal -->
       <div class="info-section">
         <div class="section-title">
@@ -386,8 +389,8 @@
       </button>
       <button class="btn-primary-ficha" (click)="editarDesdeDetalles()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
         </svg>
         Editar Autobús
       </button>
@@ -403,12 +406,14 @@
       <button class="btn-cerrar" (click)="cerrarModalBorrar()">×</button>
     </div>
     <div class="modal-body">
-      <p class="confirm-text" *ngIf="autobusABorrar">¿Estás seguro de que deseas eliminar el autobús <strong>{{ autobusABorrar.economico }}</strong>?</p>
+      <p class="confirm-text" *ngIf="autobusABorrar">¿Estás seguro de que deseas eliminar el autobús <strong>{{
+          autobusABorrar.economico }}</strong>?</p>
       <p class="confirm-warning">Esta acción no se puede deshacer.</p>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBorrar()">Cancelar</button>
-      <button type="button" class="btn-accion btn-confirmar-eliminar" (click)="confirmarEliminacion()">Sí, Eliminar</button>
+      <button type="button" class="btn-accion btn-confirmar-eliminar" (click)="confirmarEliminacion()">Sí,
+        Eliminar</button>
     </div>
   </div>
 </div>
@@ -444,26 +449,28 @@
       <div class="costo-total-container">
         <h4>Costo Total en Mantenimiento: <span>{{ costoTotalHistorial | currency:'MXN' }}</span></h4>
         <div class="export-actions">
-    <button class="btn-mini-export btn-excel" (click)="exportarHistorialExcel()" title="Descargar Excel">
-      <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
-    </button>
-    <button class="btn-mini-export btn-pdf" (click)="exportarHistorialPDF()" title="Descargar PDF">
-      <i class="fas fa-file-pdf"></i> EXPORTAR PDF
-    </button>
-  </div>
+          <button class="btn-mini-export btn-excel" (click)="exportarHistorialExcel()" title="Descargar Excel">
+            <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
+          </button>
+          <button class="btn-mini-export btn-pdf" (click)="exportarHistorialPDF()" title="Descargar PDF">
+            <i class="fas fa-file-pdf"></i> EXPORTAR PDF
+          </button>
+        </div>
       </div>
       <div class="filtros-container-modal">
         <div class="filtro-item">
           <input type="text" class="form-control" placeholder="Filtrar por refacción o insumo..."
-                 [(ngModel)]="filtroHistorialItem" (input)="aplicarFiltroHistorial()">
+            [(ngModel)]="filtroHistorialItem" (input)="aplicarFiltroHistorial()">
         </div>
         <div class="filtro-item">
           <label>Desde:</label>
-          <input type="date" class="form-control" [(ngModel)]="filtroHistorialFechaInicio" (change)="aplicarFiltroHistorial()">
+          <input type="date" class="form-control" [(ngModel)]="filtroHistorialFechaInicio"
+            (change)="aplicarFiltroHistorial()">
         </div>
         <div class="filtro-item">
           <label>Hasta:</label>
-          <input type="date" class="form-control" [(ngModel)]="filtroHistorialFechaFin" (change)="aplicarFiltroHistorial()">
+          <input type="date" class="form-control" [(ngModel)]="filtroHistorialFechaFin"
+            (change)="aplicarFiltroHistorial()">
         </div>
       </div>
       <div class="tabla-responsive-wrapper">
@@ -475,27 +482,37 @@
               <th>Tipo</th>
               <th>Descripción</th>
               <th>Marca</th>
-              <th>Cantidad</th>
+              <th>Cant.</th>
+              <th>Costo Unit.</th>
+              <th>Total</th>
               <th>Solicitado Por</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let item of historialFiltrado">
-              <td>{{ item.fecha | date:'short' }}</td>
+              <td>{{ item.fecha | date:'dd/MM/yy' }}</td>
               <td>{{ item.kilometraje | number }} km</td>
               <td>
                 <span [class.tipo-refaccion]="item.tipo_item === 'Refacción'"
-                      [class.tipo-insumo]="item.tipo_item === 'Insumo'">
+                  [class.tipo-insumo]="item.tipo_item === 'Insumo'">
                   {{ item.tipo_item }}
                 </span>
               </td>
-              <td>{{ item.nombre }}</td>
-              <td>{{ item.marca }}</td>
-              <td>{{ item.cantidad }}</td>
+              <td style="font-weight: 500; color: #fff;">{{ item.nombre }}</td>
+              <td>{{ item.marca || '-' }}</td>
+              <td style="text-align: center;">{{ item.cantidad }}</td>
+
+              <td class="text-end" style="color: #a0c4ff;">
+                {{ item.costo_unitario | currency:'MXN' }}
+              </td>
+              <td class="text-end" style="font-weight: bold; color: #82c91e;">
+                {{ item.costo_total | currency:'MXN' }}
+              </td>
+
               <td>{{ item.solicitado_por }}</td>
             </tr>
             <tr *ngIf="historialFiltrado.length === 0">
-              <td colspan="7" class="empty-table-message">No se encontraron movimientos.</td>
+              <td colspan="9" class="empty-table-message">No se encontraron movimientos.</td>
             </tr>
           </tbody>
         </table>
@@ -519,7 +536,8 @@
       <form (ngSubmit)="guardarSyncKm()">
         <div class="form-group">
           <label for="km_sync">Kilometraje de la Última Carga</label>
-          <input id="km_sync" type="number" class="form-control" [(ngModel)]="kmSincronizar" name="kmSincronizar" required>
+          <input id="km_sync" type="number" class="form-control" [(ngModel)]="kmSincronizar" name="kmSincronizar"
+            required>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalSyncKm()">Cancelar</button>

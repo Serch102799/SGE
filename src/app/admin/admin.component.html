@@ -35,7 +35,7 @@
         <a routerLink="usuarios"><fa-icon [icon]="faUsuarios"></fa-icon> <span>Usuarios</span></a>
       </li>
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
-        <a routerLink="autobuses"><fa-icon [icon]="faAutobuses"></fa-icon> <span>Autobuses</span></a>
+        <a routerLink="autobuses"><fa-icon [icon]="faAutobuses"></fa-icon> <span>Unidades</span></a>
       </li>
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="proveedores"><fa-icon [icon]="faProveedores"></fa-icon> <span>Proveedores</span></a>

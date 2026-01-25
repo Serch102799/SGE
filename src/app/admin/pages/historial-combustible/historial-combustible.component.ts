@@ -535,290 +535,317 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     });
   }
 
-  async exportarAPDF(): Promise<void> {
-    this.exportando = true;
-    console.log('📄 Iniciando exportación a PDF...');
+ async exportarAPDF(): Promise<void> {
+  this.exportando = true;
+  console.log('📄 Iniciando exportación a PDF...');
 
-    try {
-      const todasLasCargas = await this.obtenerTodasLasCargas();
+  try {
+    const todasLasCargas = await this.obtenerTodasLasCargas();
 
-      if (!todasLasCargas || todasLasCargas.length === 0) {
-        alert('No hay datos para exportar');
-        this.exportando = false;
-        return;
+    if (!todasLasCargas || todasLasCargas.length === 0) {
+      alert('No hay datos para exportar');
+      this.exportando = false;
+      return;
+    }
+
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    }) as jsPDFWithAutoTable;
+
+    // --- ENCABEZADO ---
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(33, 150, 243);
+    doc.text('HISTORIAL DE CARGAS DE COMBUSTIBLE', 148.5, 15, { align: 'center' });
+
+    const subtitulo = this.tipoCalculo === 'vueltas' ? 'Cálculo por: Vueltas' : 'Cálculo por: Días';
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+    doc.text(subtitulo, 148.5, 22, { align: 'center' });
+
+    let yPos = 27;
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    
+    // Filtros en el encabezado
+    if (this.filtroFechaDesde || this.filtroFechaHasta) {
+      const textoFechas = `Período: ${this.filtroFechaDesde || 'Inicio'} a ${this.filtroFechaHasta || 'Actual'}`;
+      doc.text(textoFechas, 148.5, yPos, { align: 'center' });
+      yPos += 4;
+    }
+    
+    if (this.filtroRutasIds.length > 0) {
+      const rutasSeleccionadas = this.rutas
+        .filter(r => this.filtroRutasIds.includes(r.id_ruta))
+        .map(r => r.nombre_ruta)
+        .join(', ');
+      doc.text(`Rutas: ${rutasSeleccionadas}`, 148.5, yPos, { align: 'center' });
+      yPos += 4;
+    }
+
+    doc.text(`Generado: ${new Date().toLocaleString('es-MX')}`, 148.5, yPos, { align: 'center' });
+
+    // --- DEFINICIÓN DE COLUMNAS (AGREGANDO KM INI / KM FIN) ---
+    const columnas = this.tipoCalculo === 'vueltas'
+      ? ['Fecha', 'Bus', 'Operador', 'KM Ini', 'KM Fin', 'Recorr.', 'Litros', 'Rend.', 'Calif.', 'Rutas']
+      : ['Fecha', 'Bus', 'Operador', 'KM Ini', 'KM Fin', 'Recorr.', 'Litros', 'Rend.', 'Calif.', 'Despachador'];
+
+    // --- MAPEO DE FILAS ---
+    const filas = todasLasCargas.map(carga => {
+      const clasificacion = carga.clasificacion_rendimiento || this.clasificarRendimiento(
+        this.obtenerNumero(carga.rendimiento_calculado),
+        carga.rendimiento_excelente,
+        carga.rendimiento_bueno,
+        carga.rendimiento_regular
+      );
+
+      // Usamos || para soportar diferentes nombres de propiedad según tu BD
+      const kmInicial = this.obtenerNumero(carga.km_inicial || carga.km_anterior);
+      const kmFinal = this.obtenerNumero(carga.km_final || carga.km_actual);
+
+      const fila = [
+        this.formatearFecha(carga.fecha_operacion),
+        carga.economico || '-',
+        carga.nombre_completo || carga.nombre_operador || '-',
+        kmInicial.toLocaleString('en-US'), // KM Inicial
+        kmFinal.toLocaleString('en-US'),   // KM Final
+        this.obtenerNumero(carga.km_recorridos).toLocaleString('en-US'), // KM Recorrido
+        this.obtenerNumero(carga.litros_cargados).toFixed(2),
+        this.obtenerNumero(carga.rendimiento_calculado).toFixed(2),
+        clasificacion
+      ];
+
+      if (this.tipoCalculo === 'vueltas') {
+        fila.push(carga.rutas_y_vueltas || carga.rutas_info || '-');
+      } else {
+        fila.push(carga.nombre_despachador || '-');
       }
 
-      const doc = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4'
-      }) as jsPDFWithAutoTable;
+      return fila;
+    });
 
-      doc.setFontSize(18);
+    // --- TOTALES ---
+    const totalLitros = todasLasCargas.reduce((acc, c) => acc + this.obtenerNumero(c.litros_cargados), 0);
+    const totalKm = todasLasCargas.reduce((acc, c) => acc + this.obtenerNumero(c.km_recorridos), 0);
+    const promedioRendimiento = totalLitros > 0 ? totalKm / totalLitros : 0;
+
+    // --- GENERAR TABLA ---
+    autoTable(doc, {
+      head: [columnas],
+      body: filas,
+      startY: yPos + 5,
+      theme: 'grid',
+      styles: {
+        fontSize: 7, // Reducimos un poco la fuente para que quepan las columnas extra
+        cellPadding: 2,
+        overflow: 'linebreak',
+        halign: 'left',
+        valign: 'middle',
+        textColor: [40, 40, 40],
+        lineColor: [200, 200, 200],
+        lineWidth: 0.1
+      },
+      headStyles: {
+        fillColor: [33, 150, 243],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 8,
+        halign: 'center',
+        cellPadding: 2
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245]
+      },
+      // Ajuste de anchos de columna para acomodar KM Ini/Fin
+      columnStyles: {
+        0: { cellWidth: 25, halign: 'center' }, // Fecha
+        1: { cellWidth: 15, halign: 'center' }, // Bus
+        2: { cellWidth: 35, halign: 'left' },   // Operador
+        3: { cellWidth: 20, halign: 'right' },  // KM Ini
+        4: { cellWidth: 20, halign: 'right' },  // KM Fin
+        5: { cellWidth: 18, halign: 'right' },  // Recorrido
+        6: { cellWidth: 18, halign: 'right' },  // Litros
+        7: { cellWidth: 15, halign: 'center' }, // Rendimiento
+        8: { cellWidth: 20, halign: 'center', fontStyle: 'bold' }, // Calif
+        9: { cellWidth: 'auto', halign: 'left' } // Rutas/Despachador
+      },
+      margin: { left: 10, right: 10 },
+      
+      // Lógica de colores para la calificación
+      didDrawCell: (data: any) => {
+        if (data.column.index === 8 && data.section === 'body') {
+          const clasificacion = data.cell.raw;
+          let color: [number, number, number] = [100, 100, 100];
+          
+          if (clasificacion === 'Excelente') color = [76, 175, 80];
+          else if (clasificacion === 'Bueno') color = [33, 150, 243];
+          else if (clasificacion === 'Regular') color = [255, 193, 7];
+          else if (clasificacion === 'Malo') color = [244, 67, 54];
+          
+          doc.setFillColor(color[0], color[1], color[2]);
+          doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+          
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(7);
+          doc.setFont('helvetica', 'bold');
+          doc.text(
+            clasificacion || '-',
+            data.cell.x + data.cell.width / 2,
+            data.cell.y + data.cell.height / 2 + 1.5,
+            { align: 'center' }
+          );
+        }
+      },
+      didDrawPage: (data: any) => {
+        const pageHeight = doc.internal.pageSize.height;
+        doc.setDrawColor(200, 200, 200);
+        doc.line(10, pageHeight - 15, 287, pageHeight - 15);
+        doc.setFontSize(8);
+        doc.setTextColor(120, 120, 120);
+        const pageNum = (doc.internal as any).getNumberOfPages();
+        doc.text(`Página ${data.pageNumber} de ${pageNum}`, 148.5, pageHeight - 10, { align: 'center' });
+      }
+    });
+
+    // --- CUADRO DE RESUMEN FINAL ---
+    const finalY = (doc as any).lastAutoTable.finalY || 100;
+    const pageHeight = doc.internal.pageSize.height;
+    const espacioDisponible = pageHeight - finalY;
+
+    if (espacioDisponible > 35) {
+      doc.setFillColor(240, 248, 255);
+      doc.rect(10, finalY + 8, 277, 25, 'F');
+      doc.setDrawColor(33, 150, 243);
+      doc.setLineWidth(0.5);
+      doc.rect(10, finalY + 8, 277, 25);
+
+      doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(33, 150, 243);
-      doc.text('HISTORIAL DE CARGAS DE COMBUSTIBLE', 148.5, 15, { align: 'center' });
+      doc.text(`Total de Registros: ${todasLasCargas.length}`, 15, finalY + 16);
+      doc.text(`Total Litros: ${totalLitros.toFixed(2)} L`, 90, finalY + 16);
+      doc.text(`Total KM: ${totalKm.toFixed(0)} km`, 180, finalY + 16);
+      doc.text(`Rendimiento Promedio: ${promedioRendimiento.toFixed(2)} km/L`, 15, finalY + 26);
+    } else {
+      doc.addPage();
+      doc.setFillColor(240, 248, 255);
+      doc.rect(10, 20, 277, 25, 'F');
+      doc.setDrawColor(33, 150, 243);
+      doc.setLineWidth(0.5);
+      doc.rect(10, 20, 277, 25);
 
-      const subtitulo = this.tipoCalculo === 'vueltas' ? 'Cálculo por: Vueltas' : 'Cálculo por: Días';
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(80, 80, 80);
-      doc.text(subtitulo, 148.5, 22, { align: 'center' });
-
-      let yPos = 27;
-      doc.setFontSize(8);
-      doc.setTextColor(120, 120, 120);
-      
-      if (this.filtroFechaDesde || this.filtroFechaHasta) {
-        const textoFechas = `Período: ${this.filtroFechaDesde || 'Inicio'} a ${this.filtroFechaHasta || 'Actual'}`;
-        doc.text(textoFechas, 148.5, yPos, { align: 'center' });
-        yPos += 4;
-      }
-      
-      if (this.filtroRutasIds.length > 0) {
-        const rutasSeleccionadas = this.rutas
-          .filter(r => this.filtroRutasIds.includes(r.id_ruta))
-          .map(r => r.nombre_ruta)
-          .join(', ');
-        doc.text(`Rutas: ${rutasSeleccionadas}`, 148.5, yPos, { align: 'center' });
-        yPos += 4;
-      }
-
-      doc.text(`Generado: ${new Date().toLocaleString('es-MX')}`, 148.5, yPos, { align: 'center' });
-
-      const columnas = this.tipoCalculo === 'vueltas'
-        ? ['Fecha', 'Autobús', 'Operador', 'KM', 'Litros', 'Rend.', 'Calific.', 'Rutas']
-        : ['Fecha', 'Autobús', 'Operador', 'KM', 'Litros', 'Rend.', 'Calific.', 'Despachador'];
-
-      const filas = todasLasCargas.map(carga => {
-        const clasificacion = carga.clasificacion_rendimiento || this.clasificarRendimiento(
-          this.obtenerNumero(carga.rendimiento_calculado),
-          carga.rendimiento_excelente,
-          carga.rendimiento_bueno,
-          carga.rendimiento_regular
-        );
-
-        const fila = [
-          this.formatearFecha(carga.fecha_operacion),
-          carga.economico || '-',
-          carga.nombre_completo || carga.nombre_operador || '-',
-          this.obtenerNumero(carga.km_recorridos) + ' km',
-          this.obtenerNumero(carga.litros_cargados).toFixed(2) + ' L',
-          this.obtenerNumero(carga.rendimiento_calculado).toFixed(2),
-          clasificacion
-        ];
-
-        if (this.tipoCalculo === 'vueltas') {
-          fila.push(carga.rutas_y_vueltas || carga.rutas_info || '-');
-        } else {
-          fila.push(carga.nombre_despachador || '-');
-        }
-
-        return fila;
-      });
-
-      const totalLitros = todasLasCargas.reduce((acc, c) => acc + this.obtenerNumero(c.litros_cargados), 0);
-      const totalKm = todasLasCargas.reduce((acc, c) => acc + this.obtenerNumero(c.km_recorridos), 0);
-      const promedioRendimiento = totalLitros > 0 ? totalKm / totalLitros : 0;
-
-      autoTable(doc, {
-        head: [columnas],
-        body: filas,
-        startY: yPos + 5,
-        theme: 'grid',
-        styles: {
-          fontSize: 8,
-          cellPadding: 2.5,
-          overflow: 'linebreak',
-          halign: 'left',
-          valign: 'middle',
-          textColor: [40, 40, 40],
-          lineColor: [200, 200, 200],
-          lineWidth: 0.1
-        },
-        headStyles: {
-          fillColor: [33, 150, 243],
-          textColor: [255, 255, 255],
-          fontStyle: 'bold',
-          fontSize: 9,
-          halign: 'center',
-          cellPadding: 3
-        },
-        alternateRowStyles: {
-          fillColor: [245, 245, 245]
-        },
-        columnStyles: {
-          0: { cellWidth: 35, halign: 'center' },
-          1: { cellWidth: 21, halign: 'center' },
-          2: { cellWidth: 40, halign: 'left' },
-          3: { cellWidth: 20, halign: 'right' },
-          4: { cellWidth: 20, halign: 'right' },
-          5: { cellWidth: 18, halign: 'center' },
-          6: { cellWidth: 22, halign: 'center', fontStyle: 'bold' },
-          7: { cellWidth: 'auto', halign: 'left' }
-        },
-        margin: { left: 10, right: 10 },
-        didDrawCell: (data: any) => {
-          if (data.column.index === 6 && data.section === 'body') {
-            const clasificacion = data.cell.raw;
-            let color: [number, number, number] = [100, 100, 100];
-            
-            if (clasificacion === 'Excelente') color = [76, 175, 80];
-            else if (clasificacion === 'Bueno') color = [33, 150, 243];
-            else if (clasificacion === 'Regular') color = [255, 193, 7];
-            else if (clasificacion === 'Malo') color = [244, 67, 54];
-            
-            doc.setFillColor(color[0], color[1], color[2]);
-            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-            
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(8);
-            doc.setFont('helvetica', 'bold');
-            doc.text(
-              clasificacion || '-',
-              data.cell.x + data.cell.width / 2,
-              data.cell.y + data.cell.height / 2 + 1.5,
-              { align: 'center' }
-            );
-          }
-        },
-        didDrawPage: (data: any) => {
-          const pageHeight = doc.internal.pageSize.height;
-          doc.setDrawColor(200, 200, 200);
-          doc.line(10, pageHeight - 15, 287, pageHeight - 15);
-          doc.setFontSize(8);
-          doc.setTextColor(120, 120, 120);
-          const pageNum = (doc.internal as any).getNumberOfPages();
-          doc.text(`Página ${data.pageNumber} de ${pageNum}`, 148.5, pageHeight - 10, { align: 'center' });
-        }
-      });
-
-      const finalY = doc.lastAutoTable.finalY || 100;
-      const pageHeight = doc.internal.pageSize.height;
-      const espacioDisponible = pageHeight - finalY;
-
-      if (espacioDisponible > 35) {
-        doc.setFillColor(240, 248, 255);
-        doc.rect(10, finalY + 8, 277, 25, 'F');
-        doc.setDrawColor(33, 150, 243);
-        doc.setLineWidth(0.5);
-        doc.rect(10, finalY + 8, 277, 25);
-
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(33, 150, 243);
-        doc.text(`Total de Registros: ${todasLasCargas.length}`, 15, finalY + 16);
-        doc.text(`Total Litros: ${totalLitros.toFixed(2)} L`, 90, finalY + 16);
-        doc.text(`Total KM: ${totalKm.toFixed(0)} km`, 180, finalY + 16);
-        doc.text(`Rendimiento Promedio: ${promedioRendimiento.toFixed(2)} km/L`, 15, finalY + 26);
-      } else {
-        doc.addPage();
-        doc.setFillColor(240, 248, 255);
-        doc.rect(10, 20, 277, 25, 'F');
-        doc.setDrawColor(33, 150, 243);
-        doc.setLineWidth(0.5);
-        doc.rect(10, 20, 277, 25);
-
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(33, 150, 243);
-        doc.text(`Total de Registros: ${todasLasCargas.length}`, 15, 28);
-        doc.text(`Total Litros: ${totalLitros.toFixed(2)} L`, 90, 28);
-        doc.text(`Total KM: ${totalKm.toFixed(0)} km`, 180, 28);
-        doc.text(`Rendimiento Promedio: ${promedioRendimiento.toFixed(2)} km/L`, 15, 38);
-      }
-
-      const nombreArchivo = `Historial_Combustible_${new Date().getTime()}.pdf`;
-      doc.save(nombreArchivo);
-      this.registrarAuditoriaExportacion('PDF', todasLasCargas.length);
-      console.log('✅ PDF generado exitosamente con', todasLasCargas.length, 'registros');
-    } catch (error) {
-      console.error('❌ Error al exportar a PDF:', error);
-      alert('Error al exportar a PDF: ' + (error instanceof Error ? error.message : 'Error desconocido'));
-    } finally {
-      this.exportando = false;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(33, 150, 243);
+      doc.text(`Total de Registros: ${todasLasCargas.length}`, 15, 28);
+      doc.text(`Total Litros: ${totalLitros.toFixed(2)} L`, 90, 28);
+      doc.text(`Total KM: ${totalKm.toFixed(0)} km`, 180, 28);
+      doc.text(`Rendimiento Promedio: ${promedioRendimiento.toFixed(2)} km/L`, 15, 38);
     }
+
+    const nombreArchivo = `Historial_Combustible_${new Date().getTime()}.pdf`;
+    doc.save(nombreArchivo);
+    this.registrarAuditoriaExportacion('PDF', todasLasCargas.length);
+    console.log('✅ PDF generado exitosamente con', todasLasCargas.length, 'registros');
+  } catch (error) {
+    console.error('❌ Error al exportar a PDF:', error);
+    alert('Error al exportar a PDF: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+  } finally {
+    this.exportando = false;
   }
+}
+async exportarAExcel(): Promise<void> {
+  this.exportandoExcel = true;
+  console.log('📊 Iniciando exportación a Excel...');
 
-  async exportarAExcel(): Promise<void> {
-    this.exportandoExcel = true;
-    console.log('📊 Iniciando exportación a Excel...');
+  try {
+    const todasLasCargas = await this.obtenerTodasLasCargas();
 
-    try {
-      const todasLasCargas = await this.obtenerTodasLasCargas();
-
-      if (!todasLasCargas || todasLasCargas.length === 0) {
-        alert('No hay datos para exportar');
-        this.exportandoExcel = false;
-        return;
-      }
-
-      const datosExcel = todasLasCargas.map(carga => {
-        const clasificacion = carga.clasificacion_rendimiento || this.clasificarRendimiento(
-          this.obtenerNumero(carga.rendimiento_calculado),
-          carga.rendimiento_excelente,
-          carga.rendimiento_bueno,
-          carga.rendimiento_regular
-        );
-
-        return {
-          'Fecha': this.formatearFecha(carga.fecha_operacion),
-          'Autobús': carga.economico || '-',
-          'Operador': carga.nombre_operador || carga.nombre_completo || '-',
-          'KM Recorridos': this.obtenerNumero(carga.km_recorridos),
-          'Litros': this.obtenerNumero(carga.litros_cargados),
-          'Rendimiento (KM/L)': this.obtenerNumero(carga.rendimiento_calculado),
-          'Calificación': clasificacion,
-          ...(this.tipoCalculo === 'vueltas' ? {
-            'Rutas': carga.rutas_info || carga.rutas_y_vueltas || '-'
-          } : {
-            'Despachador': carga.nombre_despachador || '-'
-          })
-        };
-      });
-
-      const worksheet = XLSX.utils.json_to_sheet(datosExcel);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Historial');
-
-      const colWidths = [
-        { wch: 18 },
-        { wch: 12 },
-        { wch: 20 },
-        { wch: 15 },
-        { wch: 12 },
-        { wch: 16 },
-        { wch: 14 },
-        { wch: 25 }
-      ];
-      worksheet['!cols'] = colWidths;
-
-      const resumenRow = datosExcel.length + 2;
-      worksheet[`A${resumenRow}`] = { v: 'RESUMEN', t: 's', s: { font: { bold: true } } };
-      worksheet[`A${resumenRow + 1}`] = { v: 'Total de Registros:', t: 's' };
-      worksheet[`B${resumenRow + 1}`] = { v: datosExcel.length, t: 'n' };
-      worksheet[`A${resumenRow + 2}`] = { v: 'Total Litros:', t: 's' };
-      worksheet[`B${resumenRow + 2}`] = { 
-        v: parseFloat(datosExcel.reduce((acc, d) => acc + this.obtenerNumero(d['Litros']), 0).toFixed(2)), 
-        t: 'n' 
-      };
-      worksheet[`A${resumenRow + 3}`] = { v: 'Total KM:', t: 's' };
-      worksheet[`B${resumenRow + 3}`] = { 
-        v: parseInt(datosExcel.reduce((acc, d) => acc + this.obtenerNumero(d['KM Recorridos']), 0).toFixed(0)), 
-        t: 'n' 
-      };
-
-      const nombreArchivo = `Historial_Combustible_${new Date().getTime()}.xlsx`;
-      XLSX.writeFile(workbook, nombreArchivo);
-      this.registrarAuditoriaExportacion('EXCEL', todasLasCargas.length);
-      console.log('✅ Excel generado exitosamente con', todasLasCargas.length, 'registros');
-    } catch (error) {
-      console.error('❌ Error detallado al exportar Excel:', error);
-      alert('Error al exportar a Excel. Revisa la consola para más detalles.');
-    } finally {
+    if (!todasLasCargas || todasLasCargas.length === 0) {
+      alert('No hay datos para exportar');
       this.exportandoExcel = false;
+      return;
     }
+
+    const datosExcel = todasLasCargas.map(carga => {
+      const clasificacion = carga.clasificacion_rendimiento || this.clasificarRendimiento(
+        this.obtenerNumero(carga.rendimiento_calculado),
+        carga.rendimiento_excelente,
+        carga.rendimiento_bueno,
+        carga.rendimiento_regular
+      );
+
+      // Mapeo con KM Inicial y Final
+      return {
+        'Fecha': this.formatearFecha(carga.fecha_operacion),
+        'Autobús': carga.economico || '-',
+        'Operador': carga.nombre_operador || carga.nombre_completo || '-',
+        'KM Inicial': this.obtenerNumero(carga.km_inicial || carga.km_anterior),
+        'KM Final': this.obtenerNumero(carga.km_final || carga.km_actual),
+        'KM Recorridos': this.obtenerNumero(carga.km_recorridos),
+        'Litros': this.obtenerNumero(carga.litros_cargados),
+        'Rendimiento (KM/L)': this.obtenerNumero(carga.rendimiento_calculado),
+        'Calificación': clasificacion,
+        ...(this.tipoCalculo === 'vueltas' ? {
+          'Rutas': carga.rutas_info || carga.rutas_y_vueltas || '-'
+        } : {
+          'Despachador': carga.nombre_despachador || '-'
+        })
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Historial');
+
+    // Ajustar anchos de columnas para incluir las nuevas
+    const colWidths = [
+      { wch: 18 }, // Fecha
+      { wch: 12 }, // Autobús
+      { wch: 25 }, // Operador
+      { wch: 12 }, // KM Inicial
+      { wch: 12 }, // KM Final
+      { wch: 15 }, // KM Recorridos
+      { wch: 12 }, // Litros
+      { wch: 18 }, // Rendimiento
+      { wch: 14 }, // Calif
+      { wch: 25 }  // Rutas
+    ];
+    worksheet['!cols'] = colWidths;
+
+    // Agregar resumen al final
+    const resumenRow = datosExcel.length + 2;
+    worksheet[`A${resumenRow}`] = { v: 'RESUMEN', t: 's', s: { font: { bold: true } } };
+    
+    worksheet[`A${resumenRow + 1}`] = { v: 'Total de Registros:', t: 's' };
+    worksheet[`B${resumenRow + 1}`] = { v: datosExcel.length, t: 'n' };
+    
+    worksheet[`A${resumenRow + 2}`] = { v: 'Total Litros:', t: 's' };
+    worksheet[`B${resumenRow + 2}`] = { 
+      v: parseFloat(datosExcel.reduce((acc, d) => acc + this.obtenerNumero(d['Litros']), 0).toFixed(2)), 
+      t: 'n' 
+    };
+    
+    worksheet[`A${resumenRow + 3}`] = { v: 'Total KM:', t: 's' };
+    worksheet[`B${resumenRow + 3}`] = { 
+      v: parseInt(datosExcel.reduce((acc, d) => acc + this.obtenerNumero(d['KM Recorridos']), 0).toFixed(0)), 
+      t: 'n' 
+    };
+
+    const nombreArchivo = `Historial_Combustible_${new Date().getTime()}.xlsx`;
+    XLSX.writeFile(workbook, nombreArchivo);
+    this.registrarAuditoriaExportacion('EXCEL', todasLasCargas.length);
+    console.log('✅ Excel generado exitosamente con', todasLasCargas.length, 'registros');
+  } catch (error) {
+    console.error('❌ Error detallado al exportar Excel:', error);
+    alert('Error al exportar a Excel. Revisa la consola para más detalles.');
+  } finally {
+    this.exportandoExcel = false;
   }
+}
 
   public formatearFecha(fecha: string): string {
     if (!fecha) return '-';
