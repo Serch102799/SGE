@@ -226,13 +226,75 @@
     <!-- ACCIONES FINALES -->
     <div class="acciones-finales">
       <button type="button" class="btn-accion btn-cancelar" (click)="regresar()">Cancelar</button>
-      <button type="button" class="btn-accion btn-guardar" (click)="guardarCarga()" [disabled]="isSaving">
-        {{ isSaving ? 'Guardando...' : 'Guardar Carga' }}
-      </button>
+      <button class="btn-guardar" (click)="prepararGuardado()" [disabled]="isSaving">
+        <i class="fas fa-save"></i> Registrar Carga
+    </button>
     </div>
   </div>
 </div>
+<div class="modal-overlay" *ngIf="mostrarModalConfirmacion">
+    <div class="modal-content ticket-modal">
+        <div class="ticket-header">
+            <h3><i class="fas fa-gas-pump"></i> Confirmar Carga</h3>
+            <p class="ticket-date">{{ datosConfirmacion.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        
+        <div class="ticket-body">
+            <div class="ticket-row highlight">
+                <span>Unidad:</span>
+                <strong>{{ datosConfirmacion.unidad }}</strong>
+            </div>
+            
+            <div class="ticket-divider"></div>
 
+            <div class="ticket-row">
+                <span>Operador:</span>
+                <span>{{ datosConfirmacion.operador }}</span>
+            </div>
+            <div class="ticket-row">
+                <span>Ubicación:</span>
+                <span>{{ datosConfirmacion.ubicacion }}</span>
+            </div>
+            <div class="ticket-row">
+                <span>Ruta(s):</span>
+                <span class="ruta-text" [title]="datosConfirmacion.ruta">{{ datosConfirmacion.ruta }}</span>
+            </div>
+
+            <div class="ticket-divider"></div>
+
+            <div class="ticket-grid">
+                <div class="ticket-item">
+                    <label>Litros</label>
+                    <span class="value">{{ datosConfirmacion.litros | number:'1.2-2' }} L</span>
+                </div>
+                <div class="ticket-item">
+                    <label>Km Recorrido</label>
+                    <span class="value">{{ datosConfirmacion.recorrido | number:'1.0-1' }} km</span>
+                </div>
+                <div class="ticket-item">
+                    <label>Rendimiento</label>
+                    <span class="value highlight-value">{{ datosConfirmacion.rendimiento | number:'1.2-2' }} km/L</span>
+                </div>
+            </div>
+
+            <div class="ticket-alert" *ngIf="Math.abs(datosConfirmacion.desviacion) > umbral_km">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Desviación alta: {{ datosConfirmacion.desviacion | number:'1.0-1' }} km</span>
+            </div>
+        </div>
+
+        <div class="ticket-footer">
+            <p>¿Los datos son correctos?</p>
+            <div class="ticket-actions">
+                <button class="btn-ticket-cancel" (click)="cancelarConfirmacion()">
+                    <i class="fas fa-edit"></i> Corregir
+                </button>
+                <button class="btn-ticket-confirm" (click)="confirmarYGuardar()" [disabled]="isSaving">
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
 <!-- MODAL DE NOTIFICACIÓN -->
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
   <div class="modal-content" (click)="$event.stopPropagation()">

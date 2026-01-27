@@ -73,6 +73,8 @@ export class RegistroCargaCombustibleComponent implements OnInit {
   mostrarModalNotificacion = false;
   notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
 
+  mostrarModalConfirmacion = false;
+  datosConfirmacion: any = {};
   constructor(
     private http: HttpClient,
     private router: Router,
@@ -240,38 +242,66 @@ export class RegistroCargaCombustibleComponent implements OnInit {
     this.recalcularValores();
   }
 
-  // --- VALIDACIÓN Y GUARDADO ---
-  guardarCarga() {
-    if (this.isSaving) return;
-
-    // Validaciones comunes
+prepararGuardado() {
+    // 1. Validaciones (Las mismas que tenías en guardarCarga)
     if (!this.cargaMaestro.id_autobus || !this.cargaMaestro.km_final || !this.cargaMaestro.litros_cargados || !this.cargaMaestro.id_ubicacion) {
-      this.mostrarNotificacion('Datos Incompletos', 'Autobús, Ubicación, KM Final y Litros son requeridos.');
+      this.mostrarNotificacion('Datos Incompletos', 'Autobús, Ubicación, KM Final y Litros son requeridos.', 'error');
       return;
     }
 
-    // Validaciones específicas del modo
-    if (this.tipo_calculo === 'dias') {
-      if (!this.id_ruta_principal || this.dias_laborados <= 0) {
-        this.mostrarNotificacion('Datos Incompletos', 'Ruta Principal y Días Laborados son requeridos.');
+    if (this.tipo_calculo === 'dias' && (!this.id_ruta_principal || this.dias_laborados <= 0)) {
+        this.mostrarNotificacion('Datos Incompletos', 'Ruta Principal y Días Laborados son requeridos.', 'error');
         return;
-      }
-    } else {
-      if (this.rutas_realizadas.length === 0) {
-        this.mostrarNotificacion('Datos Incompletos', 'Debes agregar al menos una ruta.');
+    } else if (this.tipo_calculo === 'vueltas' && this.rutas_realizadas.length === 0) {
+        this.mostrarNotificacion('Datos Incompletos', 'Debes agregar al menos una ruta.', 'error');
         return;
-      }
     }
 
-    // Validar motivo de desviación si es necesario
+    // Validar motivo de desviación
     if (Math.abs(this.desviacion_km) > this.umbral_km && !this.cargaMaestro.motivo_desviacion) {
-      this.mostrarNotificacion('Motivo Requerido', 'La desviación de kilometraje es alta. Por favor, escribe un motivo.');
-      return;
+       this.mostrarNotificacion('Motivo Requerido', 'La desviación de kilometraje es alta. Por favor, escribe un motivo.', 'advertencia');
+       return;
     }
 
+    // 2. Preparar Datos para el Ticket (Nombres legibles)
+    const autobus = this.autobusControl.value; // O buscar en this.filteredAutobuses si es string
+    const operador = this.operadorControl.value;
+    const ubicacion = this.ubicaciones.find(u => u.id_ubicacion === this.cargaMaestro.id_ubicacion);
+    
+    // Obtener nombre de ruta(s)
+    let rutaTexto = '';
+    if (this.tipo_calculo === 'dias') {
+        const ruta = this.rutas.find(r => r.id_ruta === this.id_ruta_principal);
+        rutaTexto = `${ruta?.nombre_ruta || 'N/A'} (${this.dias_laborados} días)`;
+    } else {
+        rutaTexto = this.rutas_realizadas.map(r => `${r.nombre_ruta} (${r.vueltas})`).join(', ');
+        if (rutaTexto.length > 50) rutaTexto = rutaTexto.substring(0, 47) + '...';
+    }
+
+    this.datosConfirmacion = {
+        unidad: typeof autobus === 'object' ? autobus.economico : autobus,
+        operador: typeof operador === 'object' ? operador.nombre_completo : (operador || 'Sin asignar'),
+        ubicacion: ubicacion?.nombre_ubicacion || 'Desconocida',
+        fecha: this.cargaMaestro.fecha_operacion,
+        litros: this.cargaMaestro.litros_cargados,
+        km_anterior: this.km_inicial,
+        km_actual: this.cargaMaestro.km_final,
+        recorrido: this.km_recorridos,
+        rendimiento: this.rendimiento_calculado,
+        ruta: rutaTexto,
+        desviacion: this.desviacion_km
+    };
+
+    // 3. Mostrar Modal
+    this.mostrarModalConfirmacion = true;
+  }
+
+  // --- MODIFICADO: Paso 2 - Guardar Realmente ---
+  confirmarYGuardar() {
+    this.mostrarModalConfirmacion = false; // Cerrar modal
     this.isSaving = true;
 
-    // Construir payload dinámico según el modo
+    // Construir payload (Igual que antes)
     let payload: any = {
       id_autobus: this.cargaMaestro.id_autobus,
       id_empleado_operador: this.cargaMaestro.id_empleado_operador,
@@ -280,29 +310,29 @@ export class RegistroCargaCombustibleComponent implements OnInit {
       km_final: this.cargaMaestro.km_final,
       litros_cargados: this.cargaMaestro.litros_cargados,
       motivo_desviacion: this.cargaMaestro.motivo_desviacion,
-      tipo_calculo: this.tipo_calculo
+      tipo_calculo: this.tipo_calculo,
+      // Agregar campos específicos según modo
+      ...(this.tipo_calculo === 'dias' 
+          ? { id_ruta_principal: this.id_ruta_principal, dias_laborados: this.dias_laborados }
+          : { rutas_realizadas: this.rutas_realizadas.map(r => ({ id_ruta: r.id_ruta, vueltas: r.vueltas })) }
+      )
     };
-
-    if (this.tipo_calculo === 'dias') {
-      payload.id_ruta_principal = this.id_ruta_principal;
-      payload.dias_laborados = this.dias_laborados;
-    } else {
-      payload.rutas_realizadas = this.rutas_realizadas.map(r => ({ id_ruta: r.id_ruta, vueltas: r.vueltas }));
-    }
-
-    console.log('Payload enviado:', payload);
 
     this.http.post(`${this.apiUrl}/cargas-combustible`, payload).subscribe({
       next: () => {
-        sessionStorage.setItem('notificacion', '¡Carga de combustible registrada exitosamente!');
-        this.router.navigate(['/admin/historial-combustible']);
+        sessionStorage.setItem('notificacion', '¡Carga registrada exitosamente!');
+        this.router.navigate(['/admin/historial-combustible']); // Ajusta la ruta si es necesario
       },
       error: err => {
-        console.error('Error del servidor:', err);
-        this.mostrarNotificacion('Error', err.error?.message || 'Error al guardar la carga.', 'error');
+        console.error('Error:', err);
+        this.mostrarNotificacion('Error', err.error?.message || 'Error al guardar.', 'error');
         this.isSaving = false;
       }
     });
+  }
+  
+  cancelarConfirmacion() {
+      this.mostrarModalConfirmacion = false;
   }
 
   regresar() { this.location.back(); }
