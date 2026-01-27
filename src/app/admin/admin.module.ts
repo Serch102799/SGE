@@ -43,6 +43,7 @@ import { AjusteInventarioComponent } from './pages/ajuste-inventario/ajuste-inve
 import { ConteoInventarioComponent } from './pages/conteo-inventario/conteo-inventario.component';
 import { AdminPanelComponent } from './pages/admin-panel/admin-panel.component';
 import { PrestamosComponent } from './pages/prestamos/prestamos.component';
+import { AjustesComponent } from './pages/ajustes/ajustes.component';
 
 @NgModule({
   declarations: [
@@ -75,7 +76,8 @@ import { PrestamosComponent } from './pages/prestamos/prestamos.component';
     AjusteInventarioComponent,
     ConteoInventarioComponent,
     AdminPanelComponent,
-    PrestamosComponent
+    PrestamosComponent,
+    AjustesComponent
   ],
   imports: [
     HttpClientModule,

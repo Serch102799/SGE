@@ -36,6 +36,7 @@ import { AjusteInventarioComponent } from './pages/ajuste-inventario/ajuste-inve
 import { ConteoInventarioComponent } from './pages/conteo-inventario/conteo-inventario.component';
 import { AdminPanelComponent } from './pages/admin-panel/admin-panel.component';
 import { PrestamosComponent } from './pages/prestamos/prestamos.component';
+import { AjustesComponent } from './pages/ajustes/ajustes.component';
 
 const routes: Routes = [
   {
@@ -214,6 +215,12 @@ const routes: Routes = [
       {
         path: 'ajuste-inventario',
         component: AjusteInventarioComponent,
+        canActivate: [AuthGuard], 
+        data: { roles: ['SuperUsuario'] } 
+      },
+      {
+        path: 'ajustes',
+        component: AjustesComponent,
         canActivate: [AuthGuard], 
         data: { roles: ['SuperUsuario'] } 
       },

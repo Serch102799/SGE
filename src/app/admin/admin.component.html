@@ -12,8 +12,8 @@
             [icon]="faDashboard"></fa-icon> <span>Dashboard</span></a></li>
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])"><a routerLink="entradas"><fa-icon
             [icon]="faEntradas"></fa-icon><span>Entradas</span></a></li>
-      <!-- <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])"><a routerLink="productos-compuestos"><fa-icon
-            [icon]="faRecetas"></fa-icon><span>Emsamble</span></a></li> -->
+      <li *ngIf="authService.hasRole(['SuperUsuario'])"><a routerLink="ajustes"><fa-icon
+            [icon]="faRecetas"></fa-icon><span>AjustesInv</span></a></li>
       <!-- <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])"><a routerLink="registro-produccion"><fa-icon
             [icon]="faArmado"></fa-icon><span>Armar</span></a></li> -->
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])"><a routerLink="salidas"><fa-icon
