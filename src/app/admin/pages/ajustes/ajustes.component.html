@@ -1,105 +1,121 @@
 <div class="usuarios-container">
-  <div class="container-header">
-    <h2><i class="fas fa-boxes"></i> Corrección de Inventario 2026</h2>
-    <div class="search-box">
-       <input type="text" class="form-control" placeholder="Buscar refacción o insumo..." 
-              [(ngModel)]="terminoBusqueda" (keyup)="onSearchChange()">
-    </div>
-  </div>
-
-  <div class="container-body">
-    <div class="tabla-responsive-wrapper">
-      <table class="tabla-usuarios">
-        <thead>
-          <tr>
-            <th>Tipo</th>
-            <th>Nombre</th>
-            <th>Marca</th>
-            <th>Stock Sistema</th>
-            <th>Unidad</th>
-            <th class="text-center">Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of inventario | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
-            <td>
-              <span class="badge" [ngClass]="{'badge-refaccion': item.tipo === 'Refacción', 'badge-insumo': item.tipo === 'Insumo'}">
-                {{ item.tipo | uppercase }}
-              </span>
-            </td>
-            <td style="font-weight: 600; color: white;">{{ item.nombre }}</td>
-            <td>{{ item.marca || '-' }}</td>
-            <td style="font-family: monospace; font-size: 1.1rem; color: #a0c4ff;">{{ item.stock_actual }}</td>
-            <td>{{ item.unidad }}</td>
-            <td class="acciones">
-              <button class="btn-accion btn-ajuste" (click)="abrirModalAjuste(item)">
-                <i class="fas fa-balance-scale"></i> Ajustar
-              </button>
-            </td>
-          </tr>
-          <tr *ngIf="inventario.length === 0 && !loading">
-            <td colspan="6" class="empty-table-message">No se encontraron resultados.</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="container-header">
+        <h2><i class="fas fa-boxes"></i> Corrección de Inventario 2026</h2>
+        <div class="search-box">
+            <input type="text" class="form-control" placeholder="Buscar refacción o insumo..."
+                [(ngModel)]="terminoBusqueda" (keyup)="onSearchChange()">
+        </div>
     </div>
 
-    <div class="pagination-controls">
-        <pagination-controls 
-          (pageChange)="onPageChange($event)" 
-          previousLabel="Anterior" 
-          nextLabel="Siguiente">
-        </pagination-controls>
+    <div class="container-body">
+        <div class="tabla-responsive-wrapper">
+            <table class="tabla-usuarios">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>N. Parte</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Marca</th>
+                        <th>Stock Sistema</th>
+                        <th>Unidad</th>
+                        <th class="text-center">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        *ngFor="let item of inventario | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+                        <td>
+                            <span class="badge"
+                                [ngClass]="{'badge-refaccion': item.tipo === 'Refacción', 'badge-insumo': item.tipo === 'Insumo'}">
+                                {{ item.tipo | uppercase }}
+                            </span>
+                        </td>
+
+                        <td style="font-family: monospace; color: #ccc;">
+                            {{ item.numero_parte || '---' }}
+                        </td>
+
+                        <td style="font-weight: 600; color: white;">{{ item.nombre }}</td>
+
+                        <td>
+                            <small class="text-muted">{{ item.categoria || 'General' }}</small>
+                        </td>
+
+                        <td>{{ item.marca || '-' }}</td>
+
+                        <td style="font-family: monospace; font-size: 1.1rem; color: #a0c4ff;">
+                            {{ item.stock_actual }}
+                        </td>
+                        <td>{{ item.unidad }}</td>
+
+                        <td class="acciones">
+                            <button class="btn-accion btn-ajuste" (click)="abrirModalAjuste(item)">
+                                <i class="fas fa-balance-scale"></i> Ajustar
+                            </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="inventario.length === 0 && !loading">
+                        <td colspan="8" class="empty-table-message">No se encontraron resultados.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-controls">
+            <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente">
+            </pagination-controls>
+        </div>
     </div>
-  </div>
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalAjuste" (click)="cerrarModalAjuste()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header bg-warning-dark">
-      <h3>Ajuste de Stock: {{ itemSeleccionado?.nombre }}</h3>
-      <button class="btn-cerrar" (click)="cerrarModalAjuste()">×</button>
-    </div>
-    
-    <div class="modal-body">
-      <div class="alert alert-info">
-        Ingresa la cantidad real. El sistema calculará el ajuste automáticamente.
-      </div>
-
-      <div class="row align-items-center mb-4">
-        <div class="col-md-4 text-center">
-            <label class="d-block text-muted">Stock Sistema</label>
-            <span class="stock-numero">{{ itemSeleccionado?.stock_actual }}</span>
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header bg-warning-dark">
+            <h3>Ajuste de Stock: {{ itemSeleccionado?.nombre }}</h3>
+            <button class="btn-cerrar" (click)="cerrarModalAjuste()">×</button>
         </div>
-        <div class="col-md-4 text-center">
-            <i class="fas fa-arrow-right fa-2x text-muted"></i>
+
+        <div class="modal-body">
+            <div class="alert alert-info">
+                Ingresa la cantidad real. El sistema calculará el ajuste automáticamente.
+            </div>
+
+            <div class="row align-items-center mb-4">
+                <div class="col-md-4 text-center">
+                    <label class="d-block text-muted">Stock Sistema</label>
+                    <span class="stock-numero">{{ itemSeleccionado?.stock_actual }}</span>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-arrow-right fa-2x text-muted"></i>
+                </div>
+                <div class="col-md-4">
+                    <label class="d-block text-white">Conteo Físico</label>
+                    <input type="number" class="form-control stock-input" [(ngModel)]="nuevoStockFisico"
+                        (input)="calcularDiferencia()">
+                </div>
+            </div>
+
+            <div class="diferencia-container"
+                [ngClass]="{'dif-positiva': diferenciaCalculada > 0, 'dif-negativa': diferenciaCalculada < 0}">
+                <span *ngIf="diferenciaCalculada > 0">Sobran (Entrada): +{{ diferenciaCalculada }}</span>
+                <span *ngIf="diferenciaCalculada < 0">Faltan (Salida): {{ diferenciaCalculada }}</span>
+                <span *ngIf="diferenciaCalculada === 0">Sin cambios</span>
+            </div>
+
+            <div class="form-group mt-3">
+                <label class="text-muted">Motivo del Ajuste</label>
+                <input type="text" class="form-control" [(ngModel)]="motivoAjuste">
+            </div>
         </div>
-        <div class="col-md-4">
-            <label class="d-block text-white">Conteo Físico</label>
-            <input type="number" class="form-control stock-input" 
-                   [(ngModel)]="nuevoStockFisico" (input)="calcularDiferencia()">
+
+        <div class="modal-footer">
+            <button class="btn-accion btn-cancelar" (click)="cerrarModalAjuste()">Cancelar</button>
+            <button class="btn-accion btn-guardar" (click)="iniciarGuardado()" [disabled]="diferenciaCalculada === 0">
+                Aplicar Ajuste
+            </button>
         </div>
-      </div>
-
-      <div class="diferencia-container" [ngClass]="{'dif-positiva': diferenciaCalculada > 0, 'dif-negativa': diferenciaCalculada < 0}">
-          <span *ngIf="diferenciaCalculada > 0">Sobran (Entrada): +{{ diferenciaCalculada }}</span>
-          <span *ngIf="diferenciaCalculada < 0">Faltan (Salida): {{ diferenciaCalculada }}</span>
-          <span *ngIf="diferenciaCalculada === 0">Sin cambios</span>
-      </div>
-
-      <div class="form-group mt-3">
-          <label class="text-muted">Motivo del Ajuste</label>
-          <input type="text" class="form-control" [(ngModel)]="motivoAjuste">
-      </div>
     </div>
-
-    <div class="modal-footer">
-      <button class="btn-accion btn-cancelar" (click)="cerrarModalAjuste()">Cancelar</button>
-      <button class="btn-accion btn-guardar" (click)="iniciarGuardado()" [disabled]="diferenciaCalculada === 0">
-         Aplicar Ajuste
-      </button>
-    </div>
-  </div>
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalConfirmacion" style="z-index: 2100;">
@@ -120,9 +136,11 @@
 
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarNotificacion()" style="z-index: 2200;">
     <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
-        <div class="modal-header" [ngClass]="{'header-exito': notificacion.tipo === 'exito', 'header-error': notificacion.tipo === 'error'}">
+        <div class="modal-header"
+            [ngClass]="{'header-exito': notificacion.tipo === 'exito', 'header-error': notificacion.tipo === 'error'}">
             <h3>
-                <i class="fas" [ngClass]="{'fa-check-circle': notificacion.tipo === 'exito', 'fa-times-circle': notificacion.tipo === 'error'}"></i>
+                <i class="fas"
+                    [ngClass]="{'fa-check-circle': notificacion.tipo === 'exito', 'fa-times-circle': notificacion.tipo === 'error'}"></i>
                 {{ notificacion.titulo }}
             </h3>
         </div>
