@@ -70,6 +70,11 @@
               <button class="btn-accion btn-estado" (click)="verDetalles(entrada)" title="Ver Detalles">
                 <span class="d-none d-md-inline">Detalles</span>Ver Detalles
               </button>
+              <button *ngIf="authService.hasRole(['SuperUsuario', 'Admin', 'SuperAdmin'])"
+                class="btn-accion btn-cancelar-icon" title="Anular Entrada" (click)="abrirModalCancelar(entrada)">
+                <span class="d-none d-md-inline">Anular</span>Cancelar
+                <i class="fas fa-ban"></i>
+              </button>
 
               <ng-container
                 *ngIf="authService.hasRole(['SuperUsuario', 'SuperAdmin', 'Admin']) && entrada.estado !== 'CANCELADO'">
@@ -256,5 +261,50 @@
     <div class="modal-footer">
       <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
     </div>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="mostrarModalCancelar" style="z-index: 2100;">
+  <div class="modal-content danger-modal" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header header-error">
+      <h3><i class="fas fa-exclamation-triangle"></i> Cancelar Entrada</h3>
+    </div>
+    
+    <div class="modal-body">
+      <div class="alert alert-danger-custom">
+        <strong>¡ATENCIÓN!</strong> Estás a punto de anular la entrada con factura/vale: 
+        <strong class="text-white">{{ entradaACancelar?.factura_proveedor || entradaACancelar?.vale_interno || 'S/D' }}</strong>.
+        <br><br>
+        Esto restará del stock actual las cantidades ingresadas. Si el sistema detecta que parte del material <strong>ya fue utilizado</strong>, la operación será bloqueada.
+      </div>
+
+      <div class="form-group mt-3">
+        <label>Motivo de la Cancelación</label>
+        <select class="form-control" [(ngModel)]="motivoCancelacion" [disabled]="isCanceling">
+          <option value="" disabled selected>Seleccione un motivo...</option>
+          <option value="Error de captura (Duplicado)">Error de captura (Duplicado / Fallo de Red)</option>
+          <option value="Devolución a proveedor (Garantía)">Devolución a proveedor (Garantía)</option>
+          <option value="Mercancía incorrecta / Dañada">Mercancía incorrecta / Dañada</option>
+          <option value="Otro">Otro...</option>
+        </select>
+      </div>
+
+      <div class="form-group mt-2 animation-fade-in" *ngIf="motivoCancelacion === 'Otro'">
+        <label>Especifique el motivo detallado</label>
+        <textarea class="form-control" [(ngModel)]="motivoDetalle" rows="2" placeholder="Describe brevemente por qué se anula esta entrada..." [disabled]="isCanceling"></textarea>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalCancelar()" [disabled]="isCanceling">Volver</button>
+      
+      <button class="btn-guardar btn-danger-neon" 
+              (click)="confirmarCancelacion()" 
+              [disabled]="isCanceling || !motivoCancelacion || (motivoCancelacion === 'Otro' && !motivoDetalle)">
+        <i class="fas" [ngClass]="isCanceling ? 'fa-spinner fa-spin' : 'fa-skull-crossbones'"></i>
+        {{ isCanceling ? 'Procesando...' : 'Anular Definitivamente' }}
+      </button>
+    </div>
+
   </div>
 </div>

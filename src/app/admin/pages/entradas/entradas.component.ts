@@ -14,12 +14,12 @@ export interface Entrada {
   idEntrada: number;
   idProveedor: number;
   factura_proveedor: string;
-  vale_interno: string; 
+  vale_interno: string;
   valor_neto: number;
   observaciones: string;
   recibidoPorID: number;
   fechaEntrada: string;
-  nombreProveedor: string; 
+  nombreProveedor: string;
   nombreEmpleado: string;
   estado?: string; // Nuevo campo para saber si está CANCELADO
 }
@@ -33,7 +33,7 @@ export interface Entrada {
 export class EntradasComponent implements OnInit, OnDestroy {
 
   private apiUrl = `${environment.apiUrl}/entradas`;
-  
+
   // --- Estado de la Tabla ---
   entradas: Entrada[] = [];
   currentPage: number = 1;
@@ -47,12 +47,18 @@ export class EntradasComponent implements OnInit, OnDestroy {
   private searchSubject: Subject<void> = new Subject<void>();
   private searchSubscription?: Subscription;
 
+  // --- CANCELACIÓN ---
+  mostrarModalCancelar = false;
+  entradaACancelar: any = null;
+  motivoCancelacion: string = '';
+  motivoDetalle: string = '';
+  isCanceling = false;
   // --- Modales y Notificaciones ---
   mostrarModalDetalles = false;
   valorNetoEntradaSeleccionada: number = 0;
   detallesSeleccionados: any[] = [];
   entradaSeleccionadaId: number | null = null;
-  
+
   mostrarModalNotificacion = false;
   notificacion = {
     titulo: 'Aviso',
@@ -78,7 +84,7 @@ export class EntradasComponent implements OnInit, OnDestroy {
     this.revisarNotificaciones();
 
     this.searchSubscription = this.searchSubject.pipe(
-      startWith(undefined), 
+      startWith(undefined),
       debounceTime(400)
     ).subscribe(() => {
       this.currentPage = 1;
@@ -89,7 +95,7 @@ export class EntradasComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.searchSubscription?.unsubscribe();
   }
-  
+
   obtenerEntradas() {
     let params = new HttpParams()
       .set('page', this.currentPage.toString())
@@ -133,7 +139,7 @@ export class EntradasComponent implements OnInit, OnDestroy {
     this.currentPage = page;
     this.obtenerEntradas();
   }
-  
+
   registrarNuevaEntrada() {
     this.router.navigate(['/admin/registro-entrada']);
   }
@@ -143,23 +149,23 @@ export class EntradasComponent implements OnInit, OnDestroy {
   // ==========================================
   verDetalles(entrada: Entrada) {
     this.entradaSeleccionadaId = entrada.idEntrada;
-    
+
     this.http.get<{ detalles: any[], valorNeto: number }>(`${this.apiUrl}/detalles/${entrada.idEntrada}`).subscribe({
       next: (respuesta) => {
         this.detallesSeleccionados = respuesta.detalles;
-        this.valorNetoEntradaSeleccionada = respuesta.valorNeto; 
+        this.valorNetoEntradaSeleccionada = respuesta.valorNeto;
         this.mostrarModalDetalles = true;
       },
       error: (err) => this.mostrarNotificacion('Error', 'No se pudieron cargar los detalles.', 'error')
     });
   }
-  
+
   cerrarModalDetalles() {
     this.mostrarModalDetalles = false;
   }
 
   cargarProveedores() {
-    if (this.proveedores.length > 0) return; 
+    if (this.proveedores.length > 0) return;
     this.http.get<any[]>(`${environment.apiUrl}/proveedores`).subscribe({
       next: (data) => this.proveedores = data,
       error: (err) => console.error('Error al cargar proveedores', err)
@@ -168,7 +174,7 @@ export class EntradasComponent implements OnInit, OnDestroy {
 
   abrirEdicionHistorica(entrada: Entrada) {
     this.cargarProveedores();
-    
+
     // Formatear fecha para el input datetime-local (YYYY-MM-DDTHH:mm)
     // Es necesario cortar los segundos y milisegundos para que el input lo lea bien
     const fecha = new Date(entrada.fechaEntrada);
@@ -190,28 +196,28 @@ export class EntradasComponent implements OnInit, OnDestroy {
       next: (res) => {
         // Mapeamos la respuesta del backend para el formulario
         this.entradaEdicion.items = res.detalles.map(d => ({
-          id_detalle: d.id_detalle_entrada || d.id_detalle, 
+          id_detalle: d.id_detalle_entrada || d.id_detalle,
           id_item: d.id_refaccion || d.id_insumo, // Asegúrate de que tu backend mande estos IDs
           nombre: d.descripcion, // O nombre_item
           tipo: d.tipo_item.toLowerCase(), // 'refaccion' o 'insumo'
-          
+
           // Valores Originales (referencia)
           cantidad_original: Number(d.cantidad),
           costo_original: Number(d.costo),
-          
+
           // Valores Editables (Inicialmente iguales)
           cantidad_nueva: Number(d.cantidad),
           costo_nuevo: Number(d.costo),
-          
+
           // Validaciones de stock (Si el backend no lo manda, asumimos 0 por seguridad visual)
-          cantidad_usada: Number(d.cantidad_usada || 0) 
+          cantidad_usada: Number(d.cantidad_usada || 0)
         }));
         this.mostrarModalEdicion = true;
       },
       error: (err) => this.mostrarNotificacion('Error', 'No se pudieron cargar los datos para edición.', 'error')
     });
   }
-guardarEdicionHistorica() {
+  guardarEdicionHistorica() {
     if (!confirm('¿Confirmas que deseas aplicar estos cambios históricos? El stock actual se verá afectado.')) return;
 
     this.http.put(`${this.apiUrl}/${this.entradaEdicion.id_entrada}/editar-completo`, this.entradaEdicion).subscribe({
@@ -247,6 +253,52 @@ guardarEdicionHistorica() {
       }
     });
   }
+  abrirModalCancelar(entrada: any) {
+    this.entradaACancelar = entrada;
+    this.motivoCancelacion = '';
+    this.motivoDetalle = '';
+    this.mostrarModalCancelar = true;
+  }
+
+  cerrarModalCancelar() {
+    if (this.isCanceling) return; // No dejar cerrar si está procesando
+    this.mostrarModalCancelar = false;
+    this.entradaACancelar = null;
+  }
+
+  confirmarCancelacion() {
+    if (!this.motivoCancelacion) return;
+
+    // Armar el motivo final
+    let motivoFinal = this.motivoCancelacion;
+    if (this.motivoCancelacion === 'Otro') {
+      if (!this.motivoDetalle.trim()) {
+        this.mostrarNotificacion('Atención', 'Debes especificar el motivo detallado.', 'advertencia');
+        return;
+      }
+      motivoFinal = `Otro: ${this.motivoDetalle}`;
+    }
+
+    this.isCanceling = true; // Activar el spinner y bloquear botones
+
+    // Ajusta 'idEntrada' según cómo se llame tu propiedad (puede ser id_entrada o idEntrada)
+    const id = this.entradaACancelar.id_entrada || this.entradaACancelar.idEntrada;
+
+    this.http.put(`${this.apiUrl}/${id}/cancelar`, { motivo: motivoFinal }).subscribe({
+      next: (res: any) => {
+        this.isCanceling = false;
+        this.cerrarModalCancelar();
+        this.mostrarNotificacion('Cancelación Exitosa', res.message || 'La entrada y el stock han sido revertidos.', 'exito');
+        this.obtenerEntradas(); // Llama a tu método que recarga la tabla
+      },
+      error: (err) => {
+        this.isCanceling = false;
+        // Aquí mostraremos el error si el backend detecta que ya se usó el stock
+        const mensajeError = err.error?.message || 'Error al intentar cancelar la entrada.';
+        this.mostrarNotificacion('Error de Cancelación', mensajeError, 'error');
+      }
+    });
+  }
 
   // ==========================================
   // EXPORTACIÓN (EXCEL / PDF)
@@ -257,7 +309,7 @@ guardarEdicionHistorica() {
 
     let params = new HttpParams()
       .set('page', '1')
-      .set('limit', '100000') 
+      .set('limit', '100000')
       .set('search', this.terminoBusqueda.trim());
 
     if (this.fechaInicio) params = params.set('fechaInicio', this.fechaInicio);
@@ -266,10 +318,10 @@ guardarEdicionHistorica() {
     this.http.get<{ data: any[] }>(this.apiUrl, { params }).pipe(
       switchMap(response => {
         const entradas = response.data || [];
-        
+
         if (entradas.length === 0) throw new Error('No hay datos para exportar');
 
-        const peticionesDetalles = entradas.map(entrada => 
+        const peticionesDetalles = entradas.map(entrada =>
           this.http.get<{ detalles: any[] }>(`${this.apiUrl}/detalles/${entrada.id_entrada}`).pipe(
             map(res => ({ cabecera: entrada, detalles: res.detalles || [] }))
           )
@@ -281,7 +333,7 @@ guardarEdicionHistorica() {
         const filasExcel: any[] = [];
         dataCompleta.forEach(item => {
           const cab = item.cabecera;
-          
+
           filasExcel.push({
             'ID Entrada': cab.id_entrada,
             'Fecha': new Date(cab.fecha_operacion).toLocaleString(),
@@ -338,7 +390,7 @@ guardarEdicionHistorica() {
       switchMap(response => {
         const entradas = response.data || [];
         if (entradas.length === 0) throw new Error('No hay datos');
-        const peticionesDetalles = entradas.map(entrada => 
+        const peticionesDetalles = entradas.map(entrada =>
           this.http.get<{ detalles: any[] }>(`${this.apiUrl}/detalles/${entrada.id_entrada}`).pipe(
             map(res => ({ cabecera: entrada, detalles: res.detalles || [] }))
           )
@@ -364,11 +416,11 @@ guardarEdicionHistorica() {
           // Cabecera
           doc.setFillColor(240, 240, 240);
           doc.rect(14, yPos - 5, 182, 18, 'F');
-          
+
           doc.setFontSize(10);
           doc.setFont('helvetica', 'bold');
           doc.text(`Entrada #${cab.id_entrada} | ${new Date(cab.fecha_operacion).toLocaleDateString()}`, 16, yPos);
-          if(cab.estado === 'CANCELADO') {
+          if (cab.estado === 'CANCELADO') {
             doc.setTextColor(220, 53, 69);
             doc.text('(CANCELADO)', 90, yPos);
             doc.setTextColor(0, 0, 0);

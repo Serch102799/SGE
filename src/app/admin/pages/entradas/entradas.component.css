@@ -368,6 +368,68 @@
   transform: translateY(-2px);
 }
 
+/* Botón pequeño de cancelar en la tabla */
+.btn-cancelar-icon {
+  background: rgba(220, 53, 69, 0.15);
+  color: #ff6b6b;
+  border: 1px solid rgba(220, 53, 69, 0.4);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancelar-icon:hover {
+  background: rgba(220, 53, 69, 0.4);
+  color: white;
+  border-color: #dc3545;
+  box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+  transform: scale(1.05);
+}
+
+/* Modal de Peligro (Danger Modal) */
+.danger-modal {
+  border: 1px solid rgba(220, 53, 69, 0.5) !important;
+  box-shadow: 0 15px 35px rgba(220, 53, 69, 0.2) !important;
+}
+
+.header-error {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.3), rgba(15, 23, 42, 0.9)) !important;
+  border-bottom: 1px solid rgba(220, 53, 69, 0.5) !important;
+  color: #ff6b6b !important;
+}
+
+.alert-danger-custom {
+  background: rgba(220, 53, 69, 0.1);
+  border-left: 4px solid #ff6b6b;
+  padding: 15px;
+  border-radius: 4px;
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.btn-danger-neon {
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+  border: none;
+  box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4);
+}
+
+.btn-danger-neon:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  box-shadow: 0 6px 20px rgba(244, 67, 54, 0.6);
+  transform: translateY(-2px);
+}
+
+.animation-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* --- ESTADO CANCELADO (Para la fila) --- */
 .fila-cancelada td {
   color: #777 !important;
