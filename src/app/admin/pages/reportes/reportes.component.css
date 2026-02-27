@@ -404,3 +404,107 @@ td.stock-critico {
     font-size: 0.85rem;
   }
 }
+/* Botón para abrir detalles en la tabla */
+.btn-detalles {
+  background: rgba(33, 150, 243, 0.15);
+  color: #4dabf7;
+  border: 1px solid rgba(33, 150, 243, 0.4);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-detalles:hover {
+  background: #4dabf7;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(77, 171, 247, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Modificadores del Modal */
+.modal-lg {
+  max-width: 850px !important;
+  width: 95%;
+}
+
+.resumen-modal {
+  display: flex;
+  justify-content: space-around;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border-left: 4px solid #4dabf7;
+}
+
+.resumen-modal p {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #e2e8f0;
+}
+
+.text-success {
+  color: #00e676 !important;
+  font-weight: 800;
+}
+
+/* Tabla interna del Modal */
+.tabla-detalles {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.tabla-detalles th {
+  background: #1e293b;
+  color: #94a3b8;
+  padding: 10px 12px;
+  text-align: left;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.tabla-detalles td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+}
+
+.tabla-detalles tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.text-bold { font-weight: bold; color: #fff; }
+
+/* Badges de Colores */
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.badge-refaccion { background: rgba(255, 193, 7, 0.15); color: #ffc107; }
+.badge-insumo { background: rgba(0, 188, 212, 0.15); color: #00bcd4; }
+
+/* Botón de cerrar modal */
+.btn-cerrar-modal {
+  background: #334155;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cerrar-modal:hover {
+  background: #475569;
+}

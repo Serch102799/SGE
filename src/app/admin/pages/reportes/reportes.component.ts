@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { environment } from '../../../../environments/environments';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-reportes',
@@ -135,6 +136,22 @@ export class ReportesComponent {
   return this.tipoReporteSeleccionado === 'gastos-totales' && this.totalGeneral > 0;
 }
 
+// Variables para el Modal de Detalles
+  modalDetallesVisible: boolean = false;
+  busSeleccionado: any = null;
+
+  // Funciones para abrir/cerrar el modal
+  abrirModalDetalles(bus: any) {
+    this.busSeleccionado = bus;
+    this.modalDetallesVisible = true;
+    document.body.style.overflow = 'hidden'; // Evita el scroll del fondo
+  }
+
+  cerrarModalDetalles() {
+    this.modalDetallesVisible = false;
+    this.busSeleccionado = null;
+    document.body.style.overflow = 'auto'; // Restaura el scroll
+  }
   formatearValor(valor: any, columna: string): string {
     // Formatear valores monetarios
     if (columna.toLowerCase().includes('valor') || 
@@ -172,13 +189,13 @@ export class ReportesComponent {
       .replace(/\b\w/g, l => l.toUpperCase());
   }
 
-  exportarPDF() {
+exportarPDF() {
     if (this.reporteData.length === 0) {
       this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.');
       return;
     }
     
-    const doc = new jsPDF('landscape'); // Modo horizontal para más espacio
+    const doc = new jsPDF('landscape'); // Modo horizontal
     const titulo = this.tituloReporte.toUpperCase();
     
     // Encabezado
@@ -190,33 +207,75 @@ export class ReportesComponent {
     doc.setFont('helvetica', 'normal');
     doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-MX')}`, 14, 28);
 
-    // Añadir periodo si hay fechas
     if (this.requiereFechas && this.fechaInicio && this.fechaFin) {
       doc.text(`Periodo: ${this.fechaInicio} al ${this.fechaFin}`, 14, 34);
     }
 
-    // Si es reporte de gastos totales, agregar el total destacado
     let startY = 40;
     if (this.tipoReporteSeleccionado === 'gastos-totales' && this.totalGeneral > 0) {
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(76, 175, 80); // Verde
-      doc.text(
-        `TOTAL GENERAL: ${this.totalGeneral.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 
-        14, 
-        startY
-      );
-      doc.setTextColor(0, 0, 0); // Restablecer a negro
+      doc.setTextColor(76, 175, 80);
+      doc.text(`TOTAL GENERAL: $${this.totalGeneral.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, startY);
+      doc.setTextColor(0, 0, 0);
       doc.setFont('helvetica', 'normal');
       startY = 48;
     }
 
-    // Preparar datos de la tabla
-    const headers = this.columnasReporte.map(col => this.formatearColumna(col));
-    const body = this.reporteData.map(item => 
-      this.columnasReporte.map(col => this.formatearValor(item[col], col))
-    );
+    // Ocultamos la columna detalles de la cabecera principal
+    const columnasVisibles = this.columnasReporte.filter(col => col !== 'detalles');
+    const headers = columnasVisibles.map(col => this.formatearColumna(col));
+    
+    // Preparar el cuerpo de la tabla dinámicamente
+    const body: any[] = [];
 
+    this.reporteData.forEach(item => {
+      // Obtenemos los valores de la fila principal
+      const filaPrincipal = columnasVisibles.map(col => this.formatearValor(item[col], col));
+
+      // --- MAGIA PARA EL REPORTE DE COSTO POR AUTOBÚS ---
+      if (this.tipoReporteSeleccionado === 'costo-autobus' && item.detalles && item.detalles.length > 0) {
+        
+        // 1. Fila Maestra (El autobús) - Le damos un fondo azul muy claro para que resalte
+        const filaMaestra = filaPrincipal.map(val => ({
+          content: val,
+          styles: { fontStyle: 'bold', fillColor: [235, 245, 255] }
+        }));
+        body.push(filaMaestra);
+
+        // 2. Cabecera del Desglose (Alineada perfectamente a las 7 columnas principales)
+        body.push([
+          { content: '', styles: { fillColor: [255, 255, 255] } }, // Sangría (Celda vacía bajo el ID)
+          { content: 'FECHA', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } },
+          { content: 'TIPO', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } },
+          { content: 'ARTÍCULO', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } },
+          { content: 'CANT.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'center' } },
+          { content: 'COSTO U.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } },
+          { content: 'SUBTOTAL', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } }
+        ]);
+
+        // 3. Filas de cada refacción/insumo
+        item.detalles.forEach((detalle: any) => {
+          const articuloTxt = detalle.marca ? `${detalle.nombre} (${detalle.marca})` : detalle.nombre;
+          
+          body.push([
+            { content: '', styles: { fillColor: [255, 255, 255] } }, // Sangría
+            { content: new Date(detalle.fecha).toLocaleDateString('es-MX'), styles: { fontSize: 8, textColor: [100,100,100], fillColor: [255, 255, 255] } },
+            { content: detalle.tipo_item, styles: { fontSize: 8, textColor: [100,100,100], fillColor: [255, 255, 255] } },
+            { content: articuloTxt, styles: { fontSize: 8, textColor: [100,100,100], fillColor: [255, 255, 255] } },
+            { content: detalle.cantidad.toString(), styles: { fontSize: 8, textColor: [100,100,100], fillColor: [255, 255, 255], halign: 'center' } },
+            { content: `$${detalle.costo_unitario.toFixed(2)}`, styles: { fontSize: 8, textColor: [100,100,100], fillColor: [255, 255, 255], halign: 'right' } },
+            { content: `$${detalle.costo_total.toFixed(2)}`, styles: { fontSize: 8, textColor: [100,100,100], fillColor: [255, 255, 255], halign: 'right' } }
+          ]);
+        });
+
+      } else {
+        // --- PARA LOS DEMÁS REPORTES (O si el bus no tiene detalles) ---
+        body.push(filaPrincipal);
+      }
+    });
+
+    // Generar la tabla en el PDF
     autoTable(doc, {
       startY: startY,
       head: [headers],
@@ -247,53 +306,80 @@ export class ReportesComponent {
       return;
     }
 
-    // Preparar datos
-    const datosExportar = this.reporteData.map(item => {
-      const fila: any = {};
-      this.columnasReporte.forEach(col => {
-        fila[this.formatearColumna(col)] = this.formatearValor(item[col], col);
+    // 1. Columnas principales (ocultando 'detalles' para que no salga [object Object])
+    const columnasVisibles = this.columnasReporte.filter(col => col !== 'detalles');
+    const headers = columnasVisibles.map(col => this.formatearColumna(col));
+
+    // 2. Preparar el arreglo de filas que insertaremos en Excel
+    const datosExcel: any[][] = [];
+    
+    // Insertar la cabecera principal
+    datosExcel.push(headers);
+
+    // 3. Recorrer los datos de la tabla
+    this.reporteData.forEach(fila => {
+      
+      // --- FILA MAESTRA (El autobús, la entrada, o la refacción) ---
+      const filaPrincipal = columnasVisibles.map(header => {
+        const colOriginal = this.columnasReporte.find(c => this.formatearColumna(c) === header) || header;
+        // Para Excel es mejor enviar los números crudos si queremos que puedan sumarlos
+        // Pero usaremos tu formateador para mantener la consistencia
+        return this.formatearValor(fila[colOriginal], colOriginal);
       });
-      return fila;
+      datosExcel.push(filaPrincipal);
+
+      // --- FILAS DE DESGLOSE (Exclusivo para Costo por Autobús) ---
+      if (this.tipoReporteSeleccionado === 'costo-autobus' && fila.detalles && fila.detalles.length > 0) {
+        
+        // Cabecera del sub-reporte (dejamos la primera celda vacía para "identar" visualmente en Excel)
+        datosExcel.push(['', '--> FECHA', 'TIPO', 'ARTÍCULO', 'MARCA', 'CANTIDAD', 'COSTO UNIT.', 'SUBTOTAL']);
+        
+        fila.detalles.forEach((detalle: any) => {
+          const fechaFormat = new Date(detalle.fecha).toLocaleDateString('es-MX');
+          
+          datosExcel.push([
+            '', // Celda vacía para sangría
+            fechaFormat,
+            detalle.tipo_item,
+            detalle.nombre,
+            detalle.marca || 'N/A',
+            detalle.cantidad,
+            `$${detalle.costo_unitario.toFixed(2)}`,
+            `$${detalle.costo_total.toFixed(2)}`
+          ]);
+        });
+        
+        // Agregar una fila completamente vacía al final del desglose para separar del siguiente autobús
+        datosExcel.push([]); 
+      }
     });
 
-    // Si es gastos totales, agregar fila de total
+    // 4. Si es gastos totales, agregar la fila de total general al final
     if (this.tipoReporteSeleccionado === 'gastos-totales' && this.totalGeneral > 0) {
-      const filaTotales: any = {};
-      this.columnasReporte.forEach((col, index) => {
-        if (index === this.columnasReporte.length - 1) {
-          filaTotales[this.formatearColumna(col)] = `TOTAL: ${this.totalGeneral.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        } else {
-          filaTotales[this.formatearColumna(col)] = '';
-        }
-      });
-      datosExportar.push(filaTotales);
+      const filaTotales = new Array(headers.length).fill(''); // Llenar celdas vacías
+      filaTotales[headers.length - 1] = `TOTAL: $${this.totalGeneral.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      datosExcel.push(filaTotales);
     }
 
-    // Convertir a CSV
-    const headers = this.columnasReporte.map(col => this.formatearColumna(col));
-    let csv = headers.join(',') + '\n';
-    
-    datosExportar.forEach(fila => {
-      const valores = headers.map(header => {
-        const valor = fila[header] || '';
-        // Escapar valores que contengan comas
-        return typeof valor === 'string' && valor.includes(',') ? `"${valor}"` : valor;
-      });
-      csv += valores.join(',') + '\n';
-    });
+    // 5. Crear el libro de Excel y la hoja
+    const worksheet = XLSX.utils.aoa_to_sheet(datosExcel);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte');
 
-    // Crear blob y descargar
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `reporte_${this.tipoReporteSeleccionado}_${new Date().getTime()}.csv`);
-    link.style.visibility = 'hidden';
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Opcional: Ajustar el ancho de las columnas un poco
+    const wscols = [
+      { wch: 20 }, // Ancho columna 1
+      { wch: 15 }, // Ancho columna 2
+      { wch: 25 }, // Ancho columna 3
+      { wch: 25 }, // Ancho columna 4
+      { wch: 15 }, // Ancho columna 5
+      { wch: 15 }  // Ancho columna 6
+    ];
+    worksheet['!cols'] = wscols;
+
+    // 6. Descargar el archivo nativo .xlsx
+    const nombreArchivo = `Reporte_${this.tipoReporteSeleccionado}_${new Date().getTime()}.xlsx`;
+    XLSX.writeFile(workbook, nombreArchivo);
 
     this.mostrarNotificacion('Éxito', 'Excel exportado correctamente', 'exito');
   }

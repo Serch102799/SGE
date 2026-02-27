@@ -1,17 +1,14 @@
-
 <div class="usuarios-container">
   <div class="container-header">
     <h2>Módulo de Reportes</h2>
   </div>
 
   <div class="container-body">
-    <!-- Sección de Selección -->
     <div class="report-section">
       <h3>Selecciona un Reporte</h3>
       <p>{{ descripcionReporte }}</p>
 
       <div class="filtros-container">
-        <!-- Tipo de Reporte -->
         <div class="filtro-item">
           <label for="tipoReporte">Tipo de Reporte</label>
           <select 
@@ -27,7 +24,6 @@
           </select>
         </div>
 
-        <!-- Fecha Inicio (solo si requiere fechas) -->
         <div class="filtro-item" *ngIf="requiereFechas">
           <label for="fechaInicio">Desde:</label>
           <input 
@@ -37,7 +33,6 @@
             [(ngModel)]="fechaInicio">
         </div>
 
-        <!-- Fecha Fin (solo si requiere fechas) -->
         <div class="filtro-item" *ngIf="requiereFechas">
           <label for="fechaFin">Hasta:</label>
           <input 
@@ -58,7 +53,6 @@
       </p>
     </div>
 
-    <!-- Resultados -->
     <div class="results-container" *ngIf="reporteData.length > 0">
       <div class="results-header">
         <h4>{{ tituloReporte }}</h4>
@@ -72,12 +66,10 @@
         </div>
       </div>
 
-      <!-- Total General (solo para gastos-totales) -->
       <div class="total-general" *ngIf="tipoReporteSeleccionado === 'gastos-totales' && totalGeneral > 0">
         Total General: ${{ totalGeneral | number:'1.2-2':'es-MX' }}
       </div>
 
-      <!-- Tabla de Resultados -->
       <div class="tabla-responsive-wrapper">
         <table class="tabla-usuarios">
           <thead>
@@ -91,10 +83,20 @@
             <tr 
               *ngFor="let fila of reporteData"
               [class.alerta-stock-bajo]="fila.stock_actual < fila.stock_minimo">
-              <td 
-                *ngFor="let columna of columnasReporte"
-                [class.stock-critico]="columna === 'stock_actual' && fila.stock_actual < fila.stock_minimo">
-                {{ formatearValor(fila[columna], columna) }}
+              
+              <td *ngFor="let columna of columnasReporte"
+                  [class.stock-critico]="columna === 'stock_actual' && fila.stock_actual < fila.stock_minimo">
+                
+                <ng-container *ngIf="columna === 'detalles'">
+                  <button class="btn-detalles" (click)="abrirModalDetalles(fila)">
+                    <i class="fas fa-eye"></i> Ver Desglose
+                  </button>
+                </ng-container>
+
+                <ng-container *ngIf="columna !== 'detalles'">
+                  {{ formatearValor(fila[columna], columna) }}
+                </ng-container>
+                
               </td>
             </tr>
           </tbody>
@@ -102,12 +104,10 @@
       </div>
     </div>
 
-    <!-- Mensaje cuando no hay datos -->
     <div class="empty-table-message" *ngIf="reporteData.length === 0 && !isLoading">
       No hay datos para mostrar. Genera un reporte para ver los resultados.
     </div>
 
-    <!-- Mensaje de carga -->
     <div class="loading-message" *ngIf="isLoading">
       Generando reporte...
     </div>
@@ -115,7 +115,6 @@
 </div>
 
 
-<!-- Modal de Notificación -->
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header" [ngClass]="{
@@ -132,5 +131,61 @@
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModalNotificacion()">Cerrar</button>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="modalDetallesVisible" (click)="cerrarModalDetalles()" style="z-index: 2000;">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header">
+      <h3><i class="fas fa-bus"></i> Desglose de Costos - Bus {{ busSeleccionado?.economico }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="resumen-modal">
+        <p><strong>Total de Servicios:</strong> {{ busSeleccionado?.num_servicios }}</p>
+        <p><strong>Costo Total:</strong> <span class="text-success">{{ busSeleccionado?.costo_total | currency:'MXN' }}</span></p>
+      </div>
+
+      <div class="tabla-responsive-wrapper" style="max-height: 400px; overflow-y: auto;">
+        <table class="tabla-detalles">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Artículo</th>
+              <th>Marca</th>
+              <th style="text-align: right;">Cant.</th>
+              <th style="text-align: right;">Costo Unit.</th>
+              <th style="text-align: right;">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of busSeleccionado?.detalles">
+              <td class="fecha-col">{{ item.fecha | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <span class="badge" [ngClass]="{'badge-refaccion': item.tipo_item === 'Refacción', 'badge-insumo': item.tipo_item === 'Insumo'}">
+                  {{ item.tipo_item }}
+                </span>
+              </td>
+              <td class="desc-col" [title]="item.nombre">{{ item.nombre }}</td>
+              <td>{{ item.marca || 'N/A' }}</td>
+              <td style="text-align: right;">{{ item.cantidad | number:'1.0-2' }}</td>
+              <td style="text-align: right;">{{ item.costo_unitario | currency:'MXN' }}</td>
+              <td style="text-align: right;" class="text-bold">{{ item.costo_total | currency:'MXN' }}</td>
+            </tr>
+            <tr *ngIf="!busSeleccionado?.detalles?.length">
+              <td colspan="7" class="text-center empty-msg">No hay detalles de refacciones o insumos para este autobús.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-cerrar-modal" (click)="cerrarModalDetalles()">Cerrar</button>
+    </div>
+
   </div>
 </div>
