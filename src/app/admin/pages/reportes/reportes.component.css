@@ -508,3 +508,104 @@ td.stock-critico {
 .btn-cerrar-modal:hover {
   background: #475569;
 }
+.buscador-auditoria-container {
+  grid-column: 1 / -1; /* Para que ocupe todo el ancho del contenedor de filtros */
+  margin-top: 15px;
+  background: rgba(15, 23, 42, 0.4);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.divider {
+  border: none;
+  border-top: 1px dashed rgba(255,255,255,0.1);
+  margin-bottom: 15px;
+}
+
+.auditoria-title {
+  color: #4dabf7;
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.buscadores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.autocompletar-item label {
+  display: block;
+  margin-bottom: 8px;
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+/* Modificadores para que Angular Material se vea bien en fondo oscuro */
+::ng-deep .dark-mat-form .mat-mdc-text-field-wrapper {
+  background-color: #1e293b !important;
+  border-radius: 6px;
+}
+::ng-deep .dark-mat-form input {
+  color: white !important;
+}
+::ng-deep .dark-mat-form .mdc-line-ripple::before,
+::ng-deep .dark-mat-form .mdc-line-ripple::after {
+  display: none !important; /* Quita la línea de abajo de Material si usas outline */
+}
+
+/* Lista de Chips de Artículos Seleccionados */
+.items-seleccionados-box {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.item-chip {
+  background: #334155;
+  border: 1px solid #475569;
+  border-radius: 20px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+.item-chip:hover {
+  background: #3f516b;
+  transform: translateY(-2px);
+}
+
+.item-chip .badge {
+  font-size: 0.7rem;
+  padding: 3px 6px;
+}
+
+.btn-remove-chip {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-left: 5px;
+  font-size: 1.1rem;
+  transition: color 0.2s;
+}
+
+.btn-remove-chip:hover {
+  color: #ef4444; /* Rojo al pasar el mouse */
+}

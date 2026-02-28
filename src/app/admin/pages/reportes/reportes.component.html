@@ -15,12 +15,13 @@
             id="tipoReporte" 
             class="form-control" 
             [(ngModel)]="tipoReporteSeleccionado">
-            <option value="stock-bajo">Stock Bajo</option>
             <option value="gastos-totales">Gastos Totales</option>
-            <option value="menos-utilizadas">Refacciones Menos Utilizadas</option>
+            <!-- <option value="stock-bajo">Stock Bajo</option> -->
+            <!-- <option value="menos-utilizadas">Refacciones Menos Utilizadas</option> -->
             <option value="mas-utilizadas">Refacciones Más Utilizadas</option>
             <option value="costo-autobus">Costo por Autobús</option>
             <option value="movimientos-refaccion">Movimientos por Refacción</option>
+            <option value="historial-por-refaccion">Historial por Refacción</option>
           </select>
         </div>
 
@@ -40,6 +41,53 @@
             id="fechaFin" 
             class="form-control" 
             [(ngModel)]="fechaFin">
+        </div>
+        <div class="buscador-auditoria-container w-100" *ngIf="requiereListaArticulos">
+          <hr class="divider">
+          <h4 class="auditoria-title"><i class="fas fa-search"></i> Selecciona los artículos a auditar</h4>
+          
+          <div class="buscadores-grid">
+            <div class="filtro-item autocompletar-item">
+              <label>Agregar Refacción:</label>
+              <mat-form-field appearance="outline" class="w-100 dark-mat-form">
+                <input type="text" matInput placeholder="Escribe para buscar..." 
+                       [formControl]="refaccionControl" [matAutocomplete]="autoRef">
+                <mat-autocomplete #autoRef="matAutocomplete" [displayWith]="displayFn" 
+                                  (optionSelected)="agregarItemLista($event, 'Refacción')">
+                  <mat-option *ngFor="let option of filteredRefacciones$ | async" [value]="option">
+                    {{option.nombre}} <small class="text-muted">{{option.marca !== 'N/A' ? '(' + option.marca + ')' : ''}}</small>
+                  </mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
+            </div>
+
+            <div class="filtro-item autocompletar-item">
+              <label>Agregar Insumo:</label>
+              <mat-form-field appearance="outline" class="w-100 dark-mat-form">
+                <input type="text" matInput placeholder="Escribe para buscar..." 
+                       [formControl]="insumoControl" [matAutocomplete]="autoIns">
+                <mat-autocomplete #autoIns="matAutocomplete" [displayWith]="displayFn" 
+                                  (optionSelected)="agregarItemLista($event, 'Insumo')">
+                  <mat-option *ngFor="let option of filteredInsumos$ | async" [value]="option">
+                    {{option.nombre}} <small class="text-muted">{{option.marca !== 'N/A' ? '(' + option.marca + ')' : ''}}</small>
+                  </mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div class="items-seleccionados-box" *ngIf="itemsSeleccionados.length > 0">
+            <div class="item-chip" *ngFor="let item of itemsSeleccionados; let i = index">
+              <span class="badge" [ngClass]="item.tipo === 'Refacción' ? 'badge-refaccion' : 'badge-insumo'">
+                {{ item.tipo }}
+              </span>
+              <span class="item-name">{{ item.nombre }} <small>{{item.marca !== 'N/A' ? '('+item.marca+')' : ''}}</small></span>
+              <button class="btn-remove-chip" (click)="eliminarItemLista(i)" title="Quitar de la lista">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+          
         </div>
       </div>
 

@@ -40,7 +40,7 @@
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="proveedores"><fa-icon [icon]="faProveedores"></fa-icon> <span>Proveedores</span></a>
       </li>
-      <li *ngIf="authService.hasRole(['SuperUsuario'])">
+      <li *ngIf="authService.hasRole(['SuperUsuario', 'Admin'])">
         <a routerLink="reportes" routerLinkActive="active"><fa-icon [icon]="faReportes"></fa-icon>
           <span>Reportes</span></a>
       </li>
