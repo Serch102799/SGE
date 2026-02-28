@@ -126,7 +126,7 @@ const routes: Routes = [
         path: 'reportes',
         component: ReportesComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['SuperUsuario'] }
+        data: { roles: ['SuperUsuario', 'Admin'] }
       },
       {
         path: 'inventario-inicial',
