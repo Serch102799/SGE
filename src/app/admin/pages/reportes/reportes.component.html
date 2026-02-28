@@ -11,10 +11,7 @@
       <div class="filtros-container">
         <div class="filtro-item">
           <label for="tipoReporte">Tipo de Reporte</label>
-          <select 
-            id="tipoReporte" 
-            class="form-control" 
-            [(ngModel)]="tipoReporteSeleccionado">
+          <select id="tipoReporte" class="form-control" [(ngModel)]="tipoReporteSeleccionado">
             <option value="gastos-totales">Gastos Totales</option>
             <!-- <option value="stock-bajo">Stock Bajo</option> -->
             <!-- <option value="menos-utilizadas">Refacciones Menos Utilizadas</option> -->
@@ -27,35 +24,28 @@
 
         <div class="filtro-item" *ngIf="requiereFechas">
           <label for="fechaInicio">Desde:</label>
-          <input 
-            type="date" 
-            id="fechaInicio" 
-            class="form-control" 
-            [(ngModel)]="fechaInicio">
+          <input type="date" id="fechaInicio" class="form-control" [(ngModel)]="fechaInicio">
         </div>
 
         <div class="filtro-item" *ngIf="requiereFechas">
           <label for="fechaFin">Hasta:</label>
-          <input 
-            type="date" 
-            id="fechaFin" 
-            class="form-control" 
-            [(ngModel)]="fechaFin">
+          <input type="date" id="fechaFin" class="form-control" [(ngModel)]="fechaFin">
         </div>
         <div class="buscador-auditoria-container w-100" *ngIf="requiereListaArticulos">
           <hr class="divider">
           <h4 class="auditoria-title"><i class="fas fa-search"></i> Selecciona los artículos a auditar</h4>
-          
+
           <div class="buscadores-grid">
             <div class="filtro-item autocompletar-item">
               <label>Agregar Refacción:</label>
               <mat-form-field appearance="outline" class="w-100 dark-mat-form">
-                <input type="text" matInput placeholder="Escribe para buscar..." 
-                       [formControl]="refaccionControl" [matAutocomplete]="autoRef">
-                <mat-autocomplete #autoRef="matAutocomplete" [displayWith]="displayFn" 
-                                  (optionSelected)="agregarItemLista($event, 'Refacción')">
+                <input type="text" matInput placeholder="Escribe para buscar..." [formControl]="refaccionControl"
+                  [matAutocomplete]="autoRef">
+                <mat-autocomplete #autoRef="matAutocomplete" [displayWith]="displayFn"
+                  (optionSelected)="agregarItemLista($event, 'Refacción')">
                   <mat-option *ngFor="let option of filteredRefacciones$ | async" [value]="option">
-                    {{option.nombre}} <small class="text-muted">{{option.marca !== 'N/A' ? '(' + option.marca + ')' : ''}}</small>
+                    {{option.nombre}} <small class="text-muted">{{option.marca !== 'N/A' ? '(' + option.marca + ')' :
+                      ''}}</small>
                   </mat-option>
                 </mat-autocomplete>
               </mat-form-field>
@@ -64,12 +54,13 @@
             <div class="filtro-item autocompletar-item">
               <label>Agregar Insumo:</label>
               <mat-form-field appearance="outline" class="w-100 dark-mat-form">
-                <input type="text" matInput placeholder="Escribe para buscar..." 
-                       [formControl]="insumoControl" [matAutocomplete]="autoIns">
-                <mat-autocomplete #autoIns="matAutocomplete" [displayWith]="displayFn" 
-                                  (optionSelected)="agregarItemLista($event, 'Insumo')">
+                <input type="text" matInput placeholder="Escribe para buscar..." [formControl]="insumoControl"
+                  [matAutocomplete]="autoIns">
+                <mat-autocomplete #autoIns="matAutocomplete" [displayWith]="displayFn"
+                  (optionSelected)="agregarItemLista($event, 'Insumo')">
                   <mat-option *ngFor="let option of filteredInsumos$ | async" [value]="option">
-                    {{option.nombre}} <small class="text-muted">{{option.marca !== 'N/A' ? '(' + option.marca + ')' : ''}}</small>
+                    {{option.nombre}} <small class="text-muted">{{option.marca !== 'N/A' ? '(' + option.marca + ')' :
+                      ''}}</small>
                   </mat-option>
                 </mat-autocomplete>
               </mat-form-field>
@@ -78,16 +69,23 @@
 
           <div class="items-seleccionados-box" *ngIf="itemsSeleccionados.length > 0">
             <div class="item-chip" *ngFor="let item of itemsSeleccionados; let i = index">
-              <span class="badge" [ngClass]="item.tipo === 'Refacción' ? 'badge-refaccion' : 'badge-insumo'">
-                {{ item.tipo }}
-              </span>
-              <span class="item-name">{{ item.nombre }} <small>{{item.marca !== 'N/A' ? '('+item.marca+')' : ''}}</small></span>
+
               <button class="btn-remove-chip" (click)="eliminarItemLista(i)" title="Quitar de la lista">
-                <i class="fas fa-times"></i>
+                &times;
               </button>
+
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="badge" [ngClass]="item.tipo === 'Refacción' ? 'badge-refaccion' : 'badge-insumo'">
+                  {{ item.tipo }}
+                </span>
+                <span class="item-name" style="font-weight: bold;">
+                  {{ item.nombre }} <small style="color: #94a3b8; font-weight: normal;">{{item.marca !== 'N/A' ?
+                    '('+item.marca+')' : ''}}</small>
+                </span>
+              </div>
             </div>
           </div>
-          
+
         </div>
       </div>
 
@@ -95,7 +93,7 @@
         <span *ngIf="!isLoading">📊 Generar Reporte</span>
         <span *ngIf="isLoading">⏳ Cargando...</span>
       </button>
-      
+
       <p *ngIf="requiereFechas" style="margin-top: 15px; font-size: 0.85rem; color: #999;">
         Nota: El filtro de fecha aplica para este reporte.
       </p>
@@ -128,13 +126,11 @@
             </tr>
           </thead>
           <tbody>
-            <tr 
-              *ngFor="let fila of reporteData"
-              [class.alerta-stock-bajo]="fila.stock_actual < fila.stock_minimo">
-              
+            <tr *ngFor="let fila of reporteData" [class.alerta-stock-bajo]="fila.stock_actual < fila.stock_minimo">
+
               <td *ngFor="let columna of columnasReporte"
-                  [class.stock-critico]="columna === 'stock_actual' && fila.stock_actual < fila.stock_minimo">
-                
+                [class.stock-critico]="columna === 'stock_actual' && fila.stock_actual < fila.stock_minimo">
+
                 <ng-container *ngIf="columna === 'detalles'">
                   <button class="btn-detalles" (click)="abrirModalDetalles(fila)">
                     <i class="fas fa-eye"></i> Ver Desglose
@@ -144,7 +140,7 @@
                 <ng-container *ngIf="columna !== 'detalles'">
                   {{ formatearValor(fila[columna], columna) }}
                 </ng-container>
-                
+
               </td>
             </tr>
           </tbody>
@@ -184,16 +180,17 @@
 
 <div class="modal-overlay" *ngIf="modalDetallesVisible" (click)="cerrarModalDetalles()" style="z-index: 2000;">
   <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
-    
+
     <div class="modal-header">
       <h3><i class="fas fa-bus"></i> Desglose de Costos - Bus {{ busSeleccionado?.economico }}</h3>
       <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
     </div>
-    
+
     <div class="modal-body">
       <div class="resumen-modal">
         <p><strong>Total de Servicios:</strong> {{ busSeleccionado?.num_servicios }}</p>
-        <p><strong>Costo Total:</strong> <span class="text-success">{{ busSeleccionado?.costo_total | currency:'MXN' }}</span></p>
+        <p><strong>Costo Total:</strong> <span class="text-success">{{ busSeleccionado?.costo_total | currency:'MXN'
+            }}</span></p>
       </div>
 
       <div class="tabla-responsive-wrapper" style="max-height: 400px; overflow-y: auto;">
@@ -213,7 +210,8 @@
             <tr *ngFor="let item of busSeleccionado?.detalles">
               <td class="fecha-col">{{ item.fecha | date:'dd/MM/yyyy' }}</td>
               <td>
-                <span class="badge" [ngClass]="{'badge-refaccion': item.tipo_item === 'Refacción', 'badge-insumo': item.tipo_item === 'Insumo'}">
+                <span class="badge"
+                  [ngClass]="{'badge-refaccion': item.tipo_item === 'Refacción', 'badge-insumo': item.tipo_item === 'Insumo'}">
                   {{ item.tipo_item }}
                 </span>
               </td>
@@ -224,13 +222,14 @@
               <td style="text-align: right;" class="text-bold">{{ item.costo_total | currency:'MXN' }}</td>
             </tr>
             <tr *ngIf="!busSeleccionado?.detalles?.length">
-              <td colspan="7" class="text-center empty-msg">No hay detalles de refacciones o insumos para este autobús.</td>
+              <td colspan="7" class="text-center empty-msg">No hay detalles de refacciones o insumos para este autobús.
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
-    
+
     <div class="modal-footer">
       <button class="btn-cerrar-modal" (click)="cerrarModalDetalles()">Cerrar</button>
     </div>

@@ -569,22 +569,22 @@ td.stock-critico {
 }
 
 .item-chip {
-  background: #334155;
-  border: 1px solid #475569;
-  border-radius: 20px;
-  padding: 6px 12px;
+  position: relative; /* Muy importante para que la X flote */
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px; /* Más cuadrado para verse como tarjeta */
+  padding: 12px 25px 12px 15px; /* Espacio extra a la derecha para la X */
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 6px;
   color: white;
-  font-size: 0.9rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .item-chip:hover {
-  background: #3f516b;
   transform: translateY(-2px);
+  border-color: #4dabf7;
 }
 
 .item-chip .badge {
@@ -593,19 +593,28 @@ td.stock-critico {
 }
 
 .btn-remove-chip {
-  background: none;
+  position: absolute;
+  top: -8px;       /* Lo sube por encima del borde superior */
+  right: -8px;     /* Lo saca por el borde derecho */
+  background: #ef4444; /* Rojo alerta */
+  color: white;
   border: none;
-  color: #94a3b8;
-  cursor: pointer;
+  border-radius: 50%; /* Círculo perfecto */
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
-  margin-left: 5px;
-  font-size: 1.1rem;
-  transition: color 0.2s;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  transition: background 0.2s, transform 0.2s;
+  z-index: 10;
+  line-height: 1;
 }
 
 .btn-remove-chip:hover {
-  color: #ef4444; /* Rojo al pasar el mouse */
+  background: #dc2626; /* Rojo más oscuro al pasar el mouse */
+  transform: scale(1.15); /* Crece un poquito al apuntarlo */
 }
