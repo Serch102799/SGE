@@ -1,0 +1,382 @@
+/* ==========================================================================
+   ESTRUCTURA PRINCIPAL
+   ========================================================================== */
+   :host {
+  display: block;
+  min-height: 100vh;
+  padding: 40px 20px;
+  /* Fondo oscuro Cyberpunk */
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url("/assets/img/pantalla1.jpg") no-repeat center center fixed;
+  background-size: cover;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.usuarios-container {
+   max-width: 1200px;
+  width: 95%;
+  margin: 0 auto;
+  background-color: rgba(15, 23, 42, 0.85); /* Azul muy oscuro semitransparente */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.container-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.container-header h2 {
+  color: #fff;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.container-body {
+  padding: 2rem;
+}
+
+/* --- BOTONES PRINCIPALES --- */
+.btn-agregar {
+  background-color: #2563eb !important; /* Azul sólido elegante, sin degradados raros */
+  background-image: none !important;
+  color: white !important;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+}
+
+.btn-agregar:hover {
+  background-color: #1d4ed8 !important;
+  transform: translateY(-2px);
+}
+
+.btn-cancelar {
+  background-color: #475569 !important;
+  color: white !important;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancelar:hover {
+  background-color: #334155 !important;
+}
+
+/* ==========================================================================
+   TABLA DE SERVICIOS
+   ========================================================================== */
+.tabla-responsive-wrapper {
+  background: #1e293b;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow-x: auto;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+.tabla-usuarios {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+
+.tabla-usuarios th {
+  background: #0f172a;
+  color: #94a3b8;
+  padding: 15px;
+  text-align: left;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #1e293b;
+}
+
+.tabla-usuarios td {
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  vertical-align: middle;
+}
+
+/* --- COLORES DE FILA (GARANTÍAS) --- */
+.tabla-usuarios tr {
+  transition: background-color 0.2s ease;
+  background-color: transparent;
+}
+
+.tabla-usuarios tr:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Iluminación sutil y borde izquierdo para las garantías */
+tr.garantia-activa {
+  background-color: rgba(46, 204, 113, 0.04) !important;
+  border-left: 4px solid #2ecc71;
+}
+tr.garantia-activa:hover { background-color: rgba(46, 204, 113, 0.08) !important; }
+
+tr.garantia-por-vencer {
+  background-color: rgba(241, 196, 15, 0.04) !important;
+  border-left: 4px solid #f1c40f;
+}
+tr.garantia-por-vencer:hover { background-color: rgba(241, 196, 15, 0.08) !important; }
+
+tr.fila-cancelada {
+  opacity: 0.4;
+  background-color: rgba(231, 76, 60, 0.02) !important;
+  border-left: 4px solid #e74c3c;
+}
+
+/* --- ETIQUETAS (BADGES) --- */
+.badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.badge-bus { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+.badge-activo { background: rgba(46, 204, 113, 0.15); color: #2ecc71; }
+.badge-cancelado { background: rgba(231, 76, 60, 0.15); color: #e74c3c; text-decoration: line-through; }
+
+/* Botón de borrar/cancelar en la tabla */
+.btn-cancelar-icon {
+  background: rgba(231, 76, 60, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(231, 76, 60, 0.2);
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-size: 1rem;
+}
+.btn-cancelar-icon:hover {
+  background: #ef4444;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* --- LEYENDA DE COLORES --- */
+.leyenda-garantias {
+  display: flex;
+  gap: 20px;
+  padding: 15px;
+  background: #0f172a;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.85rem;
+  color: #94a3b8;
+  align-items: center;
+}
+.leyenda-garantias span { display: flex; align-items: center; gap: 8px; }
+.color-box { width: 14px; height: 14px; border-radius: 4px; }
+.box-verde { background: rgba(46, 204, 113, 0.3); border: 1px solid #2ecc71; }
+.box-amarillo { background: rgba(241, 196, 15, 0.3); border: 1px solid #f1c40f; }
+.box-transparente { background: transparent; border: 1px dashed #64748b; }
+
+/* ==========================================================================
+   MODAL (REPARADO Y ELEGANTE)
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background: #1e293b;
+  border-radius: 12px;
+  width: 95%;
+  max-width: 750px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh; /* Evita que el modal sea más alto que la pantalla */
+}
+
+.modal-header {
+  background: #0f172a;
+  padding: 18px 25px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 12px 12px 0 0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-cerrar {
+  background: transparent;
+  color: #64748b;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.btn-cerrar:hover { color: #ef4444; }
+
+.modal-body {
+  padding: 25px;
+  overflow-y: auto; /* Scroll interno si hay muchos campos */
+}
+
+.modal-footer {
+  background: #0f172a;
+  padding: 15px 25px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-radius: 0 0 12px 12px;
+}
+
+/* --- FORMULARIOS --- */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.filtro-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filtro-item label {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.form-control {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.3s;
+}
+
+.form-control:focus {
+  border-color: #38bdf8;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.1);
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 70px;
+}
+
+/* Inputs con Iconos */
+.input-icon-wrapper { position: relative; }
+.input-icon-wrapper i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+}
+.con-icono { padding-left: 38px !important; }
+
+/* Recuadros de Finanzas y Garantía */
+.finanzas-box, .garantia-box {
+  background: rgba(15, 23, 42, 0.5);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.totales-display {
+  margin-left: auto;
+  text-align: right;
+  background: #0f172a;
+  padding: 12px 25px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+.totales-display p { margin: 0; font-size: 0.85rem; color: #94a3b8; }
+.totales-display h4 { margin: 5px 0 0 0; font-size: 1.4rem; color: #00e676; font-weight: 700; }
+
+/* --- SWITCHES (Botón On/Off) --- */
+.checkbox-wrapper { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.chk-text { color: #f8fafc; font-weight: 500; font-size: 0.9rem; }
+
+.switch-label { position: relative; display: inline-block; width: 44px; height: 24px; }
+.switch-label input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #334155; transition: .4s; border-radius: 34px;
+}
+.slider:before {
+  position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+  background-color: white; transition: .4s; border-radius: 50%;
+}
+input:checked + .slider { background-color: #38bdf8; }
+input:checked + .slider:before { transform: translateX(20px); }
+
+/* --- Angular Material Dark Mode --- */
+::ng-deep .dark-mat-form .mat-mdc-text-field-wrapper {
+  background-color: #0f172a !important; 
+  border-radius: 6px;
+  border: 1px solid #334155;
+  padding: 0 !important;
+}
+::ng-deep .dark-mat-form .mat-mdc-text-field-wrapper.mdc-text-field--focused {
+  border-color: #38bdf8;
+}
+::ng-deep .dark-mat-form input { color: white !important; padding: 10px 14px !important; }
+::ng-deep .dark-mat-form .mdc-line-ripple::before,
+::ng-deep .dark-mat-form .mdc-line-ripple::after { display: none !important; }
+::ng-deep .cdk-overlay-container {
+  z-index: 3000 !important;
+}

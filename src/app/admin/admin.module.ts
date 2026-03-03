@@ -44,6 +44,7 @@ import { ConteoInventarioComponent } from './pages/conteo-inventario/conteo-inve
 import { AdminPanelComponent } from './pages/admin-panel/admin-panel.component';
 import { PrestamosComponent } from './pages/prestamos/prestamos.component';
 import { AjustesComponent } from './pages/ajustes/ajustes.component';
+import { ServiciosExternosComponent } from './pages/servicios-externos/servicios-externos.component';
 
 @NgModule({
   declarations: [
@@ -77,7 +78,8 @@ import { AjustesComponent } from './pages/ajustes/ajustes.component';
     ConteoInventarioComponent,
     AdminPanelComponent,
     PrestamosComponent,
-    AjustesComponent
+    AjustesComponent,
+    ServiciosExternosComponent
   ],
   imports: [
     HttpClientModule,

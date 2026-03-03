@@ -13,11 +13,11 @@
           <label for="tipoReporte">Tipo de Reporte</label>
           <select id="tipoReporte" class="form-control" [(ngModel)]="tipoReporteSeleccionado">
             <option value="gastos-totales">Gastos Totales</option>
-            <!-- <option value="stock-bajo">Stock Bajo</option> -->
-            <!-- <option value="menos-utilizadas">Refacciones Menos Utilizadas</option> -->
             <option value="mas-utilizadas">Refacciones Más Utilizadas</option>
-            <option value="costo-autobus">Costo por Autobús</option>
-            <option value="movimientos-refaccion">Movimientos por Refacción</option>
+            <!-- <option value="stock-bajo">Stock Bajo</option> -->
+            <option value="costo-por-autobus-especifico">Historial por Autobús</option>
+            <option value="costo-autobus">Gasto de Autobuses</option>
+            <option value="movimientos-refaccion">Movimientos por Refacciones</option>
             <option value="historial-por-refaccion">Historial por Refacción</option>
           </select>
         </div>
@@ -89,10 +89,15 @@
         </div>
       </div>
 
+      <div class="botones-accion-reportes">
+      <button class="btn-limpiar" (click)="limpiarFiltros()" title="Borrar todos los filtros">
+            <i class="fas fa-eraser"></i> Limpiar Filtros
+          </button>
       <button class="btn-agregar" (click)="generarReporte()" [disabled]="isLoading">
         <span *ngIf="!isLoading">📊 Generar Reporte</span>
         <span *ngIf="isLoading">⏳ Cargando...</span>
       </button>
+      </div>
 
       <p *ngIf="requiereFechas" style="margin-top: 15px; font-size: 0.85rem; color: #999;">
         Nota: El filtro de fecha aplica para este reporte.
@@ -154,6 +159,36 @@
 
     <div class="loading-message" *ngIf="isLoading">
       Generando reporte...
+    </div>
+  </div>
+</div>
+<div class="buscador-auditoria-container w-100" *ngIf="requiereListaBuses">
+  <hr class="divider">
+  <h4 class="auditoria-title"><i class="fas fa-bus"></i> Selecciona los Autobuses a Auditar</h4>
+
+  <div class="buscadores-grid">
+    <div class="filtro-item autocompletar-item">
+      <label>Agregar Autobús:</label>
+      <mat-form-field appearance="outline" class="w-100 dark-mat-form">
+        <input type="text" matInput placeholder="Escribe el número económico..." [formControl]="busReporteControl"
+          [matAutocomplete]="autoBusRep">
+        <mat-autocomplete #autoBusRep="matAutocomplete" [displayWith]="displayFnBusRep"
+          (optionSelected)="agregarBusLista($event)">
+          <mat-option *ngFor="let option of filteredBusesReporte$ | async" [value]="option">
+            Bus {{option.economico}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="items-seleccionados-box" *ngIf="busesSeleccionados.length > 0">
+    <div class="item-chip" *ngFor="let bus of busesSeleccionados; let i = index">
+      <button class="btn-remove-chip" (click)="eliminarBusLista(i)" title="Quitar">&times;</button>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="badge badge-bus">BUS</span>
+        <span class="item-name" style="font-weight: bold;">{{ bus.economico }}</span>
+      </div>
     </div>
   </div>
 </div>

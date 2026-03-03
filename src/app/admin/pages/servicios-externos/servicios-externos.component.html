@@ -1,0 +1,196 @@
+<div class="usuarios-container">
+  <div class="container-header">
+    <h2><i class="fas fa-wrench"></i> Servicios y Reparaciones Externas</h2>
+    <button class="btn-agregar" (click)="abrirModal()">
+      <i class="fas fa-plus"></i> Registrar Servicio
+    </button>
+  </div>
+
+  <div class="container-body">
+    <div class="loading-message" *ngIf="isLoading">Cargando servicios...</div>
+
+    <div class="tabla-responsive-wrapper" *ngIf="!isLoading">
+      <table class="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>Folio</th>
+            <th>Fecha</th>
+            <th>Autobús / Km</th>
+            <th>Proveedor</th>
+            <th>Descripción</th>
+            <th>Garantía</th>
+            <th style="text-align: right;">Costo Total</th>
+            <th>Estatus</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of servicios" [ngClass]="getEstadoGarantiaClass(s)">
+            <td>#{{ s.id_servicio }}</td>
+            <td>{{ s.fecha_servicio | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <span class="badge badge-bus">Bus {{ s.autobus }}</span><br>
+              <small class="text-muted"><i class="fas fa-tachometer-alt"></i> {{ s.kilometraje_autobus | number }} km</small>
+            </td>
+            <td>{{ s.proveedor || 'No especificado' }}<br><small class="text-muted">{{ s.factura_nota ? 'Nota: '+s.factura_nota : '' }}</small></td>
+            <td [title]="s.descripcion">{{ s.descripcion.length > 30 ? (s.descripcion | slice:0:30) + '...' : s.descripcion }}</td>
+            
+            <td>
+              <ng-container *ngIf="s.tiene_garantia; else noGarantia">
+                <span class="badge" [ngClass]="getEstadoGarantiaClass(s) === 'garantia-vencida' ? 'badge-cancelado' : 'badge-activo'">
+                  Hasta: {{ s.fecha_vencimiento_garantia | date:'dd/MM/yyyy' }}
+                </span>
+              </ng-container>
+              <ng-template #noGarantia><span class="text-muted">-</span></ng-template>
+            </td>
+
+            <td style="text-align: right; font-weight: bold; color: #00e676;">{{ s.costo_total | currency:'MXN' }}
+              <br><small *ngIf="s.aplica_iva" class="text-muted">+ IVA</small>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="s.estatus === 'Activo' ? 'badge-activo' : 'badge-cancelado'">{{ s.estatus }}</span>
+            </td>
+            <td>
+              <button class="btn-cancelar-icon" *ngIf="s.estatus === 'Activo'" (click)="cancelarServicio(s.id_servicio)" title="Cancelar">
+                <i class="fas fa-ban"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="servicios.length === 0">
+            <td colspan="9" class="text-center empty-msg">No hay servicios externos registrados.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div class="leyenda-garantias">
+        <span><div class="color-box box-verde"></div> Garantía Activa</span>
+        <span><div class="color-box box-amarillo"></div> Por Vencer (15 días)</span>
+        <span><div class="color-box box-transparente"></div> Sin Garantía / Vencida</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="modalVisible">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <h3><i class="fas fa-file-invoice"></i> Nuevo Servicio Externo</h3>
+      <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-grid">
+        
+        <div class="filtro-item">
+          <label>Autobús *</label>
+          <mat-form-field appearance="outline" class="w-100 dark-mat-form">
+            <input type="text" matInput placeholder="Busca el número económico..." 
+                   [formControl]="busControl" [matAutocomplete]="autoBus">
+            <mat-autocomplete #autoBus="matAutocomplete" [displayWith]="displayFnBus" 
+                              (optionSelected)="seleccionarAutobus($event)">
+              <mat-option *ngFor="let bus of filteredAutobuses$ | async" [value]="bus">
+                Bus {{ bus.economico }} <small class="text-muted">(Km: {{bus.kilometraje_actual}})</small>
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+
+        <div class="filtro-item">
+          <label>Kilometraje Actual *</label>
+          <div class="input-icon-wrapper">
+            <i class="fas fa-tachometer-alt"></i>
+            <input type="number" class="form-control con-icono" [(ngModel)]="nuevoServicio.kilometraje_autobus">
+          </div>
+        </div>
+
+        <div class="filtro-item">
+          <label>Taller / Proveedor (Opcional)</label>
+          <select class="form-control" [(ngModel)]="nuevoServicio.id_proveedor">
+            <option [ngValue]="null">-- Taller no registrado / Otro --</option>
+            <option *ngFor="let prov of proveedores" [value]="prov.id_proveedor">{{ prov.nombre_proveedor }}</option>
+          </select>
+        </div>
+
+        <div class="filtro-item">
+          <label>Fecha de Reparación *</label>
+          <input type="date" class="form-control" [(ngModel)]="nuevoServicio.fecha_servicio" (change)="calcularFechaGarantia()">
+        </div>
+
+        <div class="filtro-item" style="grid-column: 1 / -1;">
+          <label>Descripción del Trabajo *</label>
+          <textarea class="form-control" rows="2" placeholder="Ej. Cambio de baleros, alineación..." [(ngModel)]="nuevoServicio.descripcion"></textarea>
+        </div>
+
+        <div class="filtro-item">
+          <label>Folio Factura / Nota</label>
+          <input type="text" class="form-control" placeholder="Ej. F-10294" [(ngModel)]="nuevoServicio.factura_nota">
+        </div>
+
+        <div class="finanzas-box" style="grid-column: 1 / -1;">
+          <div class="flex-row">
+            <div class="filtro-item w-50">
+              <label>Subtotal ($) *</label>
+              <input type="number" class="form-control" placeholder="0.00" [(ngModel)]="nuevoServicio.subtotal" (input)="calcularTotales()" min="0">
+            </div>
+            
+            <div class="checkbox-wrapper">
+              <label class="switch-label">
+                <input type="checkbox" [(ngModel)]="nuevoServicio.aplica_iva" (change)="calcularTotales()">
+                <span class="slider round"></span>
+              </label>
+              <span class="chk-text">Aplica 16% IVA</span>
+            </div>
+
+            <div class="totales-display">
+              <p>IVA: <span>{{ nuevoServicio.iva_monto | currency:'MXN' }}</span></p>
+              <h4>Total: <span class="text-success">{{ nuevoServicio.costo_total | currency:'MXN' }}</span></h4>
+            </div>
+          </div>
+        </div>
+
+        <div class="garantia-box" style="grid-column: 1 / -1;">
+          <div class="checkbox-wrapper">
+            <label class="switch-label">
+              <input type="checkbox" [(ngModel)]="nuevoServicio.tiene_garantia" (change)="calcularFechaGarantia()">
+              <span class="slider round"></span>
+            </label>
+            <span class="chk-text">¿El proveedor ofreció Garantía?</span>
+          </div>
+          
+          <div class="flex-row" *ngIf="nuevoServicio.tiene_garantia" style="margin-top: 15px; gap: 15px;">
+            <div class="filtro-item" style="flex: 1;">
+              <label class="text-warning"><i class="fas fa-clock"></i> Días de Garantía *</label>
+              <input type="number" class="form-control input-warning" placeholder="Ej. 15 o 30" 
+                     [(ngModel)]="nuevoServicio.dias_garantia" (input)="calcularFechaGarantia()" min="1">
+            </div>
+            
+            <div class="filtro-item" style="flex: 1;">
+              <label class="text-muted"><i class="fas fa-calendar-check"></i> Fecha Exacta de Vencimiento:</label>
+              <input type="date" class="form-control" [(ngModel)]="nuevoServicio.fecha_vencimiento_garantia" disabled 
+                     style="opacity: 0.6; cursor: not-allowed; background-color: rgba(0,0,0,0.2);">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-agregar" (click)="guardarServicio()"><i class="fas fa-save"></i> Guardar Servicio</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" style="z-index: 2000;">
+  <div class="modal-content">
+    <div class="modal-header" [ngClass]="{'header-exito': notificacion.tipo === 'exito', 'header-error': notificacion.tipo === 'error', 'header-advertencia': notificacion.tipo === 'advertencia'}">
+      <h3>{{ notificacion.titulo }}</h3>
+    </div>
+    <div class="confirm-text" style="padding: 20px;">{{ notificacion.mensaje }}</div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalNotificacion()">Entendido</button>
+    </div>
+  </div>
+</div>

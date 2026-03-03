@@ -37,6 +37,7 @@ import { ConteoInventarioComponent } from './pages/conteo-inventario/conteo-inve
 import { AdminPanelComponent } from './pages/admin-panel/admin-panel.component';
 import { PrestamosComponent } from './pages/prestamos/prestamos.component';
 import { AjustesComponent } from './pages/ajustes/ajustes.component';
+import { ServiciosExternosComponent } from './pages/servicios-externos/servicios-externos.component';
 
 const routes: Routes = [
   {
@@ -227,6 +228,12 @@ const routes: Routes = [
       {
         path: 'dashboard',
         component: DashboardComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['Admin', 'Almacenista', 'SuperUsuario'] }
+      },
+       {
+        path: 'servicios-externos',
+        component:  ServiciosExternosComponent,
         canActivate: [RoleGuard],
         data: { roles: ['Admin', 'Almacenista', 'SuperUsuario'] }
       },
