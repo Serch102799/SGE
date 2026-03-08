@@ -8,10 +8,24 @@
   display: block;
   min-height: 100vh;
   padding: 40px 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/pantalla1.jpg") no-repeat center center fixed;
+  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/nF.jpg") no-repeat center center fixed;
   background-size: cover;
 }
 
+.welcome-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(15, 23, 42, 0.8));
+  padding: 25px 30px;
+  border-radius: 12px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  margin-bottom: 30px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+.welcome-text h2 { margin: 0 0 5px 0; font-size: 2rem; color: #fff; }
+.welcome-text p { margin: 0; color: #94a3b8; font-size: 1rem; }
+.date-badge { background: rgba(0,0,0,0.4); padding: 8px 15px; border-radius: 20px; font-weight: 600; color: #38bdf8; }
 /* Contenedor Principal */
 .usuarios-container {
   max-width: 1200px;

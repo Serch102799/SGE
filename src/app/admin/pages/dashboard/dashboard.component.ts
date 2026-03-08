@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { ChartConfiguration, ChartData, Chart, registerables } from 'chart.js';
 import { environment } from '../../../../environments/environments';
 import { BaseChartDirective } from 'ng2-charts';
+import { AuthService } from '../../../services/auth.service';
+import { faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 
 // CAMBIO: La interfaz ahora refleja la nueva y completa respuesta de la API
 interface DashboardStats {
@@ -19,6 +21,7 @@ interface DashboardStats {
   topCostoAutobuses: { economico: string, costo_total: number }[];
 }
 
+
 @Component({
   selector: 'app-dashboard',
   standalone: false,
@@ -27,6 +30,9 @@ interface DashboardStats {
 })
 export class DashboardComponent implements OnInit {
 
+  nombreUsuario: string = '';
+  faCalendarAlt = faCalendarAlt; 
+ currentDate: Date = new Date(); 
   stats: DashboardStats | null = null;
   private apiUrl = `${environment.apiUrl}/dashboard/stats`;
   @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
@@ -63,8 +69,11 @@ export class DashboardComponent implements OnInit {
   isLoading: boolean = true;
 
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private authService: AuthService) {
     Chart.register(...registerables);
+    const user = this.authService.getCurrentUser();
+    this.nombreUsuario = user?.nombre || 'Administrador';
+  
   }
 
   ngOnInit(): void {
