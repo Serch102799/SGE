@@ -58,8 +58,8 @@
   font-size: 1.8rem;
 }
 
-.kpi-info h3 { margin: 0; font-size: 2rem; color: #fff; }
-.kpi-info p { margin: 5px 0 0 0; font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-info h3 { margin: 0; font-size: 3rem; color: #fff; }
+.kpi-info p { margin: 5px 0 0 0; font-size: 0.95rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
 
 /* Colores de KPIs */
 .kpi-blue .kpi-icon { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
