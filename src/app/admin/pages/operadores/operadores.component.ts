@@ -13,13 +13,12 @@ export interface Operador {
   tipo_licencia: string;
   licencia_vencimiento: string;
   numero_empleado: string;
-  // estatus: string; // <-- Campo obsoleto, reemplazado por esta_activo
   nss: string;
   estatus_nss: string;
   fecha_nacimiento: string;
   fecha_ingreso: string;
-  edad: number; // Campo calculado
-  antiguedad_anios: number; // Campo calculado
+  edad: number; 
+  antiguedad_anios: number; 
 
   // --- NUEVOS CAMPOS ---
   esta_activo: boolean;
@@ -250,6 +249,24 @@ cerrarModalLicencia() {
     });
   }
 
+  getEstadoLicencia(fechaVencimiento: string | null): 'vencida' | 'por_vencer' | 'vigente' | 'sin_registro' {
+    if (!fechaVencimiento) return 'sin_registro';
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); 
+    
+    const vencimiento = new Date(fechaVencimiento);
+    // Ajuste de zona horaria para evitar desfases de un día
+    vencimiento.setMinutes(vencimiento.getMinutes() + vencimiento.getTimezoneOffset());
+    vencimiento.setHours(0, 0, 0, 0);
+
+    const diffTime = vencimiento.getTime() - hoy.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return 'vencida';
+    if (diffDays <= 30) return 'por_vencer'; // Te avisará si falta 1 mes o menos
+    return 'vigente';
+  }
   // --- Métodos de Notificación (Sin Cambios) ---
   mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
     this.notificacion = { titulo, mensaje, tipo };

@@ -1,0 +1,115 @@
+<div class="dashboard-container">
+  
+  <div class="welcome-header">
+    <div class="welcome-text">
+      <h2>¡Hola, {{ nombreUsuario }}! 👋</h2>
+      <p>Este es tu resumen de Recursos Humanos y Rendimiento Operativo general.</p>
+    </div>
+    <div class="date-badge">
+      <fa-icon [icon]="faCalendarAlt"></fa-icon> Hoy: {{ currentDate | date:'dd/MM/yyyy' }}
+    </div>
+  </div>
+
+  <div class="loading-message" *ngIf="isLoading">Analizando datos operativos...</div>
+
+  <div class="kpi-grid" *ngIf="!isLoading">
+    
+    <div class="kpi-card kpi-blue">
+      <div class="kpi-icon"><fa-icon [icon]="faIdCard"></fa-icon></div>
+      <div class="kpi-info">
+        <h3>{{ kpis.operadores_activos }}</h3>
+        <p>Operadores Activos</p>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-red">
+      <div class="kpi-icon"><fa-icon [icon]="faTimesCircle"></fa-icon></div>
+      <div class="kpi-info">
+        <h3>{{ kpis.licencias_vencidas }}</h3>
+        <p>Licencias Vencidas</p>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-yellow">
+      <div class="kpi-icon"><fa-icon [icon]="faExclamationTriangle"></fa-icon></div>
+      <div class="kpi-info">
+        <h3>{{ kpis.licencias_por_vencer }}</h3>
+        <p>Próximas a Vencer (30d)</p>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-gray">
+      <div class="kpi-icon"><fa-icon [icon]="faQuestionCircle"></fa-icon></div>
+      <div class="kpi-info">
+        <h3>{{ kpis.sin_licencia }}</h3>
+        <p>Sin Registro de Licencia</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="tables-grid" *ngIf="!isLoading">
+    
+    <div class="table-card border-green">
+      <div class="card-header header-green">
+        <h3><fa-icon [icon]="faTrophy"></fa-icon> Top 10: Mejores Rendimientos (Diésel)</h3>
+        <span class="badge-subtitle">Premia su esfuerzo</span>
+      </div>
+      <div class="table-responsive">
+        <table class="rrhh-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Operador</th>
+              <th>Autobús Gral.</th>
+              <th class="text-right">Rendimiento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let op of topMejores; let i = index">
+              <td class="rank-num">{{ i + 1 }}</td>
+              <td><strong>{{ op.operador }}</strong></td>
+              <td><span class="bus-tag">BUS {{ op.autobus_frecuente || 'N/A' }}</span></td>
+              <td class="text-right text-success fw-bold">{{ op.rendimiento_promedio | number:'1.2-2' }} km/L</td>
+            </tr>
+            <tr *ngIf="topMejores.length === 0">
+              <td colspan="4" class="empty-msg">No hay suficientes datos registrados.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-card border-red">
+      <div class="card-header header-red">
+        <h3><fa-icon [icon]="faTachometerAlt"></fa-icon> Top 10: Peores Rendimientos</h3>
+        <span class="badge-subtitle">Requieren supervisión</span>
+      </div>
+      <div class="table-responsive">
+        <table class="rrhh-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Operador</th>
+              <th>Autobús Gral.</th>
+              <th class="text-right">Rendimiento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let op of topPeores; let i = index">
+              <td class="rank-num text-danger">{{ i + 1 }}</td>
+              <td><strong>{{ op.operador }}</strong></td>
+              <td><span class="bus-tag">BUS {{ op.autobus_frecuente || 'N/A' }}</span></td>
+              <td class="text-right text-danger fw-bold">{{ op.rendimiento_promedio | number:'1.2-2' }} km/L</td>
+            </tr>
+            <tr *ngIf="topPeores.length === 0">
+              <td colspan="4" class="empty-msg">No hay suficientes datos registrados.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>

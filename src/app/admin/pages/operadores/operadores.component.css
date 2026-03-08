@@ -696,3 +696,31 @@ hr { border: 0; border-top: 1px solid rgba(68, 128, 211, 0.2); margin: 20px 0; }
     gap: 15px;
   }
 }
+/* ==========================================================================
+   SEMÁFORO DE LICENCIAS (Badges)
+   ========================================================================== */
+.badge-vencida { 
+  background-color: rgba(239, 68, 68, 0.15) !important; 
+  color: #ef4444 !important; 
+  border: 1px solid rgba(239, 68, 68, 0.3) !important; 
+}
+.badge-por-vencer { 
+  background-color: rgba(245, 158, 11, 0.15) !important; 
+  color: #f59e0b !important; 
+  border: 1px solid rgba(245, 158, 11, 0.3) !important; 
+}
+.badge-vigente { 
+  background-color: rgba(16, 185, 129, 0.15) !important; 
+  color: #10b981 !important; 
+  border: 1px solid rgba(16, 185, 129, 0.3) !important; 
+}
+.badge-sin-registro { 
+  background-color: rgba(148, 163, 184, 0.15) !important; 
+  color: #94a3b8 !important; 
+  border: 1px solid rgba(148, 163, 184, 0.3) !important; 
+}
+
+/* Colores para la tarjeta de la licencia (modal) */
+.data-value.vencida { color: #ef4444; font-weight: bold; text-shadow: 0 0 5px rgba(239, 68, 68, 0.4); }
+.data-value.por_vencer { color: #f59e0b; font-weight: bold; text-shadow: 0 0 5px rgba(245, 158, 11, 0.4); }
+.data-value.vigente { color: #10b981; font-weight: bold; }

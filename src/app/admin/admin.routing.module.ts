@@ -39,6 +39,7 @@ import { PrestamosComponent } from './pages/prestamos/prestamos.component';
 import { AjustesComponent } from './pages/ajustes/ajustes.component';
 import { ServiciosExternosComponent } from './pages/servicios-externos/servicios-externos.component';
 import { AdminTicketsComponent } from './pages/admin-tickets/admin-tickets.component';
+import { DashboardRrhhComponent } from './pages/dashboard-rrhh/dashboard-rrhh.component';
 
 const routes: Routes = [
   {
@@ -241,6 +242,12 @@ const routes: Routes = [
       {
         path: 'tickets',
         component:  AdminTicketsComponent,
+        canActivate: [RoleGuard],
+        data: { roles: [ 'SuperUsuario'] }
+      },
+      {
+        path: 'dashboard-rrhh',
+        component:  DashboardRrhhComponent,
         canActivate: [RoleGuard],
         data: { roles: [ 'SuperUsuario'] }
       },

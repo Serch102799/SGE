@@ -10,6 +10,15 @@
     <ul class="sidebar-nav">
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])"><a routerLink="dashboard"><fa-icon
             [icon]="faDashboard"></fa-icon> <span>Dashboard</span></a></li>
+
+        <li *ngIf="authService.hasRole(['AdminDiesel', 'SuperUsuario'])">
+        <a routerLink="/admin/dashboard-rrhh" routerLinkActive="active">
+          <fa-icon [icon]="faTanques"></fa-icon>
+          <span>Dashboard RRHH</span>
+        </a>
+      </li>
+      
+
       <li *ngIf="authService.hasRole(['SuperUsuario'])"><a routerLink="tickets"><fa-icon
             [icon]="faTickets"></fa-icon> <span>Soporte</span></a></li>
 
@@ -80,7 +89,7 @@
       <li *ngIf="authService.hasRole(['AdminDiesel', 'SuperUsuario'])">
         <a routerLink="/admin/tanques" routerLinkActive="active">
           <fa-icon [icon]="faTanques"></fa-icon>
-          <span>Tanques</span>
+          <span>Admón. Diesel</span>
         </a>
       </li>
       <li *ngIf="authService.hasRole(['AdminDiesel', 'SuperUsuario'])">

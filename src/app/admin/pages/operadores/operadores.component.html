@@ -32,7 +32,7 @@
           <tr>
             <th>Nombre Completo</th>
             <th>N° Empleado</th>
-            <th>Licencia</th>
+            <th>Licencia / Vigencia</th>
             <th>NSS</th>
             <th>Edad</th>
             <th>Antigüedad</th>
@@ -46,7 +46,17 @@
             (click)="verLicencia(operador)" style="cursor: pointer;" title="Clic para ver Licencia Digital">
             <td>{{ operador.nombre_completo }}</td>
             <td>{{ operador.numero_empleado }}</td>
-            <td>{{ operador.numero_licencia }} ({{ operador.tipo_licencia }})</td>
+            
+            <td>
+              <div style="font-weight: bold;">{{ operador.numero_licencia || 'S/N' }} ({{ operador.tipo_licencia || '-' }})</div>
+              <div style="margin-top: 5px;" [ngSwitch]="getEstadoLicencia(operador.licencia_vencimiento)">
+                <span *ngSwitchCase="'vencida'" class="badge badge-vencida" title="¡Licencia expirada!"><i class="fas fa-times-circle"></i> Vencida</span>
+                <span *ngSwitchCase="'por_vencer'" class="badge badge-por-vencer" title="Vence en 30 días o menos"><i class="fas fa-exclamation-triangle"></i> Por Vencer</span>
+                <span *ngSwitchCase="'vigente'" class="badge badge-vigente"><i class="fas fa-check-circle"></i> Vigente</span>
+                <span *ngSwitchCase="'sin_registro'" class="badge badge-sin-registro">Sin Fecha</span>
+              </div>
+            </td>
+
             <td>{{ operador.nss }}</td>
             <td>{{ operador.edad }} años</td>
             <td>{{ operador.antiguedad_anios }} años</td>
@@ -194,6 +204,7 @@
     </div>
   </div>
 </div>
+
 <div class="modal-overlay" *ngIf="mostrarModalLicencia" (click)="cerrarModalLicencia()">
   <div class="license-card-wrapper" (click)="$event.stopPropagation()">
     
@@ -218,7 +229,7 @@
       <div class="license-photo-section">
         <div class="photo-frame">
           <img [src]="'https://ui-avatars.com/api/?name=' + (operadorParaLicencia?.nombre_completo || 'User') + '&background=random&size=150'" 
-               alt="Foto Operador" class="operator-photo">
+                alt="Foto Operador" class="operator-photo">
         </div>
         <div class="active-badge" [class.inactive]="!operadorParaLicencia?.esta_activo">
           {{ operadorParaLicencia?.esta_activo ? 'VIGENTE' : 'BAJA' }}
@@ -236,10 +247,14 @@
             <label>N° LICENCIA</label>
             <div class="data-value code">{{ operadorParaLicencia?.numero_licencia || 'PENDIENTE' }}</div>
           </div>
+          
           <div class="data-group">
             <label>VENCE</label>
-            <div class="data-value">{{ operadorParaLicencia?.licencia_vencimiento | date:'dd/MM/yyyy' }}</div>
+            <div class="data-value" [ngClass]="getEstadoLicencia(operadorParaLicencia?.licencia_vencimiento)">
+              {{ operadorParaLicencia?.licencia_vencimiento ? (operadorParaLicencia?.licencia_vencimiento | date:'dd/MM/yyyy') : 'SIN FECHA' }}
+            </div>
           </div>
+
           <div class="data-group">
             <label>N° EMPLEADO</label>
             <div class="data-value">{{ operadorParaLicencia?.numero_empleado }}</div>
