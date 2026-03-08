@@ -1,0 +1,88 @@
+<div class="bot-container">
+
+  <div class="bot-window" [class.window-open]="isOpen">
+    
+    <div class="bot-header">
+      <div class="bot-header-title">
+        <i class="fas fa-robot"></i> Asistencia y Soporte
+      </div>
+      <button class="btn-close-bot" (click)="toggleBot()">&times;</button>
+    </div>
+
+    <div class="bot-tabs">
+      <button class="bot-tab-btn" [class.active]="pestanaActiva === 'guia'" (click)="cambiarPestana('guia')">
+        <i class="fas fa-book-open"></i> Guía Rápida
+      </button>
+      <button class="bot-tab-btn" [class.active]="pestanaActiva === 'ticket'" (click)="cambiarPestana('ticket')">
+        <i class="fas fa-ticket-alt"></i> Reportar Falla
+      </button>
+    </div>
+
+    <div class="bot-body" *ngIf="pestanaActiva === 'guia'">
+      <h4 class="context-title">
+        <i class="fas" [ngClass]="ayudaActual.icono"></i> {{ ayudaActual.titulo }}
+      </h4>
+      
+      <p class="context-desc">{{ ayudaActual.descripcion }}</p>
+
+      <div class="context-steps" *ngIf="ayudaActual.pasos && ayudaActual.pasos.length > 0">
+        <h5><i class="fas fa-list-ul"></i> Pasos rápidos:</h5>
+        <ul>
+          <li *ngFor="let paso of ayudaActual.pasos">
+            <i class="fas fa-check-circle step-icon"></i> 
+            <span>{{ paso }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="context-tip" *ngIf="ayudaActual.tip">
+        <div class="tip-icon"><i class="fas fa-lightbulb"></i></div>
+        <div class="tip-content">
+          <strong>Tip Pro:</strong> 
+          {{ ayudaActual.tip }}
+        </div>
+      </div>
+    </div>
+
+    <div class="bot-body" *ngIf="pestanaActiva === 'ticket'">
+      <p class="ticket-info">¿Encontraste un error o necesitas ayuda técnica? Levanta un ticket.</p>
+      
+      <div class="form-group">
+        <label>Asunto / Módulo fallando</label>
+        <input type="text" class="bot-input" placeholder="Ej. No me deja guardar un servicio" [(ngModel)]="nuevoTicket.asunto">
+      </div>
+
+      <div class="form-group">
+        <label>Describe el problema</label>
+        <textarea class="bot-input" rows="3" placeholder="Detalla lo que pasó..." [(ngModel)]="nuevoTicket.descripcion"></textarea>
+      </div>
+
+      <button class="btn-enviar-ticket" (click)="enviarTicket()">
+        <i class="fas fa-paper-plane"></i> Enviar Ticket
+      </button>
+    </div>
+
+  </div>
+
+  <button class="bot-fab" (click)="toggleBot()" [class.fab-active]="isOpen">
+    <i class="fas" [ngClass]="isOpen ? 'fa-times' : 'fa-life-ring'"></i>
+  </button>
+
+</div>
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion">
+  <div class="modal-content">
+    <div class="modal-header" [ngClass]="{'header-exito': notificacion.tipo === 'exito', 'header-error': notificacion.tipo === 'error', 'header-advertencia': notificacion.tipo === 'advertencia'}">
+      <h3>
+        <i class="fas" [ngClass]="{'fa-check-circle': notificacion.tipo === 'exito', 'fa-times-circle': notificacion.tipo === 'error', 'fa-exclamation-triangle': notificacion.tipo === 'advertencia'}"></i> 
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">&times;</button>
+    </div>
+    <div class="confirm-text" style="padding: 20px; color: #cbd5e1; font-size: 0.95rem; line-height: 1.5;">
+      {{ notificacion.mensaje }}
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalNotificacion()">Entendido</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,96 @@
+<div class="usuarios-container">
+  <div class="container-header">
+    <h2><i class="fas fa-headset"></i> Centro de Soporte y Tickets</h2>
+    <button class="btn-agregar" (click)="cargarTickets()">
+      <i class="fas fa-sync-alt"></i> Actualizar Lista
+    </button>
+  </div>
+
+  <div class="container-body">
+    <div class="loading-message" *ngIf="isLoading">Cargando tickets...</div>
+
+    <div class="tabla-responsive-wrapper" *ngIf="!isLoading">
+      <table class="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>Folio</th>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Módulo (Ruta)</th>
+            <th>Asunto / Problema</th>
+            <th>Estatus</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of tickets" [ngStyle]="{'opacity': t.estatus === 'Resuelto' ? '0.6' : '1'}">
+            <td><strong>#{{ t.id_ticket }}</strong></td>
+            <td>{{ t.fecha_creacion | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td><span class="badge badge-bus"><i class="fas fa-user"></i> {{ t.empleado }}</span></td>
+            <td><code class="ruta-code">{{ t.modulo_origen || 'No detectado' }}</code></td>
+            
+            <td>
+              <strong>{{ t.asunto }}</strong>
+              <p class="desc-text">{{ t.descripcion }}</p>
+            </td>
+
+            <td>
+              <span class="badge" 
+                    [ngClass]="{
+                      'badge-pendiente': t.estatus === 'Pendiente',
+                      'badge-revision': t.estatus === 'En Revisión',
+                      'badge-resuelto': t.estatus === 'Resuelto'
+                    }">
+                {{ t.estatus }}
+              </span>
+            </td>
+
+            <td>
+              <div class="acciones-flex" *ngIf="t.estatus !== 'Resuelto'">
+                <button class="btn-icon btn-check" (click)="abrirConfirmacion(t.id_ticket, 'Resuelto')" title="Marcar como Resuelto">
+                  <i class="fas fa-check-circle"></i>
+                </button>
+                <button *ngIf="t.estatus === 'Pendiente'" class="btn-icon btn-warn" (click)="abrirConfirmacion(t.id_ticket, 'En Revisión')" title="Marcar En Revisión">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          
+          <tr *ngIf="tickets.length === 0">
+            <td colspan="7" class="text-center empty-msg">¡Excelente! No hay tickets de soporte pendientes.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalConfirmacion" style="z-index: 2000;">
+  <div class="modal-content">
+    <div class="modal-header header-advertencia">
+      <h3><i class="fas fa-exclamation-triangle"></i> Confirmar Acción</h3>
+      <button class="btn-cerrar" (click)="cerrarConfirmacion()">&times;</button>
+    </div>
+    <div class="confirm-text" style="padding: 20px; color: #cbd5e1; font-size: 1rem;">
+      ¿Estás seguro de marcar el ticket <strong>#{{ ticketAConfirmar }}</strong> con el estatus de <strong style="color: #f8fafc;">"{{ estatusAConfirmar }}"</strong>?
+    </div>
+    <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button class="btn-cancelar" (click)="cerrarConfirmacion()">Cancelar</button>
+      <button class="btn-agregar" (click)="confirmarCambioEstatus()"><i class="fas fa-check"></i> Sí, Cambiar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" style="z-index: 2000;">
+  <div class="modal-content">
+    <div class="modal-header" [ngClass]="{'header-exito': notificacion.tipo === 'exito', 'header-error': notificacion.tipo === 'error', 'header-advertencia': notificacion.tipo === 'advertencia'}">
+      <h3>{{ notificacion.titulo }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">&times;</button>
+    </div>
+    <div class="confirm-text" style="padding: 20px;">{{ notificacion.mensaje }}</div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalNotificacion()">Entendido</button>
+    </div>
+  </div>
+</div>

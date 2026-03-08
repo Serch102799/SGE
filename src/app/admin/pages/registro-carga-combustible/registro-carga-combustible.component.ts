@@ -184,7 +184,6 @@ export class RegistroCargaCombustibleComponent implements OnInit {
     this.recalcularValores();
   }
 
-  // --- RECÁLCULO INTELIGENTE ---
   recalcularValores() {
     if (this.tipo_calculo === 'dias') {
       this.recalcularValoresDias();

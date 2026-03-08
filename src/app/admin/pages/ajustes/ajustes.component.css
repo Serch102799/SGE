@@ -2,7 +2,7 @@
 :host {
   display: block; width: 100%; height: 100%; box-sizing: border-box; padding: 20px;
   background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), 
-              url("/assets/img/pantalla1.jpg") no-repeat center center fixed;
+              url("/assets/img/nF.png") no-repeat center center fixed;
   background-size: cover; overflow-y: auto;
 }
 

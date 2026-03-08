@@ -47,6 +47,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
   faPrestamos = faTools; 
   faCogs = faCogs;
   faArtArmados = faCubes;
+  faTickets = faHistory;
   faServiciosExternos = faWrench;
   currentUser: any;
   constructor(

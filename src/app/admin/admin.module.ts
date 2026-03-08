@@ -45,6 +45,8 @@ import { AdminPanelComponent } from './pages/admin-panel/admin-panel.component';
 import { PrestamosComponent } from './pages/prestamos/prestamos.component';
 import { AjustesComponent } from './pages/ajustes/ajustes.component';
 import { ServiciosExternosComponent } from './pages/servicios-externos/servicios-externos.component';
+import { BotAyudaComponent } from '../components/bot-ayuda/bot-ayuda.component';
+import { AdminTicketsComponent } from './pages/admin-tickets/admin-tickets.component';
 
 @NgModule({
   declarations: [
@@ -79,7 +81,9 @@ import { ServiciosExternosComponent } from './pages/servicios-externos/servicios
     AdminPanelComponent,
     PrestamosComponent,
     AjustesComponent,
-    ServiciosExternosComponent
+    ServiciosExternosComponent,
+    BotAyudaComponent,
+    AdminTicketsComponent
   ],
   imports: [
     HttpClientModule,

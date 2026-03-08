@@ -38,6 +38,7 @@ import { AdminPanelComponent } from './pages/admin-panel/admin-panel.component';
 import { PrestamosComponent } from './pages/prestamos/prestamos.component';
 import { AjustesComponent } from './pages/ajustes/ajustes.component';
 import { ServiciosExternosComponent } from './pages/servicios-externos/servicios-externos.component';
+import { AdminTicketsComponent } from './pages/admin-tickets/admin-tickets.component';
 
 const routes: Routes = [
   {
@@ -236,6 +237,12 @@ const routes: Routes = [
         component:  ServiciosExternosComponent,
         canActivate: [RoleGuard],
         data: { roles: ['Admin', 'Almacenista', 'SuperUsuario'] }
+      },
+      {
+        path: 'tickets',
+        component:  AdminTicketsComponent,
+        canActivate: [RoleGuard],
+        data: { roles: [ 'SuperUsuario'] }
       },
     ],
   },

@@ -23,7 +23,7 @@
 
   /* CAMBIO CLAVE 3: El fondo fijo evita que se vea blanco al hacer scroll */
   background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), 
-              url("/assets/img/pantalla1.jpg") no-repeat center center fixed;
+              url("/assets/img/nF.png") no-repeat center center fixed;
   background-size: cover;
   
   /* CAMBIO CLAVE 4: Si hay scroll, que sea interno del componente */

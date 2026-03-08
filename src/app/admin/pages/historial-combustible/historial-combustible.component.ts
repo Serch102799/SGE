@@ -159,8 +159,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
 
     return params;
   }
-
-  // ⭐ REDISEÑADO: Mejor control de llamadas simultáneas
   obtenerCargas(): void {
     const ahora = Date.now();
     
@@ -901,7 +899,7 @@ async exportarAExcel(): Promise<void> {
 
     this.http.get<any>(`${this.apiUrl}/detalle/${carga.id_carga}`).subscribe({
       next: (datos) => {
-        console.log('✅ Datos recibidos del detalle:', datos);
+        console.log(' Datos recibidos del detalle:', datos);
         
         if (!datos.clasificacion_rendimiento && datos.rendimiento_calculado) {
           datos.clasificacion_rendimiento = this.clasificarRendimiento(
