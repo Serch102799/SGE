@@ -123,7 +123,7 @@ const routes: Routes = [
         path: 'perfil',
         component: PerfilComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'SuperUsuario', 'Almacenista', 'AdminDiesel'] }
+        data: { roles: ['Admin', 'SuperUsuario', 'Almacenista', 'AdminDiesel', 'RRHH'] }
       },
       {
         path: 'reportes',
@@ -147,7 +147,7 @@ const routes: Routes = [
         path: 'operadores',
         component: OperadoresComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['SuperUsuario', 'Admin'] }
+        data: { roles: ['SuperUsuario', 'Admin', 'RRHH'] }
       },
       {
         path: 'rutas',
@@ -231,7 +231,7 @@ const routes: Routes = [
         path: 'dashboard',
         component: DashboardComponent,
         canActivate: [RoleGuard],
-        data: { roles: ['Admin', 'Almacenista', 'SuperUsuario'] }
+        data: { roles: ['Admin', 'Almacenista', 'SuperUsuario', 'RRHH'] }
       },
        {
         path: 'servicios-externos',
@@ -249,7 +249,7 @@ const routes: Routes = [
         path: 'dashboard-rrhh',
         component:  DashboardRrhhComponent,
         canActivate: [RoleGuard],
-        data: { roles: [ 'SuperUsuario'] }
+        data: { roles: [ 'SuperUsuario', 'RRHH'] }
       },
     ],
   },

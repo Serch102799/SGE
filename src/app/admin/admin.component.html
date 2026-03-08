@@ -8,12 +8,12 @@
       </button>
     </div>
     <ul class="sidebar-nav">
-      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])"><a routerLink="dashboard"><fa-icon
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'RRHH'])"><a routerLink="dashboard"><fa-icon
             [icon]="faDashboard"></fa-icon> <span>Dashboard</span></a></li>
 
-        <li *ngIf="authService.hasRole(['AdminDiesel', 'SuperUsuario'])">
+        <li *ngIf="authService.hasRole(['RRHH', 'SuperUsuario'])">
         <a routerLink="/admin/dashboard-rrhh" routerLinkActive="active">
-          <fa-icon [icon]="faTanques"></fa-icon>
+          <fa-icon [icon]="faDashboard"></fa-icon>
           <span>Dashboard RRHH</span>
         </a>
       </li>
@@ -104,7 +104,7 @@
           <span>Rendimientos</span>
         </a>
       </li>
-      <li *ngIf="authService.hasRole(['SuperUsuario'])">
+      <li *ngIf="authService.hasRole(['SuperUsuario', 'RRHH'])">
         <a routerLink="/admin/operadores" routerLinkActive="active">
           <fa-icon [icon]="faOperadores"></fa-icon>
           <span>Operadores</span>
@@ -116,7 +116,7 @@
           <span>x</span>
         </a>
       </li>
-      <li *ngIf="authService.hasRole(['SuperUsuario', 'AdminDiesel'])">
+      <li *ngIf="authService.hasRole(['SuperUsuario', 'AdminDiesel', 'Admin'])">
         <a routerLink="/admin/registro-carga-combustible" routerLinkActive="active">
           <fa-icon [icon]="faCargaCombustible"></fa-icon>
           <span>Carga de Combustible</span></a>
