@@ -33,6 +33,8 @@
   padding: 30px;
   height: 100%;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1;
 }
 .custom-logo {
   width: 45px; /* Ajusta este valor si tu logo es muy ancho o muy alto */
