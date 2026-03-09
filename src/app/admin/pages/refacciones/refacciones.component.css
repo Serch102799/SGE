@@ -22,6 +22,61 @@
   background-size: cover;
   overflow-y: auto;
 }
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  text-align: center;
+  min-width: 50px;
+}
+
+/* Rojo (Agotado o Negativo) */
+.badge-agotado {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #ef4444 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  animation: pulse-red 2s infinite; /* Un ligero pulso de alerta */
+}
+
+/* Amarillo/Naranja (En Stock Mínimo o menor) */
+.badge-bajo {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #f59e0b !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Verde (Saludable, por encima del Stock Mínimo) */
+.badge-saludable {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #10b981 !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+.pagination-controls {
+  text-align: center; margin-top: 20px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+:host ::ng-deep .ngx-pagination { padding: 0; margin: 0; display: flex; justify-content: center; gap: 5px; }
+:host ::ng-deep .ngx-pagination li { display: inline-block; border-radius: 6px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(68, 128, 211, 0.3); }
+:host ::ng-deep .ngx-pagination a, :host ::ng-deep .ngx-pagination span {
+  color: #e0e0e0; padding: 8px 14px; display: block; text-decoration: none; font-size: 0.9rem;
+}
+:host ::ng-deep .ngx-pagination .current {
+  background: linear-gradient(135deg, #4480d3 0%, #386bbd 100%);
+  border-color: #4480d3; color: white !important; font-weight: bold; box-shadow: 0 0 10px rgba(68, 128, 211, 0.4);
+}
+:host ::ng-deep .ngx-pagination li:not(.current):hover { background: rgba(68, 128, 211, 0.2); border-color: #4480d3; }
+:host ::ng-deep .ngx-pagination .disabled { opacity: 0.5; cursor: not-allowed; background: transparent; border-color: transparent; }
+
+
 
 /* ===================================
    CONTENEDOR PRINCIPAL

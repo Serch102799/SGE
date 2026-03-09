@@ -44,6 +44,8 @@ export class RefaccionesComponent implements OnInit {
   marcasUnicas: string[] = [];
   sortField: string = '';
   sortDirection: string = 'asc';
+  p: number = 1; 
+  itemsPerPage: number = 10;
   
   // --- Modales y Notificaciones (sin cambios) ---
   mostrarModalAgregar = false;
@@ -136,6 +138,7 @@ export class RefaccionesComponent implements OnInit {
   aplicarFiltros() {
     let refaccionesTemp = [...this.refacciones];
     const busqueda = this.terminoBusqueda.toLowerCase();
+    
     if (this.terminoBusqueda) {
       refaccionesTemp = refaccionesTemp.filter(refaccion =>
         refaccion.Nombre.toLowerCase().includes(busqueda) ||
@@ -148,10 +151,11 @@ export class RefaccionesComponent implements OnInit {
     if (this.filtroMarca) {
       refaccionesTemp = refaccionesTemp.filter(refaccion => refaccion.Marca === this.filtroMarca);
     }
+    
     this.refaccionesFiltradas = refaccionesTemp;
+    this.p = 1; // <-- ¡NUEVO! Regresa a la página 1 tras filtrar
   }
 
-  // --- El resto de los métodos para modales, guardado y eliminación no necesitan cambios ---
   
   abrirModalAgregar(): void {
     this.nuevaRefaccion = { Nombre: '', Numero_Parte: '', Categoria: '', Marca: '', Unidad_Medida: 'Pieza', Ubicacion_Almacen: '', Stock_Minimo: 0 };

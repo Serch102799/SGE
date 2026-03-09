@@ -111,7 +111,20 @@ export class BotAyudaComponent implements OnInit {
         ],
         tip: 'Los tickets resueltos se volverán un poco transparentes y bajarán al fondo de la lista para no estorbar.' 
       };
-    } else {
+      } else if (url.includes('refacciones')) {
+      this.ayudaActual = { 
+        titulo: 'Inventario de Refacciones', 
+        icono: 'fa-cogs',
+        descripcion: 'Administra el catálogo de piezas de tu almacén, consulta existencias y registra salidas manuales.',
+        pasos: [
+          'Busca una pieza por nombre, número de parte o usa los filtros de categoría.',
+          'Usa el botón "Editar" para actualizar la ubicación en el almacén o el stock mínimo.',
+          'Usa el botón "Salida" para descontar piezas que se utilizaron en el taller.'
+        ],
+        tip: 'Si una pieza llega a su "Stock Mínimo", el sistema te lo notificará en el Dashboard y en los Reportes de Stock Bajo.' 
+      };
+    }  
+    else {
       this.ayudaActual = { 
         titulo: 'Asistente Global', 
         icono: 'fa-robot',

@@ -3,7 +3,7 @@
     <h2>Gestión de Refacciones</h2>
     <div class="acciones-header">
       <button class="btn-exportar" (click)="exportarAExcel()">
-        <span>&#128196;</span>EXPORTAR A EXCEL
+        <span>&#128196;</span> EXPORTAR A EXCEL
       </button>
       <button class="btn-agregar" (click)="abrirModalAgregar()">
         <span>&#43;</span> Agregar Refacción
@@ -46,14 +46,12 @@
             <th>Stock</th>
             <th>Último Costo</th>
             <th>Ubicación</th>
-            <!-- <th>$ Reciente</th> -->
             <th style="text-align: center;">Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr 
-            *ngFor="let refaccion of refaccionesFiltradas" 
-            [ngClass]="{'alerta-stock-bajo': refaccion.Stock_Actual <= refaccion.Stock_Minimo && refaccion.Stock_Minimo > 0}"
+            *ngFor="let refaccion of refaccionesFiltradas | paginate: { itemsPerPage: itemsPerPage, currentPage: p }" 
             (click)="abrirModalSalida(refaccion)"
             class="fila-clickable">
             
@@ -61,14 +59,23 @@
             <td>{{ refaccion.Numero_Parte }}</td>
             <td>{{ refaccion.Marca }}</td>
             <td>{{ refaccion.Categoria }}</td>
-            <td [class.stock-critico]="refaccion.Stock_Actual <= refaccion.Stock_Minimo && refaccion.Stock_Minimo > 0">
-              {{ refaccion.Stock_Actual }}
-            </td>
+            
             <td>
-          {{ refaccion.ultimo_costo !== null ? (refaccion.ultimo_costo | currency:'MXN':'symbol') : 'N/A' }}
-        </td>
+              <span class="badge" 
+                    [ngClass]="{
+                      'badge-agotado': refaccion.Stock_Actual <= 0,
+                      'badge-bajo': refaccion.Stock_Actual > 0 && refaccion.Stock_Actual <= refaccion.Stock_Minimo,
+                      'badge-saludable': refaccion.Stock_Actual > refaccion.Stock_Minimo
+                    }">
+                {{ refaccion.Stock_Actual }} {{ refaccion.Unidad_Medida === 'Pieza' ? 'Pzs' : refaccion.Unidad_Medida }}
+              </span>
+            </td>
+
+            <td>
+              {{ refaccion.ultimo_costo !== null ? (refaccion.ultimo_costo | currency:'MXN':'symbol') : 'N/A' }}
+            </td>
             <td>{{ refaccion.Ubicacion_Almacen }}</td>
-            <!-- <td>{{ refaccion.ultimo_costo | currency:'MXN' }}</td>  -->
+            
             <td class="acciones" (click)="$event.stopPropagation()">
               <button class="btn-accion btn-accion" (click)="verHistorial(refaccion)">Historial</button>
               <button class="btn-accion btn-estado" (click)="abrirModalEditar(refaccion)">Editar</button> 
@@ -78,6 +85,15 @@
         </tbody>
       </table>
     </div>
+
+    <div class="pagination-controls" style="margin-top: 20px; display: flex; justify-content: center;">
+      <pagination-controls 
+        (pageChange)="p = $event" 
+        previousLabel="Anterior" 
+        nextLabel="Siguiente">
+      </pagination-controls>
+    </div>
+
   </div>
 </div>
 
@@ -89,46 +105,43 @@
     </div>
     <div class="modal-body">
       <form (ngSubmit)="guardarNuevaRefaccion()">
-  <div class="form-group">
-    <label>Nombre</label>
-    <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Nombre" name="Nombre" required>
-  </div>
-  <div class="form-group">
-    <label>Número de Parte</label>
-    <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Numero_Parte" name="Numero_Parte">
-  </div>
-  <div class="form-group">
-    <label>Categoría</label>
-    <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Categoria" name="Categoria">
-  </div>
-  <div class="form-group">
-    <label>Marca</label>
-    <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Marca" name="Marca">
-  </div>
-  <div class="form-group">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Nombre" name="Nombre" required>
+        </div>
+        <div class="form-group">
+          <label>Número de Parte</label>
+          <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Numero_Parte" name="Numero_Parte">
+        </div>
+        <div class="form-group">
+          <label>Categoría</label>
+          <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Categoria" name="Categoria">
+        </div>
+        <div class="form-group">
+          <label>Marca</label>
+          <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Marca" name="Marca">
+        </div>
+        <div class="form-group">
           <label>Descripción / Uso de la Refacción</label>
           <textarea class="form-control" [(ngModel)]="nuevaRefaccion.Descripcion" name="Descripcion" rows="3"></textarea>
         </div>
-  
-  <div class="form-group">
-    <label>Unidad de Medida (ej. Pieza, Caja)</label>
-    <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Unidad_Medida" name="Unidad_Medida" required>
-  </div>
-  <div class="form-group">
-    <label>Ubicación en Almacén</label>
-    <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Ubicacion_Almacen" name="Ubicacion_Almacen">
-  </div>
-  
-  <div class="form-group">
-    <label>Stock Mínimo</label>
-    <input type="number" class="form-control" [(ngModel)]="nuevaRefaccion.Stock_Minimo" name="Stock_Minimo">
-  </div>
-  
-  <div class="modal-footer">
-    <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalAgregar()">Cancelar</button>
-    <button type="submit" class="btn-accion btn-guardar">Guardar</button>
-  </div>
-</form>
+        <div class="form-group">
+          <label>Unidad de Medida (ej. Pieza, Caja)</label>
+          <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Unidad_Medida" name="Unidad_Medida" required>
+        </div>
+        <div class="form-group">
+          <label>Ubicación en Almacén</label>
+          <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Ubicacion_Almacen" name="Ubicacion_Almacen">
+        </div>
+        <div class="form-group">
+          <label>Stock Mínimo</label>
+          <input type="number" class="form-control" [(ngModel)]="nuevaRefaccion.Stock_Minimo" name="Stock_Minimo">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalAgregar()">Cancelar</button>
+          <button type="submit" class="btn-accion btn-guardar">Guardar</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -141,7 +154,6 @@
     </div>
     <div class="modal-body">
       <form (ngSubmit)="guardarCambiosRefaccion()">
-        
         <div class="form-group">
             <label>Nombre</label>
             <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Nombre" name="edit_nombre" required>
@@ -173,16 +185,7 @@
         <div class="form-group">
             <label>Stock Mínimo</label>
             <input type="number" class="form-control" [(ngModel)]="refaccionAEditar.Stock_Minimo" name="edit_stock_minimo">
-        </div><!-- 
-        <div class="form-group">
-            <label>Stock Máximo</label>
-            <input type="number" class="form-control" [(ngModel)]="refaccionAEditar.Stock_Maximo" name="edit_stock_maximo">
-        </div> -->
-        <!-- <div class="form-group">
-            <label>Precio de Costo</label>
-            <input type="number" class="form-control" [(ngModel)]="refaccionAEditar.Precio_Costo" name="edit_precio_costo">
-        </div> -->
-
+        </div>
         <div class="modal-footer">
           <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalEditar()">Cancelar</button>
           <button type="submit" class="btn-accion btn-guardar">Guardar Cambios</button>
@@ -276,16 +279,15 @@
     </div>
   </div>
 </div>
+
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
   <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3 [ngClass]="{
+    <div class="modal-header" [ngClass]="{
         'header-exito': notificacion.tipo === 'exito',
         'header-error': notificacion.tipo === 'error',
         'header-advertencia': notificacion.tipo === 'advertencia'
       }">
-        {{ notificacion.titulo }}
-      </h3>
+      <h3>{{ notificacion.titulo }}</h3>
       <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
     </div>
     <div class="modal-body">
