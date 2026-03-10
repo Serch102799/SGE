@@ -312,7 +312,7 @@ export class ReportesComponent implements OnInit {
 
   // --- MÉTODOS DE EXPORTACIÓN ---
 
-  exportarPDF() {
+exportarPDF() {
     if (this.reporteData.length === 0) {
       this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.');
       return;
@@ -334,16 +334,21 @@ export class ReportesComponent implements OnInit {
 
     let startY = 40;
 
-    // --- SOLUCIÓN ESPECIAL PARA AUTOBUSES (Para que no recorte las columnas del PDF) ---
+    // --- SOLUCIÓN ESPECIAL PARA AUTOBUSES ---
     if (this.tipoReporteSeleccionado === 'costo-autobus' || this.tipoReporteSeleccionado === 'costo-por-autobus-especifico') {
-      const customHeaders = ['ID', 'FECHA / AUTOBÚS', 'TIPO', 'ARTÍCULO / DESCRIPCIÓN', 'MARCA / PROVEEDOR', 'CANT.', 'SUBTOTAL'];
+      // Ajustamos los encabezados
+      const customHeaders = ['ID', 'AUTOBÚS', 'MARCA / MOD.', 'TIPO', 'ARTÍCULO / DESC.', 'MARCA / PROV.', 'CANT.', 'SUBTOTAL'];
       const bodyBus: any[] = [];
 
       this.reporteData.forEach(item => {
-        // Fila principal del Autobús ocupando el espacio necesario
+        // Concatenamos Marca y Modelo
+        const marcaModelo = `${item.marca || item.marca_autobus || ''} ${item.modelo || item.anio || item.modelo_autobus || ''}`.trim() || '-';
+
+        // Fila principal del Autobús
         bodyBus.push([
           { content: item.id_autobus || '-', styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } },
-          { content: `BUS ${item.autobus}`, colSpan: 5, styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } },
+          { content: `BUS ${item.autobus}`, styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } },
+          { content: marcaModelo, colSpan: 5, styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } }, // Expandimos para alinear
           { content: `$${parseFloat(item.costo_total_mantenimiento).toLocaleString('es-MX', {minimumFractionDigits:2})}`, styles: { fontStyle: 'bold', halign: 'right', fillColor: [220, 235, 255], textColor: [0, 100, 0] } }
         ]);
 
@@ -357,7 +362,8 @@ export class ReportesComponent implements OnInit {
           
           bodyBus.push([
             '', // ID vacío
-            new Date(d.fecha).toLocaleDateString('es-MX'),
+            new Date(d.fecha).toLocaleDateString('es-MX'), // Usamos la columna Autobús para la fecha
+            '', // Marca/Mod. vacío
             d.tipo_item || '-',
             d.nombre || '-',
             (d.marca && d.marca !== 'N/A') ? d.marca : '-',
@@ -373,12 +379,22 @@ export class ReportesComponent implements OnInit {
         body: bodyBus,
         headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
         styles: { fontSize: 8, cellPadding: 3 },
-        margin: { top: 10 }
+        margin: { top: 10 },
+        columnStyles: {
+            0: { cellWidth: 15 }, // ID
+            1: { cellWidth: 25 }, // Autobús / Fecha
+            2: { cellWidth: 35 }, // Marca/Mod
+            3: { cellWidth: 25 }, // Tipo
+            4: { cellWidth: 'auto' }, // Artículo
+            5: { cellWidth: 35 }, // Marca/Prov
+            6: { cellWidth: 15, halign: 'center' }, // Cant
+            7: { cellWidth: 25, halign: 'right' } // Subtotal
+        }
       });
 
       doc.save(`Reporte_Autobuses_${new Date().getTime()}.pdf`);
       this.mostrarNotificacion('Éxito', 'PDF exportado correctamente con desglose completo.', 'exito');
-      return; // Detenemos la ejecución de la tabla normal
+      return; 
     }
     // --- FIN SOLUCIÓN ESPECIAL ---
 
@@ -493,7 +509,6 @@ export class ReportesComponent implements OnInit {
     
     datosExcel.push(headers);
 
-    // Agregamos el nuevo reporte a la lista que requiere desglose en Excel
     const reportesConDesglose = ['costo-autobus', 'costo-por-autobus-especifico', 'gastos-totales', 'movimientos-refaccion', 'historial-por-refaccion'];
 
     this.reporteData.forEach(fila => {
@@ -509,9 +524,15 @@ export class ReportesComponent implements OnInit {
 
       if (reportesConDesglose.includes(this.tipoReporteSeleccionado) && detallesArray.length > 0) {
         
-        // Aplica a TODOS los reportes de autobuses
         if (this.tipoReporteSeleccionado === 'costo-autobus' || this.tipoReporteSeleccionado === 'costo-por-autobus-especifico') {
+          // Agregamos Marca/Mod. en el desglose de Excel
           datosExcel.push(['', '--> FECHA', 'TIPO', 'ARTÍCULO / DESCRIPCIÓN', 'MARCA / PROVEEDOR', 'CANTIDAD', 'COSTO UNIT.', 'SUBTOTAL']);
+          
+          // Agregamos una fila para la Marca/Modelo
+          const marcaModelo = `${fila.marca || fila.marca_autobus || ''} ${fila.modelo || fila.anio || fila.modelo_autobus || ''}`.trim() || '-';
+          datosExcel.push(['', `Autobús: ${fila.autobus}`, `Marca/Mod: ${marcaModelo}`, '', '', '', '', '']);
+
+
           detallesArray.forEach((rawD: any) => {
             const d = rawD?.value || rawD;
             if (!d || Object.keys(d).length === 0) return;
@@ -579,7 +600,8 @@ export class ReportesComponent implements OnInit {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte');
 
-    const wscols = [ { wch: 15 }, { wch: 15 }, { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 } ];
+    // Ajustamos las columnas de Excel
+    const wscols = [ { wch: 15 }, { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 } ];
     worksheet['!cols'] = wscols;
 
     const nombreArchivo = `Reporte_${this.tipoReporteSeleccionado}_${new Date().getTime()}.xlsx`;
