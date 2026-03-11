@@ -32,6 +32,7 @@ export class AjustesComponent implements OnInit {
   // Datos para modales
   itemSeleccionado: any = null;
   nuevoStockFisico: number = 0;
+  nuevoCostoUnitario: number = 0; // <-- NUEVO: Para ajustar el precio
   motivoAjuste: string = 'Reconteo Anual 2026';
   diferenciaCalculada: number = 0;
 
@@ -84,6 +85,10 @@ export class AjustesComponent implements OnInit {
   abrirModalAjuste(item: any) {
     this.itemSeleccionado = item;
     this.nuevoStockFisico = Number(item.stock_actual);
+    
+    // Tratamos de leer el costo actual (puede venir como ultimo_costo, costo_unitario o precio_costo según tu BD)
+    this.nuevoCostoUnitario = Number(item.ultimo_costo || item.costo_unitario || item.precio_costo || 0); 
+    
     this.diferenciaCalculada = 0;
     this.motivoAjuste = 'Reconteo Anual 2026';
     this.mostrarModalAjuste = true;
@@ -101,6 +106,16 @@ export class AjustesComponent implements OnInit {
 
   // --- LÓGICA DE CONFIRMACIÓN Y GUARDADO ---
   iniciarGuardado() {
+    // Validaciones extra de seguridad
+    if (this.nuevoCostoUnitario < 0) {
+      this.mostrarNotificacion('Valor Inválido', 'El costo unitario no puede ser negativo.', 'advertencia');
+      return;
+    }
+    if (this.nuevoStockFisico < 0) {
+      this.mostrarNotificacion('Valor Inválido', 'El stock físico no puede ser negativo.', 'advertencia');
+      return;
+    }
+
     // Paso 1: Abrir modal de confirmación
     this.mostrarModalConfirmacion = true;
   }
@@ -113,6 +128,7 @@ export class AjustesComponent implements OnInit {
       id: this.itemSeleccionado.id,
       tipo: this.itemSeleccionado.tipo,
       stock_fisico: this.nuevoStockFisico,
+      costo_unitario: this.nuevoCostoUnitario, // <-- NUEVO: Mandamos el costo ajustado
       motivo: this.motivoAjuste
     };
 
@@ -120,7 +136,7 @@ export class AjustesComponent implements OnInit {
       next: (res: any) => {
         this.cerrarModalAjuste();
         this.cargarInventario();
-        this.mostrarNotificacion('Ajuste Exitoso', `Diferencia aplicada: ${res.diferencia}`, 'exito');
+        this.mostrarNotificacion('Ajuste Exitoso', `El stock y el costo se han actualizado correctamente.`, 'exito');
       },
       error: (err) => {
         this.mostrarModalConfirmacion = false;

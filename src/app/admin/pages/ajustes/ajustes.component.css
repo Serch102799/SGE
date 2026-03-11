@@ -1,166 +1,267 @@
-/* Heredamos estilos base de tu sistema */
+/* ==========================================================================
+   CONFIGURACIÓN GLOBAL (HOST)
+   ========================================================================== */
 :host {
-  display: block; width: 100%; height: 100%; box-sizing: border-box; padding: 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), 
-              url("/assets/img/nF.png") no-repeat center center fixed;
-  background-size: cover; overflow-y: auto;
+    display: block; 
+    width: 100%; 
+    height: 100%; 
+    box-sizing: border-box; 
+    padding: 30px; /* Aumenté un poco el padding exterior */
+    background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), 
+                url("/assets/img/nF.png") no-repeat center center fixed;
+    background-size: cover; 
+    overflow-y: auto;
 }
 
+/* ==========================================================================
+   CONTENEDOR PRINCIPAL
+   ========================================================================== */
 .usuarios-container {
-  max-width: 1000px; /* Un poco más estrecho para centrar la atención */
-  width: 100%; margin: 0 auto; background-color: rgba(0, 0, 0, 0.85);
-  color: #e0e0e0; border: 1px solid rgba(68, 128, 211, 0.4); border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6); overflow: hidden;
-  margin-bottom: 20px;
+    max-width: 1400px; /* ANTES: 1000px. Ahora aprovecha mejor la pantalla */
+    width: 95%; 
+    margin: 0 auto; 
+    background-color: rgba(15, 23, 42, 0.9); /* Un fondo azul muy oscuro y sólido */
+    color: #e0e0e0; 
+    border: 1px solid rgba(68, 128, 211, 0.4); 
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7); 
+    overflow: hidden;
+    margin-bottom: 20px;
 }
 
 /* Header */
 .container-header {
-  background: linear-gradient(135deg, rgba(68, 128, 211, 0.3) 0%, rgba(74, 142, 206, 0.2) 100%);
-  padding: 20px 30px; border-bottom: 1px solid rgba(68, 128, 211, 0.5);
-  display: flex; justify-content: space-between; align-items: center;
+    background: linear-gradient(135deg, rgba(68, 128, 211, 0.4) 0%, rgba(74, 142, 206, 0.2) 100%);
+    padding: 25px 30px; 
+    border-bottom: 1px solid rgba(68, 128, 211, 0.5);
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
 }
-.container-header h2 { margin: 0; color: white; font-size: 1.5rem; font-weight: 700; }
+
+.container-header h2 { 
+    margin: 0; 
+    color: white; 
+    font-size: 1.6rem; 
+    font-weight: 700; 
+    letter-spacing: 0.5px;
+}
 
 .search-box input {
-    background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);
-    color: white; padding: 8px 15px; border-radius: 20px; width: 300px;
+    background: rgba(0,0,0,0.4); 
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white; 
+    padding: 10px 20px; 
+    border-radius: 25px; 
+    width: 350px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
 }
 
-/* Tabla */
+.search-box input:focus {
+    outline: none;
+    border-color: #4480d3;
+    box-shadow: 0 0 10px rgba(68, 128, 211, 0.3);
+}
+
+/* ==========================================================================
+   TABLA PRINCIPAL
+   ========================================================================== */
 .container-body { padding: 0; }
-.tabla-usuarios { width: 100%; border-collapse: collapse; }
-.tabla-usuarios th {
-    background: rgba(68, 128, 211, 0.2); color: #a0c4ff; padding: 15px; text-align: left;
-    text-transform: uppercase; font-size: 0.8rem;
-}
-.tabla-usuarios td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.tabla-usuarios tr:hover { background: rgba(255,255,255,0.05); }
+.tabla-responsive-wrapper { overflow-x: auto; }
 
-/* Badges */
-.badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; }
+.tabla-usuarios { 
+    width: 100%; 
+    border-collapse: collapse; 
+}
+
+.tabla-usuarios th {
+    background: rgba(68, 128, 211, 0.15); 
+    color: #a0c4ff; 
+    padding: 18px 20px; 
+    text-align: left;
+    text-transform: uppercase; 
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.tabla-usuarios td { 
+    padding: 15px 20px; /* Aumentamos el padding para dar más aire */
+    border-bottom: 1px solid rgba(255,255,255,0.05); 
+    font-size: 0.95rem; /* Aumentamos el tamaño de fuente general */
+    vertical-align: middle;
+}
+
+.tabla-usuarios tr:hover { 
+    background: rgba(255,255,255,0.03); 
+}
+
+/* Badges de la tabla */
+.badge { 
+    padding: 6px 10px; 
+    border-radius: 6px; 
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    letter-spacing: 0.5px;
+}
 .badge-refaccion { background: rgba(255, 193, 7, 0.15); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.3); }
 .badge-insumo { background: rgba(23, 162, 184, 0.15); color: #17a2b8; border: 1px solid rgba(23, 162, 184, 0.3); }
 
+/* Elementos de texto específicos de la tabla */
+td[style*="font-weight: 600"] {
+    font-size: 1.05rem; /* Nombre más grande */
+}
+
+td[style*="color: #a0c4ff"] {
+    font-size: 1.2rem; /* Stock más grande */
+    font-weight: bold;
+}
+
 /* Botón Ajustar */
 .btn-ajuste {
-    background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2);
-    color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.3s;
+    background: rgba(68, 128, 211, 0.1); 
+    border: 1px solid rgba(68, 128, 211, 0.4);
+    color: #a0c4ff; 
+    padding: 8px 15px; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 0.9rem;
 }
-.btn-ajuste:hover { background: #4480d3; border-color: #4480d3; }
+.btn-ajuste:hover { 
+    background: #4480d3; 
+    border-color: #4480d3; 
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   PAGINACIÓN
+   ========================================================================== */
 .pagination-controls {
     display: flex;
     justify-content: flex-end;
-    padding: 15px;
-    background: rgba(0, 0, 0, 0.2);
+    padding: 15px 25px;
+    background: rgba(0, 0, 0, 0.3);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Sobrescribir estilos de la librería ngx-pagination */
-:host ::ng-deep .ngx-pagination {
-    padding: 0;
-    margin: 0;
-}
-
-:host ::ng-deep .ngx-pagination li {
-    background: rgba(255, 255, 255, 0.05);
-    margin-right: 5px;
-    border-radius: 4px;
-    display: inline-block;
-}
-
-:host ::ng-deep .ngx-pagination .current {
-    background: #4480d3 !important; /* Azul Principal */
-    border-radius: 4px;
-    padding: 5px 10px;
-}
-
+:host ::ng-deep .ngx-pagination { padding: 0; margin: 0; }
+:host ::ng-deep .ngx-pagination li { background: rgba(255, 255, 255, 0.05); margin-right: 5px; border-radius: 4px; display: inline-block; }
+:host ::ng-deep .ngx-pagination .current { background: #4480d3 !important; border-radius: 4px; padding: 5px 10px; font-weight: bold; }
 :host ::ng-deep .ngx-pagination a, 
-:host ::ng-deep .ngx-pagination button {
-    color: #a0c4ff !important;
-    text-decoration: none;
-    padding: 5px 10px;
-    display: block;
+:host ::ng-deep .ngx-pagination button { color: #a0c4ff !important; text-decoration: none; padding: 5px 10px; display: block; }
+:host ::ng-deep .ngx-pagination a:hover { background: rgba(68, 128, 211, 0.3); color: white !important; }
+
+
+/* ==========================================================================
+   ESTILOS DE MODALES GENERALES
+   ========================================================================== */
+.modal-overlay { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(0,0,0,0.85); z-index: 2000; 
+    display: flex; justify-content: center; align-items: center; 
+    backdrop-filter: blur(4px); /* Efecto cristal */
 }
-
-:host ::ng-deep .ngx-pagination a:hover {
-    background: rgba(68, 128, 211, 0.3);
-    color: white !important;
+.modal-content { 
+    background: #1e293b; /* Color moderno slate */
+    width: 600px; /* Aumenté el ancho del modal de ajuste */
+    border-radius: 12px; 
+    border: 1px solid rgba(255,255,255,0.1); 
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8); 
+    overflow: hidden; 
 }
+.modal-content.modal-sm { width: 400px; max-width: 90%; text-align: center; }
 
-/* =========================================
-   ESTILOS DE MODALES DE NOTIFICACIÓN
-   ========================================= */
+.modal-header { padding: 20px 25px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { margin: 0; font-size: 1.3rem; color: white; display: flex; align-items: center; gap: 10px; }
+.btn-cerrar { background: transparent; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
+.btn-cerrar:hover { color: white; }
 
-/* Modal Pequeño para alertas */
-.modal-content.modal-sm {
-    width: 400px;
-    max-width: 90%;
-    text-align: center;
-}
-
-/* Headers de colores según tipo */
-.header-advertencia {
-    background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 193, 7, 0.05));
-    border-bottom: 1px solid rgba(255, 193, 7, 0.4);
-    color: #ffc107;
-}
-
-.header-exito {
-    background: linear-gradient(135deg, rgba(40, 167, 69, 0.2), rgba(40, 167, 69, 0.05));
-    border-bottom: 1px solid rgba(40, 167, 69, 0.4);
-    color: #2ecc71;
-}
-
-.header-error {
-    background: linear-gradient(135deg, rgba(220, 53, 69, 0.2), rgba(220, 53, 69, 0.05));
-    border-bottom: 1px solid rgba(220, 53, 69, 0.4);
-    color: #ff6b6b;
-}
-
-.modal-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.confirm-text {
-    font-size: 1.1rem;
-    color: #e0e0e0;
-}
-
-.text-sm {
-    font-size: 0.85rem;
-    margin-top: 10px;
-}
-
-/* MODAL ESPECÍFICO */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; justify-content: center; align-items: center; }
-.modal-content { background: #1a1d26; width: 500px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.8); overflow: hidden; }
-
-.modal-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; }
 .modal-body { padding: 25px; }
-.modal-footer { padding: 20px; background: rgba(0,0,0,0.2); display: flex; justify-content: flex-end; gap: 10px; }
+.modal-footer { padding: 20px 25px; background: rgba(0,0,0,0.2); display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
+
+/* ==========================================================================
+   MODAL DE AJUSTE DE INVENTARIO (ESPECÍFICOS)
+   ========================================================================== */
+.bg-warning-dark {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05));
+    border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.alert-info {
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: #38bdf8;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
 
 /* Estilos de Comparación (Sistema vs Físico) */
-.stock-numero { font-size: 2rem; font-weight: 700; color: #a0c4ff; display: block; }
+.stock-numero { font-size: 2.5rem; font-weight: 800; color: #94a3b8; display: block; line-height: 1; margin-top: 5px; }
 .stock-input { 
-    background: rgba(0,0,0,0.5); border: 2px solid #4480d3; color: white; 
-    font-size: 1.5rem; text-align: center; height: auto; padding: 10px; font-weight: 700;
+    background: rgba(0,0,0,0.5); 
+    border: 2px solid #38bdf8; 
+    color: white; 
+    font-size: 1.8rem; 
+    text-align: center; 
+    height: auto; 
+    padding: 10px; 
+    font-weight: 700;
+    border-radius: 8px;
+    transition: box-shadow 0.3s;
 }
+.stock-input:focus { outline: none; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
 
 /* Caja de Diferencia */
 .diferencia-container {
-    margin-top: 20px; padding: 15px; text-align: center; border-radius: 8px;
-    background: rgba(255,255,255,0.05); font-weight: 600; text-transform: uppercase;
+    padding: 15px; 
+    text-align: center; 
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05); 
+    font-weight: 700; 
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
-.dif-positiva { background: rgba(40, 167, 69, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
-.dif-negativa { background: rgba(220, 53, 69, 0.2); color: #ff6b6b; border: 1px solid #ff6b6b; }
+.dif-positiva { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); }
+.dif-negativa { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
 
-/* Botones Modal */
-.btn-guardar { background: linear-gradient(135deg, #4480d3, #2a5298); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-.btn-guardar:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-cancelar { background: transparent; border: 1px solid #555; color: #ccc; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+/* Estilo para el Input del Costo Unitario */
+.form-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+}
+.form-group input {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    width: 100%;
+    font-size: 1rem;
+}
+.form-group input:focus { border-color: #38bdf8; outline: none; }
+
+/* Botones Acción */
+.btn-guardar { background: linear-gradient(135deg, #2563eb, #3b82f6); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: 0.3s; }
+.btn-guardar:hover { background: linear-gradient(135deg, #1d4ed8, #2563eb); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); }
+.btn-guardar:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-cancelar { background: transparent; border: 1px solid #64748b; color: #cbd5e1; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: 0.3s; }
+.btn-cancelar:hover { background: rgba(100, 116, 139, 0.2); color: white; }
+
+/* ==========================================================================
+   HEADERS DE NOTIFICACIÓN
+   ========================================================================== */
+.header-advertencia { background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05)); border-bottom: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; }
+.header-exito { background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.05)); border-bottom: 1px solid rgba(34, 197, 94, 0.4); color: #4ade80; }
+.header-error { background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05)); border-bottom: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; }
+
+.confirm-text { font-size: 1.1rem; color: #e2e8f0; margin-bottom: 5px; }
+.text-sm { font-size: 0.85rem; margin-top: 10px; color: #94a3b8; }

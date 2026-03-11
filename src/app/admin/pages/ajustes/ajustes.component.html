@@ -19,6 +19,7 @@
                         <th>Marca</th>
                         <th>Stock Sistema</th>
                         <th>Unidad</th>
+                        <th>Costo Unit.</th>
                         <th class="text-center">Acción</th>
                     </tr>
                 </thead>
@@ -48,6 +49,10 @@
                             {{ item.stock_actual }}
                         </td>
                         <td>{{ item.unidad }}</td>
+                        
+                        <td style="color: #4ade80;">
+                            {{ (item.ultimo_costo || item.costo_unitario || item.precio_costo || 0) | currency:'MXN':'symbol' }}
+                        </td>
 
                         <td class="acciones">
                             <button class="btn-accion btn-ajuste" (click)="abrirModalAjuste(item)">
@@ -56,7 +61,7 @@
                         </td>
                     </tr>
                     <tr *ngIf="inventario.length === 0 && !loading">
-                        <td colspan="8" class="empty-table-message">No se encontraron resultados.</td>
+                        <td colspan="9" class="empty-table-message">No se encontraron resultados.</td>
                     </tr>
                 </tbody>
             </table>
@@ -72,16 +77,16 @@
 <div class="modal-overlay" *ngIf="mostrarModalAjuste" (click)="cerrarModalAjuste()">
     <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header bg-warning-dark">
-            <h3>Ajuste de Stock: {{ itemSeleccionado?.nombre }}</h3>
+            <h3>Ajuste de Inventario: {{ itemSeleccionado?.nombre }}</h3>
             <button class="btn-cerrar" (click)="cerrarModalAjuste()">×</button>
         </div>
 
         <div class="modal-body">
             <div class="alert alert-info">
-                Ingresa la cantidad real. El sistema calculará el ajuste automáticamente.
+                Ingresa la cantidad física real y actualiza el costo unitario si es necesario.
             </div>
 
-            <div class="row align-items-center mb-4">
+            <div class="row align-items-center mb-3">
                 <div class="col-md-4 text-center">
                     <label class="d-block text-muted">Stock Sistema</label>
                     <span class="stock-numero">{{ itemSeleccionado?.stock_actual }}</span>
@@ -92,26 +97,35 @@
                 <div class="col-md-4">
                     <label class="d-block text-white">Conteo Físico</label>
                     <input type="number" class="form-control stock-input" [(ngModel)]="nuevoStockFisico"
-                        (input)="calcularDiferencia()">
+                        (input)="calcularDiferencia()" min="0">
                 </div>
             </div>
 
-            <div class="diferencia-container"
+            <div class="diferencia-container mb-4"
                 [ngClass]="{'dif-positiva': diferenciaCalculada > 0, 'dif-negativa': diferenciaCalculada < 0}">
                 <span *ngIf="diferenciaCalculada > 0">Sobran (Entrada): +{{ diferenciaCalculada }}</span>
                 <span *ngIf="diferenciaCalculada < 0">Faltan (Salida): {{ diferenciaCalculada }}</span>
-                <span *ngIf="diferenciaCalculada === 0">Sin cambios</span>
+                <span *ngIf="diferenciaCalculada === 0">Stock sin cambios</span>
             </div>
 
-            <div class="form-group mt-3">
-                <label class="text-muted">Motivo del Ajuste</label>
-                <input type="text" class="form-control" [(ngModel)]="motivoAjuste">
+            <div class="row">
+                <div class="col-md-5 form-group">
+                    <label class="text-white">Costo Unitario ($)</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <span style="color: #4ade80; font-size: 1.2rem; font-weight: bold;">$</span>
+                        <input type="number" class="form-control" [(ngModel)]="nuevoCostoUnitario" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="col-md-7 form-group">
+                    <label class="text-muted">Motivo del Ajuste</label>
+                    <input type="text" class="form-control" [(ngModel)]="motivoAjuste">
+                </div>
             </div>
         </div>
 
         <div class="modal-footer">
             <button class="btn-accion btn-cancelar" (click)="cerrarModalAjuste()">Cancelar</button>
-            <button class="btn-accion btn-guardar" (click)="iniciarGuardado()" [disabled]="diferenciaCalculada === 0">
+            <button class="btn-accion btn-guardar" (click)="iniciarGuardado()">
                 Aplicar Ajuste
             </button>
         </div>
@@ -124,8 +138,9 @@
             <h3>⚠️ Confirmar Cambio</h3>
         </div>
         <div class="modal-body text-center">
-            <p>El stock cambiará de <b>{{ itemSeleccionado?.stock_actual }}</b> a <b>{{ nuevoStockFisico }}</b>.</p>
-            <p class="text-muted text-sm">Esta acción afectará los costos y el inventario global. ¿Deseas continuar?</p>
+            <p>El stock pasará de <b>{{ itemSeleccionado?.stock_actual }}</b> a <b>{{ nuevoStockFisico }}</b> unidades.</p>
+            <p>El costo unitario quedará en <b>{{ nuevoCostoUnitario | currency:'MXN':'symbol' }}</b>.</p>
+            <p class="text-muted text-sm mt-3">Esta acción afectará el valor financiero del inventario global. ¿Deseas continuar?</p>
         </div>
         <div class="modal-footer justify-content-center">
             <button class="btn-accion btn-cancelar" (click)="cancelarConfirmacion()">No, volver</button>
