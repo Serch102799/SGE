@@ -1,14 +1,25 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { startWith, debounceTime, distinctUntilChanged, switchMap, map } from 'rxjs/operators';
+import { startWith, debounceTime, switchMap, map } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { environment } from '../../../../environments/environments';
 import { AuthService } from '../../../services/auth.service';
 
-interface RefaccionSimple { id: number; nombre: string; }
-interface Componente { nombre_componente: string; cantidad_necesaria: number; }
+interface RefaccionSimple { 
+  id: number; 
+  nombre: string; 
+}
+
+// Actualizamos la interfaz para soportar los badges de Insumos y Refacciones
+interface Componente { 
+  id_componente?: number;
+  id_refaccion_hijo?: number | null;
+  id_insumo_hijo?: number | null;
+  nombre_componente: string; 
+  cantidad_necesaria: number; 
+}
 
 @Component({
   selector: 'app-registro-produccion',
@@ -56,7 +67,6 @@ export class RegistroProduccionComponent implements OnInit {
 
   ngOnInit(): void { }
 
-
   private getFormattedCurrentDateTime(): string {
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -73,7 +83,9 @@ export class RegistroProduccionComponent implements OnInit {
       .pipe(map(res => res.map(item => ({ id: item.id_refaccion, nombre: item.nombre }))));
   }
 
-  displayFn(item: RefaccionSimple): string { return item ? item.nombre : ''; }
+  displayFn(item: RefaccionSimple): string { 
+    return item ? item.nombre : ''; 
+  }
 
   onProductoSelected(event: MatAutocompleteSelectedEvent): void {
     this.productoSeleccionado = event.option.value as RefaccionSimple;
@@ -83,20 +95,27 @@ export class RegistroProduccionComponent implements OnInit {
 
   cargarReceta(): void {
     if (!this.productoSeleccionado) return;
+    
     this.isLoading = true;
     this.http.get<Componente[]>(`${this.apiUrl}/productos-compuestos/${this.productoSeleccionado.id}`)
-      .subscribe(data => {
-        this.receta = data;
-        this.isLoading = false;
+      .subscribe({
+        next: (data) => {
+          this.receta = data;
+          this.isLoading = false;
+        },
+        error: () => {
+          this.isLoading = false;
+          this.mostrarNotificacion('Error', 'No se pudo cargar la receta del producto.', 'error');
+        }
       });
   }
 
   guardarOrden(): void {
     if (!this.ordenProduccion.id_refaccion_producida || !this.ordenProduccion.cantidad_producida) {
       this.mostrarNotificacion(
-        'Error',
+        'Atención',
         'Selecciona un producto y una cantidad válida antes de continuar.',
-        'error'
+        'advertencia'
       );
       return;
     }
@@ -104,28 +123,40 @@ export class RegistroProduccionComponent implements OnInit {
     this.isSaving = true;
     this.http.post(`${this.apiUrl}/produccion`, this.ordenProduccion).subscribe({
       next: () => {
+        // CORREGIDO: Ahora muestra una notificación de éxito verde en lugar de un error rojo
         this.mostrarNotificacion(
-          'Error',
+          '¡Éxito!',
           'Orden de producción guardada. El inventario ha sido actualizado.',
-          'error'
+          'exito'
         );
         this.isSaving = false;
-        // Resetear formulario
-        this.productoControl.setValue('');
-        this.productoSeleccionado = null;
-        this.receta = [];
-        this.ordenProduccion.cantidad_producida = 1;
+        this.limpiarFormulario();
       },
       error: (err) => {
         this.mostrarNotificacion(
           'Error',
-          'Eror al guardar la orden. ' + (err.error?.message || ''),
+          'Error al guardar la orden. ' + (err.error?.message || ''),
           'error'
         );
         this.isSaving = false;
       }
     });
   }
+
+  limpiarFormulario(): void {
+    this.productoControl.setValue('');
+    this.productoSeleccionado = null;
+    this.receta = [];
+    
+    // Reseteamos el formulario completo
+    this.ordenProduccion = {
+      id_refaccion_producida: null,
+      cantidad_producida: 1,
+      fecha_operacion: this.getFormattedCurrentDateTime(),
+      observaciones: ''
+    };
+  }
+
   mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
     this.notificacion = { titulo, mensaje, tipo };
     this.mostrarModalNotificacion = true;

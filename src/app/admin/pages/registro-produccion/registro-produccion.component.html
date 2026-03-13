@@ -1,77 +1,119 @@
 <div class="usuarios-container">
-  <div class="container-header"><h2>Registrar Orden de Producción</h2></div>
+  <div class="container-header">
+    <h2><i class="fas fa-tools"></i> Registrar Orden de Producción</h2>
+  </div>
+  
   <div class="container-body">
     <fieldset class="form-section">
-      <legend>1. Producto a Ensamblar</legend>
+      <legend><i class="fas fa-box"></i> 1. Producto a Ensamblar</legend>
       <div class="form-row align-items-end">
         <div class="form-group col-md-8">
-          <label>Producto Compuesto</label>
-          <mat-form-field appearance="outline" class="full-width">
-            <input type="text" placeholder="Busca el producto que vas a fabricar..." matInput [formControl]="productoControl" [matAutocomplete]="autoProducto">
+          <label class="text-muted">Producto Compuesto</label>
+          <mat-form-field appearance="outline" class="full-width dark-theme-mat">
+            <input type="text" placeholder="Busca el producto que vas a fabricar..." 
+                   matInput [formControl]="productoControl" [matAutocomplete]="autoProducto">
           </mat-form-field>
           <mat-autocomplete #autoProducto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onProductoSelected($event)">
-            <mat-option *ngFor="let item of filteredProductos$ | async" [value]="item">{{ item.nombre }}</mat-option>
+            <mat-option *ngFor="let item of filteredProductos$ | async" [value]="item">
+              {{ item.nombre }}
+            </mat-option>
           </mat-autocomplete>
         </div>
         <div class="form-group col-md-4">
-          <label>Cantidad a Producir</label>
+          <label class="text-muted">Cantidad a Producir</label>
           <input type="number" class="form-control" [(ngModel)]="ordenProduccion.cantidad_producida" name="cantidad_producida" min="1">
         </div>
       </div>
-       <div class="form-group">
-        <label>Fecha de Operación</label>
+      <div class="form-group mt-2">
+        <label class="text-muted">Fecha de Operación</label>
         <input type="datetime-local" class="form-control" [(ngModel)]="ordenProduccion.fecha_operacion" name="fecha_operacion">
-       </div>
+      </div>
     </fieldset>
 
-    <div *ngIf="productoSeleccionado">
+    <div *ngIf="productoSeleccionado" class="mt-4">
       <fieldset class="form-section">
-        <legend>2. Componentes que se Consumirán del Inventario</legend>
+        <legend><i class="fas fa-clipboard-list"></i> 2. Componentes que se Consumirán del Inventario</legend>
+        
+        <div class="alert alert-info mb-3">
+          <i class="fas fa-info-circle"></i> Al confirmar, estos artículos serán descontados automáticamente del stock.
+        </div>
+
         <div class="tabla-responsive-wrapper">
           <table class="tabla-usuarios">
-            <thead><tr><th>Componente</th><th>Cantidad por Unidad</th><th>Cantidad Total Requerida</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Componente</th>
+                <th class="text-center">Cant. por Unidad</th>
+                <th class="text-center">Total Requerido</th>
+              </tr>
+            </thead>
             <tbody>
-              <tr *ngIf="isLoading"><td colspan="3" class="empty-table-message">Cargando receta...</td></tr>
+              <tr *ngIf="isLoading">
+                <td colspan="4" class="empty-table-message text-center py-4 text-muted">
+                  <i class="fas fa-spinner fa-spin fa-2x mb-2 d-block"></i> Cargando receta...
+                </td>
+              </tr>
+              <tr *ngIf="!isLoading && receta.length === 0">
+                <td colspan="4" class="empty-table-message text-center py-4 text-muted">
+                  <i class="fas fa-exclamation-circle fa-2x mb-2 d-block"></i> Este producto no tiene una receta configurada.
+                </td>
+              </tr>
               <tr *ngFor="let comp of receta">
-                <td>{{ comp.nombre_componente }}</td>
-                <td>{{ comp.cantidad_necesaria }}</td>
-                <td><strong>{{ comp.cantidad_necesaria * ordenProduccion.cantidad_producida }}</strong></td>
+                <td>
+                  <span class="badge" [ngClass]="{'badge-insumo': comp.id_insumo_hijo, 'badge-refaccion': !comp.id_insumo_hijo}">
+                    {{ comp.id_insumo_hijo ? 'INSUMO' : 'REFACCIÓN' }}
+                  </span>
+                </td>
+                <td style="font-weight: 600; color: white;">{{ comp.nombre_componente }}</td>
+                <td class="text-center">{{ comp.cantidad_necesaria }}</td>
+                <td class="text-center" style="font-family: monospace; font-size: 1.2rem; color: #a0c4ff; font-weight: bold;">
+                  {{ comp.cantidad_necesaria * ordenProduccion.cantidad_producida }}
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
       </fieldset>
 
-      <div class="form-group">
-        <label>Observaciones</label>
-        <textarea class="form-control" [(ngModel)]="ordenProduccion.observaciones" name="observaciones" rows="3"></textarea>
+      <div class="form-group mt-4">
+        <label class="text-muted"><i class="fas fa-comment-alt"></i> Observaciones (Opcional)</label>
+        <textarea class="form-control" [(ngModel)]="ordenProduccion.observaciones" name="observaciones" rows="3" placeholder="Ej. Lote de producción urgente..."></textarea>
       </div>
 
-      <div class="acciones-finales">
-        <button class="btn-accion btn-guardar" (click)="guardarOrden()" [disabled]="isSaving">
+      <div class="acciones-finales mt-4 text-right">
+        <button class="btn-accion btn-guardar" style="padding: 12px 30px; font-size: 1.1rem;" (click)="guardarOrden()" [disabled]="isSaving || receta.length === 0">
+          <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
           {{ isSaving ? 'Procesando...' : 'Confirmar y Producir' }}
         </button>
       </div>
     </div>
   </div>
 </div>
-<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3 [ngClass]="{
-        'header-exito': notificacion.tipo === 'exito',
-        'header-error': notificacion.tipo === 'error',
-        'header-advertencia': notificacion.tipo === 'advertencia'
-      }">
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()" style="z-index: 2200;">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header"
+         [ngClass]="{
+           'header-exito': notificacion.tipo === 'exito',
+           'header-error': notificacion.tipo === 'error',
+           'header-advertencia': notificacion.tipo === 'advertencia'
+         }">
+      <h3>
+        <i class="fas"
+           [ngClass]="{
+             'fa-check-circle': notificacion.tipo === 'exito',
+             'fa-times-circle': notificacion.tipo === 'error',
+             'fa-exclamation-triangle': notificacion.tipo === 'advertencia'
+           }"></i>
         {{ notificacion.titulo }}
       </h3>
-      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body text-center">
       <p class="confirm-text">{{ notificacion.mensaje }}</p>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    <div class="modal-footer justify-content-center">
+      <button class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Entendido</button>
     </div>
   </div>
 </div>
