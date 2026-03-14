@@ -21,7 +21,7 @@ export interface Entrada {
   fechaEntrada: string;
   nombreProveedor: string;
   nombreEmpleado: string;
-  estado?: string; // Nuevo campo para saber si está CANCELADO
+  estado?: string;
 }
 
 @Component({
@@ -53,6 +53,13 @@ export class EntradasComponent implements OnInit, OnDestroy {
   motivoCancelacion: string = '';
   motivoDetalle: string = '';
   isCanceling = false;
+
+  // --- ACTUALIZACIÓN DE FACTURA PENDIENTE ---
+  mostrarModalFactura = false;
+  entradaFactura: any = null;
+  nuevaFactura: string = '';
+  isSavingFactura = false;
+
   // --- Modales y Notificaciones ---
   mostrarModalDetalles = false;
   valorNetoEntradaSeleccionada: number = 0;
@@ -66,16 +73,16 @@ export class EntradasComponent implements OnInit, OnDestroy {
     tipo: 'advertencia' as 'exito' | 'error' | 'advertencia'
   };
 
-  // --- NUEVO: Estado para Edición Histórica ---
+  // --- Estado para Edición Histórica ---
   mostrarModalEdicion = false;
-  proveedores: any[] = []; // Para el dropdown del modal
+  proveedores: any[] = []; 
   entradaEdicion: any = {
     id_entrada: 0,
     id_proveedor: null,
     fecha_operacion: '',
     factura_proveedor: '',
     observaciones: '',
-    items: [] // { id_detalle, nombre, tipo, cantidad_original, cantidad_nueva, costo_original, costo_nuevo, cantidad_usada }
+    items: [] 
   };
 
   constructor(private http: HttpClient, private router: Router, public authService: AuthService) { }
@@ -118,7 +125,7 @@ export class EntradasComponent implements OnInit, OnDestroy {
           nombreEmpleado: item.nombre_empleado,
           observaciones: item.observaciones,
           valor_neto: parseFloat(item.valor_neto) || 0,
-          estado: item.estado || 'ACTIVO' // Mapear el estado
+          estado: item.estado || 'ACTIVO'
         }));
         this.totalItems = response.total || 0;
       },
@@ -164,6 +171,46 @@ export class EntradasComponent implements OnInit, OnDestroy {
     this.mostrarModalDetalles = false;
   }
 
+  // ==========================================
+  // LÓGICA DE ACTUALIZACIÓN DE FACTURA
+  // ==========================================
+  abrirModalFactura(entrada: Entrada) {
+    this.entradaFactura = entrada;
+    this.nuevaFactura = ''; // Lo dejamos en blanco para que capturen el nuevo
+    this.mostrarModalFactura = true;
+  }
+
+  cerrarModalFactura() {
+    if (this.isSavingFactura) return;
+    this.mostrarModalFactura = false;
+    this.entradaFactura = null;
+    this.nuevaFactura = '';
+  }
+
+  guardarNuevaFactura() {
+    if (!this.nuevaFactura.trim()) {
+      this.mostrarNotificacion('Atención', 'Debes ingresar el número de factura para actualizar.', 'advertencia');
+      return;
+    }
+
+    this.isSavingFactura = true;
+    
+    // Asumiendo que crearás este endpoint en tu backend: PUT /api/entradas/:id/factura
+    this.http.put(`${this.apiUrl}/${this.entradaFactura.idEntrada}/factura`, { factura_proveedor: this.nuevaFactura }).subscribe({
+      next: () => {
+        this.isSavingFactura = false;
+        this.mostrarNotificacion('Éxito', 'Número de factura actualizado correctamente.', 'exito');
+        this.cerrarModalFactura();
+        this.obtenerEntradas(); // Recargamos para quitar el rojo
+      },
+      error: (err) => {
+        this.isSavingFactura = false;
+        console.error(err);
+        this.mostrarNotificacion('Error', 'No se pudo actualizar la factura.', 'error');
+      }
+    });
+  }
+
   cargarProveedores() {
     if (this.proveedores.length > 0) return;
     this.http.get<any[]>(`${environment.apiUrl}/proveedores`).subscribe({
@@ -174,14 +221,9 @@ export class EntradasComponent implements OnInit, OnDestroy {
 
   abrirEdicionHistorica(entrada: Entrada) {
     this.cargarProveedores();
-
-    // Formatear fecha para el input datetime-local (YYYY-MM-DDTHH:mm)
-    // Es necesario cortar los segundos y milisegundos para que el input lo lea bien
     const fecha = new Date(entrada.fechaEntrada);
-    // Ajuste de zona horaria simple para que no se mueva la hora al editar
     const fechaLocal = new Date(fecha.getTime() - (fecha.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
 
-    // Preparar objeto base
     this.entradaEdicion = {
       id_entrada: entrada.idEntrada,
       id_proveedor: entrada.idProveedor,
@@ -191,25 +233,17 @@ export class EntradasComponent implements OnInit, OnDestroy {
       items: []
     };
 
-    // Obtener items con datos detallados
     this.http.get<{ detalles: any[] }>(`${this.apiUrl}/detalles/${entrada.idEntrada}`).subscribe({
       next: (res) => {
-        // Mapeamos la respuesta del backend para el formulario
         this.entradaEdicion.items = res.detalles.map(d => ({
           id_detalle: d.id_detalle_entrada || d.id_detalle,
-          id_item: d.id_refaccion || d.id_insumo, // Asegúrate de que tu backend mande estos IDs
-          nombre: d.descripcion, // O nombre_item
-          tipo: d.tipo_item.toLowerCase(), // 'refaccion' o 'insumo'
-
-          // Valores Originales (referencia)
+          id_item: d.id_refaccion || d.id_insumo, 
+          nombre: d.descripcion, 
+          tipo: d.tipo_item.toLowerCase(), 
           cantidad_original: Number(d.cantidad),
           costo_original: Number(d.costo),
-
-          // Valores Editables (Inicialmente iguales)
           cantidad_nueva: Number(d.cantidad),
           costo_nuevo: Number(d.costo),
-
-          // Validaciones de stock (Si el backend no lo manda, asumimos 0 por seguridad visual)
           cantidad_usada: Number(d.cantidad_usada || 0)
         }));
         this.mostrarModalEdicion = true;
@@ -217,6 +251,7 @@ export class EntradasComponent implements OnInit, OnDestroy {
       error: (err) => this.mostrarNotificacion('Error', 'No se pudieron cargar los datos para edición.', 'error')
     });
   }
+
   guardarEdicionHistorica() {
     if (!confirm('¿Confirmas que deseas aplicar estos cambios históricos? El stock actual se verá afectado.')) return;
 
@@ -224,7 +259,7 @@ export class EntradasComponent implements OnInit, OnDestroy {
       next: () => {
         this.mostrarNotificacion('Éxito', 'Entrada actualizada correctamente.', 'exito');
         this.cerrarModalEdicion();
-        this.obtenerEntradas(); // Recargar tabla
+        this.obtenerEntradas(); 
       },
       error: (err) => {
         console.error(err);
@@ -235,8 +270,9 @@ export class EntradasComponent implements OnInit, OnDestroy {
 
   cerrarModalEdicion() {
     this.mostrarModalEdicion = false;
-    this.entradaEdicion = { items: [] }; // Limpiar
+    this.entradaEdicion = { items: [] }; 
   }
+
   cancelarEntrada(entrada: Entrada) {
     if (!confirm(`ATENCIÓN: Estás a punto de CANCELAR la entrada #${entrada.idEntrada}. \n\nEsto restará del stock actual todos los items de esta entrada. \nSi algún item ya fue utilizado, la operación fallará. \n\n¿Deseas continuar?`)) {
       return;
@@ -245,7 +281,7 @@ export class EntradasComponent implements OnInit, OnDestroy {
     this.http.put(`${this.apiUrl}/${entrada.idEntrada}/cancelar`, {}).subscribe({
       next: () => {
         this.mostrarNotificacion('Éxito', 'Entrada cancelada correctamente.', 'exito');
-        this.obtenerEntradas(); // Recargar tabla
+        this.obtenerEntradas(); 
       },
       error: (err) => {
         console.error(err);
@@ -253,6 +289,7 @@ export class EntradasComponent implements OnInit, OnDestroy {
       }
     });
   }
+
   abrirModalCancelar(entrada: any) {
     this.entradaACancelar = entrada;
     this.motivoCancelacion = '';
@@ -261,7 +298,7 @@ export class EntradasComponent implements OnInit, OnDestroy {
   }
 
   cerrarModalCancelar() {
-    if (this.isCanceling) return; // No dejar cerrar si está procesando
+    if (this.isCanceling) return; 
     this.mostrarModalCancelar = false;
     this.entradaACancelar = null;
   }
@@ -269,7 +306,6 @@ export class EntradasComponent implements OnInit, OnDestroy {
   confirmarCancelacion() {
     if (!this.motivoCancelacion) return;
 
-    // Armar el motivo final
     let motivoFinal = this.motivoCancelacion;
     if (this.motivoCancelacion === 'Otro') {
       if (!this.motivoDetalle.trim()) {
@@ -279,9 +315,8 @@ export class EntradasComponent implements OnInit, OnDestroy {
       motivoFinal = `Otro: ${this.motivoDetalle}`;
     }
 
-    this.isCanceling = true; // Activar el spinner y bloquear botones
+    this.isCanceling = true; 
 
-    // Ajusta 'idEntrada' según cómo se llame tu propiedad (puede ser id_entrada o idEntrada)
     const id = this.entradaACancelar.id_entrada || this.entradaACancelar.idEntrada;
 
     this.http.put(`${this.apiUrl}/${id}/cancelar`, { motivo: motivoFinal }).subscribe({
@@ -289,11 +324,10 @@ export class EntradasComponent implements OnInit, OnDestroy {
         this.isCanceling = false;
         this.cerrarModalCancelar();
         this.mostrarNotificacion('Cancelación Exitosa', res.message || 'La entrada y el stock han sido revertidos.', 'exito');
-        this.obtenerEntradas(); // Llama a tu método que recarga la tabla
+        this.obtenerEntradas(); 
       },
       error: (err) => {
         this.isCanceling = false;
-        // Aquí mostraremos el error si el backend detecta que ya se usó el stock
         const mensajeError = err.error?.message || 'Error al intentar cancelar la entrada.';
         this.mostrarNotificacion('Error de Cancelación', mensajeError, 'error');
       }

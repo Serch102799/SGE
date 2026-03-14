@@ -1,23 +1,27 @@
-<div class="back-arrow" (click)="regresar()">&#8592;</div>
+<div class="mb-3" style="padding: 0 20px;">
+  <button class="btn-accion btn-cancelar" (click)="regresar()" style="font-size: 1rem; padding: 10px 20px;">
+    <i class="fas fa-arrow-left"></i> Regresar a Salidas
+  </button>
+</div>
 
-<div class="form-container">
+<div class="usuarios-container">
   <div class="container-header">
-    <h2>Registrar Nuevo Vale de Salida</h2>
+    <h2><i class="fas fa-shipping-fast"></i> Registrar Nuevo Vale de Salida</h2>
   </div>
 
   <div class="container-body">
 
     <fieldset class="form-section">
-      <legend>1. Datos del Vale de Salida</legend>
-      <div class="form-row">
-        <div class="form-group col">
+      <legend><i class="fas fa-clipboard-list"></i> 1. Datos del Vale de Salida</legend>
+      
+      <div class="row mb-3">
+        <div class="col-md-4 form-group mb-0">
           <label for="fecha_operacion">Fecha de Operación</label>
           <input id="fecha_operacion" type="datetime-local" class="form-control" 
                  [(ngModel)]="salidaMaestro.fecha_operacion" name="fecha_operacion"
-                 [max]="getFormattedCurrentDateTime()" 
-                 required>
+                 [max]="getFormattedCurrentDateTime()" required>
         </div>
-        <div class="form-group col">
+        <div class="col-md-4 form-group mb-0">
           <label for="tipoSalida">Tipo de Salida</label>
           <select id="tipoSalida" class="form-control" [(ngModel)]="salidaMaestro.tipoSalida" name="tipoSalida">
             <option value="Mantenimiento Correctivo">Mantenimiento Correctivo</option>
@@ -27,33 +31,29 @@
             <option value="Otro">Otro</option>
           </select>
         </div>
-        
-        <div class="form-group col">
+        <div class="col-md-4 form-group mb-0">
           <label for="autobus-input">Buscar Autobús</label>
-          <mat-form-field appearance="outline" class="full-width">
-            <input 
-              type="text" 
-              id="autobus-input"
-              placeholder="Escribe para buscar..." 
-              matInput 
-              [formControl]="autobusControl" 
-              [matAutocomplete]="autoAutobus"
-              required>
+          <mat-form-field appearance="outline" class="dark-theme-mat">
+            <input type="text" id="autobus-input" placeholder="Escribe económico..." matInput 
+                   [formControl]="autobusControl" [matAutocomplete]="autoAutobus" required>
           </mat-form-field>
           <mat-autocomplete #autoAutobus="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onAutobusSelected($event)">
             <mat-option *ngFor="let autobus of filteredAutobuses$ | async" [value]="autobus">
-              {{ autobus.economico }}
+              <i class="fas fa-bus text-muted mr-2"></i> {{ autobus.economico }}
             </mat-option>
           </mat-autocomplete>
         </div>
-
       </div>
-      <div class="form-row">
-        <div class="form-group col">
+
+      <div class="row mb-3">
+        <div class="col-md-6 form-group mb-0">
           <label for="kilometraje">Kilometraje del Autobús</label>
-          <input id="kilometraje" type="number" class="form-control" [(ngModel)]="salidaMaestro.kilometraje" name="kilometraje" required>
+          <div style="position: relative;">
+            <input id="kilometraje" type="number" class="form-control" style="padding-right: 40px;" [(ngModel)]="salidaMaestro.kilometraje" name="kilometraje" placeholder="Ej. 150000" required>
+            <span style="position: absolute; right: 15px; top: 12px; color: #a0c4ff; font-weight: bold; font-size: 0.9rem;">KM</span>
+          </div>
         </div>
-        <div class="form-group col">
+        <div class="col-md-6 form-group mb-0">
           <label for="empleado">Solicitado Por</label>
           <select id="empleado" class="form-control" [(ngModel)]="salidaMaestro.solicitadoPorID" name="solicitadoPorID" required>
             <option [ngValue]="null" disabled>Selecciona un empleado...</option>
@@ -61,142 +61,167 @@
           </select>
         </div>
       </div>
-      <div class="form-group">
-        <label for="observaciones">Observaciones</label>
-        <textarea id="observaciones" class="form-control" [(ngModel)]="salidaMaestro.observaciones" name="observaciones" rows="2"></textarea>
+
+      <div class="row">
+        <div class="col-md-12 form-group mb-0">
+          <label for="observaciones">Observaciones / Falla Reportada</label>
+          <textarea id="observaciones" class="form-control" [(ngModel)]="salidaMaestro.observaciones" name="observaciones" rows="2" placeholder="Detalles de la falla o motivo de la salida..."></textarea>
+        </div>
       </div>
     </fieldset>
 
     <fieldset class="form-section">
-      <legend>2. Agregar Refacciones</legend>
-      <div class="form-row align-items-end">
-        <div class="form-group col-md-5">
+      <legend><i class="fas fa-cogs"></i> 2. Despachar Refacciones</legend>
+      
+      <div class="row align-items-end mb-3">
+        <div class="col-md-5 form-group mb-0">
           <label for="refaccion-input">Buscar Refacción</label>
-          <mat-form-field appearance="outline" class="full-width">
-            <input 
-              type="text" 
-              id="refaccion-input"
-              placeholder="Escribe para buscar..." 
-              matInput 
-              [formControl]="refaccionControl" 
-              [matAutocomplete]="autoRefaccion">
+          <mat-form-field appearance="outline" class="dark-theme-mat">
+            <input type="text" id="refaccion-input" placeholder="Escribe para buscar..." matInput 
+                   [formControl]="refaccionControl" [matAutocomplete]="autoRefaccion">
           </mat-form-field>
           <mat-autocomplete #autoRefaccion="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onRefaccionSelected($event)">
             <mat-option *ngFor="let refaccion of filteredRefacciones$ | async" [value]="refaccion">
-              {{ refaccion.nombre }} ({{ refaccion.numero_parte || 'S/N' }})
+              <span class="badge badge-refaccion mr-2">REF</span> {{ refaccion.nombre }} <small class="text-muted">({{ refaccion.numero_parte || 'S/N' }})</small>
             </mat-option>
           </mat-autocomplete>
         </div>
-        <div class="form-group col-md-3">
-          <label>Lote</label>
+        
+        <div class="col-md-4 form-group mb-0">
+          <label>Lote a descontar</label>
           <select class="form-control" [(ngModel)]="detalleActualRefaccion.id_lote" name="id_lote">
             <option [ngValue]="null" disabled>Selecciona un lote...</option>
             <option *ngFor="let lote of lotesDisponibles" [ngValue]="lote.id_lote">
-              {{ lote.nombre_proveedor }} (Disp: {{ lote.cantidad_disponible }})
+              {{ lote.nombre_proveedor | slice:0:15 }}... (Disp: {{ lote.cantidad_disponible }})
             </option>
           </select>
         </div>
-        <div class="form-group col-md-2">
+
+        <div class="col-md-3 form-group mb-0">
           <label>Cantidad</label>
-          <input type="number" class="form-control" [(ngModel)]="detalleActualRefaccion.cantidad_despachada" name="cantidad_despachada" min="1">
-        </div>
-        <div class="form-group-button">
-          <button type="button" class="btn-agregar-detalle" (click)="agregarDetalleRefaccion()">Agregar</button>
+          <div style="display: flex; gap: 10px;">
+            <input type="number" class="form-control text-center" style="font-size: 1.1rem; font-weight: bold;" [(ngModel)]="detalleActualRefaccion.cantidad_despachada" name="cantidad_despachada" min="1">
+            <button type="button" class="btn-agregar-lista" style="padding: 0 15px;" (click)="agregarDetalleRefaccion()" title="Agregar">
+              <i class="fas fa-plus"></i>Agregar
+            </button>
+          </div>
         </div>
       </div>
-      <table class="tabla-preview" *ngIf="detallesRefaccionesAAgregar.length > 0">
-        <thead>
-          <tr>
-            <th>Refacción</th>
-            <th>Proveedor (Lote)</th>
-            <th>Cantidad</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let detalle of detallesRefaccionesAAgregar; let i = index">
-            <td>{{ detalle.nombre_refaccion }}</td>
-            <td>{{ detalle.nombre_proveedor }}</td>
-            <td>{{ detalle.cantidad_despachada }}</td>
-            <td class="acciones"><button type="button" class="btn-accion btn-eliminar-sm" (click)="eliminarDetalleRefaccion(i)">Quitar</button></td>
-          </tr>
-        </tbody>
-      </table>
+
+      <div class="tabla-responsive-wrapper" *ngIf="detallesRefaccionesAAgregar.length > 0">
+        <table class="tabla-usuarios">
+          <thead>
+            <tr>
+              <th>Refacción</th>
+              <th>Proveedor (Lote)</th>
+              <th class="text-center">Cantidad</th>
+              <th class="text-center">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let detalle of detallesRefaccionesAAgregar; let i = index">
+              <td style="font-weight: 600; color: white;">{{ detalle.nombre_refaccion }}</td>
+              <td style="color: #a0c4ff;">{{ detalle.nombre_proveedor }}</td>
+              <td class="text-center" style="font-size: 1.1rem; font-weight: bold;">{{ detalle.cantidad_despachada }}</td>
+              <td class="acciones text-center">
+                <button type="button" class="btn-accion btn-cancelar" (click)="eliminarDetalleRefaccion(i)" title="Quitar">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </fieldset>
 
     <fieldset class="form-section">
-      <legend>3. Agregar Insumos</legend>
-      <div class="form-row align-items-end">
-        <div class="form-group col-md-8">
+      <legend><i class="fas fa-tint"></i> 3. Despachar Insumos (Líquidos/Consumibles)</legend>
+      
+      <div class="row align-items-end mb-3">
+        <div class="col-md-6 form-group mb-0">
           <label for="insumo-input">Buscar Insumo</label>
-          <mat-form-field appearance="outline" class="full-width">
-            <input 
-              type="text" 
-              id="insumo-input"
-              placeholder="Escribe para buscar..." 
-              matInput 
-              [formControl]="insumoControl" 
-              [matAutocomplete]="autoInsumo">
+          <mat-form-field appearance="outline" class="dark-theme-mat">
+            <input type="text" id="insumo-input" placeholder="Escribe para buscar..." matInput 
+                   [formControl]="insumoControl" [matAutocomplete]="autoInsumo">
           </mat-form-field>
           <mat-autocomplete #autoInsumo="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onInsumoSelected($event)">
             <mat-option *ngFor="let insumo of filteredInsumos$ | async" [value]="insumo">
-              {{ insumo.nombre }} (Stock: {{ insumo.stock_actual }})
+              <span class="badge badge-insumo mr-2">INS</span> {{ insumo.nombre }} <small class="text-muted">(Stock: {{ insumo.stock_actual }})</small>
             </mat-option>
           </mat-autocomplete>
         </div>
-        <div class="form-group col-md-2">
+
+        <div class="col-md-6 form-group mb-0">
           <label>Cantidad</label>
-          <input type="number" step="0.01" class="form-control" [(ngModel)]="detalleActualInsumo.cantidad_usada" name="cantidad_usada" min="0.01">
-        </div>
-        <div class="form-group-button">
-          <button type="button" class="btn-agregar-detalle" (click)="agregarDetalleInsumo()">Agregar</button>
+          <div style="display: flex; gap: 10px;">
+            <input type="number" step="0.01" class="form-control text-center" style="font-size: 1.1rem; font-weight: bold;" [(ngModel)]="detalleActualInsumo.cantidad_usada" name="cantidad_usada" min="0.01">
+            <button type="button" class="btn-agregar-lista w-100" (click)="agregarDetalleInsumo()">
+              <i class="fas fa-plus"></i> Agregar
+            </button>
+          </div>
         </div>
       </div>
-      <table class="tabla-preview" *ngIf="detallesInsumosAAgregar.length > 0">
-        <thead>
-          <tr>
-            <th>Insumo</th>
-            <th>Cantidad</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let detalle of detallesInsumosAAgregar; let i = index">
-            <td>{{ detalle.nombre_insumo }}</td>
-            <td>{{ detalle.cantidad_usada }}</td>
-            <td class="acciones"><button type="button" class="btn-accion btn-eliminar-sm" (click)="eliminarDetalleInsumo(i)">Quitar</button></td>
-          </tr>
-        </tbody>
-      </table>
+
+      <div class="tabla-responsive-wrapper" *ngIf="detallesInsumosAAgregar.length > 0">
+        <table class="tabla-usuarios">
+          <thead>
+            <tr>
+              <th>Insumo</th>
+              <th class="text-center">Cantidad</th>
+              <th class="text-center">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let detalle of detallesInsumosAAgregar; let i = index">
+              <td style="font-weight: 600; color: white;">{{ detalle.nombre_insumo }}</td>
+              <td class="text-center" style="font-size: 1.1rem; font-weight: bold;">{{ detalle.cantidad_usada | number:'1.2-2' }}</td>
+              <td class="acciones text-center">
+                <button type="button" class="btn-accion btn-cancelar" (click)="eliminarDetalleInsumo(i)" title="Quitar">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </fieldset>
 
-    <div class="acciones-finales">
-      <button type="button" class="btn-accion btn-cancelar" (click)="regresar()" [disabled]="isSaving">Cancelar</button>
-      <button type="button" class="btn-accion btn-guardar" (click)="guardarSalidaCompleta()" [disabled]="isSaving">
-        {{ isSaving ? 'Guardando...' : 'Guardar Vale de Salida' }}
+    <div class="acciones-finales mt-4 text-right">
+      <button type="button" class="btn-accion btn-cancelar mr-3" (click)="regresar()" [disabled]="isSaving" style="padding: 12px 30px; font-size: 1.1rem; margin-right: 15px;">
+        <i class="fas fa-times"></i> Cancelar
+      </button>
+      <button type="button" class="btn-accion btn-guardar" (click)="guardarSalidaCompleta()" [disabled]="isSaving || (detallesRefaccionesAAgregar.length === 0 && detallesInsumosAAgregar.length === 0)" style="padding: 12px 30px; font-size: 1.1rem;">
+        <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
+        {{ isSaving ? 'Guardando Vale...' : 'Guardar Vale de Salida' }}
       </button>
     </div>
 
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3 [ngClass]="{
-        'header-exito': notificacion.tipo === 'exito',
-        'header-error': notificacion.tipo === 'error',
-        'header-advertencia': notificacion.tipo === 'advertencia'
-      }">
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()" style="z-index: 3000;">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header"
+         [ngClass]="{
+           'header-exito': notificacion.tipo === 'exito',
+           'header-error': notificacion.tipo === 'error',
+           'header-advertencia': notificacion.tipo === 'advertencia'
+         }">
+      <h3>
+        <i class="fas"
+           [ngClass]="{
+             'fa-check-circle': notificacion.tipo === 'exito',
+             'fa-times-circle': notificacion.tipo === 'error',
+             'fa-exclamation-triangle': notificacion.tipo === 'advertencia'
+           }"></i>
         {{ notificacion.titulo }}
       </h3>
-      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
     </div>
-    <div class="modal-body">
-      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+    <div class="modal-body text-center">
+      <p class="confirm-text" style="color: white; font-size: 1.1rem; line-height: 1.5;">{{ notificacion.mensaje }}</p>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    <div class="modal-footer" style="justify-content: center;">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Entendido</button>
     </div>
   </div>
 </div>

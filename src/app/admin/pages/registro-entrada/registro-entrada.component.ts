@@ -7,6 +7,7 @@ import { catchError, startWith, debounceTime, distinctUntilChanged, switchMap, m
 import { FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { environment } from '../../../../environments/environments';
+import { AuthService } from '../../../services/auth.service';
 
 // --- Interfaces ---
 interface Proveedor { id_proveedor: number; nombre_proveedor: string; }
@@ -37,10 +38,13 @@ export class RegistroEntradaComponent implements OnInit {
   proveedores: Proveedor[] = [];
   empleados: Empleado[] = [];
 
+  nombreUsuarioActual: string = '';
+  
   // --- Formulario Maestro ---
   entradaMaestro = {
     idProveedor: null as number | null,
     factura_proveedor: '', 
+    factura_pendiente: false,
     vale_interno: '',     
     observaciones: '',
     recibidoPorID: null as number | null,
@@ -73,7 +77,13 @@ export class RegistroEntradaComponent implements OnInit {
   mostrarModalNotificacion = false;
   notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
 
-  constructor(private http: HttpClient, private router: Router, private location: Location) {
+  // CORRECCIÓN: AuthService inyectado correctamente en el constructor
+  constructor(
+    private http: HttpClient, 
+    private router: Router, 
+    private location: Location,
+    public authService: AuthService 
+  ) {
     this.filteredRefacciones$ = this.refaccionControl.valueChanges.pipe(
       startWith(''),
       debounceTime(400),
@@ -90,6 +100,11 @@ export class RegistroEntradaComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarCatalogos();
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.entradaMaestro.recibidoPorID = currentUser.id; 
+      this.nombreUsuarioActual = currentUser.nombre; 
+    }
   }
 
   private _buscarApi(tipo: 'refacciones' | 'insumos', term: any): Observable<ItemSimple[]> {
@@ -179,9 +194,10 @@ export class RegistroEntradaComponent implements OnInit {
   eliminarDetalle(index: number): void {
     this.detallesAAgregar = this.detallesAAgregar.filter((_, i) => i !== index);
   }
+
   private getFormattedCurrentDateTime(): string {
     const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // Ajusta a la zona horaria local
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     return now.toISOString().slice(0, 16);
   }
 
@@ -197,9 +213,15 @@ export class RegistroEntradaComponent implements OnInit {
     }
 
     this.isSaving = true;
-     const payloadMaestro = {
+
+    // LÓGICA DE FACTURA PENDIENTE
+    const facturaFinal = this.entradaMaestro.factura_pendiente 
+      ? 'PENDIENTE' 
+      : this.entradaMaestro.factura_proveedor;
+
+    const payloadMaestro = {
       ID_Proveedor: this.entradaMaestro.idProveedor,
-      Factura_Proveedor: this.entradaMaestro.factura_proveedor, 
+      Factura_Proveedor: facturaFinal, // Usamos la variable evaluada
       Vale_Interno: this.entradaMaestro.vale_interno,           
       Observaciones: this.entradaMaestro.observaciones,
       Recibido_Por_ID: this.entradaMaestro.recibidoPorID,
@@ -263,16 +285,12 @@ export class RegistroEntradaComponent implements OnInit {
     this.isSaving = false;
     this.router.navigate(['/admin/entradas']);
   }
-  /**
-   * Calcula el valor neto final de una línea de detalle para mostrarlo en la tabla.
-   * @param detalle El item de la lista detallesAAgregar.
-   * @returns El valor total calculado.
-   */
+
   calcularValorNeto(detalle: DetalleTemporal): number {
     let costoUnitarioSubtotal = 0;
     if (detalle.tipo_costo === 'unitario') {
       costoUnitarioSubtotal = detalle.costo_ingresado;
-    } else { // tipo_costo es 'neto'
+    } else {
       costoUnitarioSubtotal = detalle.cantidad > 0 ? detalle.costo_ingresado / detalle.cantidad : 0;
     }
     const costoUnitarioFinal = detalle.aplica_iva 

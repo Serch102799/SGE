@@ -44,51 +44,50 @@
         </tr>
       </thead>
       <tbody>
-        <tr
-          *ngFor="let entrada of entradas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }"
+        <tr *ngFor="let entrada of entradas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }"
           [class.fila-cancelada]="entrada.estado === 'CANCELADO'">
+          
           <td>{{ entrada.fechaEntrada | date:'dd/MM/yyyy h:mm a' }}</td>
           <td>{{ entrada.nombreProveedor }}</td>
+          
           <td>
-            <div *ngIf="entrada.factura_proveedor" class="documento-linea">
+            <div *ngIf="entrada.factura_proveedor && entrada.factura_proveedor !== 'PENDIENTE'" class="documento-linea">
               <strong>Factura:</strong> {{ entrada.factura_proveedor }}
             </div>
-            <div *ngIf="entrada.vale_interno" class="documento-linea">
+            
+            <div *ngIf="entrada.factura_proveedor === 'PENDIENTE'" class="documento-linea mb-1">
+              <span class="alerta-pendiente"><i class="fas fa-exclamation-circle"></i> PENDIENTE</span>
+            </div>
+
+            <div *ngIf="entrada.vale_interno" class="documento-linea mt-1">
               <strong>Vale:</strong> {{ entrada.vale_interno }}
             </div>
           </td>
+          
           <td>{{ entrada.nombreEmpleado }}</td>
+          
           <td>
-            <span *ngIf="entrada.estado === 'CANCELADO'" class="badge bg-danger me-1">CANCELADO</span>
+            <span *ngIf="entrada.estado === 'CANCELADO'" class="badge bg-danger me-1" style="background: rgba(220,53,69,0.3); border: 1px solid #dc3545; color: #ff6b6b; margin-right: 5px;">CANCELADO</span>
             {{ entrada.observaciones }}
           </td>
-          <td><strong>{{ entrada.valor_neto | currency:'MXN' }}</strong></td>
+          
+          <td style="color: #4ade80; font-weight: bold;">{{ entrada.valor_neto | currency:'MXN' }}</td>
 
           <td class="acciones">
             <div class="btn-group">
+              
+              <button *ngIf="entrada.factura_proveedor === 'PENDIENTE'" class="btn-accion btn-alerta" title="Adjuntar Documento" (click)="abrirModalFactura(entrada)">
+                <i class="fas fa-file-upload"></i> <span class="d-none d-md-inline ms-1">Adjuntar Factura</span>
+              </button>
 
               <button class="btn-accion btn-estado" (click)="verDetalles(entrada)" title="Ver Detalles">
-                <span class="d-none d-md-inline">Detalles</span>Ver Detalles
+                <i class="fas fa-eye"></i> <span class="d-none d-md-inline ms-1">Detalles</span>
               </button>
+              
               <button *ngIf="authService.hasRole(['SuperUsuario', 'Admin', 'SuperAdmin'])"
                 class="btn-accion btn-cancelar-icon" title="Anular Entrada" (click)="abrirModalCancelar(entrada)">
-                <span class="d-none d-md-inline">Anular</span>Cancelar
-                <i class="fas fa-ban"></i>
+                <i class="fas fa-ban"></i> <span class="d-none d-md-inline ms-1">Anular</span>
               </button>
-
-              <ng-container
-                *ngIf="authService.hasRole(['SuperUsuario', 'SuperAdmin', 'Admin']) && entrada.estado !== 'CANCELADO'">
-
-                <!-- <button class="btn-accion btn-editar" (click)="abrirEdicionHistorica(entrada)" title="Editar Entrada">
-                  <i class="fas fa-edit"></i>Editar
-                </button>
-
-                <button class="btn-accion btn-cancelar-icon" (click)="cancelarEntrada(entrada)"
-                  title="Cancelar Entrada">
-                  <i class="fas fa-ban"></i>Cancelar
-                </button> -->
-
-              </ng-container>
 
             </div>
           </td>
@@ -102,8 +101,32 @@
   </div>
 
   <div class="pagination-controls">
-    <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente">
-    </pagination-controls>
+    <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente"></pagination-controls>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalFactura" (click)="cerrarModalFactura()">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header header-advertencia">
+      <h3><i class="fas fa-file-invoice-dollar"></i> Adjuntar Factura</h3>
+      <button class="btn-cerrar" (click)="cerrarModalFactura()">×</button>
+    </div>
+    <div class="modal-body text-center">
+      <p style="color: #e2e8f0; margin-bottom: 20px;">
+        Ingresa el folio de la factura para la entrada <strong>#{{ entradaFactura?.idEntrada }}</strong> 
+        del proveedor <strong style="color: #fbbf24;">{{ entradaFactura?.nombreProveedor }}</strong>.
+      </p>
+      <div class="form-group text-left mt-4">
+        <label style="color: #a0c4ff; display: block; text-align: left; margin-bottom: 8px;">Número de Factura (Externo)</label>
+        <input type="text" class="form-control" style="font-size: 1.2rem; font-weight: bold; text-align: center; color: white !important;" [(ngModel)]="nuevaFactura" placeholder="Ej. FAC-998877" />
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content: center;">
+      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalFactura()">Cancelar</button>
+      <button type="button" class="btn-accion btn-guardar" style="background: linear-gradient(135deg, #10b981, #059669);" (click)="guardarNuevaFactura()" [disabled]="isSavingFactura">
+        <i class="fas" [ngClass]="isSavingFactura ? 'fa-spinner fa-spin' : 'fa-check'"></i> Guardar Documento
+      </button>
+    </div>
   </div>
 </div>
 
@@ -127,14 +150,13 @@
           <tbody>
             <tr *ngFor="let detalle of detallesSeleccionados">
               <td>
-                <span class="badge"
-                  [ngClass]="{'badge-refaccion': detalle.tipo_item === 'Refacción', 'badge-insumo': detalle.tipo_item === 'Insumo'}">
+                <span class="badge" [ngClass]="{'badge-refaccion': detalle.tipo_item === 'Refacción', 'badge-insumo': detalle.tipo_item === 'Insumo'}">
                   {{ detalle.tipo_item }}
                 </span>
               </td>
               <td>{{ detalle.descripcion }}</td>
               <td style="text-align: right;">{{ detalle.cantidad | number:'1.2-2' }}</td>
-              <td style="text-align: right;">{{ detalle.costo | currency:'MXN' }}</td>
+              <td style="text-align: right; color: #4ade80;">{{ detalle.costo | currency:'MXN' }}</td>
             </tr>
             <tr *ngIf="detallesSeleccionados.length === 0">
               <td colspan="4" class="empty-table-message">Esta entrada no tiene items registrados.</td>
@@ -155,131 +177,20 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalEdicion" (click)="cerrarModalEdicion()">
-  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-header bg-warning-dark">
-      <h3><i class="fas fa-tools"></i> Edición Histórica - Entrada #{{ entradaEdicion.id_entrada }}</h3>
-      <button class="btn-cerrar" (click)="cerrarModalEdicion()">×</button>
-    </div>
-
-    <div class="modal-body">
-      <div class="alert alert-warning d-flex align-items-center mb-3">
-        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-        <div>
-          <strong>¡Cuidado!</strong> Estás editando un registro histórico.
-          Cambiar cantidades ajustará el stock actual automáticamente.
-          <br><em>No podrás disminuir cantidades por debajo de lo que ya se ha consumido.</em>
-        </div>
-      </div>
-
-      <div class="row g-3 mb-4">
-        <div class="col-md-6">
-          <label class="form-label">Proveedor</label>
-          <select class="form-select" [(ngModel)]="entradaEdicion.id_proveedor">
-            <option *ngFor="let p of proveedores" [value]="p.id_proveedor">{{p.nombre_proveedor}}</option>
-          </select>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Fecha Operación</label>
-          <input type="datetime-local" class="form-control" [(ngModel)]="entradaEdicion.fecha_operacion">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Factura / Vale</label>
-          <input type="text" class="form-control" [(ngModel)]="entradaEdicion.factura_proveedor">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Observaciones</label>
-          <input type="text" class="form-control" [(ngModel)]="entradaEdicion.observaciones">
-        </div>
-      </div>
-
-      <h5 class="border-bottom pb-2 mb-3">Items de la Entrada</h5>
-      <div class="tabla-responsive-wrapper" style="max-height: 300px; overflow-y: auto;">
-        <table class="tabla-usuarios table-sm">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th class="text-center" width="120">Cant. Original</th>
-              <th class="text-center" width="120">Nueva Cant.</th>
-              <th class="text-center" width="120">Costo Original</th>
-              <th class="text-center" width="120">Nuevo Costo</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of entradaEdicion.items">
-              <td>
-                <div class="fw-bold">{{ item.nombre }}</div>
-                <small class="text-muted">{{ item.tipo | uppercase }}</small>
-              </td>
-
-              <td class="text-center text-muted">{{ item.cantidad_original }}</td>
-              <td>
-                <input type="number" class="form-control form-control-sm text-center" [(ngModel)]="item.cantidad_nueva"
-                  [min]="item.cantidad_usada" [title]="'Mínimo permitido: ' + item.cantidad_usada">
-                <div *ngIf="item.cantidad_usada > 0" class="text-danger" style="font-size: 0.7rem;">
-                  Min: {{item.cantidad_usada}} (Usados)
-                </div>
-              </td>
-
-              <td class="text-center text-muted">{{ item.costo_original | currency }}</td>
-              <td>
-                <input type="number" class="form-control form-control-sm text-center" [(ngModel)]="item.costo_nuevo">
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="modal-footer justify-content-between">
-      <small class="text-muted">ID Auditoría: {{ entradaEdicion.id_entrada }}</small>
-      <div>
-        <button type="button" class="btn-accion btn-cancelar me-2" (click)="cerrarModalEdicion()">Cancelar</button>
-        <button type="button" class="btn-accion btn-guardar" (click)="guardarEdicionHistorica()">
-          <i class="fas fa-save"></i> Guardar Cambios
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3 [ngClass]="{
-        'header-exito': notificacion.tipo === 'exito',
-        'header-error': notificacion.tipo === 'error',
-        'header-advertencia': notificacion.tipo === 'advertencia'
-      }">
-        {{ notificacion.titulo }}
-      </h3>
-      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
-    </div>
-    <div class="modal-body">
-      <p class="confirm-text">{{ notificacion.mensaje }}</p>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
-    </div>
-  </div>
-</div>
 <div class="modal-overlay" *ngIf="mostrarModalCancelar" style="z-index: 2100;">
   <div class="modal-content danger-modal" (click)="$event.stopPropagation()">
-    
     <div class="modal-header header-error">
       <h3><i class="fas fa-exclamation-triangle"></i> Cancelar Entrada</h3>
     </div>
-    
     <div class="modal-body">
-      <div class="alert alert-danger-custom">
+      <div class="alert-danger-custom">
         <strong>¡ATENCIÓN!</strong> Estás a punto de anular la entrada con factura/vale: 
         <strong class="text-white">{{ entradaACancelar?.factura_proveedor || entradaACancelar?.vale_interno || 'S/D' }}</strong>.
         <br><br>
         Esto restará del stock actual las cantidades ingresadas. Si el sistema detecta que parte del material <strong>ya fue utilizado</strong>, la operación será bloqueada.
       </div>
-
-      <div class="form-group mt-3">
-        <label>Motivo de la Cancelación</label>
+      <div class="form-group mt-4">
+        <label style="color: #a0c4ff;">Motivo de la Cancelación</label>
         <select class="form-control" [(ngModel)]="motivoCancelacion" [disabled]="isCanceling">
           <option value="" disabled selected>Seleccione un motivo...</option>
           <option value="Error de captura (Duplicado)">Error de captura (Duplicado / Fallo de Red)</option>
@@ -288,23 +199,35 @@
           <option value="Otro">Otro...</option>
         </select>
       </div>
-
-      <div class="form-group mt-2 animation-fade-in" *ngIf="motivoCancelacion === 'Otro'">
-        <label>Especifique el motivo detallado</label>
+      <div class="form-group mt-3 animation-fade-in" *ngIf="motivoCancelacion === 'Otro'">
+        <label style="color: #a0c4ff;">Especifique el motivo detallado</label>
         <textarea class="form-control" [(ngModel)]="motivoDetalle" rows="2" placeholder="Describe brevemente por qué se anula esta entrada..." [disabled]="isCanceling"></textarea>
       </div>
     </div>
-    
-    <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarModalCancelar()" [disabled]="isCanceling">Volver</button>
-      
-      <button class="btn-guardar btn-danger-neon" 
-              (click)="confirmarCancelacion()" 
-              [disabled]="isCanceling || !motivoCancelacion || (motivoCancelacion === 'Otro' && !motivoDetalle)">
+    <div class="modal-footer" style="justify-content: center;">
+      <button class="btn-accion btn-cancelar" (click)="cerrarModalCancelar()" [disabled]="isCanceling">Volver</button>
+      <button class="btn-danger-neon" (click)="confirmarCancelacion()" [disabled]="isCanceling || !motivoCancelacion || (motivoCancelacion === 'Otro' && !motivoDetalle)">
         <i class="fas" [ngClass]="isCanceling ? 'fa-spinner fa-spin' : 'fa-skull-crossbones'"></i>
         {{ isCanceling ? 'Procesando...' : 'Anular Definitivamente' }}
       </button>
     </div>
+  </div>
+</div>
 
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()" style="z-index: 3000;">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header" [ngClass]="{'header-exito': notificacion.tipo === 'exito', 'header-error': notificacion.tipo === 'error', 'header-advertencia': notificacion.tipo === 'advertencia'}">
+      <h3>
+        <i class="fas" [ngClass]="{'fa-check-circle': notificacion.tipo === 'exito', 'fa-times-circle': notificacion.tipo === 'error', 'fa-exclamation-triangle': notificacion.tipo === 'advertencia'}"></i>
+        {{ notificacion.titulo }}
+      </h3>
+      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+    </div>
+    <div class="modal-body text-center">
+      <p class="confirm-text" style="color: white; font-size: 1.1rem; line-height: 1.5;">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer justify-content-center">
+      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Entendido</button>
+    </div>
   </div>
 </div>

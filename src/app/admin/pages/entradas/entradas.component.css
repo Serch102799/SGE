@@ -645,3 +645,59 @@
   .filtros-container { flex-direction: column; }
   .tabla-responsive-wrapper { margin: 0 15px 20px; overflow-x: scroll; }
 }
+/* =========================================
+   ALERTA DE FACTURA PENDIENTE
+   ========================================= */
+.alerta-pendiente {
+  display: inline-block;
+  background-color: rgba(245, 158, 11, 0.15); /* Fondo naranja oscuro */
+  color: #fbbf24; /* Texto naranja brillante */
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  animation: pulse-orange 2s infinite;
+}
+
+@keyframes pulse-orange {
+  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+/* Botón especial para adjuntar documento */
+.btn-alerta {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.5);
+}
+
+.btn-alerta:hover {
+  background: rgba(245, 158, 11, 0.4);
+  color: white;
+  border-color: #f59e0b;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+  transform: translateY(-2px);
+}
+
+/* =========================================
+   FIX MODALES PEQUEÑOS (SM)
+   ========================================= */
+.modal-content.modal-sm { 
+  max-width: 400px; 
+}
+.justify-content-center {
+  display: flex;
+  justify-content: center !important;
+}
+.ms-1 {
+  margin-left: 5px;
+}
+.mb-1 {
+  margin-bottom: 5px;
+}
+.mt-1 {
+  margin-top: 5px;
+}
