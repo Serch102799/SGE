@@ -47,7 +47,7 @@ export class RefaccionesComponent implements OnInit {
   p: number = 1; 
   itemsPerPage: number = 10;
   
-  // --- Modales y Notificaciones (sin cambios) ---
+  // --- Modales y Notificaciones ---
   mostrarModalAgregar = false;
   mostrarModalEditar = false;
   mostrarModalBorrar = false;
@@ -76,6 +76,7 @@ export class RefaccionesComponent implements OnInit {
     mensaje: '',
     tipo: 'advertencia' as 'exito' | 'error' | 'advertencia'
   };
+item: any;
 
   constructor(
     private http: HttpClient, 
@@ -97,13 +98,10 @@ export class RefaccionesComponent implements OnInit {
   }
 
   obtenerRefacciones() {
-    // CAMBIO: Se ajusta la petición para que funcione con el backend mejorado.
-    // Se pide un límite muy alto para traer todos los registros, manteniendo la lógica de filtros en el frontend.
     const params = new HttpParams().set('limit', '9999');
 
     this.http.get<{ total: number, data: any[] }>(this.apiUrl, { params }).subscribe({
       next: response => {
-        // Se mapea la respuesta para que coincida con la interfaz, incluyendo el nuevo campo 'ultimo_costo'
         this.refacciones = response.data.map(item => ({
           id_refaccion: item.id_refaccion,
           Nombre: item.nombre,
@@ -119,10 +117,10 @@ export class RefaccionesComponent implements OnInit {
           Fecha_Ultima_Entrada: item.fecha_ultima_entrada,
           Proveedor_Principal_ID: item.proveedor_principal_id,
           Descripcion: item.descripcion,
-          ultimo_costo: item.ultimo_costo // Se recibe y mapea el nuevo dato
+          ultimo_costo: item.ultimo_costo
         }));
         this.generarFiltrosUnicos();
-        this.aplicarFiltros(); // Se llama a tu filtro del frontend como antes
+        this.aplicarFiltros(); 
       },
       error: err => console.error('Error al cargar refacciones', err)
     });
@@ -153,7 +151,7 @@ export class RefaccionesComponent implements OnInit {
     }
     
     this.refaccionesFiltradas = refaccionesTemp;
-    this.p = 1; // <-- ¡NUEVO! Regresa a la página 1 tras filtrar
+    this.p = 1; 
   }
 
   
@@ -274,70 +272,67 @@ export class RefaccionesComponent implements OnInit {
   }
 
   exportarAExcel() {
-  this.mostrarNotificacion('Generando...', 'Preparando archivo Excel, por favor espere...', 'exito');
+    this.mostrarNotificacion('Generando...', 'Preparando archivo Excel, por favor espere...', 'exito');
 
-  // 1. Preparar parámetros para pedir TODO (sin paginación)
-  let params = new HttpParams()
-    .set('page', '1')
-    .set('limit', '100000') // Límite alto para traer todo
-    .set('search', this.terminoBusqueda)
-    .set('sortBy', this.sortField)
-    .set('sortOrder', this.sortDirection);
+    let params = new HttpParams()
+      .set('page', '1')
+      .set('limit', '100000') 
+      .set('search', this.terminoBusqueda)
+      .set('sortBy', this.sortField)
+      .set('sortOrder', this.sortDirection);
 
-  if (this.filtroCategoria) params = params.set('filtroCategoria', this.filtroCategoria);
-  if (this.filtroMarca) params = params.set('filtroMarca', this.filtroMarca);
+    if (this.filtroCategoria) params = params.set('filtroCategoria', this.filtroCategoria);
+    if (this.filtroMarca) params = params.set('filtroMarca', this.filtroMarca);
 
-  // 2. Solicitar datos al backend
-  this.http.get<{ data: any[] }>(this.apiUrl, { params }).subscribe({
-    next: (response) => {
-      const datosCompletos = response.data;
+    this.http.get<{ data: any[] }>(this.apiUrl, { params }).subscribe({
+      next: (response) => {
+        const datosCompletos = response.data;
 
-      if (!datosCompletos || datosCompletos.length === 0) {
-        this.mostrarNotificacion('Sin Datos', 'No hay registros para exportar con los filtros actuales.', 'advertencia');
-        return;
+        if (!datosCompletos || datosCompletos.length === 0) {
+          this.mostrarNotificacion('Sin Datos', 'No hay registros para exportar con los filtros actuales.', 'advertencia');
+          return;
+        }
+
+        // SE AGREGÓ "PRECIO UNITARIO" AL EXCEL
+        const datosExcel = datosCompletos.map(ref => ({
+          'Nombre': ref.nombre,
+          'N° Parte': ref.numero_parte,
+          'Categoría': ref.categoria,
+          'Marca': ref.marca,
+          'Stock Actual': ref.stock_actual,
+          'Stock Mínimo': ref.stock_minimo,
+          'Ubicación': ref.ubicacion_almacen,
+          'Precio Unitario': ref.precio_costo ? `$${Number(ref.precio_costo).toFixed(2)}` : '$0.00',
+          'Último Costo (Lote)': ref.ultimo_costo ? `$${Number(ref.ultimo_costo).toFixed(2)}` : 'N/A'
+        }));
+
+        const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(datosExcel);
+
+        const wscols = [
+          { wch: 30 }, // Nombre
+          { wch: 15 }, // N Parte
+          { wch: 15 }, // Categoria
+          { wch: 15 }, // Marca
+          { wch: 12 }, // Stock
+          { wch: 12 }, // Minimo
+          { wch: 15 }, // Ubicacion
+          { wch: 15 }, // Precio Unitario
+          { wch: 18 }  // Ultimo Costo
+        ];
+        ws['!cols'] = wscols;
+
+        const wb: XLSX.WorkBook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Refacciones');
+
+        const fecha = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `Inventario_Refacciones_${fecha}.xlsx`);
+
+        this.mostrarNotificacion('Éxito', 'Archivo Excel descargado correctamente.', 'exito');
+      },
+      error: (err) => {
+        console.error(err);
+        this.mostrarNotificacion('Error', 'No se pudieron descargar los datos para el reporte.', 'error');
       }
-
-      // 3. Mapear datos para el Excel (Columnas bonitas)
-      const datosExcel = datosCompletos.map(ref => ({
-        'Nombre': ref.nombre,
-        'N° Parte': ref.numero_parte,
-        'Categoría': ref.categoria,
-        'Marca': ref.marca,
-        'Stock Actual': ref.stock_actual,
-        'Stock Mínimo': ref.stock_minimo,
-        'Ubicación': ref.ubicacion_almacen,
-        'Último Costo': ref.ultimo_costo ? `$${Number(ref.ultimo_costo).toFixed(2)}` : 'N/A'
-      }));
-
-      // 4. Crear Hoja de Trabajo (Worksheet)
-      const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(datosExcel);
-
-      // (Opcional) Ajustar ancho de columnas
-      const wscols = [
-        { wch: 30 }, // Nombre
-        { wch: 15 }, // N Parte
-        { wch: 15 }, // Categoria
-        { wch: 15 }, // Marca
-        { wch: 10 }, // Stock
-        { wch: 10 }, // Minimo
-        { wch: 15 }, // Ubicacion
-        { wch: 12 }  // Costo
-      ];
-      ws['!cols'] = wscols;
-
-      // 5. Crear Libro (Workbook) y guardar
-      const wb: XLSX.WorkBook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Refacciones');
-
-      // Nombre del archivo con fecha
-      const fecha = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(wb, `Inventario_Refacciones_${fecha}.xlsx`);
-
-      this.mostrarNotificacion('Éxito', 'Archivo Excel descargado correctamente.', 'exito');
-    },
-    error: (err) => {
-      console.error(err);
-      this.mostrarNotificacion('Error', 'No se pudieron descargar los datos para el reporte.', 'error');
-    }
-  });
-  }}
+    });
+  }
+}

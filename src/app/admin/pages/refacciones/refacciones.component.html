@@ -1,33 +1,32 @@
 <div class="usuarios-container">
   <div class="container-header">
-    <h2>Gestión de Refacciones</h2>
-    <div class="acciones-header">
-      <button class="btn-exportar" (click)="exportarAExcel()">
-        <span>&#128196;</span> EXPORTAR A EXCEL
+    <h2><i class="fas fa-tools"></i> Gestión de Refacciones</h2>
+    <div class="acciones-header" style="display: flex; gap: 10px;">
+      <button class="btn-accion btn-guardar" style="background: linear-gradient(135deg, #10b981, #059669);" (click)="exportarAExcel()">
+        <i class="fas fa-file-excel"></i> Exportar a Excel
       </button>
-      <button class="btn-agregar" (click)="abrirModalAgregar()">
-        <span>&#43;</span> Agregar Refacción
+      <button class="btn-accion btn-guardar" (click)="abrirModalAgregar()">
+        <i class="fas fa-plus-circle"></i> Agregar Refacción
       </button>
     </div>
   </div>
 
   <div class="container-body">
-    <div class="filtros-container">
-      <div class="filtro-item">
-        <input 
-          type="text" 
-          class="form-control" 
-          placeholder="Buscar por nombre o n° de parte..."
-          [(ngModel)]="terminoBusqueda"
-          (input)="aplicarFiltros()">
+    <div class="row mb-4">
+      <div class="col-md-4 form-group">
+        <label class="text-muted"><i class="fas fa-search"></i> Búsqueda Rápida</label>
+        <input type="text" class="form-control" placeholder="Buscar por nombre o N° de parte..."
+               [(ngModel)]="terminoBusqueda" (input)="aplicarFiltros()">
       </div>
-      <div class="filtro-item">
+      <div class="col-md-4 form-group">
+        <label class="text-muted"><i class="fas fa-tags"></i> Filtrar por Categoría</label>
         <select class="form-control" [(ngModel)]="filtroCategoria" (change)="aplicarFiltros()">
           <option value="">Todas las categorías</option>
           <option *ngFor="let categoria of categoriasUnicas" [value]="categoria">{{ categoria }}</option>
         </select>
       </div>
-      <div class="filtro-item">
+      <div class="col-md-4 form-group">
+        <label class="text-muted"><i class="fas fa-industry"></i> Filtrar por Marca</label>
         <select class="form-control" [(ngModel)]="filtroMarca" (change)="aplicarFiltros()">
           <option value="">Todas las marcas</option>
           <option *ngFor="let marca of marcasUnicas" [value]="marca">{{ marca }}</option>
@@ -40,29 +39,27 @@
         <thead>
           <tr>
             <th>Nombre</th>
-            <th>N° de Parte</th>
+            <th>N° Parte</th>
             <th>Marca</th>
             <th>Categoría</th>
-            <th>Stock</th>
-            <th>Último Costo</th>
+            <th class="text-center">Stock</th>
+            <th class="text-right">Precio Unit.</th>
+            <th class="text-right">Último Costo</th>
             <th>Ubicación</th>
-            <th style="text-align: center;">Acciones</th>
+            <th class="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr 
-            *ngFor="let refaccion of refaccionesFiltradas | paginate: { itemsPerPage: itemsPerPage, currentPage: p }" 
-            (click)="abrirModalSalida(refaccion)"
-            class="fila-clickable">
-            
-            <td>{{ refaccion.Nombre }}</td>
-            <td>{{ refaccion.Numero_Parte }}</td>
-            <td>{{ refaccion.Marca }}</td>
-            <td>{{ refaccion.Categoria }}</td>
-            
-            <td>
-              <span class="badge" 
-                    [ngClass]="{
+          <tr *ngFor="let refaccion of refaccionesFiltradas | paginate: { itemsPerPage: itemsPerPage, currentPage: p }"
+              (click)="abrirModalSalida(refaccion)" class="fila-clickable" style="cursor: pointer;">
+
+            <td style="font-weight: 600; color: white;">{{ refaccion.Nombre }}</td>
+            <td style="font-family: monospace; color: #ccc;">{{ refaccion.Numero_Parte || '---' }}</td>
+            <td>{{ refaccion.Marca || '-' }}</td>
+            <td><small class="text-muted">{{ refaccion.Categoria || 'General' }}</small></td>
+
+            <td class="text-center">
+              <span class="badge" [ngClass]="{
                       'badge-agotado': refaccion.Stock_Actual <= 0,
                       'badge-bajo': refaccion.Stock_Actual > 0 && refaccion.Stock_Actual <= refaccion.Stock_Minimo,
                       'badge-saludable': refaccion.Stock_Actual > refaccion.Stock_Minimo
@@ -71,75 +68,64 @@
               </span>
             </td>
 
-            <td>
-              {{ refaccion.ultimo_costo !== null ? (refaccion.ultimo_costo | currency:'MXN':'symbol') : 'N/A' }}
+            <td class="text-right" style="color: #38bdf8; font-weight: bold; font-family: monospace; font-size: 1.05rem;">
+              {{ refaccion.Precio_Costo | currency:'MXN':'symbol' }}
             </td>
-            <td>{{ refaccion.Ubicacion_Almacen }}</td>
             
-            <td class="acciones" (click)="$event.stopPropagation()">
-              <button class="btn-accion btn-accion" (click)="verHistorial(refaccion)">Historial</button>
-              <button class="btn-accion btn-estado" (click)="abrirModalEditar(refaccion)">Editar</button> 
-              <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(refaccion)">Eliminar</button>
+            <td class="text-right" style="color: #4ade80; font-weight: bold; font-family: monospace; font-size: 1.05rem;">
+              {{ refaccion.ultimo_costo !== null ? (refaccion.ultimo_costo | currency:'MXN':'symbol') : '---' }}
+            </td>
+            
+            <td>{{ refaccion.Ubicacion_Almacen || '-' }}</td>
+
+            <td class="acciones text-center" (click)="$event.stopPropagation()">
+              <button class="btn-accion" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.85rem; padding: 6px 10px;" (click)="verHistorial(refaccion)">
+                <i class="fas fa-history"></i> Historial
+              </button>
+              <button class="btn-accion" style="background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 0.85rem; padding: 6px 10px;" (click)="abrirModalEditar(refaccion)">
+                <i class="fas fa-edit"></i> Editar
+              </button>
+              <button class="btn-accion" style="background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.85rem; padding: 6px 10px;" (click)="abrirModalBorrar(refaccion)">
+                <i class="fas fa-trash-alt"></i> Eliminar
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="refaccionesFiltradas.length === 0">
+            <td colspan="9" class="empty-table-message text-center py-4 text-muted">
+              <i class="fas fa-search fa-2x mb-2 d-block"></i> No se encontraron refacciones con esos filtros.
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="pagination-controls" style="margin-top: 20px; display: flex; justify-content: center;">
-      <pagination-controls 
-        (pageChange)="p = $event" 
-        previousLabel="Anterior" 
-        nextLabel="Siguiente">
-      </pagination-controls>
+    <div class="pagination-controls mt-4">
+      <pagination-controls (pageChange)="p = $event" previousLabel="Anterior" nextLabel="Siguiente"></pagination-controls>
     </div>
-
   </div>
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalAgregar" (click)="cerrarModalAgregar()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>Agregar Nueva Refacción</h3>
+      <h3><i class="fas fa-plus-circle text-primary"></i> Nueva Refacción</h3>
       <button class="btn-cerrar" (click)="cerrarModalAgregar()">×</button>
     </div>
     <div class="modal-body">
       <form (ngSubmit)="guardarNuevaRefaccion()">
-        <div class="form-group">
-          <label>Nombre</label>
-          <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Nombre" name="Nombre" required>
+        <div class="row">
+          <div class="col-md-8 form-group"><label>Nombre</label><input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Nombre" name="Nombre" required></div>
+          <div class="col-md-4 form-group"><label>N° Parte</label><input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Numero_Parte" name="Numero_Parte"></div>
+          <div class="col-md-6 form-group"><label>Categoría</label><input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Categoria" name="Categoria"></div>
+          <div class="col-md-6 form-group"><label>Marca</label><input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Marca" name="Marca"></div>
+          <div class="col-md-12 form-group"><label>Descripción / Uso</label><textarea class="form-control" [(ngModel)]="nuevaRefaccion.Descripcion" name="Descripcion" rows="2"></textarea></div>
+          <div class="col-md-4 form-group"><label>Unidad de Medida</label><input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Unidad_Medida" name="Unidad_Medida" required></div>
+          <div class="col-md-4 form-group"><label>Ubicación</label><input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Ubicacion_Almacen" name="Ubicacion_Almacen"></div>
+          <div class="col-md-4 form-group"><label>Stock Mínimo</label><input type="number" class="form-control" [(ngModel)]="nuevaRefaccion.Stock_Minimo" name="Stock_Minimo"></div>
         </div>
-        <div class="form-group">
-          <label>Número de Parte</label>
-          <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Numero_Parte" name="Numero_Parte">
-        </div>
-        <div class="form-group">
-          <label>Categoría</label>
-          <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Categoria" name="Categoria">
-        </div>
-        <div class="form-group">
-          <label>Marca</label>
-          <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Marca" name="Marca">
-        </div>
-        <div class="form-group">
-          <label>Descripción / Uso de la Refacción</label>
-          <textarea class="form-control" [(ngModel)]="nuevaRefaccion.Descripcion" name="Descripcion" rows="3"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Unidad de Medida (ej. Pieza, Caja)</label>
-          <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Unidad_Medida" name="Unidad_Medida" required>
-        </div>
-        <div class="form-group">
-          <label>Ubicación en Almacén</label>
-          <input type="text" class="form-control" [(ngModel)]="nuevaRefaccion.Ubicacion_Almacen" name="Ubicacion_Almacen">
-        </div>
-        <div class="form-group">
-          <label>Stock Mínimo</label>
-          <input type="number" class="form-control" [(ngModel)]="nuevaRefaccion.Stock_Minimo" name="Stock_Minimo">
-        </div>
-        <div class="modal-footer">
+        <div class="modal-footer mt-3 p-0 pt-3" style="background: transparent; border-top: none;">
           <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalAgregar()">Cancelar</button>
-          <button type="submit" class="btn-accion btn-guardar">Guardar</button>
+          <button type="submit" class="btn-accion btn-guardar"><i class="fas fa-save"></i> Guardar</button>
         </div>
       </form>
     </div>
@@ -149,46 +135,24 @@
 <div class="modal-overlay" *ngIf="mostrarModalEditar" (click)="cerrarModalEditar()">
   <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="refaccionAEditar">
     <div class="modal-header">
-        <h3>Editar Refacción: {{ refaccionAEditar.Nombre }}</h3>
-        <button class="btn-cerrar" (click)="cerrarModalEditar()">×</button>
+      <h3><i class="fas fa-edit text-warning"></i> Editar: {{ refaccionAEditar.Nombre }}</h3>
+      <button class="btn-cerrar" (click)="cerrarModalEditar()">×</button>
     </div>
     <div class="modal-body">
       <form (ngSubmit)="guardarCambiosRefaccion()">
-        <div class="form-group">
-            <label>Nombre</label>
-            <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Nombre" name="edit_nombre" required>
+        <div class="row">
+          <div class="col-md-8 form-group"><label>Nombre</label><input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Nombre" name="edit_nombre" required></div>
+          <div class="col-md-4 form-group"><label>N° Parte</label><input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Numero_Parte" name="edit_numero_parte"></div>
+          <div class="col-md-6 form-group"><label>Categoría</label><input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Categoria" name="edit_categoria"></div>
+          <div class="col-md-6 form-group"><label>Marca</label><input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Marca" name="edit_marca"></div>
+          <div class="col-md-12 form-group"><label>Descripción / Uso</label><textarea class="form-control" [(ngModel)]="refaccionAEditar.Descripcion" name="edit_descripcion" rows="2"></textarea></div>
+          <div class="col-md-4 form-group"><label>Unidad de Medida</label><input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Unidad_Medida" name="edit_unidad_medida" required></div>
+          <div class="col-md-4 form-group"><label>Ubicación</label><input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Ubicacion_Almacen" name="edit_ubicacion"></div>
+          <div class="col-md-4 form-group"><label>Stock Mínimo</label><input type="number" class="form-control" [(ngModel)]="refaccionAEditar.Stock_Minimo" name="edit_stock_minimo"></div>
         </div>
-        <div class="form-group">
-            <label>Número de Parte</label>
-            <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Numero_Parte" name="edit_numero_parte">
-        </div>
-        <div class="form-group">
-            <label>Categoría</label>
-            <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Categoria" name="edit_categoria">
-        </div>
-        <div class="form-group">
-            <label>Marca</label>
-            <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Marca" name="edit_marca">
-        </div>
-        <div class="form-group">
-            <label>Descripción / Uso de la Refacción</label>
-            <textarea class="form-control" [(ngModel)]="refaccionAEditar.Descripcion" name="edit_descripcion" rows="3"></textarea>
-        </div>
-        <div class="form-group">
-            <label>Unidad de Medida</label>
-            <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Unidad_Medida" name="edit_unidad_medida">
-        </div>
-        <div class="form-group">
-            <label>Ubicación en Almacén</label>
-            <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Ubicacion_Almacen" name="edit_ubicacion">
-        </div>
-        <div class="form-group">
-            <label>Stock Mínimo</label>
-            <input type="number" class="form-control" [(ngModel)]="refaccionAEditar.Stock_Minimo" name="edit_stock_minimo">
-        </div>
-        <div class="modal-footer">
+        <div class="modal-footer mt-3 p-0 pt-3" style="background: transparent; border-top: none;">
           <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalEditar()">Cancelar</button>
-          <button type="submit" class="btn-accion btn-guardar">Guardar Cambios</button>
+          <button type="submit" class="btn-accion btn-guardar"><i class="fas fa-sync-alt"></i> Actualizar</button>
         </div>
       </form>
     </div>
@@ -196,19 +160,27 @@
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalSalida" (click)="cerrarModalSalida()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3 *ngIf="refaccionParaSalida">Registrar Salida de: {{ refaccionParaSalida.Nombre }}</h3>
+      <h3 *ngIf="refaccionParaSalida"><i class="fas fa-sign-out-alt text-info"></i> Retirar Material</h3>
       <button class="btn-cerrar" (click)="cerrarModalSalida()">×</button>
     </div>
-    <div class="modal-body">
-      <div class="stock-info" *ngIf="refaccionParaSalida">Stock Actual: <strong>{{ refaccionParaSalida.Stock_Actual }}</strong> unidades</div>
+    <div class="modal-body text-left">
+      <div class="alert alert-info text-center mb-3" *ngIf="refaccionParaSalida">
+        Stock Disponible: <strong style="font-size: 1.2rem;">{{ refaccionParaSalida.Stock_Actual }}</strong>
+      </div>
       <form (ngSubmit)="guardarSalida()">
-        <div class="form-group"><label for="cantidad_salida">Cantidad a Retirar</label><input id="cantidad_salida" type="number" class="form-control" [(ngModel)]="datosSalida.cantidad" name="cantidad_salida" required min="1"></div>
-        <div class="form-group"><label for="motivo_salida">Motivo (ej. Venta, Taller, etc.)</label><input id="motivo_salida" type="text" class="form-control" [(ngModel)]="datosSalida.motivo" name="motivo_salida" required></div>
-        <div class="modal-footer">
+        <div class="form-group">
+          <label>Cantidad a Retirar</label>
+          <input type="number" class="form-control text-center" style="font-size: 1.2rem; font-weight: bold;" [(ngModel)]="datosSalida.cantidad" name="cantidad_salida" required min="1">
+        </div>
+        <div class="form-group">
+          <label>Motivo (ej. Venta, Taller)</label>
+          <input type="text" class="form-control" [(ngModel)]="datosSalida.motivo" name="motivo_salida" required>
+        </div>
+        <div class="modal-footer p-0 pt-3 mt-3" style="background: transparent; border-top: none; justify-content: center;">
           <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalSalida()">Cancelar</button>
-          <button type="submit" class="btn-accion btn-salida">Confirmar Salida</button>
+          <button type="submit" class="btn-accion btn-guardar"><i class="fas fa-check"></i> Confirmar Salida</button>
         </div>
       </form>
     </div>
@@ -216,59 +188,56 @@
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalBorrar" (click)="cerrarModalBorrar()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header"><h3 class="header-eliminar">Confirmar Eliminación</h3><button class="btn-cerrar" (click)="cerrarModalBorrar()">×</button></div>
-    <div class="modal-body">
-      <p class="confirm-text" *ngIf="refaccionABorrar">¿Estás seguro de que deseas eliminar <strong>{{ refaccionABorrar.Nombre }}</strong>?</p>
-      <p class="confirm-warning">Esta acción no se puede deshacer.</p>
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header header-error">
+      <h3><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h3>
     </div>
-    <div class="modal-footer">
+    <div class="modal-body text-center">
+      <p class="confirm-text" *ngIf="refaccionABorrar">¿Estás seguro de eliminar <strong>{{ refaccionABorrar.Nombre }}</strong>?</p>
+      <p class="text-muted text-sm mt-2">Esta acción no se puede deshacer y borrará su historial.</p>
+    </div>
+    <div class="modal-footer justify-content-center">
       <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBorrar()">Cancelar</button>
-      <button type="button" class="btn-accion btn-confirmar-eliminar" (click)="confirmarEliminacion()">Sí, Eliminar</button>
+      <button type="button" class="btn-accion" style="background: #ef4444; color: white;" (click)="confirmarEliminacion()"><i class="fas fa-trash-alt"></i> Sí, Eliminar</button>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalHistorial" (click)="cerrarModalHistorial()">
-  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+  <div class="modal-content" style="width: 800px; max-width: 95%;" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>Historial de Movimientos: {{ refaccionSeleccionadaNombre }}</h3>
+      <h3><i class="fas fa-clipboard-list text-info"></i> Historial: {{ refaccionSeleccionadaNombre }}</h3>
       <button class="btn-cerrar" (click)="cerrarModalHistorial()">×</button>
     </div>
     <div class="modal-body">
       <div class="tabla-responsive-wrapper">
-        <table class="tabla-preview">
+        <table class="tabla-usuarios">
           <thead>
             <tr>
               <th>Fecha</th>
               <th>Tipo</th>
-              <th>Cantidad</th>
+              <th class="text-center">Cantidad</th>
               <th>Origen/Destino</th>
-              <th>Solicitado Por</th>
+              <th>Usuario</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let movimiento of historialSeleccionado">
-              <td>{{ movimiento.fecha | date:'short' }}</td>
+            <tr *ngIf="historialSeleccionado.length === 0">
+              <td colspan="5" class="empty-table-message text-center py-4 text-muted">No hay movimientos registrados.</td>
+            </tr>
+            <tr *ngFor="let mov of historialSeleccionado">
+              <td>{{ mov.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
               <td>
-                <span [ngClass]="{
-                  'tipo-entrada': movimiento.tipo === 'Entrada',
-                  'tipo-salida': movimiento.tipo === 'Salida'
-                }">
-                  {{ movimiento.tipo }}
+                <span class="badge" [ngClass]="{'badge-saludable': mov.tipo === 'Entrada', 'badge-agotado': mov.tipo === 'Salida', 'badge-bajo': mov.tipo === 'Ajuste'}">
+                  {{ mov.tipo | uppercase }}
                 </span>
               </td>
-              <td [ngClass]="{
-                  'cantidad-entrada': movimiento.tipo === 'Entrada',
-                  'cantidad-salida': movimiento.tipo === 'Salida'
-                }">
-                {{ movimiento.tipo === 'Entrada' ? '+' : '-' }}{{ movimiento.cantidad }}
+              <td class="text-center" style="font-family: monospace; font-weight: bold; font-size: 1.1rem;"
+                  [ngClass]="{'text-success': mov.tipo === 'Entrada', 'text-danger': mov.tipo === 'Salida'}">
+                {{ mov.tipo === 'Entrada' ? '+' : (mov.tipo === 'Salida' ? '-' : '') }}{{ mov.cantidad }}
               </td>
-              <td>{{ movimiento.origen_destino }}</td>
-              <td>{{ movimiento.solicitado_por }}</td>
-            </tr>
-            <tr *ngIf="historialSeleccionado.length === 0">
-              <td colspan="5" class="empty-table-message">No hay movimientos registrados para esta refacción.</td>
+              <td>{{ mov.origen_destino || '-' }}</td>
+              <td>{{ mov.solicitado_por || 'Sistema' }}</td>
             </tr>
           </tbody>
         </table>
@@ -280,21 +249,29 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header" [ngClass]="{
-        'header-exito': notificacion.tipo === 'exito',
-        'header-error': notificacion.tipo === 'error',
-        'header-advertencia': notificacion.tipo === 'advertencia'
-      }">
-      <h3>{{ notificacion.titulo }}</h3>
-      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()" style="z-index: 3000;">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header"
+         [ngClass]="{
+           'header-exito': notificacion.tipo === 'exito',
+           'header-error': notificacion.tipo === 'error',
+           'header-advertencia': notificacion.tipo === 'advertencia'
+         }">
+      <h3>
+        <i class="fas"
+           [ngClass]="{
+             'fa-check-circle': notificacion.tipo === 'exito',
+             'fa-times-circle': notificacion.tipo === 'error',
+             'fa-exclamation-triangle': notificacion.tipo === 'advertencia'
+           }"></i>
+        {{ notificacion.titulo }}
+      </h3>
     </div>
-    <div class="modal-body">
+    <div class="modal-body text-center">
       <p class="confirm-text">{{ notificacion.mensaje }}</p>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    <div class="modal-footer justify-content-center">
+      <button class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Entendido</button>
     </div>
   </div>
 </div>
