@@ -124,12 +124,26 @@
         </a>
       </li>
 
-      <li *ngIf="authService.hasRole(['SuperUsuario'])">
+     <!--  <li *ngIf="authService.hasRole(['SuperUsuario'])">
         <a routerLink="/admin/superadmin" routerLinkActive="active">
           <fa-icon [icon]="faEdicionHistorica"></fa-icon> 
           <span>Edición Histórica</span>
         </a>
+      </li> -->
+
+      <li *ngIf="authService.hasRole(['SuperUsuario'])">
+        <a routerLink="/admin/herramienta-fusion" routerLinkActive="active">
+          <fa-icon [icon]="faEdicionHistorica"></fa-icon> 
+          <span>Herramienta de Fusión</span>
+        </a>
       </li>
+
+
+      <!-- <li *ngIf="authService.hasRole(['SuperUsuario', 'Admin'])">
+        <a routerLink="/admin/taller" routerLinkActive="active">
+          <fa-icon [icon]="faEdicionDetalles"></fa-icon> <span>Taller</span>
+        </a>
+      </li> -->
 
       <li *ngIf="authService.hasRole(['SuperUsuario'])">
         <a routerLink="/admin/edicion-detalles" routerLinkActive="active">

@@ -48,6 +48,8 @@ import { ServiciosExternosComponent } from './pages/servicios-externos/servicios
 import { BotAyudaComponent } from '../components/bot-ayuda/bot-ayuda.component';
 import { AdminTicketsComponent } from './pages/admin-tickets/admin-tickets.component';
 import { DashboardRrhhComponent } from './pages/dashboard-rrhh/dashboard-rrhh.component';
+import { HerramientaFusionComponent } from './pages/herramienta-fusion/herramienta-fusion.component';
+import { TallerComponent } from './pages/taller/taller.component';
 
 @NgModule({
   declarations: [
@@ -85,7 +87,9 @@ import { DashboardRrhhComponent } from './pages/dashboard-rrhh/dashboard-rrhh.co
     ServiciosExternosComponent,
     BotAyudaComponent,
     AdminTicketsComponent,
-    DashboardRrhhComponent
+    DashboardRrhhComponent,
+    HerramientaFusionComponent,
+    TallerComponent
   ],
   imports: [
     HttpClientModule,

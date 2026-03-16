@@ -4,6 +4,7 @@ import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environments';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 
 interface Tanque {
   id_tanque: number;
@@ -38,7 +39,10 @@ interface Recarga {
   styleUrls: ['./tanques.component.css']
 })
 export class TanquesComponent implements OnInit {
+  nombreUsuario: string = '';
   
+    faCalendarAlt = faCalendarAlt; 
+   currentDate: Date = new Date(); 
   private apiUrl = `${environment.apiUrl}/tanques`;
   tanques: Tanque[] = [];
   totalesPorUbicacion: TotalPorUbicacion[] = [];
@@ -72,7 +76,7 @@ export class TanquesComponent implements OnInit {
   mostrarModalNotificacion = false;
   notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
 
-  constructor(private http: HttpClient, public authService: AuthService) { }
+  constructor(private http: HttpClient, public authService: AuthService) {this.nombreUsuario = authService.getCurrentUser()?.nombre || 'Administrador'; }
 
   ngOnInit(): void {
     this.obtenerDatos();

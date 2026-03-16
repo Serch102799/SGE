@@ -40,6 +40,8 @@ import { AjustesComponent } from './pages/ajustes/ajustes.component';
 import { ServiciosExternosComponent } from './pages/servicios-externos/servicios-externos.component';
 import { AdminTicketsComponent } from './pages/admin-tickets/admin-tickets.component';
 import { DashboardRrhhComponent } from './pages/dashboard-rrhh/dashboard-rrhh.component';
+import { HerramientaFusionComponent } from './pages/herramienta-fusion/herramienta-fusion.component';
+import { TallerComponent } from './pages/taller/taller.component';
 
 const routes: Routes = [
   {
@@ -250,6 +252,18 @@ const routes: Routes = [
         component:  DashboardRrhhComponent,
         canActivate: [RoleGuard],
         data: { roles: [ 'SuperUsuario', 'RRHH'] }
+      },
+      {
+        path: 'herramienta-fusion',
+        component:  HerramientaFusionComponent,
+        canActivate: [RoleGuard],
+        data: { roles: [ 'SuperUsuario'] }
+      },
+      {
+        path: 'taller',
+        component:  TallerComponent,
+        canActivate: [RoleGuard],
+        data: { roles: [ 'SuperUsuario', 'Admin'] }
       },
     ],
   },

@@ -1,0 +1,73 @@
+<div class="usuarios-container mt-4">
+  <div class="container-header header-advertencia">
+    <h2><i class="fas fa-object-group"></i> Herramienta de Fusión de Catálogo</h2>
+  </div>
+
+  <div class="container-body text-center">
+    <p class="text-muted mb-4">Selecciona el artículo principal (el que conservará sus datos) y el artículo duplicado (el que transferirá su historial y luego será eliminado).</p>
+
+    <div class="row align-items-center justify-content-center">
+      
+      <div class="col-md-5">
+        <div class="card-fusion card-principal">
+          <div class="card-fusion-header"><i class="fas fa-check-circle text-success"></i> Artículo Principal (Se Conserva)</div>
+          <div class="card-fusion-body">
+            <mat-form-field appearance="outline" class="w-100 dark-theme-mat">
+              <mat-label>Buscar Principal...</mat-label>
+              <input type="text" matInput [formControl]="principalControl" [matAutocomplete]="autoPrin">
+            </mat-form-field>
+            <mat-autocomplete #autoPrin="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onPrincipalSelected($event)">
+              <mat-option *ngFor="let item of filteredPrincipal$ | async" [value]="item">
+                {{ item.nombre }} | NP: {{ item.numero_parte }}
+              </mat-option>
+            </mat-autocomplete>
+
+            <div class="item-preview" *ngIf="itemPrincipal">
+              <h4>{{ itemPrincipal.nombre }}</h4>
+              <p>N° Parte: <strong class="text-success">{{ itemPrincipal.numero_parte }}</strong></p>
+              <p>ID Sistema: <strong>{{ itemPrincipal.id }}</strong></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-2 text-center" style="font-size: 2rem; color: #a0c4ff;">
+        <i class="fas fa-exchange-alt fa-2x mt-4"></i>
+        <div class="mt-2 text-muted" style="font-size: 0.9rem;">Fusionar</div>
+      </div>
+
+      <div class="col-md-5">
+        <div class="card-fusion card-duplicado">
+          <div class="card-fusion-header"><i class="fas fa-trash-alt text-danger"></i> Artículo Duplicado (Se Elimina)</div>
+          <div class="card-fusion-body">
+            <mat-form-field appearance="outline" class="w-100 dark-theme-mat">
+              <mat-label>Buscar Duplicado...</mat-label>
+              <input type="text" matInput [formControl]="duplicadoControl" [matAutocomplete]="autoDup">
+            </mat-form-field>
+            <mat-autocomplete #autoDup="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onDuplicadoSelected($event)">
+              <mat-option *ngFor="let item of filteredDuplicado$ | async" [value]="item">
+                {{ item.nombre }} | NP: {{ item.numero_parte }}
+              </mat-option>
+            </mat-autocomplete>
+
+            <div class="item-preview" *ngIf="itemDuplicado">
+              <h4>{{ itemDuplicado.nombre }}</h4>
+              <p>N° Parte: <strong class="text-danger">{{ itemDuplicado.numero_parte }}</strong></p>
+              <p>ID Sistema: <strong>{{ itemDuplicado.id }}</strong></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="mt-5">
+      <button class="btn-guardar btn-danger-neon px-5 py-3" style="font-size: 1.2rem; border-radius: 30px;" 
+              (click)="confirmarFusion()" [disabled]="!itemPrincipal || !itemDuplicado || isMerging">
+        <i class="fas" [ngClass]="isMerging ? 'fa-spinner fa-spin' : 'fa-magic'"></i>
+        {{ isMerging ? 'Fusionando Historial...' : 'FUSIONAR ARTÍCULOS AHORA' }}
+      </button>
+      <button class="btn-cancelar ms-3 px-4 py-3" style="border-radius: 30px;" (click)="limpiarSeleccion()" [disabled]="isMerging">Limpiar</button>
+    </div>
+  </div>
+</div>
