@@ -5,6 +5,38 @@
       Ver Historial
     </a>
   </div>
+  <div class="container-body" style="position: relative;">
+    
+    <div class="analysis-section sticky-panel">
+      <div class="panel-header">
+        <i class="fas fa-chart-line"></i> Análisis de Rendimiento en Tiempo Real
+      </div>
+      
+      <div class="kpi-grid-sm">
+        <div class="kpi-card-sm">
+          <div class="kpi-value-sm">{{ km_esperados | number:'1.0-0' }} km</div>
+          <div class="kpi-label-sm">KM Esperados</div>
+        </div>
+        <div class="kpi-card-sm">
+          <div class="kpi-value-sm">{{ km_recorridos | number:'1.0-0' }} km</div>
+          <div class="kpi-label-sm">KM Recorridos</div>
+        </div>
+        <div class="kpi-card-sm" [ngClass]="{'kpi-alerta': Math.abs(desviacion_km) > umbral_km}">
+          <div class="kpi-value-sm">{{ desviacion_km | number:'1.0-0' }} km</div>
+          <div class="kpi-label-sm">Desviación</div>
+        </div>
+        <div class="kpi-card-sm">
+          <div class="kpi-value-sm">{{ rendimiento_calculado | number:'1.2-2' }} km/l</div>
+          <div class="kpi-label-sm">Rendimiento</div>
+        </div>
+      </div>
+
+      <div class="form-group mt-3 mb-0" *ngIf="Math.abs(desviacion_km) > umbral_km">
+        <label for="motivo_desviacion" class="alerta-label">⚠️ Motivo de la Desviación (Obligatorio)</label>
+        <textarea id="motivo_desviacion" class="form-control textarea-sm" [(ngModel)]="cargaMaestro.motivo_desviacion"
+          name="motivo_desviacion" rows="1" placeholder="Justifica la diferencia de kilometraje..." required></textarea>
+      </div>
+    </div>
 
   <div class="container-body">
     <fieldset class="form-section">
@@ -196,32 +228,7 @@
     </fieldset>
 
     <!-- SECCIÓN ANÁLISIS (COMÚN PARA AMBOS MODOS) -->
-    <fieldset class="form-section analysis-section">
-      <legend>{{ tipo_calculo === 'vueltas' ? '4' : '4' }}. Análisis de Rendimiento</legend>
-      <div class="kpi-grid-sm">
-        <div class="kpi-card-sm">
-          <div class="kpi-value-sm">{{ km_esperados | number:'1.0-0' }} km</div>
-          <div class="kpi-label-sm">KM Esperados</div>
-        </div>
-        <div class="kpi-card-sm">
-          <div class="kpi-value-sm">{{ km_recorridos | number:'1.0-0' }} km</div>
-          <div class="kpi-label-sm">KM Recorridos</div>
-        </div>
-        <div class="kpi-card-sm" [ngClass]="{'kpi-alerta': Math.abs(desviacion_km) > umbral_km}">
-          <div class="kpi-value-sm">{{ desviacion_km | number:'1.0-0' }} km</div>
-          <div class="kpi-label-sm">Desviación</div>
-        </div>
-        <div class="kpi-card-sm">
-          <div class="kpi-value-sm">{{ rendimiento_calculado | number:'1.2-2' }} km/l</div>
-          <div class="kpi-label-sm">Rendimiento</div>
-        </div>
-      </div>
-      <div class="form-group" *ngIf="Math.abs(desviacion_km) > umbral_km">
-        <label for="motivo_desviacion" class="alerta-label">⚠️ Motivo de la Desviación (Obligatorio)</label>
-        <textarea id="motivo_desviacion" class="form-control" [(ngModel)]="cargaMaestro.motivo_desviacion"
-          name="motivo_desviacion" rows="2" required></textarea>
-      </div>
-    </fieldset>
+    
 
     <!-- ACCIONES FINALES -->
     <div class="acciones-finales">
