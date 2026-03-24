@@ -44,7 +44,7 @@ export class AutobusesComponent implements OnInit, OnDestroy {
   private historialApiUrl = `${environment.apiUrl}/historial`;
 
   // --- Listas para Dropdowns ---
-  razonesSociales: string[] = ['MARTRESS', 'A8M', 'TRESA', 'GIALJU'];
+  razonesSociales: string[] = ['MARTRESS', 'A8M', 'TRESA', 'GIALJU', 'Margarita Tress'];
   sistemasEmisiones: string[] = ['UREA', 'EGR', 'OTRO'];
 
   // --- Estado de la Tabla ---
