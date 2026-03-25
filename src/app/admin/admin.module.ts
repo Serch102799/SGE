@@ -50,6 +50,7 @@ import { AdminTicketsComponent } from './pages/admin-tickets/admin-tickets.compo
 import { DashboardRrhhComponent } from './pages/dashboard-rrhh/dashboard-rrhh.component';
 import { HerramientaFusionComponent } from './pages/herramienta-fusion/herramienta-fusion.component';
 import { TallerComponent } from './pages/taller/taller.component';
+import { RecuperadosComponent } from './pages/recuperados/recuperados.component';
 
 @NgModule({
   declarations: [
@@ -89,7 +90,8 @@ import { TallerComponent } from './pages/taller/taller.component';
     AdminTicketsComponent,
     DashboardRrhhComponent,
     HerramientaFusionComponent,
-    TallerComponent
+    TallerComponent,
+    RecuperadosComponent
   ],
   imports: [
     HttpClientModule,

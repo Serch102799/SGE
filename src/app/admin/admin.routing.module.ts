@@ -42,6 +42,7 @@ import { AdminTicketsComponent } from './pages/admin-tickets/admin-tickets.compo
 import { DashboardRrhhComponent } from './pages/dashboard-rrhh/dashboard-rrhh.component';
 import { HerramientaFusionComponent } from './pages/herramienta-fusion/herramienta-fusion.component';
 import { TallerComponent } from './pages/taller/taller.component';
+import { RecuperadosComponent } from './pages/recuperados/recuperados.component';
 
 const routes: Routes = [
   {
@@ -246,6 +247,12 @@ const routes: Routes = [
         component:  AdminTicketsComponent,
         canActivate: [RoleGuard],
         data: { roles: [ 'SuperUsuario'] }
+      },
+      {
+        path: 'recuperados',
+        component:  RecuperadosComponent,
+        canActivate: [RoleGuard],
+        data: { roles: [ 'SuperUsuario', 'Admin'] }
       },
       {
         path: 'dashboard-rrhh',

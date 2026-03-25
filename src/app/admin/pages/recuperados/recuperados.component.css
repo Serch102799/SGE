@@ -1,0 +1,394 @@
+/* ==========================================================================
+   CONFIGURACIÓN GLOBAL Y FONDOS
+   ========================================================================== */
+:host {
+  display: block;
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/nF.png") no-repeat center center fixed;
+  background-size: cover;
+  overflow-y: auto;
+}
+
+.form-container {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  background-color: rgba(15, 23, 42, 0.9);
+  color: #e0e0e0;
+  border: 1px solid rgba(68, 128, 211, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+  overflow: visible;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp { 
+  from { opacity: 0; transform: translateY(20px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+
+.container-header {
+  background: linear-gradient(135deg, rgba(68, 128, 211, 0.4) 0%, rgba(74, 142, 206, 0.2) 100%);
+  padding: 20px 30px;
+  border-bottom: 1px solid rgba(68, 128, 211, 0.5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.container-header h2 { 
+  color: #ffffff; 
+  font-size: 1.8rem; 
+  margin: 0; 
+  font-weight: 700; 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+}
+
+/* ==========================================================================
+   TABLERO KANBAN
+   ========================================================================== */
+.kanban-board {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto; 
+  padding-bottom: 20px; 
+  min-height: 60vh;
+  align-items: flex-start;
+}
+
+.kanban-board::-webkit-scrollbar { height: 8px; }
+.kanban-board::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+.kanban-board::-webkit-scrollbar-thumb { background: rgba(68, 128, 211, 0.5); border-radius: 10px; }
+.kanban-board::-webkit-scrollbar-thumb:hover { background: rgba(68, 128, 211, 0.8); }
+
+.kanban-column {
+  flex: 1;
+  min-width: 280px; 
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+}
+
+.col-yonque { border-top: 4px solid #a8a29e; }      
+.col-reparacion { border-top: 4px solid #fbbf24; }  
+.col-disponible { border-top: 4px solid #4ade80; }  
+.col-instalada { border-top: 4px solid #38bdf8; }   
+
+.column-header {
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.column-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+}
+
+.column-body {
+  padding: 15px;
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* ==========================================================================
+   TARJETAS KANBAN (CARDS)
+   ========================================================================== */
+.kanban-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.kanban-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.opacity-75 { opacity: 0.75; }
+.opacity-75:hover { opacity: 1; }
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+  border-bottom: 1px dashed rgba(255,255,255,0.1);
+  padding-bottom: 8px;
+}
+
+.card-info {
+  font-size: 0.9rem;
+  color: #e2e8f0;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-falla {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px;
+  border-radius: 4px;
+  border-left: 2px solid #a8a29e;
+  line-height: 1.3;
+}
+
+/* ==========================================================================
+   BOTONES Y UTILIDADES
+   ========================================================================== */
+.btn-guardar {
+  background: linear-gradient(135deg, #4480d3 0%, #2a5298 100%);
+  color: white; border: none; font-weight: 600; cursor: pointer;
+  transition: all 0.3s ease; padding: 10px 20px; border-radius: 8px;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-guardar:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(68, 128, 211, 0.5); }
+.btn-guardar:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-cancelar {
+  background: transparent; border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ccc; font-weight: bold; cursor: pointer; transition: all 0.3s ease;
+  padding: 10px 20px; border-radius: 8px; margin-right: 10px;
+}
+.btn-cancelar:hover { background: rgba(255, 255, 255, 0.05); color: white; border-color: rgba(255, 255, 255, 0.4); }
+
+.btn-cerrar { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; transition: color 0.3s ease; }
+.btn-cerrar:hover { color: #ffffff; }
+
+.btn-avanzar {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+.btn-warning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
+.btn-warning:hover { background: rgba(251, 191, 36, 0.4); color: white; }
+
+.btn-success { background: rgba(74, 222, 128, 0.2); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.4); }
+.btn-success:hover { background: rgba(74, 222, 128, 0.4); color: white; }
+
+.btn-primary { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+.btn-primary:hover { background: rgba(56, 189, 248, 0.4); color: white; }
+
+.w-100 { width: 100%; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; } /* Más separación entre inputs */
+.mb-5 { margin-bottom: 3rem; }
+.p-3 { padding: 1rem; }
+.text-muted { color: #94a3b8 !important; }
+.text-warning { color: #fbbf24 !important; }
+.text-success { color: #4ade80 !important; }
+.text-info { color: #38bdf8 !important; }
+
+/* ==========================================================================
+   MODALES (ESTILO CYBERPUNK GLASS)
+   ========================================================================== */
+.modal-overlay { 
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+  background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); 
+  display: flex; justify-content: center; align-items: center; 
+  z-index: 2000; padding: 20px; animation: fadeInOverlay 0.3s ease-out; 
+}
+@keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-content { 
+  background: #1e293b; 
+  border: 1px solid rgba(255, 255, 255, 0.1); 
+  border-radius: 12px; 
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8); 
+  width: 90%; max-width: 500px; 
+  animation: slideUpModal 0.3s ease; 
+}
+@keyframes slideUpModal { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+.modal-header { 
+  padding: 20px 25px; 
+  display: flex; justify-content: space-between; align-items: center; 
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+  background: linear-gradient(135deg, rgba(68, 128, 211, 0.15), transparent);
+}
+.modal-header h3 { margin: 0; font-size: 1.3rem; color: white;}
+
+.modal-content .header-advertencia { background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), transparent); border-bottom: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; }
+.modal-content .header-exito { background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), transparent); border-bottom: 1px solid rgba(34, 197, 94, 0.4); color: #4ade80; }
+
+.modal-body { padding: 30px 25px; }
+
+.modal-footer { 
+  display: flex; justify-content: flex-end; padding: 20px 25px; 
+  background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255, 255, 255, 0.05); 
+}
+
+/* ==========================================================================
+   FORMULARIOS BASE (Para Textareas e Inputs normales)
+   ========================================================================== */
+.form-group label { display: block; color: #94a3b8; margin-bottom: 8px; font-size: 0.95rem; font-weight: 600; }
+.form-control {
+  width: 100%; background-color: rgba(0,0,0,0.4) !important; 
+  border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; 
+  padding: 12px 15px; color: #ffffff !important; font-size: 1rem; 
+  transition: all 0.3s ease; box-sizing: border-box; resize: vertical;
+}
+.form-control:focus { outline: none; border-color: #38bdf8 !important; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+
+/* ==========================================================================
+   FIX DEFINITIVO: ANGULAR MATERIAL MODO OSCURO (AUTOCOMPLETE)
+   ========================================================================== */
+/* Asegurar que el componente ocupe todo el ancho */
+::ng-deep .mat-mdc-form-field {
+  width: 100%;
+  display: block;
+}
+
+/* Eliminar el espacio muerto de abajo (el que separa tanto los inputs) */
+::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+/* Fondo oscuro y redondeo a la caja del input */
+::ng-deep .mdc-text-field--outlined {
+  background-color: rgba(0,0,0,0.4) !important;
+  border-radius: 6px !important;
+}
+
+/* Reducir la altura excesiva interna de Material para que empate con .form-control */
+::ng-deep .mat-mdc-form-field-infix {
+  min-height: 45px !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+
+/* Restaurar los bordes con color transparente/oscuro */
+::ng-deep .mdc-notched-outline__leading,
+::ng-deep .mdc-notched-outline__notch,
+::ng-deep .mdc-notched-outline__trailing {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  border-width: 1px !important;
+}
+
+/* Efecto focus brillante (Azul) al seleccionar el input */
+::ng-deep .mdc-text-field--focused .mdc-notched-outline__leading,
+::ng-deep .mdc-text-field--focused .mdc-notched-outline__notch,
+::ng-deep .mdc-text-field--focused .mdc-notched-outline__trailing {
+  border-color: #38bdf8 !important;
+  border-width: 1px !important;
+  box-shadow: inset 0 0 5px rgba(56, 189, 248, 0.2);
+}
+
+/* Textos internos */
+::ng-deep .mat-mdc-text-field-wrapper .mdc-text-field__input {
+  color: #ffffff !important;
+}
+::ng-deep .mat-mdc-text-field-wrapper .mdc-text-field__input::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Fondo oscuro y letra clara para la LISTA DESPLEGABLE de opciones */
+::ng-deep .mat-mdc-autocomplete-panel {
+  background-color: #1e293b !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  border-radius: 8px;
+}
+::ng-deep .mat-mdc-option { color: #e2e8f0 !important; }
+::ng-deep .mat-mdc-option:hover:not(.mdc-list-item--disabled), 
+::ng-deep .mat-mdc-option.mat-mdc-option-active {
+  background-color: rgba(56, 189, 248, 0.2) !important;
+}
+/* ==========================================================================
+   BARRA DE HERRAMIENTAS Y VISTAS (NIVEL ENTERPRISE)
+   ========================================================================== */
+.header-actions { display: flex; align-items: center; gap: 15px; }
+
+.view-toggle {
+  display: flex; background: rgba(0,0,0,0.4); border-radius: 8px; padding: 4px; border: 1px solid rgba(255,255,255,0.1);
+}
+.view-toggle button {
+  background: transparent; border: none; color: #94a3b8; padding: 6px 15px; border-radius: 6px; cursor: pointer; transition: all 0.3s; font-weight: 600; display: flex; gap: 6px; align-items: center;
+}
+.view-toggle button:hover { color: white; }
+.view-toggle button.active { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+
+.toolbar-section {
+  display: flex; justify-content: space-between; align-items: center; padding: 15px 30px;
+  background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid rgba(255,255,255,0.05); gap: 20px; flex-wrap: wrap;
+}
+
+.filters-grid { display: flex; align-items: center; gap: 15px; flex-grow: 1; flex-wrap: wrap; }
+
+.filter-group {
+  display: flex; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 0 10px; height: 40px; transition: border-color 0.3s;
+}
+.filter-group:focus-within { border-color: #38bdf8; }
+.filter-group input { background: transparent; border: none; color: white; height: 100%; outline: none; padding: 0 10px; font-size: 0.9rem;}
+.filter-group label { color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin-right: 5px;}
+.filter-icon { color: #94a3b8; }
+.buscador-principal { flex-grow: 1; min-width: 250px; }
+.buscador-principal input { width: 100%; }
+
+.btn-icon { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; height: 40px; width: 40px; cursor: pointer; transition: all 0.2s;}
+.btn-icon:hover { background: rgba(239, 68, 68, 0.3); color: white; }
+
+.export-actions { display: flex; gap: 10px; }
+.btn-export { border: none; padding: 8px 15px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; gap: 6px; align-items: center; transition: all 0.2s; color: white; }
+.btn-export.csv { background: #16a34a; }
+.btn-export.csv:hover { background: #15803d; }
+.btn-export.pdf { background: #dc2626; }
+.btn-export.pdf:hover { background: #b91c1c; }
+
+/* ==========================================================================
+   TABLA DE REPORTES (VISTA LISTA)
+   ========================================================================== */
+.table-responsive { overflow-x: auto; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+.report-table { width: 100%; border-collapse: collapse; text-align: left; }
+.report-table th { background: rgba(56, 189, 248, 0.1); color: #38bdf8; padding: 15px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.report-table td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.95rem; color: #e2e8f0; vertical-align: middle; }
+.report-table tr:hover { background: rgba(255,255,255,0.02); }
+
+.status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid transparent; display: inline-block; text-transform: uppercase;}
+.status-badge.yonque { background: rgba(168, 162, 158, 0.1); color: #a8a29e; border-color: rgba(168, 162, 158, 0.4); }
+.status-badge.en-reparación { background: rgba(251, 191, 36, 0.1); color: #fbbf24; border-color: rgba(251, 191, 36, 0.4); }
+.status-badge.disponible { background: rgba(74, 222, 128, 0.1); color: #4ade80; border-color: rgba(74, 222, 128, 0.4); }
+.status-badge.instalada { background: rgba(56, 189, 248, 0.1); color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); }
+
+.pagination-controls { display: flex; justify-content: space-between; align-items: center; padding-top: 20px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); }
+.page-buttons { display: flex; align-items: center; gap: 15px; }
+.page-buttons button { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s;}
+.page-buttons button:hover:not(:disabled) { background: rgba(56, 189, 248, 0.2); border-color: #38bdf8; }
+.page-buttons button:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-current { font-weight: 700; color: #38bdf8; }

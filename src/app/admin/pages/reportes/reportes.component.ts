@@ -396,7 +396,6 @@ exportarPDF() {
       this.mostrarNotificacion('Éxito', 'PDF exportado correctamente con desglose completo.', 'exito');
       return; 
     }
-    // --- FIN SOLUCIÓN ESPECIAL ---
 
     // Lógica normal para los demás reportes
     if (this.tipoReporteSeleccionado === 'gastos-totales' && this.totalGeneral > 0) {
@@ -525,12 +524,13 @@ exportarPDF() {
       if (reportesConDesglose.includes(this.tipoReporteSeleccionado) && detallesArray.length > 0) {
         
         if (this.tipoReporteSeleccionado === 'costo-autobus' || this.tipoReporteSeleccionado === 'costo-por-autobus-especifico') {
+           const marcaModelo = `${fila.marca || fila.marca_autobus || ''} ${fila.modelo || fila.anio || fila.modelo_autobus || ''}`.trim() || '-';
+          datosExcel.push(['', `Autobús: ${fila.autobus}`, `Marca/Mod: ${marcaModelo}`, '', '', '', '', '']);
           // Agregamos Marca/Mod. en el desglose de Excel
           datosExcel.push(['', '--> FECHA', 'TIPO', 'ARTÍCULO / DESCRIPCIÓN', 'MARCA / PROVEEDOR', 'CANTIDAD', 'COSTO UNIT.', 'SUBTOTAL']);
           
           // Agregamos una fila para la Marca/Modelo
-          const marcaModelo = `${fila.marca || fila.marca_autobus || ''} ${fila.modelo || fila.anio || fila.modelo_autobus || ''}`.trim() || '-';
-          datosExcel.push(['', `Autobús: ${fila.autobus}`, `Marca/Mod: ${marcaModelo}`, '', '', '', '', '']);
+         
 
 
           detallesArray.forEach((rawD: any) => {

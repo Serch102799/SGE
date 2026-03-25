@@ -1,0 +1,310 @@
+<div class="form-container mt-4 mb-5" style="max-width: 98%;">
+  <div class="container-header">
+    <h2><i class="fas fa-recycle"></i> Gestión de Refacciones Usadas</h2>
+    <div class="header-actions">
+      <div class="view-toggle">
+        <button [class.active]="vistaActual === 'kanban'" (click)="vistaActual = 'kanban'">
+          <i class="fas fa-columns"></i> Kanban
+        </button>
+        <button [class.active]="vistaActual === 'tabla'" (click)="vistaActual = 'tabla'">
+          <i class="fas fa-list"></i> Tabla
+        </button>
+      </div>
+      <button class="btn-guardar" (click)="abrirModal('ingreso')">
+        <i class="fas fa-plus"></i> Nuevo Ingreso
+      </button>
+    </div>
+  </div>
+
+  <div class="toolbar-section">
+    <div class="filters-grid">
+      <div class="filter-group buscador-principal">
+        <i class="fas fa-search filter-icon"></i>
+        <input type="text" placeholder="Buscar por pieza, autobús o taller..." 
+               [(ngModel)]="textoBusqueda" (keyup)="aplicarFiltros()">
+      </div>
+      <div class="filter-group">
+        <label>Desde:</label>
+        <input type="date" [(ngModel)]="fechaInicio" (change)="aplicarFiltros()">
+      </div>
+      <div class="filter-group">
+        <label>Hasta:</label>
+        <input type="date" [(ngModel)]="fechaFin" (change)="aplicarFiltros()">
+      </div>
+      <button class="btn-icon" (click)="limpiarFiltros()" title="Limpiar Filtros">
+        <i class="fas fa-eraser"></i>
+      </button>
+    </div>
+    
+    <div class="export-actions">
+      <button class="btn-export csv" (click)="exportarCSV()"><i class="fas fa-file-excel"></i> CSV</button>
+      <button class="btn-export pdf" (click)="exportarPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+    </div>
+  </div>
+
+  <div class="container-body p-3">
+
+    <div class="kanban-board" *ngIf="vistaActual === 'kanban'">
+      </div>
+
+    <div class="table-view" *ngIf="vistaActual === 'tabla'">
+      <div class="table-responsive">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Pieza / Componente</th>
+              <th>Estado Actual</th>
+              <th>Autobús Origen</th>
+              <th>Taller / Proveedor</th>
+              <th>Costo Reparación</th>
+              <th>Fecha Registro</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let pieza of piezasPaginadas">
+              <td>#{{ pieza.id_pieza_recuperada }}</td>
+              <td><strong>{{ pieza.nombre_pieza }}</strong><br><small class="text-muted">{{ pieza.numero_parte || 'S/N' }}</small></td>
+              <td>
+                <span class="status-badge" [ngClass]="pieza.estado.toLowerCase().replace(' ', '-')">
+                  {{ pieza.estado }}
+                </span>
+              </td>
+              <td><i class="fas fa-bus text-muted"></i> {{ pieza.origen_economico || 'N/A' }}</td>
+              <td>{{ pieza.proveedor_nombre || 'N/A' }}</td>
+              <td class="text-success font-weight-bold">{{ pieza.costo_reparacion | currency }}</td>
+              <td>{{ pieza.fecha_baja | date:'dd/MM/yyyy' }}</td>
+            </tr>
+            <tr *ngIf="piezasPaginadas.length === 0">
+              <td colspan="7" class="text-center p-4">No se encontraron piezas con estos filtros.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-controls" *ngIf="piezasFiltradas.length > itemsPorPagina">
+        <span class="text-muted">Mostrando {{ (paginaActual - 1) * itemsPorPagina + 1 }} - {{ (paginaActual * itemsPorPagina) > piezasFiltradas.length ? piezasFiltradas.length : (paginaActual * itemsPorPagina) }} de {{ piezasFiltradas.length }}</span>
+        <div class="page-buttons">
+          <button (click)="cambiarPagina(-1)" [disabled]="paginaActual === 1"><i class="fas fa-chevron-left"></i> Anterior</button>
+          <span class="page-current">{{ paginaActual }} / {{ totalPaginas }}</span>
+          <button (click)="cambiarPagina(1)" [disabled]="paginaActual === totalPaginas">Siguiente <i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="container-body p-3">
+    <div class="kanban-board">
+      
+      <div class="kanban-column col-yonque">
+        <div class="column-header">
+          <h3>🟤 Yonque (Bajas) <span class="badge">{{ yonque.length }}</span></h3>
+        </div>
+        <div class="column-body">
+          <div class="kanban-card" *ngFor="let pieza of yonque">
+            <div class="card-title">{{ pieza.nombre_pieza }}</div>
+            <div class="card-info"><i class="fas fa-bus text-muted"></i> De: {{ pieza.origen_economico }}</div>
+            <div class="card-info"><i class="far fa-calendar-alt text-muted"></i> {{ pieza.fecha_baja | date:'dd/MM/yy' }}</div>
+            <p class="card-falla text-muted mt-2"><small>{{ pieza.motivo_falla }}</small></p>
+            <button class="btn-avanzar btn-warning mt-2 w-100" (click)="abrirModal('reparacion', pieza)">
+              Mandar a Reparar <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="kanban-column col-reparacion">
+        <div class="column-header">
+          <h3>🟡 En Reparación <span class="badge">{{ enReparacion.length }}</span></h3>
+        </div>
+        <div class="column-body">
+          <div class="kanban-card" *ngFor="let pieza of enReparacion">
+            <div class="card-title">{{ pieza.nombre_pieza }}</div>
+            <div class="card-info"><i class="fas fa-tools text-warning"></i> {{ pieza.proveedor_nombre }}</div>
+            <div class="card-info"><i class="far fa-calendar-alt text-muted"></i> Envío: {{ pieza.fecha_envio | date:'dd/MM/yy' }}</div>
+            <button class="btn-avanzar btn-success mt-3 w-100" (click)="abrirModal('recepcion', pieza)">
+              Recibir Pieza <i class="fas fa-check"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="kanban-column col-disponible">
+        <div class="column-header">
+          <h3>🟢 Stock Recuperado <span class="badge">{{ disponibles.length }}</span></h3>
+        </div>
+        <div class="column-body">
+          <div class="kanban-card" *ngFor="let pieza of disponibles">
+            <div class="card-title">{{ pieza.nombre_pieza }}</div>
+            <div class="card-info"><i class="fas fa-dollar-sign text-success"></i> Costo: {{ pieza.costo_reparacion | currency }}</div>
+            <div class="card-info"><i class="fas fa-file-invoice text-muted"></i> Fac: {{ pieza.factura_reparacion || 'S/F' }}</div>
+            <button class="btn-avanzar btn-primary mt-3 w-100" (click)="abrirModal('instalacion', pieza)">
+              Instalar en Unidad <i class="fas fa-bus"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="kanban-column col-instalada">
+        <div class="column-header">
+          <h3>🔵 Instaladas <span class="badge">{{ instaladas.length }}</span></h3>
+        </div>
+        <div class="column-body">
+          <div class="kanban-card opacity-75" *ngFor="let pieza of instaladas">
+            <div class="card-title">{{ pieza.nombre_pieza }}</div>
+            <div class="card-info"><i class="fas fa-bus text-info"></i> Puesta en: <strong>{{ pieza.destino_economico }}</strong></div>
+            <div class="card-info"><i class="far fa-calendar-check text-muted"></i> {{ pieza.fecha_instalacion | date:'dd/MM/yy' }}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="modalActivo !== ''" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    
+    <ng-container *ngIf="modalActivo === 'ingreso'">
+      <div class="modal-header">
+        <h3><i class="fas fa-box-open text-muted"></i> Registrar Casco / Yonque</h3>
+        <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group mb-3">
+          <label>Pieza (Buscar en Catálogo)</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input type="text" placeholder="Ej. Marcha, Alternador..." matInput [formControl]="refaccionControl" [matAutocomplete]="autoRefaccion">
+          </mat-form-field>
+          <mat-autocomplete #autoRefaccion="matAutocomplete" [displayWith]="displayRefaccion" (optionSelected)="onRefaccionSelected($event)">
+            <mat-option *ngFor="let refaccion of filteredRefacciones$ | async" [value]="refaccion">
+              {{ refaccion.numero_parte || 'S/N' }} - {{ refaccion.nombre }}
+            </mat-option>
+          </mat-autocomplete>
+        </div>
+
+        <div class="form-group mb-3">
+          <label>Autobús de Origen (¿A quién se le quitó?)</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input type="text" placeholder="Busca por económico..." matInput [formControl]="autobusOrigenControl" [matAutocomplete]="autoBusOrigen">
+          </mat-form-field>
+          <mat-autocomplete #autoBusOrigen="matAutocomplete" [displayWith]="displayAutobus" (optionSelected)="onAutobusOrigenSelected($event)">
+            <mat-option *ngFor="let autobus of filteredAutobusesOrigen$ | async" [value]="autobus">
+              <i class="fas fa-bus text-muted"></i> {{ autobus.economico }}
+            </mat-option>
+          </mat-autocomplete>
+        </div>
+
+        <div class="form-group mb-3">
+          <label>Motivo de Falla / Observaciones</label>
+          <textarea class="form-control" [(ngModel)]="formData.motivo_falla" rows="2" placeholder="Ej. Huele a quemado, no retiene carga..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn-guardar" (click)="guardarIngreso()" [disabled]="isSaving"><i class="fas fa-save"></i> Guardar en Yonque</button>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="modalActivo === 'reparacion'">
+      <div class="modal-header header-advertencia">
+        <h3><i class="fas fa-tools"></i> Mandar a Reparar</h3>
+        <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: white; margin-bottom: 20px;">Vas a enviar la pieza: <strong class="text-warning">{{ piezaSeleccionada?.nombre_pieza }}</strong></p>
+        <div class="form-group mb-3">
+          <label>Proveedor / Taller Eléctrico</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input type="text" placeholder="Busca el taller..." matInput [formControl]="proveedorControl" [matAutocomplete]="autoProveedor">
+          </mat-form-field>
+          <mat-autocomplete #autoProveedor="matAutocomplete" [displayWith]="displayProveedor" (optionSelected)="onProveedorSelected($event)">
+            <mat-option *ngFor="let proveedor of filteredProveedores$ | async" [value]="proveedor">
+              <i class="fas fa-wrench text-muted"></i> {{ proveedor.nombre_proveedor }}
+            </mat-option>
+          </mat-autocomplete>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn-guardar" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);" (click)="avanzarEstado('En Reparación')" [disabled]="isSaving">Confirmar Envío</button>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="modalActivo === 'recepcion'">
+      <div class="modal-header header-exito">
+        <h3><i class="fas fa-check-circle"></i> Recibir Pieza Reparada</h3>
+        <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: white; margin-bottom: 20px;">Recibiendo: <strong class="text-success">{{ piezaSeleccionada?.nombre_pieza }}</strong></p>
+        <div class="form-group mb-3">
+          <label>Costo Real de la Reparación ($)</label>
+          <input type="number" class="form-control" [(ngModel)]="formData.costo_reparacion" placeholder="Ej. 1500">
+        </div>
+        <div class="form-group mb-3">
+          <label>Factura / Nota de Pago (Opcional)</label>
+          <input type="text" class="form-control" [(ngModel)]="formData.factura_reparacion" placeholder="Ej. FAC-9921">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn-guardar" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);" (click)="avanzarEstado('Disponible')" [disabled]="isSaving">Recibir en Stock</button>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="modalActivo === 'instalacion'">
+      <div class="modal-header" style="border-bottom-color: rgba(56, 189, 248, 0.4);">
+        <h3 style="color: #38bdf8;"><i class="fas fa-bus"></i> Instalar en Unidad</h3>
+        <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: white; margin-bottom: 20px;">Pieza a instalar: <strong class="text-info">{{ piezaSeleccionada?.nombre_pieza }}</strong></p>
+        <div class="form-group mb-3">
+          <label>¿A qué autobús se le va a instalar?</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input type="text" placeholder="Busca por económico..." matInput [formControl]="autobusDestinoControl" [matAutocomplete]="autoBusDestino">
+          </mat-form-field>
+          <mat-autocomplete #autoBusDestino="matAutocomplete" [displayWith]="displayAutobus" (optionSelected)="onAutobusDestinoSelected($event)">
+            <mat-option *ngFor="let autobus of filteredAutobusesDestino$ | async" [value]="autobus">
+              <i class="fas fa-bus text-muted"></i> {{ autobus.economico }}
+            </mat-option>
+          </mat-autocomplete>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn-guardar" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);" (click)="avanzarEstado('Instalada')" [disabled]="isSaving">Confirmar Instalación</button>
+      </div>
+    </ng-container>
+
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()" style="z-index: 3000;">
+  <div class="modal-content" (click)="$event.stopPropagation()" style="max-width: 400px; text-align: center;">
+    <div class="modal-header"
+         [ngClass]="{
+           'header-exito': notificacion.tipo === 'exito',
+           'header-error': notificacion.tipo === 'error',
+           'header-advertencia': notificacion.tipo === 'advertencia'
+         }">
+      <h3 style="margin: 0 auto;">
+        <i class="fas"
+           [ngClass]="{
+             'fa-check-circle': notificacion.tipo === 'exito',
+             'fa-times-circle': notificacion.tipo === 'error',
+             'fa-exclamation-triangle': notificacion.tipo === 'advertencia'
+           }"></i>
+        {{ notificacion.titulo }}
+      </h3>
+    </div>
+    <div class="modal-body">
+      <p style="color: white; font-size: 1.1rem; margin: 0;">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer" style="justify-content: center;">
+      <button type="button" class="btn-guardar" (click)="cerrarModalNotificacion()">Entendido</button>
+    </div>
+  </div>
+</div>
