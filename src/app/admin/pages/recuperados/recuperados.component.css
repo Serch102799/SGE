@@ -392,3 +392,29 @@
 .page-buttons button:hover:not(:disabled) { background: rgba(56, 189, 248, 0.2); border-color: #38bdf8; }
 .page-buttons button:disabled { opacity: 0.4; cursor: not-allowed; }
 .page-current { font-weight: 700; color: #38bdf8; }
+/* ==========================================================================
+   SCROLLBAR VISIBLE PARA EL AUTOCOMPLETE (MENÚ DESPLEGABLE)
+   ========================================================================== */
+::ng-deep .mat-mdc-autocomplete-panel {
+  max-height: 320px !important; /* Hacemos la caja más alta para que quepan unas 8 opciones de golpe */
+  overflow-y: auto !important;  /* Forzamos el scroll */
+}
+
+/* Diseñamos la barra de scroll para que combine con el tema Cyberpunk */
+::ng-deep .mat-mdc-autocomplete-panel::-webkit-scrollbar {
+  width: 8px !important;
+}
+
+::ng-deep .mat-mdc-autocomplete-panel::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-radius: 0 8px 8px 0;
+}
+
+::ng-deep .mat-mdc-autocomplete-panel::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.5) !important; /* Color azul neón */
+  border-radius: 8px;
+}
+
+::ng-deep .mat-mdc-autocomplete-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.9) !important; /* Azul más fuerte al pasar el mouse */
+}
