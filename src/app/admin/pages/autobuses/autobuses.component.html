@@ -491,13 +491,20 @@
           <tbody>
             <tr *ngFor="let item of historialFiltrado">
               <td>{{ item.fecha | date:'dd/MM/yy' }}</td>
-              <td>{{ item.kilometraje | number }} km</td>
+              
+              <td>{{ item.kilometraje > 0 ? (item.kilometraje | number) + ' km' : 'N/A' }}</td>
+              
               <td>
                 <span [class.tipo-refaccion]="item.tipo_item === 'Refacción'"
-                  [class.tipo-insumo]="item.tipo_item === 'Insumo'">
+                      [class.tipo-insumo]="item.tipo_item === 'Insumo'"
+                      [ngStyle]="{'background-color': item.tipo_item === 'Pieza Recuperada' ? 'rgba(74, 222, 128, 0.2)' : (item.tipo_item === 'Serv. Externo' ? 'rgba(251, 191, 36, 0.2)' : ''), 
+                                  'color': item.tipo_item === 'Pieza Recuperada' ? '#4ade80' : (item.tipo_item === 'Serv. Externo' ? '#fbbf24' : ''),
+                                  'padding': item.tipo_item === 'Pieza Recuperada' || item.tipo_item === 'Serv. Externo' ? '4px 8px' : '',
+                                  'border-radius': item.tipo_item === 'Pieza Recuperada' || item.tipo_item === 'Serv. Externo' ? '4px' : ''}">
                   {{ item.tipo_item }}
                 </span>
               </td>
+              
               <td style="font-weight: 500; color: #fff;">{{ item.nombre }}</td>
               <td>{{ item.marca || '-' }}</td>
               <td style="text-align: center;">{{ item.cantidad }}</td>
