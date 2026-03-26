@@ -17,7 +17,6 @@ import * as XLSX from 'xlsx';
 })
 export class ReportesComponent implements OnInit {
   
-  // --- VARIABLES PRINCIPALES ---
   tipoReporteSeleccionado: string = 'stock-bajo';
   fechaInicio: string = '';
   fechaFin: string = '';
@@ -27,98 +26,53 @@ export class ReportesComponent implements OnInit {
   totalGeneral: number = 0;
   isLoading = false;
 
-  // --- VARIABLES PARA EL BUSCADOR (Historial por Refacción) ---
   itemsSeleccionados: { id: number, nombre: string, tipo: 'Refacción' | 'Insumo', marca?: string }[] = [];
   refaccionControl = new FormControl('');
   insumoControl = new FormControl('');
   filteredRefacciones$!: Observable<any[]>;
   filteredInsumos$!: Observable<any[]>;
 
-  // --- VARIABLES PARA EL BUSCADOR (Costo por Autobús) ---
   busesSeleccionados: { id: number, economico: string }[] = [];
   busReporteControl = new FormControl<string | any>('');
   filteredBusesReporte$!: Observable<any[]>;
 
-  // --- VARIABLES PARA MODALES ---
   mostrarModalNotificacion = false;
-  notificacion = {
-    titulo: 'Aviso',
-    mensaje: '',
-    tipo: 'advertencia' as 'exito' | 'error' | 'advertencia'
-  };
+  notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
 
   modalDetallesVisible: boolean = false;
   busSeleccionado: any = null;
   
   private apiUrl = `${environment.apiUrl}/reportes`;
 
-  // --- CONFIGURACIÓN DE REPORTES ---
+  // --- CONFIGURACIÓN DE REPORTES (Agregados Razón Social) ---
   reportesConfig: { [key: string]: { titulo: string, descripcion: string, requiereFecha: boolean, requiereListaArticulos?: boolean, requiereListaBuses?: boolean } } = {
-    'stock-bajo': {
-      titulo: 'Stock Bajo',
-      descripcion: 'Refacciones e insumos con stock por debajo del mínimo',
-      requiereFecha: false
-    },
-    'gastos-totales': {
-      titulo: 'Gastos Totales por Entradas',
-      descripcion: 'Resumen de todas las entradas de almacén y su costo total',
-      requiereFecha: true
-    },
-    'menos-utilizadas': {
-      titulo: 'Refacciones Menos Utilizadas',
-      descripcion: 'Refacciones con menor movimiento en el periodo seleccionado',
-      requiereFecha: true
-    },
-    'mas-utilizadas': {
-      titulo: 'Refacciones Más Utilizadas',
-      descripcion: 'Refacciones con mayor movimiento en el periodo seleccionado',
-      requiereFecha: true
-    },
-    'costo-autobus': {
-      titulo: 'Costo por Autobús (General)',
-      descripcion: 'Costo total de mantenimiento por unidad en el periodo seleccionado',
-      requiereFecha: true
-    },
-    'movimientos-refaccion': {
-      titulo: 'Movimientos Generales por Refacción',
-      descripcion: 'Historial general de todas las refacciones que tuvieron movimiento',
-      requiereFecha: true
-    },
-    'historial-por-refaccion': {
-      titulo: 'Historial por Artículos Específicos',
-      descripcion: 'Auditoría de entradas y salidas de una lista personalizada de refacciones e insumos.',
-      requiereFecha: true,
-      requiereListaArticulos: true
-    },
-    'costo-por-autobus-especifico': {
-      titulo: 'Costo por Autobús Específico',
-      descripcion: 'Desglose de gastos de mantenimiento solo de los autobuses seleccionados.',
-      requiereFecha: true,
-      requiereListaBuses: true
-    }
+    'stock-bajo': { titulo: 'Stock Bajo', descripcion: 'Refacciones e insumos con stock por debajo del mínimo', requiereFecha: false },
+    'gastos-totales': { titulo: 'Gastos Totales por Entradas', descripcion: 'Resumen de todas las entradas de almacén y su costo total', requiereFecha: true },
+    'compras-razon-social': { titulo: 'Compras por Razón Social', descripcion: 'Total de compras y facturas de almacén agrupadas por la empresa que facturó.', requiereFecha: true },
+    'gastos-razon-social': { titulo: 'Gastos por Razón Social', descripcion: 'Total de salidas, mantenimientos y servicios agrupados por la Razón Social a la que pertenece el autobús.', requiereFecha: true },
+    'menos-utilizadas': { titulo: 'Refacciones Menos Utilizadas', descripcion: 'Refacciones con menor movimiento en el periodo seleccionado', requiereFecha: true },
+    'mas-utilizadas': { titulo: 'Refacciones Más Utilizadas', descripcion: 'Refacciones con mayor movimiento en el periodo seleccionado', requiereFecha: true },
+    'costo-autobus': { titulo: 'Costo por Autobús (General)', descripcion: 'Costo total de mantenimiento por unidad en el periodo seleccionado', requiereFecha: true },
+    'movimientos-refaccion': { titulo: 'Movimientos Generales por Refacción', descripcion: 'Historial general de todas las refacciones que tuvieron movimiento', requiereFecha: true },
+    'historial-por-refaccion': { titulo: 'Historial por Artículos Específicos', descripcion: 'Auditoría de entradas y salidas de una lista personalizada.', requiereFecha: true, requiereListaArticulos: true },
+    'costo-por-autobus-especifico': { titulo: 'Costo por Autobús Específico', descripcion: 'Desglose de gastos de mantenimiento solo de los autobuses seleccionados.', requiereFecha: true, requiereListaBuses: true }
   };
 
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
     this.filteredRefacciones$ = this.refaccionControl.valueChanges.pipe(
-      startWith(''),
-      debounceTime(400),
-      distinctUntilChanged(),
+      startWith(''), debounceTime(400), distinctUntilChanged(),
       switchMap(value => this._buscarApi('refacciones', value || ''))
     );
     
     this.filteredInsumos$ = this.insumoControl.valueChanges.pipe(
-      startWith(''),
-      debounceTime(400),
-      distinctUntilChanged(),
+      startWith(''), debounceTime(400), distinctUntilChanged(),
       switchMap(value => this._buscarApi('insumos', value || ''))
     );
 
     this.filteredBusesReporte$ = this.busReporteControl.valueChanges.pipe(
-      startWith(''),
-      debounceTime(400),
-      distinctUntilChanged(),
+      startWith(''), debounceTime(400), distinctUntilChanged(),
       switchMap(value => {
         const term = typeof value === 'string' ? value : value?.economico;
         if (!term) return of([]);
@@ -127,26 +81,16 @@ export class ReportesComponent implements OnInit {
     );
   }
 
-  // --- LÓGICA DE BÚSQUEDA Y SELECCIÓN ---
   private _buscarApi(tipo: 'refacciones' | 'insumos', term: any): Observable<any[]> {
     const searchTerm = typeof term === 'string' ? term : term?.nombre;
     if (!searchTerm || searchTerm.length < 2) return of([]);
-    
     return this.http.get<any[]>(`${environment.apiUrl}/${tipo}/buscar`, { params: { term: searchTerm } }).pipe(
-      map(res => res.map(item => ({
-        id: item.id_refaccion || item.id_insumo,
-        nombre: item.nombre,
-        marca: item.marca || 'N/A',
-        tipo: tipo === 'refacciones' ? 'Refacción' : 'Insumo'
-      }))),
+      map(res => res.map(item => ({ id: item.id_refaccion || item.id_insumo, nombre: item.nombre, marca: item.marca || 'N/A', tipo: tipo === 'refacciones' ? 'Refacción' : 'Insumo' }))),
       catchError(() => of([]))
     );
   }
 
-  displayFn(item: any): string {
-    return item ? `${item.nombre} ${item.marca !== 'N/A' ? '('+item.marca+')' : ''}` : '';
-  }
-
+  displayFn(item: any): string { return item ? `${item.nombre} ${item.marca !== 'N/A' ? '('+item.marca+')' : ''}` : ''; }
   displayFnBusRep(bus: any): string { return bus && bus.economico ? `Bus ${bus.economico}` : ''; }
 
   agregarBusLista(event: any) {
@@ -162,20 +106,14 @@ export class ReportesComponent implements OnInit {
   agregarItemLista(event: MatAutocompleteSelectedEvent, tipo: 'Refacción' | 'Insumo') {
     const item = event.option.value;
     const yaExiste = this.itemsSeleccionados.some(i => i.id === item.id && i.tipo === tipo);
-    if (!yaExiste) {
-      this.itemsSeleccionados.push(item);
-    } else {
-      this.mostrarNotificacion('Duplicado', `Este artículo ya está en la lista de auditoría.`, 'advertencia');
-    }
+    if (!yaExiste) this.itemsSeleccionados.push(item);
+    else this.mostrarNotificacion('Duplicado', `Este artículo ya está en la lista de auditoría.`, 'advertencia');
     if (tipo === 'Refacción') this.refaccionControl.setValue('');
     else this.insumoControl.setValue('');
   }
 
-  eliminarItemLista(index: number) {
-    this.itemsSeleccionados.splice(index, 1);
-  }
+  eliminarItemLista(index: number) { this.itemsSeleccionados.splice(index, 1); }
 
-  // --- GETTERS ---
   get tituloReporte(): string { return this.reportesConfig[this.tipoReporteSeleccionado]?.titulo || 'Reporte'; }
   get descripcionReporte(): string { return this.reportesConfig[this.tipoReporteSeleccionado]?.descripcion || ''; }
   get requiereFechas(): boolean { return this.reportesConfig[this.tipoReporteSeleccionado]?.requiereFecha || false; }
@@ -183,31 +121,13 @@ export class ReportesComponent implements OnInit {
   get requiereListaBuses(): boolean { return this.reportesConfig[this.tipoReporteSeleccionado]?.requiereListaBuses || false; }
   get mostrarTotalGeneral(): boolean { return this.tipoReporteSeleccionado === 'gastos-totales' && this.totalGeneral > 0; }
 
-  // --- GENERACIÓN DE REPORTE ---
   generarReporte() {
-    if (!this.tipoReporteSeleccionado) {
-      this.mostrarNotificacion('Selección Requerida', 'Por favor, selecciona un tipo de reporte.');
-      return;
-    }
-
-    if (this.requiereFechas && (!this.fechaInicio || !this.fechaFin)) {
-      this.mostrarNotificacion('Filtro Requerido', 'Este reporte requiere un rango de fechas.');
-      return;
-    }
-
-    if (this.requiereListaArticulos && this.itemsSeleccionados.length === 0) {
-      this.mostrarNotificacion('Lista Vacía', 'Busca y agrega al menos un artículo a la lista.');
-      return;
-    }
+    if (!this.tipoReporteSeleccionado) { this.mostrarNotificacion('Selección Requerida', 'Por favor, selecciona un tipo de reporte.'); return; }
+    if (this.requiereFechas && (!this.fechaInicio || !this.fechaFin)) { this.mostrarNotificacion('Filtro Requerido', 'Este reporte requiere un rango de fechas.'); return; }
+    if (this.requiereListaArticulos && this.itemsSeleccionados.length === 0) { this.mostrarNotificacion('Lista Vacía', 'Busca y agrega al menos un artículo a la lista.'); return; }
+    if (this.requiereListaBuses && this.busesSeleccionados.length === 0) { this.mostrarNotificacion('Lista Vacía', 'Agrega al menos un autobús a la lista.'); return; }
     
-    if (this.requiereListaBuses && this.busesSeleccionados.length === 0) {
-      this.mostrarNotificacion('Lista Vacía', 'Agrega al menos un autobús a la lista.');
-      return;
-    }
-    
-    this.isLoading = true;
-    this.reporteData = [];
-    this.totalGeneral = 0;
+    this.isLoading = true; this.reporteData = []; this.totalGeneral = 0;
     
     let params = new HttpParams();
     if (this.fechaInicio) params = params.set('fechaInicio', this.fechaInicio);
@@ -221,8 +141,7 @@ export class ReportesComponent implements OnInit {
     }
 
     if (this.tipoReporteSeleccionado === 'costo-por-autobus-especifico') {
-      const idsAutobuses = this.busesSeleccionados.map(b => b.id).join(',');
-      params = params.set('idsAutobuses', idsAutobuses);
+      params = params.set('idsAutobuses', this.busesSeleccionados.map(b => b.id).join(','));
     }
 
     this.http.get<any>(`${this.apiUrl}/${this.tipoReporteSeleccionado}`, { params }).subscribe({
@@ -232,14 +151,8 @@ export class ReportesComponent implements OnInit {
           this.totalGeneral = data.totalGeneral || 0;
         } else {
           this.reporteData = Array.isArray(data) ? data : [];
-          this.totalGeneral = 0;
         }
-
-        if (this.reporteData.length > 0) {
-          this.columnasReporte = Object.keys(this.reporteData[0]);
-        } else {
-          this.columnasReporte = [];
-        }
+        this.columnasReporte = this.reporteData.length > 0 ? Object.keys(this.reporteData[0]) : [];
         this.isLoading = false;
       },
       error: (err) => {
@@ -248,107 +161,59 @@ export class ReportesComponent implements OnInit {
       }
     });
   }
+
   limpiarFiltros() {
-    this.tipoReporteSeleccionado = ''; 
-    
-    this.fechaInicio = '';
-    this.fechaFin = '';
-    
-    this.itemsSeleccionados = [];
-    this.busesSeleccionados = [];
-    
-    this.refaccionControl.setValue('');
-    this.insumoControl.setValue('');
-    this.busReporteControl.setValue('');
-    
-    this.reporteData = [];
-    this.columnasReporte = [];
-    this.totalGeneral = 0;
+    this.tipoReporteSeleccionado = ''; this.fechaInicio = ''; this.fechaFin = '';
+    this.itemsSeleccionados = []; this.busesSeleccionados = [];
+    this.refaccionControl.setValue(''); this.insumoControl.setValue(''); this.busReporteControl.setValue('');
+    this.reporteData = []; this.columnasReporte = []; this.totalGeneral = 0;
   }
 
-  // --- MODALES ---
   mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
-    this.notificacion = { titulo, mensaje, tipo };
-    this.mostrarModalNotificacion = true;
+    this.notificacion = { titulo, mensaje, tipo }; this.mostrarModalNotificacion = true;
   }
   cerrarModalNotificacion() { this.mostrarModalNotificacion = false; }
 
   abrirModalDetalles(fila: any) {
     this.busSeleccionado = fila;
-    if (typeof this.busSeleccionado.detalles === 'string') {
-      try { this.busSeleccionado.detalles = JSON.parse(this.busSeleccionado.detalles); } catch (e) { this.busSeleccionado.detalles = []; }
-    }
-    if (Array.isArray(this.busSeleccionado.detalles)) {
-      this.busSeleccionado.detalles = this.busSeleccionado.detalles.map((d: any) => d.value || d);
-    }
-    this.modalDetallesVisible = true;
-    document.body.style.overflow = 'hidden'; 
+    if (typeof this.busSeleccionado.detalles === 'string') { try { this.busSeleccionado.detalles = JSON.parse(this.busSeleccionado.detalles); } catch (e) { this.busSeleccionado.detalles = []; } }
+    if (Array.isArray(this.busSeleccionado.detalles)) this.busSeleccionado.detalles = this.busSeleccionado.detalles.map((d: any) => d.value || d);
+    this.modalDetallesVisible = true; document.body.style.overflow = 'hidden'; 
   }
+  cerrarModalDetalles() { this.modalDetallesVisible = false; this.busSeleccionado = null; document.body.style.overflow = 'auto'; }
 
-  cerrarModalDetalles() {
-    this.modalDetallesVisible = false;
-    this.busSeleccionado = null;
-    document.body.style.overflow = 'auto'; 
-  }
-
-  // --- FORMATEADORES ---
   formatearValor(valor: any, columna: string): string {
     if (columna.toLowerCase().includes('valor') || columna.toLowerCase().includes('costo') || columna.toLowerCase().includes('precio')) {
-      const numero = parseFloat(valor);
-      if (!isNaN(numero)) return '$' + numero.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const numero = parseFloat(valor); if (!isNaN(numero)) return '$' + numero.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
     if (columna.toLowerCase().includes('fecha')) {
-      const fecha = new Date(valor);
-      if (!isNaN(fecha.getTime())) return fecha.toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      const fecha = new Date(valor); if (!isNaN(fecha.getTime())) return fecha.toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' });
     }
     if (typeof valor === 'number') return valor.toLocaleString('es-MX');
     return valor || '-';
   }
-
-  formatearColumna(columna: string): string {
-    return columna.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  }
-
+  formatearColumna(columna: string): string { return columna.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); }
 
   // --- MÉTODOS DE EXPORTACIÓN ---
-
-exportarPDF() {
-    if (this.reporteData.length === 0) {
-      this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.');
-      return;
-    }
+  exportarPDF() {
+    if (this.reporteData.length === 0) { this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.'); return; }
     
     const doc = new jsPDF('landscape');
-    const titulo = this.tituloReporte.toUpperCase();
-    
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text(titulo, 14, 20);
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-MX')}`, 14, 28);
-
-    if (this.requiereFechas && this.fechaInicio && this.fechaFin) {
-      doc.text(`Periodo: ${this.fechaInicio} al ${this.fechaFin}`, 14, 34);
-    }
+    doc.setFontSize(18); doc.setFont('helvetica', 'bold'); doc.text(this.tituloReporte.toUpperCase(), 14, 20);
+    doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-MX')}`, 14, 28);
+    if (this.requiereFechas && this.fechaInicio && this.fechaFin) doc.text(`Periodo: ${this.fechaInicio} al ${this.fechaFin}`, 14, 34);
 
     let startY = 40;
 
-    // --- SOLUCIÓN ESPECIAL PARA AUTOBUSES ---
+    // --- SOLUCIONES ESPECIALES DE DISEÑO EN PDF ---
     if (this.tipoReporteSeleccionado === 'costo-autobus' || this.tipoReporteSeleccionado === 'costo-por-autobus-especifico') {
-      // Ajustamos los encabezados
-      const customHeaders = ['ID', 'AUTOBÚS', 'MARCA / MOD.', 'TIPO', 'ARTÍCULO / DESC.', 'MARCA / PROV.', 'CANT.', 'SUBTOTAL'];
       const bodyBus: any[] = [];
-
       this.reporteData.forEach(item => {
-        // Concatenamos Marca y Modelo
-        const marcaModelo = `${item.marca || item.marca_autobus || ''} ${item.modelo || item.anio || item.modelo_autobus || ''}`.trim() || '-';
-
-        // Fila principal del Autobús
+        const marcaModelo = `${item.marca || item.marca_autobus || ''} ${item.modelo || item.anio || item.modelo_autobus || ''}`.trim();
+        const tituloBus = `BUS ${item.autobus} | Empresa: ${item.razon_social || 'S/D'}` + (marcaModelo ? ` (${marcaModelo})` : '');
         bodyBus.push([
           { content: item.id_autobus || '-', styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } },
-          { content: `BUS ${item.autobus}`, styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } },
-          { content: marcaModelo, colSpan: 5, styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } }, // Expandimos para alinear
+          { content: tituloBus, colSpan: 5, styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } }, 
           { content: `$${parseFloat(item.costo_total_mantenimiento).toLocaleString('es-MX', {minimumFractionDigits:2})}`, styles: { fontStyle: 'bold', halign: 'right', fillColor: [220, 235, 255], textColor: [0, 100, 0] } }
         ]);
 
@@ -359,156 +224,107 @@ exportarPDF() {
         detallesArray.forEach((rawD: any) => {
           const d = rawD?.value || rawD;
           if (!d) return;
-          
-          bodyBus.push([
-            '', // ID vacío
-            new Date(d.fecha).toLocaleDateString('es-MX'), // Usamos la columna Autobús para la fecha
-            '', // Marca/Mod. vacío
-            d.tipo_item || '-',
-            d.nombre || '-',
-            (d.marca && d.marca !== 'N/A') ? d.marca : '-',
-            { content: d.cantidad || '1', halign: 'center' },
-            { content: `$${parseFloat(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}`, halign: 'right' }
-          ]);
+          bodyBus.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), d.tipo_item || '-', d.nombre || '-', (d.marca && d.marca !== 'N/A') ? d.marca : '-', { content: d.cantidad || '1', halign: 'center' }, { content: `$${parseFloat(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}`, halign: 'right' }]);
         });
       });
 
       autoTable(doc, {
-        startY: startY,
-        head: [customHeaders],
-        body: bodyBus,
-        headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
-        styles: { fontSize: 8, cellPadding: 3 },
-        margin: { top: 10 },
-        columnStyles: {
-            0: { cellWidth: 15 }, // ID
-            1: { cellWidth: 25 }, // Autobús / Fecha
-            2: { cellWidth: 35 }, // Marca/Mod
-            3: { cellWidth: 25 }, // Tipo
-            4: { cellWidth: 'auto' }, // Artículo
-            5: { cellWidth: 35 }, // Marca/Prov
-            6: { cellWidth: 15, halign: 'center' }, // Cant
-            7: { cellWidth: 25, halign: 'right' } // Subtotal
-        }
+        startY: startY, head: [['ID', 'FECHA / AUTOBÚS', 'TIPO', 'ARTÍCULO / DESC.', 'MARCA / PROV.', 'CANT.', 'SUBTOTAL']], body: bodyBus,
+        headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 }, styles: { fontSize: 8, cellPadding: 3 }, margin: { top: 10 }
       });
-
       doc.save(`Reporte_Autobuses_${new Date().getTime()}.pdf`);
-      this.mostrarNotificacion('Éxito', 'PDF exportado correctamente con desglose completo.', 'exito');
+      this.mostrarNotificacion('Éxito', 'PDF exportado correctamente.', 'exito');
       return; 
     }
 
-    // Lógica normal para los demás reportes
+    if (this.tipoReporteSeleccionado === 'compras-razon-social' || this.tipoReporteSeleccionado === 'gastos-razon-social') {
+      const isCompras = this.tipoReporteSeleccionado === 'compras-razon-social';
+      const customHeaders = isCompras ? ['FECHA / RAZÓN SOCIAL', 'DOCUMENTO / FACT.', 'PROVEEDOR', 'SUBTOTAL'] : ['FECHA / RAZÓN SOCIAL', 'BUS / ORIGEN', 'TIPO / DESC.', 'SUBTOTAL'];
+      const bodyRS: any[] = [];
+      
+      this.reporteData.forEach(item => {
+        bodyRS.push([
+          { content: item.razon_social, colSpan: 3, styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } },
+          { content: `$${parseFloat(item.costo_total_general).toLocaleString('es-MX', {minimumFractionDigits:2})}`, styles: { fontStyle: 'bold', halign: 'right', fillColor: [220, 235, 255], textColor: [0, 100, 0] } }
+        ]);
+        
+        let detallesArray = [];
+        try { detallesArray = typeof item.detalles === 'string' ? JSON.parse(item.detalles) : item.detalles; } catch (e) {}
+        if (!Array.isArray(detallesArray)) detallesArray = [];
+
+        detallesArray.forEach((rawD: any) => {
+          const d = rawD?.value || rawD; if (!d) return;
+          if (isCompras) {
+            bodyRS.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), d.documento || '-', d.proveedor || '-', { content: `$${parseFloat(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}`, halign: 'right' }]);
+          } else {
+            bodyRS.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), `BUS ${d.autobus || '-'}`, `${d.tipo}: ${d.descripcion}`, { content: `$${parseFloat(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}`, halign: 'right' }]);
+          }
+        });
+      });
+      
+      autoTable(doc, { startY: startY, head: [customHeaders], body: bodyRS, headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 }, styles: { fontSize: 8, cellPadding: 3 }, margin: { top: 10 } });
+      doc.save(`Reporte_RazonSocial_${new Date().getTime()}.pdf`);
+      this.mostrarNotificacion('Éxito', 'PDF exportado correctamente.', 'exito');
+      return;
+    }
+
+    // --- REPORTES NORMALES ---
     if (this.tipoReporteSeleccionado === 'gastos-totales' && this.totalGeneral > 0) {
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(76, 175, 80);
+      doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(76, 175, 80);
       doc.text(`TOTAL GENERAL: $${this.totalGeneral.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, startY);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont('helvetica', 'normal');
-      startY = 48;
+      doc.setTextColor(0, 0, 0); doc.setFont('helvetica', 'normal'); startY = 48;
     }
 
     const columnasVisibles = this.columnasReporte.filter(col => col !== 'detalles');
     const headers = columnasVisibles.map(col => this.formatearColumna(col));
     const body: any[] = [];
-
     const reportesConDesglose = ['gastos-totales', 'movimientos-refaccion', 'historial-por-refaccion'];
 
     this.reporteData.forEach(item => {
       const filaPrincipal = columnasVisibles.map(col => this.formatearValor(item[col], col));
-      
       let detallesArray = [];
       try { detallesArray = typeof item.detalles === 'string' ? JSON.parse(item.detalles) : item.detalles; } catch (e) {}
       if (!Array.isArray(detallesArray)) detallesArray = [];
 
       if (reportesConDesglose.includes(this.tipoReporteSeleccionado) && detallesArray.length > 0) {
-        const filaMaestra = filaPrincipal.map(val => ({ content: val, styles: { fontStyle: 'bold', fillColor: [235, 245, 255] } }));
-        body.push(filaMaestra);
-
+        body.push(filaPrincipal.map(val => ({ content: val, styles: { fontStyle: 'bold', fillColor: [235, 245, 255] } })));
+        
         if (this.tipoReporteSeleccionado === 'gastos-totales') {
-          body.push([
-            { content: '', styles: { fillColor: [255, 255, 255] } }, 
-            { content: 'TIPO', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } },
-            { content: 'ARTÍCULO', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } },
-            { content: 'MARCA', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } },
-            { content: 'CANT.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'center' } },
-            { content: 'COSTO U.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } },
-            { content: 'SUBTOTAL', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } }
-          ]);
-        } else if (this.tipoReporteSeleccionado === 'movimientos-refaccion' || this.tipoReporteSeleccionado === 'historial-por-refaccion') {
-          body.push([
-            { content: '', styles: { fillColor: [255, 255, 255] } }, 
-            { content: 'FECHA', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } },
-            { content: 'MOVIMIENTO', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } },
-            { content: 'ORIGEN / DESTINO', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } },
-            { content: 'CANT.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'center' } },
-            { content: 'COSTO TOTAL', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } }
-          ]);
+          body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: 'TIPO', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'ARTÍCULO', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'MARCA', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'CANT.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'center' } }, { content: 'COSTO U.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } }, { content: 'SUBTOTAL', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } }]);
+        } else {
+          body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: 'FECHA', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'MOVIMIENTO', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'ORIGEN / DESTINO', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'CANT.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'center' } }, { content: 'COSTO TOTAL', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } }]);
         }
 
         detallesArray.forEach((rawD: any) => {
-          const d = rawD?.value || rawD; 
-          if (!d || Object.keys(d).length === 0) return; 
-          
+          const d = rawD?.value || rawD; if (!d || Object.keys(d).length === 0) return; 
           const cantidadStr = (d.cantidad !== undefined && d.cantidad !== null) ? d.cantidad.toString() : '0';
           const costoUnitario = parseFloat(d.costo_unitario) || 0;
           const costoTotal = parseFloat(d.costo_total) || 0;
 
           if (this.tipoReporteSeleccionado === 'gastos-totales') {
-            body.push([
-              { content: '', styles: { fillColor: [255, 255, 255] } }, 
-              { content: d.tipo_item || '-', styles: { fontSize: 8, textColor: [100,100,100] } },
-              { content: d.nombre || '-', colSpan: 2, styles: { fontSize: 8, textColor: [100,100,100] } },
-              { content: d.marca || 'N/A', styles: { fontSize: 8, textColor: [100,100,100] } },
-              { content: cantidadStr, styles: { fontSize: 8, textColor: [100,100,100], halign: 'center' } },
-              { content: `$${costoUnitario.toFixed(2)}`, styles: { fontSize: 8, textColor: [100,100,100], halign: 'right' } },
-              { content: `$${costoTotal.toFixed(2)}`, styles: { fontSize: 8, textColor: [100,100,100], halign: 'right' } }
-            ]);
-          } else if (this.tipoReporteSeleccionado === 'movimientos-refaccion' || this.tipoReporteSeleccionado === 'historial-por-refaccion') {
+            body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: d.tipo_item || '-', styles: { fontSize: 8, textColor: [100,100,100] } }, { content: d.nombre || '-', colSpan: 2, styles: { fontSize: 8, textColor: [100,100,100] } }, { content: d.marca || 'N/A', styles: { fontSize: 8, textColor: [100,100,100] } }, { content: cantidadStr, styles: { fontSize: 8, textColor: [100,100,100], halign: 'center' } }, { content: `$${costoUnitario.toFixed(2)}`, styles: { fontSize: 8, textColor: [100,100,100], halign: 'right' } }, { content: `$${costoTotal.toFixed(2)}`, styles: { fontSize: 8, textColor: [100,100,100], halign: 'right' } }]);
+          } else {
             const colorTexto = d.tipo_movimiento === 'Entrada' ? [46, 204, 113] : [231, 76, 60];
-            body.push([
-              { content: '', styles: { fillColor: [255, 255, 255] } }, 
-              { content: new Date(d.fecha).toLocaleDateString('es-MX'), styles: { fontSize: 8, textColor: [100,100,100] } },
-              { content: d.tipo_movimiento || '-', styles: { fontSize: 8, fontStyle: 'bold', textColor: colorTexto } },
-              { content: d.documento || '-', colSpan: 2, styles: { fontSize: 8, textColor: [100,100,100] } },
-              { content: cantidadStr, styles: { fontSize: 8, textColor: [100,100,100], halign: 'center' } },
-              { content: `$${costoTotal.toFixed(2)}`, styles: { fontSize: 8, textColor: [100,100,100], halign: 'right' } }
-            ]);
+            body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: new Date(d.fecha).toLocaleDateString('es-MX'), styles: { fontSize: 8, textColor: [100,100,100] } }, { content: d.tipo_movimiento || '-', styles: { fontSize: 8, fontStyle: 'bold', textColor: colorTexto } }, { content: d.documento || '-', colSpan: 2, styles: { fontSize: 8, textColor: [100,100,100] } }, { content: cantidadStr, styles: { fontSize: 8, textColor: [100,100,100], halign: 'center' } }, { content: `$${costoTotal.toFixed(2)}`, styles: { fontSize: 8, textColor: [100,100,100], halign: 'right' } }]);
           }
         });
-
-      } else {
-        body.push(filaPrincipal);
-      }
+      } else { body.push(filaPrincipal); }
     });
 
-    autoTable(doc, {
-      startY: startY,
-      head: [headers],
-      body: body,
-      headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-      styles: { fontSize: 9, cellPadding: 3 },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
-      margin: { top: 10 }
-    });
-
+    autoTable(doc, { startY: startY, head: [headers], body: body, headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 }, styles: { fontSize: 9, cellPadding: 3 }, alternateRowStyles: { fillColor: [245, 245, 245] }, margin: { top: 10 } });
     doc.save(`Reporte_${this.tipoReporteSeleccionado}_${new Date().getTime()}.pdf`);
     this.mostrarNotificacion('Éxito', 'PDF exportado correctamente', 'exito');
   }
 
   exportarExcel() {
-    if (this.reporteData.length === 0) {
-      this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.');
-      return;
-    }
+    if (this.reporteData.length === 0) { this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.'); return; }
 
     const columnasVisibles = this.columnasReporte.filter(col => col !== 'detalles');
     const headers = columnasVisibles.map(col => this.formatearColumna(col));
     const datosExcel: any[][] = [];
-    
     datosExcel.push(headers);
 
-    const reportesConDesglose = ['costo-autobus', 'costo-por-autobus-especifico', 'gastos-totales', 'movimientos-refaccion', 'historial-por-refaccion'];
+    const reportesConDesglose = ['costo-autobus', 'costo-por-autobus-especifico', 'gastos-totales', 'movimientos-refaccion', 'historial-por-refaccion', 'compras-razon-social', 'gastos-razon-social'];
 
     this.reporteData.forEach(fila => {
       const filaPrincipal = columnasVisibles.map(header => {
@@ -524,69 +340,39 @@ exportarPDF() {
       if (reportesConDesglose.includes(this.tipoReporteSeleccionado) && detallesArray.length > 0) {
         
         if (this.tipoReporteSeleccionado === 'costo-autobus' || this.tipoReporteSeleccionado === 'costo-por-autobus-especifico') {
-           const marcaModelo = `${fila.marca || fila.marca_autobus || ''} ${fila.modelo || fila.anio || fila.modelo_autobus || ''}`.trim() || '-';
-          datosExcel.push(['', `Autobús: ${fila.autobus}`, `Marca/Mod: ${marcaModelo}`, '', '', '', '', '']);
-          // Agregamos Marca/Mod. en el desglose de Excel
+          const marcaModelo = `${fila.marca || fila.marca_autobus || ''} ${fila.modelo || fila.anio || fila.modelo_autobus || ''}`.trim();
+          datosExcel.push(['', `Autobús: ${fila.autobus} | Empresa: ${fila.razon_social || 'S/D'}`, `Marca/Mod: ${marcaModelo}`, '', '', '', '', '']);
           datosExcel.push(['', '--> FECHA', 'TIPO', 'ARTÍCULO / DESCRIPCIÓN', 'MARCA / PROVEEDOR', 'CANTIDAD', 'COSTO UNIT.', 'SUBTOTAL']);
-          
-          // Agregamos una fila para la Marca/Modelo
-         
-
-
           detallesArray.forEach((rawD: any) => {
-            const d = rawD?.value || rawD;
-            if (!d || Object.keys(d).length === 0) return;
-            const costoUnitario = parseFloat(d.costo_unitario) || 0;
-            const costoTotal = parseFloat(d.costo_total) || 0;
-
-            datosExcel.push([
-              '', 
-              new Date(d.fecha).toLocaleDateString('es-MX'),
-              d.tipo_item || '-',
-              d.nombre || '-',
-              d.marca || 'N/A',
-              d.cantidad || 0,
-              `$${costoUnitario.toFixed(2)}`,
-              `$${costoTotal.toFixed(2)}`
-            ]);
+            const d = rawD?.value || rawD; if (!d || Object.keys(d).length === 0) return;
+            datosExcel.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), d.tipo_item || '-', d.nombre || '-', d.marca || 'N/A', d.cantidad || 0, `$${(parseFloat(d.costo_unitario) || 0).toFixed(2)}`, `$${(parseFloat(d.costo_total) || 0).toFixed(2)}`]);
+          });
+        } else if (this.tipoReporteSeleccionado === 'compras-razon-social') {
+          datosExcel.push(['', '--> FECHA', 'DOCUMENTO', 'PROVEEDOR', 'SUBTOTAL']);
+          detallesArray.forEach((rawD: any) => {
+            const d = rawD?.value || rawD; if (!d || Object.keys(d).length === 0) return;
+            datosExcel.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), d.documento || '-', d.proveedor || '-', `$${(parseFloat(d.costo_total) || 0).toFixed(2)}`]);
+          });
+        } else if (this.tipoReporteSeleccionado === 'gastos-razon-social') {
+          datosExcel.push(['', '--> FECHA', 'AUTOBÚS', 'TIPO', 'DESCRIPCIÓN', 'SUBTOTAL']);
+          detallesArray.forEach((rawD: any) => {
+            const d = rawD?.value || rawD; if (!d || Object.keys(d).length === 0) return;
+            datosExcel.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), `BUS ${d.autobus || '-'}`, d.tipo || '-', d.descripcion || '-', `$${(parseFloat(d.costo_total) || 0).toFixed(2)}`]);
           });
         } else if (this.tipoReporteSeleccionado === 'gastos-totales') {
           datosExcel.push(['', '--> TIPO', 'ARTÍCULO', 'MARCA', 'CANTIDAD', 'COSTO UNIT.', 'SUBTOTAL']);
           detallesArray.forEach((rawD: any) => {
-            const d = rawD?.value || rawD;
-            if (!d || Object.keys(d).length === 0) return;
-            const costoUnitario = parseFloat(d.costo_unitario) || 0;
-            const costoTotal = parseFloat(d.costo_total) || 0;
-
-            datosExcel.push([
-              '', 
-              d.tipo_item || '-',
-              d.nombre || '-',
-              d.marca || 'N/A',
-              d.cantidad || 0,
-              `$${costoUnitario.toFixed(2)}`,
-              `$${costoTotal.toFixed(2)}`
-            ]);
+            const d = rawD?.value || rawD; if (!d || Object.keys(d).length === 0) return;
+            datosExcel.push(['', d.tipo_item || '-', d.nombre || '-', d.marca || 'N/A', d.cantidad || 0, `$${(parseFloat(d.costo_unitario) || 0).toFixed(2)}`, `$${(parseFloat(d.costo_total) || 0).toFixed(2)}`]);
           });
         } else if (this.tipoReporteSeleccionado === 'movimientos-refaccion' || this.tipoReporteSeleccionado === 'historial-por-refaccion') {
           datosExcel.push(['', '--> FECHA', 'MOVIMIENTO', 'ORIGEN / DESTINO', 'CANTIDAD', 'COSTO TOTAL']);
           detallesArray.forEach((rawD: any) => {
-            const d = rawD?.value || rawD;
-            if (!d || Object.keys(d).length === 0) return;
-            const costoTotal = parseFloat(d.costo_total) || 0;
-
-            datosExcel.push([
-              '', 
-              new Date(d.fecha).toLocaleDateString('es-MX'),
-              d.tipo_movimiento || '-',
-              d.documento || '-',
-              d.cantidad || 0,
-              `$${costoTotal.toFixed(2)}`
-            ]);
+            const d = rawD?.value || rawD; if (!d || Object.keys(d).length === 0) return;
+            datosExcel.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), d.tipo_movimiento || '-', d.documento || '-', d.cantidad || 0, `$${(parseFloat(d.costo_total) || 0).toFixed(2)}`]);
           });
         }
-        
-        datosExcel.push([]); // Espacio en blanco separador
+        datosExcel.push([]); 
       }
     });
 
@@ -599,13 +385,8 @@ exportarPDF() {
     const worksheet = XLSX.utils.aoa_to_sheet(datosExcel);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte');
-
-    // Ajustamos las columnas de Excel
-    const wscols = [ { wch: 15 }, { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 } ];
-    worksheet['!cols'] = wscols;
-
-    const nombreArchivo = `Reporte_${this.tipoReporteSeleccionado}_${new Date().getTime()}.xlsx`;
-    XLSX.writeFile(workbook, nombreArchivo);
+    worksheet['!cols'] = [ { wch: 20 }, { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 } ];
+    XLSX.writeFile(workbook, `Reporte_${this.tipoReporteSeleccionado}_${new Date().getTime()}.xlsx`);
     this.mostrarNotificacion('Éxito', 'Excel exportado correctamente', 'exito');
   }
 }

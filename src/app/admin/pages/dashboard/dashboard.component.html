@@ -43,6 +43,54 @@
       </div>
     </div>
 
+    <div class="financial-section">
+      <div class="financial-header">
+        <h3>📊 Resumen Financiero por Empresa</h3>
+        <div class="date-filters">
+          <div class="filter-group">
+            <label>Desde:</label>
+            <input type="date" class="form-control" [(ngModel)]="fechaInicioKPI" (change)="filtrarKpis()">
+          </div>
+          <div class="filter-group">
+            <label>Hasta:</label>
+            <input type="date" class="form-control" [(ngModel)]="fechaFinKPI" (change)="filtrarKpis()">
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="isLoadingKpis" class="kpi-loading">
+        <div class="spinner"></div>
+        <p>Calculando finanzas...</p>
+      </div>
+
+      <div class="charts-grid" *ngIf="!isLoadingKpis">
+        <div class="chart-container pie-container">
+          <div class="pie-title-badge bg-compras">
+            <span>Total Compras / Entradas</span>
+            <h2>{{ granTotalCompras | currency:'MXN' }}</h2>
+          </div>
+          <div class="chart-wrapper pie-wrapper" *ngIf="granTotalCompras > 0; else noDataCompras">
+            <canvas baseChart [data]="pieComprasData" [options]="pieChartOptions" type="pie"></canvas>
+          </div>
+          <ng-template #noDataCompras>
+            <div class="empty-chart">No hay compras registradas en este periodo.</div>
+          </ng-template>
+        </div>
+
+        <div class="chart-container pie-container">
+          <div class="pie-title-badge bg-gastos">
+            <span>Total Gastos / Salidas</span>
+            <h2>{{ granTotalGastos | currency:'MXN' }}</h2>
+          </div>
+          <div class="chart-wrapper pie-wrapper" *ngIf="granTotalGastos > 0; else noDataGastos">
+            <canvas baseChart [data]="pieGastosData" [options]="pieChartOptions" type="pie"></canvas>
+          </div>
+          <ng-template #noDataGastos>
+            <div class="empty-chart">No hay gastos registrados en este periodo.</div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
     <div class="charts-grid">
       <div class="chart-container">
         <h3>Refacciones con Más Stock (Top 5)</h3>

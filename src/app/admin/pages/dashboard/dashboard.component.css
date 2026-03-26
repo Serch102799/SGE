@@ -448,3 +448,134 @@ td.stock-critico {
   height: 400px;
   position: relative;
 }
+/* =========================================
+   PANEL FINANCIERO (GRÁFICAS DE PASTEL)
+   ========================================= */
+.financial-section {
+  background-color: rgba(0, 0, 0, 0.658); /* MISMO FONDO QUE EL RESTO DEL DASHBOARD */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* MISMO BORDE */
+  border-radius: 10px; /* MISMO RADIO */
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.financial-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Línea divisoria muy sutil */
+  padding-bottom: 15px;
+}
+
+.financial-header h3 {
+  margin: 0;
+  color: #ffffff; /* Mismo color de títulos */
+  font-size: 1.3rem;
+  font-weight: 500;
+}
+
+.date-filters {
+  display: flex;
+  gap: 15px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-group label {
+  color: #a7b7d2; /* Mismo tono azulado/grisáceo de tus textos secundarios */
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Inputs de fecha estilo Cyberpunk/Transparente */
+.filter-group input {
+  background: rgba(74, 142, 206, 0.2); 
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.3s ease;
+  color-scheme: dark; /* Hace que el calendario nativo del navegador se vuelva oscuro */
+}
+
+.filter-group input:focus {
+  border-color: #38bdf8;
+}
+
+/* Contenedor de Gráficas de Pastel */
+.pie-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 15px;
+  background-color: transparent; /* Hereda el fondo del padre para no encimar colores */
+  border: none; /* Quitamos borde interno redundante */
+}
+
+.pie-title-badge {
+  text-align: center;
+  padding: 15px 20px;
+  border-radius: 8px;
+  width: 80%;
+  margin-bottom: 25px;
+  backdrop-filter: blur(5px); /* Efecto vidrio */
+}
+
+.bg-compras {
+  background: rgba(16, 185, 129, 0.08); /* Verde más transparente */
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.bg-compras h2 { color: #34d399; margin: 5px 0 0 0; font-size: 2rem;}
+
+.bg-gastos {
+  background: rgba(239, 68, 68, 0.08); /* Rojo más transparente */
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.bg-gastos h2 { color: #f87171; margin: 5px 0 0 0; font-size: 2rem;}
+
+.pie-title-badge span {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pie-wrapper {
+  height: 280px; 
+  width: 100%;
+}
+
+.empty-chart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #64748b;
+  font-style: italic;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  width: 100%;
+}
+
+.kpi-loading {
+  text-align: center;
+  padding: 30px;
+  color: #38bdf8;
+}
+
+/* Responsividad para móviles */
+@media (max-width: 768px) {
+  .financial-header { flex-direction: column; align-items: flex-start; }
+  .date-filters { flex-direction: column; width: 100%; }
+  .filter-group { width: 100%; justify-content: space-between; }
+  .pie-title-badge { width: 100%; }
+}
