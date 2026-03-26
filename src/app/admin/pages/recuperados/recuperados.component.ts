@@ -42,13 +42,10 @@ export class RecuperadosComponent implements OnInit {
   // ==========================================
   // CATÁLOGOS Y AUTOCOMPLETES
   // ==========================================
-  autobuses: any[] = []; 
-  proveedores: any[] = [];
-  
-  refaccionControl = new FormControl('');
-  autobusOrigenControl = new FormControl('');
-  autobusDestinoControl = new FormControl('');
-  proveedorControl = new FormControl('');
+  refaccionControl = new FormControl<any>('');
+  autobusOrigenControl = new FormControl<any>('');
+  autobusDestinoControl = new FormControl<any>('');
+  proveedorControl = new FormControl<any>('');
 
   filteredRefacciones$!: Observable<any[]>;
   filteredAutobusesOrigen$!: Observable<any[]>;
@@ -67,22 +64,16 @@ export class RecuperadosComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarPiezas();
-    this.cargarCatalogos();
 
-    // ==========================================
-    // BUSCADOR DINÁMICO DE REFACCIONES (BACKEND)
-    // ==========================================
+    // 1. BUSCADOR DINÁMICO DE REFACCIONES
     this.filteredRefacciones$ = this.refaccionControl.valueChanges.pipe(
       startWith(''),
       debounceTime(400),
       distinctUntilChanged(),
       switchMap((value: any) => {
         const term = typeof value === 'string' ? value : value?.nombre;
-        
-        // Si está vacío o tiene menos de 2 letras, no buscamos
         if (!term || term.length < 2) return of([]);
         
-        // Petición directa al backend
         return this.http.get<any[]>(`${environment.apiUrl}/refacciones/buscar`, { params: { term } }).pipe(
           map(res => res.map(item => ({
             id_refaccion: item.id_refaccion,
@@ -94,52 +85,56 @@ export class RecuperadosComponent implements OnInit {
         );
       })
     );
-  }
 
-  // --- CARGA DE DATOS ORIGINAL ---
-  cargarCatalogos() {
-    // Autobuses (Se cargan en memoria)
-    this.http.get<any>(`${environment.apiUrl}/autobuses`).subscribe({
-      next: (res) => {
-        this.autobuses = Array.isArray(res) ? res : (res.data || []);
+    // 2. BUSCADOR DINÁMICO DE AUTOBÚS ORIGEN
+    this.filteredAutobusesOrigen$ = this.autobusOrigenControl.valueChanges.pipe(
+      startWith(''),
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap((value: any) => {
+        const term = typeof value === 'string' ? value : value?.economico;
+        if (!term) return of([]); 
         
-        this.filteredAutobusesOrigen$ = this.autobusOrigenControl.valueChanges.pipe(
-          startWith(''), 
-          map((value: any) => typeof value === 'string' ? value : value?.economico),
-          map(name => name ? this._filterAutobuses(name) : this.autobuses.slice())
+        return this.http.get<any[]>(`${environment.apiUrl}/autobuses/buscar`, { params: { term } }).pipe(
+          catchError(() => of([]))
         );
+      })
+    );
+
+    // 3. BUSCADOR DINÁMICO DE AUTOBÚS DESTINO
+    this.filteredAutobusesDestino$ = this.autobusDestinoControl.valueChanges.pipe(
+      startWith(''),
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap((value: any) => {
+        const term = typeof value === 'string' ? value : value?.economico;
+        if (!term) return of([]); 
         
-        this.filteredAutobusesDestino$ = this.autobusDestinoControl.valueChanges.pipe(
-          startWith(''), 
-          map((value: any) => typeof value === 'string' ? value : value?.economico),
-          map(name => name ? this._filterAutobuses(name) : this.autobuses.slice())
+        return this.http.get<any[]>(`${environment.apiUrl}/autobuses/buscar`, { params: { term } }).pipe(
+          catchError(() => of([]))
         );
-      }
-    });
+      })
+    );
 
-    // Proveedores (Se cargan en memoria)
-    this.http.get<any>(`${environment.apiUrl}/proveedores`).subscribe({
-      next: (res) => {
-        this.proveedores = Array.isArray(res) ? res : (res.data || []);
-        this.filteredProveedores$ = this.proveedorControl.valueChanges.pipe(
-          startWith(''), 
-          map((value: any) => typeof value === 'string' ? value : value?.nombre_proveedor),
-          map(name => name ? this._filterProveedores(name) : this.proveedores.slice())
+    // 4. BUSCADOR DINÁMICO DE PROVEEDORES (Talleres)
+    this.filteredProveedores$ = this.proveedorControl.valueChanges.pipe(
+      startWith(''),
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap((value: any) => {
+        const term = typeof value === 'string' ? value : value?.nombre_proveedor;
+        if (!term || term.length < 2) return of([]); 
+        
+        return this.http.get<any[]>(`${environment.apiUrl}/proveedores/buscar`, { params: { term } }).pipe(
+          catchError(() => of([]))
         );
-      }
-    });
-  }
-
-  private _filterAutobuses(name: string): any[] { 
-    return this.autobuses.filter(o => o.economico.toLowerCase().includes(name.toLowerCase())); 
-  }
-  private _filterProveedores(name: string): any[] { 
-    return this.proveedores.filter(o => o.nombre_proveedor.toLowerCase().includes(name.toLowerCase())); 
+      })
+    );
   }
 
   // Mostrar el texto correcto en los inputs una vez seleccionados
   displayRefaccion(refaccion: any): string { 
-    return refaccion ? `${refaccion.numero_parte} - ${refaccion.nombre}` : ''; 
+    return refaccion ? `${refaccion.numero_parte || 'S/N'} - ${refaccion.nombre}` : ''; 
   }
   displayAutobus(autobus: any): string { 
     return autobus ? autobus.economico : ''; 
