@@ -105,7 +105,30 @@ export class RecuperadosComponent implements OnInit {
     });
   }
 
-  private _filterRefacciones(name: string): any[] { return this.refacciones.filter(o => o.nombre.toLowerCase().includes(name.toLowerCase())); }
+  // Lógica de filtrado inteligente (Ordenado por precisión)
+  private _filterRefacciones(name: string): any[] {
+    const filterValue = name.toLowerCase().trim();
+
+    // 1. Obtener todas las que contengan la palabra
+    let coincidencias = this.refacciones.filter(option => 
+      option.nombre.toLowerCase().includes(filterValue) || 
+      (option.numero_parte && option.numero_parte.toLowerCase().includes(filterValue))
+    );
+
+    return coincidencias.sort((a, b) => {
+      const nombreA = a.nombre.toLowerCase();
+      const nombreB = b.nombre.toLowerCase();
+      if (nombreA === filterValue) return -1;
+      if (nombreB === filterValue) return 1;
+
+      const empiezaConA = nombreA.startsWith(filterValue);
+      const empiezaConB = nombreB.startsWith(filterValue);
+      if (empiezaConA && !empiezaConB) return -1;
+      if (!empiezaConA && empiezaConB) return 1;
+
+      return nombreA.localeCompare(nombreB);
+    });
+  }
   private _filterAutobuses(name: string): any[] { return this.autobuses.filter(o => o.economico.toLowerCase().includes(name.toLowerCase())); }
   private _filterProveedores(name: string): any[] { return this.proveedores.filter(o => o.nombre_proveedor.toLowerCase().includes(name.toLowerCase())); }
 
