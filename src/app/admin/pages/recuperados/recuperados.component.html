@@ -238,14 +238,26 @@
         <button class="btn-cerrar" (click)="cerrarModal()">×</button>
       </div>
       <div class="modal-body">
-        <p style="color: white; margin-bottom: 20px;">Recibiendo: <strong class="text-success">{{ piezaSeleccionada?.nombre_pieza }}</strong></p>
-        <div class="form-group mb-3">
-          <label>Costo Real de la Reparación ($)</label>
-          <input type="number" class="form-control" [(ngModel)]="formData.costo_reparacion" placeholder="Ej. 1500">
+        <p style="color: white; margin-bottom: 15px;">Recibiendo: <strong class="text-success">{{ piezaSeleccionada?.nombre_pieza }}</strong></p>
+
+        <div class="alert alert-info" style="background: rgba(56, 189, 248, 0.1); border-left: 4px solid #38bdf8; color: #e0e0e0; padding: 12px; margin-bottom: 20px; border-radius: 4px;">
+          <small><i class="fas fa-info-circle text-info"></i> Si enviaste un lote de piezas iguales, ingresa cuántas regresaron. El sistema las separará automáticamente para que puedas instalarlas de forma individual.</small>
         </div>
+
         <div class="form-group mb-3">
-          <label>Factura / Nota de Pago (Opcional)</label>
-          <input type="text" class="form-control" [(ngModel)]="formData.factura_reparacion" placeholder="Ej. FAC-9921">
+          <label>Factura / Nota de Reparación</label>
+          <input type="text" class="form-control" [(ngModel)]="formData.factura_reparacion" placeholder="Ej. FAC-9921" required>
+        </div>
+
+        <div style="display: flex; gap: 15px;">
+          <div class="form-group mb-3" style="flex: 1;">
+            <label>Cantidad Recibida</label>
+            <input type="number" class="form-control" [(ngModel)]="formData.cantidad" min="1" placeholder="Ej. 1" required>
+          </div>
+          <div class="form-group mb-3" style="flex: 1;">
+            <label>Costo TOTAL de la Factura ($)</label>
+            <input type="number" class="form-control" [(ngModel)]="formData.costo_total_factura" placeholder="Ej. 1500" required>
+          </div>
         </div>
       </div>
       <div class="modal-footer">

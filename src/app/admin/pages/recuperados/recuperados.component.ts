@@ -54,7 +54,7 @@ export class RecuperadosComponent implements OnInit {
 
   modalActivo: string = ''; 
   piezaSeleccionada: any = null;
-  formData: any = {};
+  formData: any = { cantidad: 1 }; // <-- Ajustado para que inicie en 1
   isSaving = false;
 
   mostrarModalNotificacion = false;
@@ -282,9 +282,13 @@ export class RecuperadosComponent implements OnInit {
 
   // --- MODALES Y GUARDADO ---
   abrirModal(tipo: string, pieza: any = null) {
-    this.modalActivo = tipo; this.piezaSeleccionada = pieza; this.formData = {}; 
-    this.refaccionControl.setValue(''); this.autobusOrigenControl.setValue('');
-    this.autobusDestinoControl.setValue(''); this.proveedorControl.setValue('');
+    this.modalActivo = tipo; 
+    this.piezaSeleccionada = pieza; 
+    this.formData = { cantidad: 1 }; // <-- Ajuste: Inicializa con 1 para que el input no esté vacío
+    this.refaccionControl.setValue(''); 
+    this.autobusOrigenControl.setValue('');
+    this.autobusDestinoControl.setValue(''); 
+    this.proveedorControl.setValue('');
   }
   cerrarModal() { this.modalActivo = ''; this.piezaSeleccionada = null; }
 
