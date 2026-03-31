@@ -43,6 +43,7 @@ import { DashboardRrhhComponent } from './pages/dashboard-rrhh/dashboard-rrhh.co
 import { HerramientaFusionComponent } from './pages/herramienta-fusion/herramienta-fusion.component';
 import { TallerComponent } from './pages/taller/taller.component';
 import { RecuperadosComponent } from './pages/recuperados/recuperados.component';
+import { DashConsumoComponent } from './pages/dash-consumo/dash-consumo.component';
 
 const routes: Routes = [
   {
@@ -245,6 +246,12 @@ const routes: Routes = [
       {
         path: 'tickets',
         component:  AdminTicketsComponent,
+        canActivate: [RoleGuard],
+        data: { roles: [ 'SuperUsuario'] }
+      },
+      {
+        path: 'dash-consumo',
+        component:  DashConsumoComponent,
         canActivate: [RoleGuard],
         data: { roles: [ 'SuperUsuario'] }
       },

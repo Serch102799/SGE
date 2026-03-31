@@ -1,0 +1,83 @@
+<div class="dashboard-container">
+  
+  <div class="financial-section">
+    <div class="financial-header">
+      <h3><i class="fas fa-gas-pump text-info"></i> Dashboard Ejecutivo de Diésel</h3>
+      <button class="btn-cancelar" style="padding: 6px 12px; border-radius: 6px;" (click)="limpiarFiltros()">
+        <i class="fas fa-eraser"></i> Limpiar Filtros
+      </button>
+    </div>
+
+    <div class="date-filters">
+      
+      <div class="filter-group buscador-principal" style="flex: 1; position: relative;">
+        <input type="text" 
+               placeholder="Filtrar por unidad, ruta u operador..." 
+               [formControl]="buscadorControl" 
+               [matAutocomplete]="autoBusqueda">
+        
+        <mat-autocomplete #autoBusqueda="matAutocomplete" (optionSelected)="onOpcionSeleccionada($event)">
+          <mat-option *ngFor="let opcion of opcionesFiltradas$ | async" [value]="opcion">
+            {{ opcion }}
+          </mat-option>
+        </mat-autocomplete>
+      </div>
+
+      <div class="filter-group">
+        <label>Desde:</label>
+        <input type="date" [(ngModel)]="fechaDesde" (change)="cargarDatos()">
+      </div>
+      <div class="filter-group">
+        <label>Hasta:</label>
+        <input type="date" [(ngModel)]="fechaHasta" (change)="cargarDatos()">
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="kpi-loading">
+    <div class="spinner"></div>
+    <p>Procesando miles de registros de combustible...</p>
+  </div>
+
+  <div *ngIf="!isLoading">
+    <div class="kpi-grid">
+      <div class="kpi-card" style="border-left-color: #38bdf8;">
+        <div class="kpi-label" style="color: #38bdf8;">Total Litros Quemados</div>
+        <div class="kpi-value">{{ totalLitros | number:'1.0-0' }} L</div>
+      </div>
+      <div class="kpi-card" style="border-left-color: #10b981;">
+        <div class="kpi-label" style="color: #10b981;">Kilómetros Recorridos</div>
+        <div class="kpi-value">{{ totalKm | number:'1.0-0' }} km</div>
+      </div>
+      <div class="kpi-card" [ngStyle]="{'border-left-color': rendimientoGlobal >= 3 ? '#10b981' : (rendimientoGlobal >= 2 ? '#f59e0b' : '#ef4444')}">
+        <div class="kpi-label text-white">Rendimiento Promedio Global</div>
+        <div class="kpi-value" [ngStyle]="{'color': rendimientoGlobal >= 3 ? '#10b981' : (rendimientoGlobal >= 2 ? '#f59e0b' : '#ef4444')}">
+          {{ rendimientoGlobal | number:'1.2-2' }} <small style="font-size: 1rem;">km/L</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid-fuel">
+      <div class="chart-container tendecia-container">
+        <h3>Tendencia de Consumo por Día</h3>
+        <div class="chart-wrapper-horizontal" *ngIf="chartTendenciaData.labels!.length > 0">
+          <canvas baseChart [data]="chartTendenciaData" [options]="chartTendenciaOptions" type="bar"></canvas>
+        </div>
+        <div *ngIf="chartTendenciaData.labels!.length === 0" class="empty-chart">
+          No hay cargas en este periodo.
+        </div>
+      </div>
+
+      <div class="chart-container top-container">
+        <h3>Unidades de Mayor Consumo</h3>
+        <div class="chart-wrapper" *ngIf="chartTopBusesData.labels!.length > 0">
+          <canvas baseChart [data]="chartTopBusesData" [options]="chartTopBusesOptions" type="doughnut"></canvas>
+        </div>
+        <div *ngIf="chartTopBusesData.labels!.length === 0" class="empty-chart">
+          No hay datos suficientes.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
