@@ -44,6 +44,7 @@ import { HerramientaFusionComponent } from './pages/herramienta-fusion/herramien
 import { TallerComponent } from './pages/taller/taller.component';
 import { RecuperadosComponent } from './pages/recuperados/recuperados.component';
 import { DashConsumoComponent } from './pages/dash-consumo/dash-consumo.component';
+import { MantenimientoComponent } from './pages/mantenimiento/mantenimiento.component';
 
 const routes: Routes = [
   {
@@ -258,6 +259,12 @@ const routes: Routes = [
       {
         path: 'recuperados',
         component:  RecuperadosComponent,
+        canActivate: [RoleGuard],
+        data: { roles: [ 'SuperUsuario', 'Admin'] }
+      },
+      {
+        path: 'mantenimiento',
+        component:  MantenimientoComponent,
         canActivate: [RoleGuard],
         data: { roles: [ 'SuperUsuario', 'Admin'] }
       },

@@ -1,0 +1,422 @@
+<div class="dashboard-container mt-4 mb-5" style="max-width: 98%;">
+    <div class="financial-section">
+        <div class="financial-header" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">
+            <h3><i class="fas fa-tools text-info"></i> Agenda de Mantenimiento Preventivo</h3>
+            <div style="display: flex; gap: 10px; align-items: center;">
+
+                <!-- SWITCH DE VISTAS -->
+                <div class="view-toggle">
+                    <button [class.active]="vistaActual === 'kanban'" (click)="cambiarVista('kanban')">
+                        <i class="fas fa-columns"></i> Tablero
+                    </button>
+                    <button [class.active]="vistaActual === 'calendario'" (click)="cambiarVista('calendario')">
+                        <i class="fas fa-list-alt"></i> Agenda
+                    </button>
+                </div>
+
+                <button class="btn-guardar" (click)="abrirModalAgendar()"><i class="fas fa-plus"></i> Agendar</button>
+                <button class="btn-cancelar" (click)="cargarServicios()"><i class="fas fa-sync-alt"></i> Actualizar</button>
+            </div>
+        </div>
+    </div>
+
+<!-- ==========================================
+       VISTA 1: TABLERO KANBAN 
+       ========================================== -->
+  <div class="kanban-board" *ngIf="vistaActual === 'kanban' && !isLoading">
+    
+    <!-- COLUMNA 1: URGENTES (Rojo) -->
+    <div class="kanban-column col-urgente">
+      <div class="column-header">
+        <h3>🔴 Urgentes / Atrasados <span class="badge">{{ urgentes.length }}</span></h3>
+      </div>
+      <div class="column-body">
+        <div class="kanban-card card-danger" *ngFor="let s of urgentes">
+          <div class="card-title"><i class="fas fa-bus"></i> Bus {{ s.economico }}</div>
+          <div class="card-alerta badge-danger"><i class="fas fa-exclamation-triangle"></i> {{ s.alerta }}</div>
+          <div class="card-info mt-2">
+            <div><small class="text-muted">Límite KM:</small> <strong>{{ s.km_proximo_servicio | number }}</strong> km</div>
+            <div><small class="text-muted">Actual Bus:</small> <strong class="text-danger">{{ s.km_actual_bus | number }}</strong> km</div>
+          </div>
+          <div class="card-info">
+            <div><small class="text-muted">Fecha Límite:</small> <strong>{{ s.fecha_proximo_servicio | date:'dd/MMM/yyyy' }}</strong></div>
+          </div>
+          <button class="btn-avanzar btn-danger mt-3 w-100" (click)="abrirModalCompletar(s)">
+            Realizar Servicio <i class="fas fa-wrench"></i>
+          </button>
+        </div>
+        <div *ngIf="urgentes.length === 0" class="empty-column text-muted">Ningún servicio atrasado. ¡Excelente!</div>
+      </div>
+    </div>
+
+    <!-- COLUMNA 2: ESTE MES (Naranja) -->
+    <div class="kanban-column col-proximo">
+      <div class="column-header">
+        <h3>🟡 Próximos (30 días) <span class="badge">{{ esteMes.length }}</span></h3>
+      </div>
+      <div class="column-body">
+        <div class="kanban-card card-warning" *ngFor="let s of esteMes">
+          <div class="card-title"><i class="fas fa-bus"></i> Bus {{ s.economico }}</div>
+          <div class="card-alerta badge-warning"><i class="fas fa-clock"></i> {{ s.alerta }}</div>
+          <div class="card-info mt-2">
+            <div><small class="text-muted">Límite KM:</small> <strong>{{ s.km_proximo_servicio | number }}</strong></div>
+            <div><small class="text-muted">Faltan:</small> <strong>{{ s.km_proximo_servicio - s.km_actual_bus | number }}</strong> km</div>
+          </div>
+          <div class="card-info">
+            <div><small class="text-muted">Fecha Límite:</small> <strong>{{ s.fecha_proximo_servicio | date:'dd/MMM/yyyy' }}</strong></div>
+          </div>
+          <button class="btn-avanzar btn-warning mt-3 w-100 text-dark" (click)="abrirModalCompletar(s)">
+            Realizar Servicio <i class="fas fa-wrench"></i>
+          </button>
+        </div>
+        <div *ngIf="esteMes.length === 0" class="empty-column text-muted">No hay servicios próximos.</div>
+      </div>
+    </div>
+
+    <!-- COLUMNA 3: FUTUROS (Verde) -->
+    <div class="kanban-column col-futuro">
+      <div class="column-header">
+        <h3>🟢 Futuros <span class="badge">{{ futuros.length }}</span></h3>
+      </div>
+      <div class="column-body">
+        <div class="kanban-card card-success" *ngFor="let s of futuros">
+          <div class="card-title"><i class="fas fa-bus text-muted"></i> Bus {{ s.economico }}</div>
+          <div class="card-info mt-2">
+            <div><small class="text-muted">Límite KM:</small> <strong>{{ s.km_proximo_servicio | number }}</strong></div>
+          </div>
+          <div class="card-info">
+            <div><small class="text-muted">Límite Fecha:</small> <strong>{{ s.fecha_proximo_servicio | date:'dd/MMM/yyyy' }}</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUMNA 4: HISTORIAL (Gris) -->
+    <div class="kanban-column col-historial">
+      <div class="column-header">
+        <h3>✔️ Historial Reciente <span class="badge">{{ completados.length }}</span></h3>
+      </div>
+      <div class="column-body">
+        <div class="kanban-card opacity-75" *ngFor="let s of completados | slice:0:10">
+          <div class="card-title"><i class="fas fa-check-circle text-success"></i> Bus {{ s.economico }}</div>
+          <div class="card-info mt-2"><small class="text-muted">Realizado el:</small> <strong>{{ s.fecha_realizado | date:'dd/MMM/yy' }}</strong></div>
+          <div class="card-info"><small class="text-muted">A los:</small> <strong>{{ s.km_realizado | number }} km</strong></div>
+          <p class="mt-2 text-muted" style="font-size: 0.8rem; line-height: 1.2;">{{ s.observaciones }}</p>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- CIERRA EL TABLERO KANBAN -->
+
+  <!-- ==========================================
+       VISTA 2: AGENDA / TABLA PREMIUM
+       ========================================== -->
+  <div class="agenda-view" *ngIf="vistaActual === 'calendario' && !isLoading">
+    <div class="financial-section table-wrapper">
+      <table class="premium-table">
+        <thead>
+          <tr>
+            <th>Estatus / Alerta</th>
+            <th>Autobús</th>
+            <th>Fecha Límite</th>
+            <th>KM Límite</th>
+            <th>KM Actual Bus</th>
+            <th style="text-align: center;">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Concatenamos los Urgentes y los de Este Mes -->
+          <tr *ngFor="let s of urgentes.concat(esteMes)" [ngClass]="{'row-urgente': s.alerta.includes('Vencido')}">
+            <td>
+              <span class="card-alerta" [ngClass]="s.alerta.includes('Vencido') ? 'badge-danger' : 'badge-warning'" style="margin:0;">
+                <i class="fas" [ngClass]="s.alerta.includes('Vencido') ? 'fa-exclamation-triangle' : 'fa-clock'"></i> {{ s.alerta }}
+              </span>
+            </td>
+            <td><strong style="font-size: 1.05rem; color: #fff;">Bus {{ s.economico }}</strong></td>
+            <td><i class="far fa-calendar-alt text-muted"></i> {{ s.fecha_proximo_servicio | date:'dd/MMM/yyyy' }}</td>
+            <td>{{ s.km_proximo_servicio | number }} km</td>
+            <td [ngClass]="{'text-danger font-weight-bold': s.km_actual_bus >= s.km_proximo_servicio}">
+              {{ s.km_actual_bus | number }} km
+            </td>
+            <td style="text-align: center;">
+              <button class="btn-guardar" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); padding: 8px 16px; border-radius: 6px;" (click)="abrirModalCompletar(s)">
+                Completar <i class="fas fa-wrench"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="urgentes.length === 0 && esteMes.length === 0">
+            <td colspan="6" class="text-center text-muted" style="padding: 40px; font-style: italic; background: rgba(0,0,0,0.2);">
+              <i class="fas fa-check-double fa-2x mb-2 text-success" style="opacity: 0.5;"></i><br>
+              No hay servicios urgentes ni programados próximos. ¡Flotilla al 100%!
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div> 
+
+<!-- A PARTIR DE AQUÍ DEBEN ESTAR TUS MODALES (No los borres) -->
+<!-- ==========================================
+     ZONA DE MODALES
+     ========================================== -->
+<div class="modal-overlay" *ngIf="modalActivo !== ''" (click)="cerrarModal()">
+    <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+
+        <!-- MODAL 1: AGENDAR DESDE LIBRETA -->
+        <ng-container *ngIf="modalActivo === 'agendar'">
+            <div class="modal-header" style="border-bottom-color: rgba(245, 158, 11, 0.4);">
+                <h3 style="color: #f59e0b;"><i class="fas fa-calendar-plus"></i> Agendar Primer Servicio</h3>
+                <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+            </div>
+
+            <div class="modal-body" style="padding-right: 15px;">
+                <div class="alert alert-info"
+                    style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; color: #e0e0e0; padding: 12px; margin-bottom: 20px; border-radius: 4px;">
+                    <small><i class="fas fa-info-circle text-warning"></i> Ingresa los datos del ÚLTIMO servicio que le
+                        hiciste. El sistema sumará automáticamente 6 meses y 10,000 km para avisarte cuándo le toca el
+                        próximo.</small>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label>Autobús <span class="text-danger">*</span></label>
+                    <mat-form-field appearance="outline" class="full-width">
+                        <input type="text" placeholder="Busca por económico..." matInput [formControl]="autobusControl"
+                            [matAutocomplete]="autoBus">
+                    </mat-form-field>
+                    <mat-autocomplete #autoBus="matAutocomplete" [displayWith]="displayAutobus"
+                        (optionSelected)="onAutobusSeleccionado($event)">
+                        <mat-option *ngFor="let bus of filteredAutobuses$ | async" [value]="bus">
+                            <i class="fas fa-bus text-muted"></i> {{ bus.economico }}
+                        </mat-option>
+                    </mat-autocomplete>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group mb-3" style="flex: 1;">
+                        <label>Fecha del Último Servicio <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" [(ngModel)]="formData.fecha_ultimo_servicio" required>
+                    </div>
+                    <div class="form-group mb-3" style="flex: 1;">
+                        <label>Kilometraje en ese Servicio <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" [(ngModel)]="formData.km_ultimo_servicio" required>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label>Observaciones Iniciales (Opcional)</label>
+                    <textarea class="form-control" [(ngModel)]="formData.observaciones" rows="2"
+                        placeholder="Ej. Traído de la libreta, se le cambió balatas..."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer mt-0" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+                <button class="btn-guardar" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);"
+                    (click)="guardarAgendamiento()" [disabled]="isSaving">
+                    <i class="fas fa-save"></i> Guardar y Calcular Próximo
+                </button>
+            </div>
+        </ng-container>
+
+        <!-- MODAL 2: COMPLETAR SERVICIO Y DESCONTAR INVENTARIO -->
+        <ng-container *ngIf="modalActivo === 'completar'">
+            <div class="modal-header" style="border-bottom-color: rgba(56, 189, 248, 0.4);">
+                <h3 style="color: #38bdf8;"><i class="fas fa-clipboard-check"></i> Completar Servicio: Bus {{
+                    servicioSeleccionado?.economico }}</h3>
+                <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+            </div>
+
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding-right: 15px;">
+
+                <div class="alert alert-info"
+                    style="background: rgba(56, 189, 248, 0.1); border-left: 4px solid #38bdf8; color: #e0e0e0; padding: 12px; margin-bottom: 20px; border-radius: 4px;">
+                    <small><i class="fas fa-info-circle text-info"></i> Al guardar, se descontarán las piezas del
+                        almacén (creando un vale de salida automático) y se agendará el próximo servicio.</small>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group mb-3" style="flex: 1;">
+                        <label>Kilometraje Actual (Odómetro) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" [(ngModel)]="formData.km_realizado" required>
+                    </div>
+                    <div class="form-group mb-3" style="flex: 1;">
+                        <label>Fecha de Realización <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" [(ngModel)]="formData.fecha_realizado" required>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN REFACCIONES -->
+                <div class="form-group mb-3 p-3"
+                    style="background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    <label class="text-warning"><i class="fas fa-cogs"></i> Agregar Refacciones</label>
+                    <div style="display: flex; gap: 10px; align-items: flex-start; margin-top: 10px;">
+                        <div style="flex: 2;">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <input type="text" placeholder="Buscar refacción..." matInput
+                                    [formControl]="refaccionControl" [matAutocomplete]="autoRef">
+                            </mat-form-field>
+                            <mat-autocomplete #autoRef="matAutocomplete" [displayWith]="displayItem"
+                                (optionSelected)="onRefaccionSelected($event)">
+                                <mat-option *ngFor="let ref of filteredRefacciones$ | async" [value]="ref">
+                                    {{ ref.numero_parte || 'S/N' }} - {{ ref.nombre }}
+                                </mat-option>
+                            </mat-autocomplete>
+                        </div>
+
+                        <div style="flex: 1.5;">
+                            <select class="form-control" style="height: 56px;"
+                                [(ngModel)]="detalleActualRefaccion.id_lote">
+                                <option [ngValue]="null">Lote / Compra</option>
+                                <option *ngFor="let lote of lotesDisponibles" [ngValue]="lote.id_lote">
+                                    {{ lote.nombre_proveedor }} (Disp: {{ lote.cantidad_disponible }})
+                                </option>
+                            </select>
+                        </div>
+
+                        <div style="flex: 1;">
+                            <input type="number" class="form-control" style="height: 56px;" placeholder="Cant."
+                                [(ngModel)]="detalleActualRefaccion.cantidad_despachada">
+                        </div>
+
+                        <button type="button" class="btn-guardar" style="height: 56px;"
+                            (click)="agregarDetalleRefaccion()">Añadir</button>
+                    </div>
+
+                    <!-- Tabla temporal de Refacciones -->
+                    <!-- Tabla temporal de Refacciones -->
+          <table class="report-table mt-2" *ngIf="detallesRefaccionesAAgregar.length > 0">
+            <thead style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+              <tr>
+                <th>Refacción</th>
+                <th>Costo Unit.</th>
+                <th>Cant.</th>
+                <th>Subtotal</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of detallesRefaccionesAAgregar; let i = index">
+                <td>
+                  {{ r.nombre_refaccion }}<br>
+                  <small class="text-muted">{{ r.numero_parte }}</small>
+                </td>
+                <td>{{ r.costo_unitario | currency }}</td>
+                <td>{{ r.cantidad_despachada }}</td>
+                <td class="text-success font-weight-bold">{{ (r.cantidad_despachada * r.costo_unitario) | currency }}</td>
+                <td>
+                  <button type="button" class="btn-icon text-danger" (click)="eliminarRefaccion(i)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot style="border-top: 2px solid rgba(255,255,255,0.1);">
+              <tr>
+                <td colspan="3" class="text-right" style="padding-top: 15px;"><strong>Total en Refacciones:</strong></td>
+                <td colspan="2" class="text-success font-weight-bold" style="font-size: 1.1rem; padding-top: 15px;">
+                  {{ calcularTotalSalida() | currency }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+                </div>
+
+                <!-- SECCIÓN INSUMOS -->
+                <div class="form-group mb-3 p-3"
+                    style="background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    <label class="text-info"><i class="fas fa-tint"></i> Agregar Insumos (Aceites, Grasas, etc.)</label>
+                    <div style="display: flex; gap: 10px; align-items: flex-start; margin-top: 10px;">
+                        <div style="flex: 2;">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <input type="text" placeholder="Buscar insumo..." matInput [formControl]="insumoControl"
+                                    [matAutocomplete]="autoIns">
+                            </mat-form-field>
+                            <mat-autocomplete #autoIns="matAutocomplete" [displayWith]="displayItem"
+                                (optionSelected)="onInsumoSelected($event)">
+                                <mat-option *ngFor="let ins of filteredInsumos$ | async" [value]="ins">
+                                    {{ ins.nombre }} <small>(Stock: {{ ins.stock_actual }})</small>
+                                </mat-option>
+                            </mat-autocomplete>
+                        </div>
+
+                        <div style="flex: 1;">
+                            <input type="number" class="form-control" style="height: 56px;" placeholder="Cant."
+                                [(ngModel)]="detalleActualInsumo.cantidad_usada">
+                        </div>
+
+                        <button type="button" class="btn-guardar" style="height: 56px;"
+                            (click)="agregarDetalleInsumo()">Añadir</button>
+                    </div>
+
+                    <!-- Tabla temporal de Insumos -->
+                    <table class="report-table mt-2" *ngIf="detallesInsumosAAgregar.length > 0">
+                        <thead>
+                            <tr>
+                                <th>Insumo</th>
+                                <th>Cant. Usada</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let ins of detallesInsumosAAgregar; let i = index">
+                                <td>{{ ins.nombre_insumo }}</td>
+                                <td>{{ ins.cantidad_usada }}</td>
+                                <td><button type="button" class="btn-icon text-danger" (click)="eliminarInsumo(i)"><i
+                                            class="fas fa-trash"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label>Trabajos Realizados / Observaciones</label>
+                    <textarea class="form-control" [(ngModel)]="formData.observaciones" rows="3"
+                        placeholder="Ej. Cambio de aceite de motor, revisión de frenos..."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer mt-0" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+                <button class="btn-guardar" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);"
+                    (click)="guardarServicio()" [disabled]="isSaving">
+                    <i class="fas fa-save"></i> Finalizar y Agendar Siguiente
+                </button>
+            </div>
+        </ng-container>
+
+    </div>
+</div>
+
+<!-- ==========================================
+     MODAL DE NOTIFICACIONES GLOBALES
+     ========================================== -->
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()" style="z-index: 3000;">
+    <div class="modal-content" (click)="$event.stopPropagation()" style="max-width: 400px; text-align: center;">
+
+        <div class="modal-header" [ngClass]="{
+           'header-exito': notificacion.tipo === 'exito',
+           'header-error': notificacion.tipo === 'error',
+           'header-advertencia': notificacion.tipo === 'advertencia'
+         }" style="justify-content: center; border-bottom-width: 2px;">
+            <h3 style="margin: 0;">
+                <i class="fas" [ngClass]="{
+             'fa-check-circle': notificacion.tipo === 'exito',
+             'fa-times-circle': notificacion.tipo === 'error',
+             'fa-exclamation-triangle': notificacion.tipo === 'advertencia'
+           }"></i>
+                {{ notificacion.titulo }}
+            </h3>
+        </div>
+
+        <div class="modal-body" style="padding: 20px 10px;">
+            <p style="color: #e0e0e0; font-size: 1.1rem; margin: 0;">{{ notificacion.mensaje }}</p>
+        </div>
+
+        <div class="modal-footer" style="justify-content: center; border-top: none;">
+            <button type="button" class="btn-guardar" (click)="cerrarModalNotificacion()">Entendido</button>
+        </div>
+
+    </div>
+</div>

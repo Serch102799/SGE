@@ -1,0 +1,317 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/nF.png") no-repeat center center fixed;
+  background-size: cover;
+}
+
+.financial-section {
+  background-color: rgba(0, 0, 0, 0.658);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 20px 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.financial-header h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+/* ==========================================
+   TABLERO KANBAN
+   ========================================== */
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.kanban-column {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px); /* Ocupa el alto de la pantalla */
+  overflow: hidden;
+}
+
+.column-header {
+  padding: 15px;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: center;
+}
+
+.column-header h3 {
+  margin: 0;
+  color: #f1f5f9;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+.column-body {
+  padding: 15px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* ==========================================
+   TARJETAS KANBAN (CARDS)
+   ========================================== */
+.kanban-card {
+  background-color: rgba(30, 41, 59, 0.9);
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  border-left: 4px solid #475569; /* Borde por defecto */
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kanban-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.card-danger { border-left-color: #ef4444; }
+.card-warning { border-left-color: #f59e0b; }
+.card-success { border-left-color: #10b981; }
+
+.card-title {
+  color: #f8fafc;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.card-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  margin-bottom: 4px;
+}
+
+.card-alerta {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.badge-danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+.badge-warning { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+
+.empty-column {
+  text-align: center;
+  font-style: italic;
+  font-size: 0.9rem;
+  margin-top: 20px;
+}
+
+/* Botones */
+.btn-avanzar {
+  border: none; padding: 8px; border-radius: 5px; cursor: pointer;
+  font-weight: 500; font-size: 0.9rem; transition: 0.3s;
+}
+.btn-danger { background: rgba(239, 68, 68, 0.8); color: white; }
+.btn-danger:hover { background: #ef4444; }
+.btn-warning { background: rgba(245, 158, 11, 0.8); color: black; }
+.btn-warning:hover { background: #f59e0b; }
+.btn-guardar { background-color: #4480d3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: 0.3s; }
+.btn-guardar:hover { background-color: #386bbd; }
+.btn-cancelar { background-color: #555; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: 0.3s; }
+
+/* Modal Ampliado */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 1000;
+}
+.modal-content {
+  background-color: rgba(25, 28, 36, 0.98); padding: 25px; border-radius: 12px;
+  width: 90%; max-width: 600px; border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.modal-lg { max-width: 800px; } /* Modal más ancho para el checkout de refacciones */
+
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 15px; margin-bottom: 20px; }
+.modal-header h3 { margin: 0; font-size: 1.3rem; }
+.btn-cerrar { background: none; border: none; color: #aaa; font-size: 1.5rem; cursor: pointer; }
+
+.form-control {
+  width: 100%; background: rgba(74, 142, 206, 0.2); border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 12px; color: #f8fafc; border-radius: 6px; outline: none; color-scheme: dark;
+}
+
+.btn-icon { background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+.report-table { width: 100%; border-collapse: collapse; color: #e0e0e0; }
+.report-table th, .report-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; }
+.report-table th { color: #a7b7d2; font-weight: 500; }
+
+.kpi-loading { text-align: center; padding: 40px; color: #38bdf8; }
+/* ==========================================
+   SWITCH DE VISTAS (TOGGLE)
+   ========================================== */
+.view-toggle {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-right: 15px;
+}
+
+.view-toggle button {
+  background: transparent;
+  border: none;
+  color: #a7b7d2;
+  padding: 8px 15px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.view-toggle button i {
+  font-size: 0.9rem;
+}
+
+.view-toggle button.active {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  box-shadow: inset 0 -2px 0 #38bdf8; /* Pequeña línea debajo */
+}
+
+.view-toggle button:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+/* Fila roja sutil para urgencias en la tabla */
+.row-urgente {
+  background-color: rgba(239, 68, 68, 0.05);
+}
+/* ==========================================
+   VISTA DE AGENDA (TABLA PREMIUM)
+   ========================================== */
+.table-wrapper {
+  padding: 0 !important;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  background: rgba(15, 23, 42, 0.7); /* Fondo oscuro translúcido */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 20px;
+  animation: fadeIn 0.4s ease; /* Animación suave al cambiar de vista */
+}
+
+.premium-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #f8fafc;
+  font-size: 0.95rem;
+}
+
+.premium-table thead {
+  background: linear-gradient(90deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+  border-bottom: 2px solid rgba(56, 189, 248, 0.5); /* Línea azul neón sutil */
+}
+
+.premium-table th {
+  padding: 18px 20px;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  color: #94a3b8;
+  font-weight: 600;
+  text-align: left;
+}
+
+.premium-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.premium-table tbody tr:hover {
+  background-color: rgba(56, 189, 248, 0.15); /* Brillo azul al pasar el mouse */
+  transform: scale(1.001);
+}
+
+.premium-table td {
+  padding: 16px 20px;
+  vertical-align: middle;
+}
+
+/* Filas Urgentes */
+.row-urgente {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+.row-urgente:hover {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Animación para cuando cambias entre Tablero y Agenda */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 1200px) {
+  .kanban-board { grid-template-columns: repeat(2, 1fr); height: auto; }
+  .kanban-column { height: 500px; }
+}
+@media (max-width: 768px) {
+  .kanban-board { grid-template-columns: 1fr; }
+}
+::ng-deep .mat-mdc-input-element, 
+::ng-deep .mdc-text-field__input {
+    color: #ffffff !important;
+}
+::ng-deep .mat-mdc-form-field input::placeholder,
+::ng-deep .mdc-text-field__input::placeholder {
+    color: #cbd5e1 !important;
+}
+
+::ng-deep .mdc-notched-outline__leading,
+::ng-deep .mdc-notched-outline__notch,
+::ng-deep .mdc-notched-outline__trailing {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+::ng-deep .mat-mdc-autocomplete-panel {
+    background-color: #1e293b !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+::ng-deep .mat-mdc-autocomplete-panel .mdc-list-item__primary-text {
+    color: #f8fafc !important;
+}
+::ng-deep .mat-mdc-autocomplete-panel .mat-mdc-option:hover,
+::ng-deep .mat-mdc-autocomplete-panel .mat-mdc-option.mdc-list-item--selected {
+    background-color: rgba(56, 189, 248, 0.2) !important; /* Un azul sutil al pasar el mouse */
+}
+/* Colores dinámicos para los headers del Modal de Notificación */
+.header-exito { border-bottom-color: rgba(34, 197, 94, 0.4) !important; color: #22c55e !important; }
+.header-error { border-bottom-color: rgba(239, 68, 68, 0.4) !important; color: #ef4444 !important; }
+.header-advertencia { border-bottom-color: rgba(245, 158, 11, 0.4) !important; color: #f59e0b !important; }

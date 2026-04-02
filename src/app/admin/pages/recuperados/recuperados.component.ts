@@ -54,7 +54,13 @@ export class RecuperadosComponent implements OnInit {
 
   modalActivo: string = ''; 
   piezaSeleccionada: any = null;
-  formData: any = { cantidad: 1 }; // <-- Ajustado para que inicie en 1
+  formData: any = { 
+    cantidad: 1,
+    subtotal: null,
+    aplica_iva: false,
+    iva_monto: 0,
+    costo_reparacion: 0
+  }; 
   isSaving = false;
 
   mostrarModalNotificacion = false;
@@ -132,7 +138,6 @@ export class RecuperadosComponent implements OnInit {
     );
   }
 
-  // Mostrar el texto correcto en los inputs una vez seleccionados
   displayRefaccion(refaccion: any): string { 
     return refaccion ? `${refaccion.numero_parte || 'S/N'} - ${refaccion.nombre}` : ''; 
   }
@@ -143,7 +148,6 @@ export class RecuperadosComponent implements OnInit {
     return proveedor ? proveedor.nombre_proveedor : ''; 
   }
 
-  // Guardar IDs al seleccionar
   onRefaccionSelected(event: MatAutocompleteSelectedEvent) { this.formData.id_refaccion = event.option.value.id_refaccion; }
   onAutobusOrigenSelected(event: MatAutocompleteSelectedEvent) { this.formData.id_autobus_origen = event.option.value.id_autobus; }
   onAutobusDestinoSelected(event: MatAutocompleteSelectedEvent) { this.formData.id_autobus_destino = event.option.value.id_autobus; }
@@ -203,7 +207,6 @@ export class RecuperadosComponent implements OnInit {
     });
   }
 
-  // Getters para la paginación de la tabla
   get piezasPaginadas() {
     const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
     return this.piezasFiltradas.slice(inicio, inicio + this.itemsPorPagina);
@@ -280,17 +283,34 @@ export class RecuperadosComponent implements OnInit {
     this.mostrarNotificacion('¡Listo!', 'El PDF se ha descargado correctamente.', 'exito');
   }
 
-  // --- MODALES Y GUARDADO ---
+  // ==========================================
+  // MODALES, CÁLCULOS Y GUARDADO
+  // ==========================================
   abrirModal(tipo: string, pieza: any = null) {
     this.modalActivo = tipo; 
     this.piezaSeleccionada = pieza; 
-    this.formData = { cantidad: 1 }; // <-- Ajuste: Inicializa con 1 para que el input no esté vacío
+    this.formData = { 
+      cantidad: 1,
+      subtotal: null,
+      aplica_iva: false,
+      iva_monto: 0,
+      costo_reparacion: 0
+    }; 
     this.refaccionControl.setValue(''); 
     this.autobusOrigenControl.setValue('');
     this.autobusDestinoControl.setValue(''); 
     this.proveedorControl.setValue('');
   }
+
   cerrarModal() { this.modalActivo = ''; this.piezaSeleccionada = null; }
+
+  // Cálculo dinámico del IVA desde el frontend
+  calcularTotales() {
+    const sub = parseFloat(this.formData.subtotal) || 0;
+    this.formData.iva_monto = this.formData.aplica_iva ? (sub * 0.16) : 0;
+    this.formData.costo_total_factura = sub + this.formData.iva_monto;
+    this.formData.costo_reparacion = sub + this.formData.iva_monto; 
+  }
 
   guardarIngreso() {
     this.isSaving = true;
@@ -312,5 +332,6 @@ export class RecuperadosComponent implements OnInit {
   mostrarNotificacion(titulo: string, mensaje: string, tipo: string) {
     this.notificacion = { titulo, mensaje, tipo }; this.mostrarModalNotificacion = true;
   }
+  
   cerrarModalNotificacion() { this.mostrarModalNotificacion = false; }
 }

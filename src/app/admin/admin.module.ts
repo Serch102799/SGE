@@ -52,6 +52,7 @@ import { HerramientaFusionComponent } from './pages/herramienta-fusion/herramien
 import { TallerComponent } from './pages/taller/taller.component';
 import { RecuperadosComponent } from './pages/recuperados/recuperados.component';
 import { DashConsumoComponent } from './pages/dash-consumo/dash-consumo.component';
+import { MantenimientoComponent } from './pages/mantenimiento/mantenimiento.component';
 
 @NgModule({
   declarations: [
@@ -93,7 +94,8 @@ import { DashConsumoComponent } from './pages/dash-consumo/dash-consumo.componen
     HerramientaFusionComponent,
     TallerComponent,
     RecuperadosComponent,
-    DashConsumoComponent
+    DashConsumoComponent,
+    MantenimientoComponent
   ],
   imports: [
     HttpClientModule,

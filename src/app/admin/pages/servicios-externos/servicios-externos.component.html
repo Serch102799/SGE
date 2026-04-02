@@ -1,13 +1,61 @@
 <div class="usuarios-container">
-  <div class="container-header">
+  <div class="container-header" style="flex-wrap: wrap; gap: 15px;">
     <h2><i class="fas fa-wrench"></i> Servicios y Reparaciones Externas</h2>
-    <button class="btn-agregar" (click)="abrirModal()">
-      <i class="fas fa-plus"></i> Registrar Servicio
-    </button>
+    
+    <!-- NUEVOS BOTONES DE EXPORTACIÓN Y AGREGAR -->
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <button class="btn-cancelar" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4);" (click)="exportarExcel()">
+        <i class="fas fa-file-excel"></i> Excel
+      </button>
+      <button class="btn-cancelar" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4);" (click)="exportarPDF()">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
+      <!-- <button class="btn-cancelar" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4);" (click)="exportarXML()">
+        <i class="fas fa-file-code"></i> XML
+      </button> -->
+      <button class="btn-agregar" (click)="abrirModal()">
+        <i class="fas fa-plus"></i> Registrar Servicio
+      </button>
+    </div>
   </div>
 
   <div class="container-body">
-    <div class="loading-message" *ngIf="isLoading">Cargando servicios...</div>
+    
+    <!-- NUEVA BARRA DE FILTROS -->
+    <div class="filtros-container">
+      <div class="filtro-grupo" style="flex: 2;">
+        <label>Buscar (Bus, Desc, Factura)</label>
+        <input type="text" class="form-control" placeholder="Ej. Balatas, Bus 76..." [(ngModel)]="filtroBus" (keyup)="aplicarFiltros()">
+      </div>
+
+      <div class="filtro-grupo" style="flex: 1.5;">
+        <label>Proveedor</label>
+        <select class="form-control" [(ngModel)]="filtroProveedor" (change)="aplicarFiltros()">
+          <option value="">Todos los proveedores</option>
+          <option *ngFor="let p of proveedores" [value]="p.id_proveedor">{{ p.nombre_proveedor }}</option>
+        </select>
+      </div>
+
+      <div class="filtro-grupo">
+        <label>Desde</label>
+        <input type="date" class="form-control" [(ngModel)]="filtroFechaInicio" (change)="aplicarFiltros()">
+      </div>
+
+      <div class="filtro-grupo">
+        <label>Hasta</label>
+        <input type="date" class="form-control" [(ngModel)]="filtroFechaFin" (change)="aplicarFiltros()">
+      </div>
+
+      <div class="filtro-grupo action-limpiar">
+        <button class="btn-icon-limpiar" (click)="limpiarFiltros()" title="Limpiar Filtros">
+          <i class="fas fa-eraser"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="loading-message" *ngIf="isLoading">
+      <div class="spinner"></div> Cargando servicios...
+    </div>
 
     <div class="tabla-responsive-wrapper" *ngIf="!isLoading">
       <table class="tabla-usuarios">
@@ -25,14 +73,15 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let s of servicios" [ngClass]="getEstadoGarantiaClass(s)">
-            <td>#{{ s.id_servicio }}</td>
+          <!-- OJO: Ahora iteramos sobre paginatedServicios -->
+          <tr *ngFor="let s of paginatedServicios" [ngClass]="getEstadoGarantiaClass(s)">
+            <td>#{{ s.id_servicio_externo || s.id_servicio }}</td>
             <td>{{ s.fecha_servicio | date:'dd/MM/yyyy' }}</td>
             <td>
-              <span class="badge badge-bus">Bus {{ s.autobus }}</span><br>
+              <span class="badge badge-bus">Bus {{ s.economico_autobus || s.autobus }}</span><br>
               <small class="text-muted"><i class="fas fa-tachometer-alt"></i> {{ s.kilometraje_autobus | number }} km</small>
             </td>
-            <td>{{ s.proveedor || 'No especificado' }}<br><small class="text-muted">{{ s.factura_nota ? 'Nota: '+s.factura_nota : '' }}</small></td>
+            <td>{{ s.nombre_proveedor || s.proveedor || 'No especificado' }}<br><small class="text-muted">{{ s.factura_nota ? 'Nota: '+s.factura_nota : '' }}</small></td>
             <td [title]="s.descripcion">{{ s.descripcion.length > 30 ? (s.descripcion | slice:0:30) + '...' : s.descripcion }}</td>
             
             <td>
@@ -51,18 +100,37 @@
               <span class="badge" [ngClass]="s.estatus === 'Activo' ? 'badge-activo' : 'badge-cancelado'">{{ s.estatus }}</span>
             </td>
             <td>
-              <button class="btn-cancelar-icon" *ngIf="s.estatus === 'Activo'" (click)="cancelarServicio(s.id_servicio)" title="Cancelar">
+              <button class="btn-cancelar-icon" *ngIf="s.estatus === 'Activo'" (click)="cancelarServicio(s.id_servicio_externo || s.id_servicio)" title="Cancelar">
                 <i class="fas fa-ban"></i>
               </button>
             </td>
           </tr>
-          <tr *ngIf="servicios.length === 0">
-            <td colspan="9" class="text-center empty-msg">No hay servicios externos registrados.</td>
+          
+          <tr *ngIf="paginatedServicios.length === 0">
+            <td colspan="9" class="text-center empty-msg">No se encontraron servicios con los filtros aplicados.</td>
           </tr>
         </tbody>
       </table>
       
-      <div class="leyenda-garantias">
+      <!-- NUEVO PAGINADOR -->
+      <div class="paginador-container" *ngIf="filteredServicios.length > 0">
+        <div class="paginador-info">
+          Mostrando {{ (paginaActual - 1) * itemsPorPagina + 1 }} a 
+          {{ (paginaActual * itemsPorPagina) > filteredServicios.length ? filteredServicios.length : (paginaActual * itemsPorPagina) }} 
+          de {{ filteredServicios.length }} servicios
+        </div>
+        <div class="paginador-controles">
+          <button class="btn-paginador" (click)="cambiarPagina(-1)" [disabled]="paginaActual === 1">
+            <i class="fas fa-chevron-left"></i> Anterior
+          </button>
+          <span class="paginador-actual">Pág {{ paginaActual }} de {{ totalPaginas }}</span>
+          <button class="btn-paginador" (click)="cambiarPagina(1)" [disabled]="paginaActual === totalPaginas">
+            Siguiente <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="leyenda-garantias mt-3">
         <span><div class="color-box box-verde"></div> Garantía Activa</span>
         <span><div class="color-box box-amarillo"></div> Por Vencer (15 días)</span>
         <span><div class="color-box box-transparente"></div> Sin Garantía / Vencida</span>
@@ -72,6 +140,9 @@
   </div>
 </div>
 
+<!-- ==========================================
+     MODALES (No modificados)
+     ========================================== -->
 <div class="modal-overlay" *ngIf="modalVisible">
   <div class="modal-content modal-lg">
     <div class="modal-header">

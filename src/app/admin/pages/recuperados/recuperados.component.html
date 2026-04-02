@@ -232,37 +232,67 @@
       </div>
     </ng-container>
 
-    <ng-container *ngIf="modalActivo === 'recepcion'">
+<ng-container *ngIf="modalActivo === 'recepcion'">
       <div class="modal-header header-exito">
         <h3><i class="fas fa-check-circle"></i> Recibir Pieza Reparada</h3>
         <button class="btn-cerrar" (click)="cerrarModal()">×</button>
       </div>
+      
       <div class="modal-body">
         <p style="color: white; margin-bottom: 15px;">Recibiendo: <strong class="text-success">{{ piezaSeleccionada?.nombre_pieza }}</strong></p>
 
         <div class="alert alert-info" style="background: rgba(56, 189, 248, 0.1); border-left: 4px solid #38bdf8; color: #e0e0e0; padding: 12px; margin-bottom: 20px; border-radius: 4px;">
-          <small><i class="fas fa-info-circle text-info"></i> Si enviaste un lote de piezas iguales, ingresa cuántas regresaron. El sistema las separará automáticamente para que puedas instalarlas de forma individual.</small>
-        </div>
-
-        <div class="form-group mb-3">
-          <label>Factura / Nota de Reparación</label>
-          <input type="text" class="form-control" [(ngModel)]="formData.factura_reparacion" placeholder="Ej. FAC-9921" required>
+          <small><i class="fas fa-info-circle text-info"></i> Si enviaste un lote de piezas iguales, ingresa cuántas regresaron. El sistema las separará automáticamente.</small>
         </div>
 
         <div style="display: flex; gap: 15px;">
           <div class="form-group mb-3" style="flex: 1;">
+            <label>Factura / Nota de Reparación</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.factura_reparacion" placeholder="Ej. FAC-9921" required>
+          </div>
+          <div class="form-group mb-3" style="flex: 1;">
             <label>Cantidad Recibida</label>
             <input type="number" class="form-control" [(ngModel)]="formData.cantidad" min="1" placeholder="Ej. 1" required>
           </div>
-          <div class="form-group mb-3" style="flex: 1;">
-            <label>Costo TOTAL de la Factura ($)</label>
-            <input type="number" class="form-control" [(ngModel)]="formData.costo_total_factura" placeholder="Ej. 1500" required>
+        </div>
+
+        <!-- SECCIÓN FINANCIERA (NUEVA CON IVA) -->
+        <div class="finanzas-box mt-2 mb-2" style="background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); padding: 15px;">
+          <label style="color: #38bdf8; margin-bottom: 15px; display: block;"><i class="fas fa-money-bill-wave"></i> Costos de Reparación</label>
+          
+          <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+            
+            <!-- Input Subtotal -->
+            <div class="form-group" style="flex: 1; min-width: 150px;">
+              <label>Subtotal de la Factura ($) *</label>
+              <input type="number" class="form-control" placeholder="0.00" [(ngModel)]="formData.subtotal" (input)="calcularTotales()" min="0" required>
+            </div>
+            
+            <!-- Switch de IVA -->
+            <div class="checkbox-wrapper" style="flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 150px; margin-top: 5px;">
+              <label style="margin-bottom: 5px; opacity: 0;">IVA</label> <!-- Spacer invisible -->
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <label class="switch-label m-0">
+                  <input type="checkbox" [(ngModel)]="formData.aplica_iva" (change)="calcularTotales()">
+                  <span class="slider round"></span>
+                </label>
+                <span class="chk-text" style="color: #e2e8f0;">Aplica 16% IVA</span>
+              </div>
+            </div>
+
+            <!-- Resumen Total -->
+            <div class="totales-display" style="flex: 1; min-width: 200px; text-align: right; background: rgba(0,0,0,0.4); padding: 10px 15px; border-radius: 6px; border-left: 3px solid #10b981;">
+              <p style="margin: 0; color: #94a3b8; font-size: 0.85rem;">IVA (16%): <span style="color: #e2e8f0; font-weight: 500;">{{ formData.iva_monto | currency:'MXN' }}</span></p>
+              <h4 style="margin: 5px 0 0 0; font-size: 1.2rem; color: #e2e8f0;">Total: <span class="text-success">{{ formData.costo_reparacion | currency:'MXN' }}</span></h4>
+            </div>
           </div>
         </div>
+
       </div>
+      
       <div class="modal-footer">
         <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
-        <button class="btn-guardar" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);" (click)="avanzarEstado('Disponible')" [disabled]="isSaving">Recibir en Stock</button>
+        <button class="btn-guardar" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);" (click)="avanzarEstado('Disponible')" [disabled]="isSaving || !formData.subtotal">Recibir en Stock</button>
       </div>
     </ng-container>
 

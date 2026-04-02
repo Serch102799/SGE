@@ -32,7 +32,7 @@
         <div class="kpi-value">{{ stats.totalInsumos }}</div>
         <div class="kpi-label">Insumos/Consumibles</div>
       </div>
-       <div class="kpi-card">
+      <div class="kpi-card">
         <div class="kpi-value">{{ stats.totalPiezasRefacciones | number }}</div>
         <div class="kpi-label">Piezas en Stock</div>
       </div>
@@ -40,6 +40,23 @@
         [class.kpi-ok]="stats.refaccionesStockBajo === 0 && stats.insumosStockBajo === 0">
         <div class="kpi-value">{{ stats.refaccionesStockBajo + stats.insumosStockBajo }}</div>
         <div class="kpi-label">Refacciones/Insumos con Stock Bajo</div>
+      </div>
+    </div>
+
+    <!-- BANNER DE MANTENIMIENTO -->
+    <div class="kpi-mantenimiento-banner" [routerLink]="['/admin/mantenimiento']"
+      [ngClass]="{'alerta-roja': serviciosPendientes > 0, 'alerta-verde': serviciosPendientes === 0}">
+      <div class="banner-content">
+        <div class="banner-icon">
+          <i class="fas fa-tools"></i>
+        </div>
+        <div class="banner-text">
+          <span class="banner-value">{{ serviciosPendientes }}</span>
+          <span class="banner-label">Servicios Pendientes / Atrasados</span>
+        </div>
+      </div>
+      <div class="banner-action">
+        Ir a la Agenda Taller <i class="fas fa-arrow-right"></i>
       </div>
     </div>
 
@@ -91,6 +108,7 @@
         </div>
       </div>
     </div>
+
     <div class="charts-grid">
       <div class="chart-container">
         <h3>Refacciones con Más Stock (Top 5)</h3>
@@ -108,9 +126,31 @@
       </div>
     </div>
 
+    <!-- ==========================================
+         TOP 5 AUTOBUSES CON FILTRO DE FECHAS (NUEVO)
+         ========================================== -->
     <div class="charts-grid-single">
       <div class="chart-container">
-        <h3>Gasto Total por Autobús (Top 5)</h3>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+          <h3 style="margin: 0;">Gasto Total por Autobús (Top 5)</h3>
+          
+          <div style="display: flex; gap: 15px; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: #94a3b8; font-size: 0.85rem;">Desde:</span>
+              <input type="date" class="form-control" 
+                     style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; outline: none; color-scheme: dark;" 
+                     [(ngModel)]="fechaInicioTopBus" (change)="cargarTopAutobuses()">
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: #94a3b8; font-size: 0.85rem;">Hasta:</span>
+              <input type="date" class="form-control" 
+                     style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; outline: none; color-scheme: dark;" 
+                     [(ngModel)]="fechaFinTopBus" (change)="cargarTopAutobuses()">
+            </div>
+          </div>
+        </div>
+
         <div class="chart-wrapper-horizontal">
           <canvas baseChart [data]="topCostoAutobusesData" [options]="topCostoAutobusesOptions" type="bar">
           </canvas>
