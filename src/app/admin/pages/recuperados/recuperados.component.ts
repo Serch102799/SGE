@@ -7,6 +7,7 @@ import { environment } from '../../../../environments/environments';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-recuperados',
@@ -16,6 +17,7 @@ import autoTable from 'jspdf-autotable';
 })
 export class RecuperadosComponent implements OnInit {
   apiUrl = `${environment.apiUrl}/recuperados`;
+  esSuperUsuario: boolean = false;
   
   // ==========================================
   // ESTADOS Y VISTAS
@@ -66,7 +68,7 @@ export class RecuperadosComponent implements OnInit {
   mostrarModalNotificacion = false;
   notificacion = { titulo: '', mensaje: '', tipo: 'advertencia' };
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   ngOnInit(): void {
     this.cargarPiezas();
@@ -136,6 +138,8 @@ export class RecuperadosComponent implements OnInit {
         );
       })
     );
+    const user = this.authService.getCurrentUser();
+    this.esSuperUsuario = user?.rol === 'SuperUsuario' || user?.rol === 'Administrador' || user?.rol === 'Admin';
   }
 
   displayRefaccion(refaccion: any): string { 
@@ -289,12 +293,14 @@ export class RecuperadosComponent implements OnInit {
   abrirModal(tipo: string, pieza: any = null) {
     this.modalActivo = tipo; 
     this.piezaSeleccionada = pieza; 
+    const hoy = new Date().toISOString().split('T')[0];
     this.formData = { 
       cantidad: 1,
       subtotal: null,
       aplica_iva: false,
       iva_monto: 0,
-      costo_reparacion: 0
+      costo_reparacion: 0,
+      fecha_reparacion: hoy
     }; 
     this.refaccionControl.setValue(''); 
     this.autobusOrigenControl.setValue('');
@@ -317,6 +323,31 @@ export class RecuperadosComponent implements OnInit {
     this.http.post(this.apiUrl, this.formData).subscribe({
       next: () => { this.cerrarModal(); this.cargarPiezas(); this.isSaving = false; },
       error: () => { this.isSaving = false; }
+    });
+  }
+  revertirInstalacion() {
+    if (!this.formData.motivo_reversion) {
+      this.mostrarNotificacion('Atención', 'Debes escribir el motivo de la reversión para dejar evidencia de auditoría.', 'advertencia');
+      return;
+    }
+
+    this.isSaving = true;
+    const payload = {
+      motivo_reversion: this.formData.motivo_reversion,
+      usuario_que_revierte: this.authService.getCurrentUser()?.nombre || 'Super Usuario'
+    };
+
+    this.http.put(`${this.apiUrl}/${this.piezaSeleccionada.id_pieza_recuperada}/revertir-instalacion`, payload).subscribe({
+      next: () => {
+        this.mostrarNotificacion('¡Revertido!', 'La pieza ha regresado al stock disponible y el costo se eliminó del autobús equivocado.', 'exito');
+        this.cerrarModal();
+        this.cargarPiezas();
+        this.isSaving = false;
+      },
+      error: () => {
+        this.mostrarNotificacion('Error', 'No se pudo revertir la instalación.', 'error');
+        this.isSaving = false;
+      }
     });
   }
 

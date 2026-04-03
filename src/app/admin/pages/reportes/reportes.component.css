@@ -651,3 +651,88 @@ td.stock-critico {
   border-color: #ef4444 !important; /* Borde rojo */
   transform: translateY(-2px);
 }
+/* ==========================================
+   ANIMACIONES DEL MODAL DE NOTIFICACIONES
+   ========================================== */
+.modal-animado {
+  max-width: 400px !important;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+  padding: 30px;
+  transform: scale(0.95);
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Iconos de Resultado */
+.icon-container {
+  font-size: 4.5rem;
+  margin-bottom: 15px;
+}
+
+.icon-container.exito { color: #10b981; animation: bounceIn 0.6s ease; }
+.icon-container.error { color: #ef4444; animation: shake 0.4s ease; }
+.icon-container.advertencia { color: #f59e0b; }
+
+@keyframes bounceIn {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+/* Animación de Descarga */
+.animacion-descarga {
+  font-size: 4rem;
+  color: #38bdf8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pulse-icon {
+  animation: pulseCloud 1.5s infinite;
+}
+
+@keyframes pulseCloud {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 1; text-shadow: 0 0 20px rgba(56, 189, 248, 0.8); }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+/* Barra de carga estilo Cylon/Scanner */
+.loader-line {
+  width: 70%;
+  height: 4px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.loader-line::after {
+  content: '';
+  position: absolute;
+  left: -50%;
+  width: 50%;
+  height: 100%;
+  background: #38bdf8;
+  border-radius: 4px;
+  box-shadow: 0 0 10px #38bdf8;
+  animation: loadingScanner 1.2s infinite ease-in-out;
+}
+
+@keyframes loadingScanner {
+  0% { left: -50%; }
+  100% { left: 100%; }
+}

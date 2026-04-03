@@ -1,5 +1,6 @@
 <div class="dashboard-container">
   
+  <!-- CABECERA DE BIENVENIDA -->
   <div class="welcome-header">
     <div class="welcome-text">
       <h2>¡Hola, {{ nombreUsuario }}! 👋</h2>
@@ -10,10 +11,15 @@
     </div>
   </div>
 
-  <div class="loading-message" *ngIf="isLoading">Analizando datos operativos...</div>
+  <!-- MENSAJE DE CARGA -->
+  <div class="loading-message" *ngIf="isLoading">
+    <div class="spinner"></div> Analizando datos operativos...
+  </div>
 
+  <!-- GRID DE KPIs -->
   <div class="kpi-grid" *ngIf="!isLoading">
     
+    <!-- Operadores Activos -->
     <div class="kpi-card kpi-blue">
       <div class="kpi-icon"><fa-icon [icon]="faIdCard"></fa-icon></div>
       <div class="kpi-info">
@@ -22,7 +28,10 @@
       </div>
     </div>
 
-    <div class="kpi-card kpi-red">
+    <!-- Licencias Vencidas (Clickable) -->
+    <div class="kpi-card danger clickable" 
+         (click)="abrirDetalle('vencidas')" 
+         [class.disabled]="kpis.licencias_vencidas === 0">
       <div class="kpi-icon"><fa-icon [icon]="faTimesCircle"></fa-icon></div>
       <div class="kpi-info">
         <h3>{{ kpis.licencias_vencidas }}</h3>
@@ -30,30 +39,55 @@
       </div>
     </div>
 
-    <div class="kpi-card kpi-yellow">
+    <!-- Próximas a Vencer (Clickable) -->
+    <div class="kpi-card warning clickable" 
+         (click)="abrirDetalle('por_vencer')" 
+         [class.disabled]="kpis.licencias_por_vencer === 0">
       <div class="kpi-icon"><fa-icon [icon]="faExclamationTriangle"></fa-icon></div>
       <div class="kpi-info">
         <h3>{{ kpis.licencias_por_vencer }}</h3>
-        <p>Próximas a Vencer (30d)</p>
+        <p>Próximas a Vencer</p>
       </div>
     </div>
 
-    <div class="kpi-card kpi-gray">
+    <!-- Sin Registro de Licencia (Clickable opcional) -->
+    <div class="kpi-card kpi-gray clickable" (click)="abrirDetalle('sin_licencia')">
       <div class="kpi-icon"><fa-icon [icon]="faQuestionCircle"></fa-icon></div>
       <div class="kpi-info">
         <h3>{{ kpis.sin_licencia }}</h3>
-        <p>Sin Registro de Licencia</p>
+        <p>Sin Registro</p>
       </div>
     </div>
 
   </div>
 
+  <!-- TABLAS DE RENDIMIENTO -->
+<!--     <div class="filters-bar">
+    <div class="filter-group">
+      <label>📅 Desde:</label>
+      <input type="date" [(ngModel)]="fechaDesde" (change)="cargarDashboard()">
+    </div>
+    <div class="filter-group">
+      <label>📅 Hasta:</label>
+      <input type="date" [(ngModel)]="fechaHasta" (change)="cargarDashboard()">
+    </div>
+    <div class="filter-group">
+      <label>🛣️ Ruta:</label>
+      <select [(ngModel)]="filtroRuta" (change)="cargarDashboard()">
+        <option value="">Todas las rutas</option>
+        <option *ngFor="let r of rutas" [value]="r.id_ruta">{{ r.nombre_ruta }}</option>
+      </select>
+    </div>
+    <button class="btn-reset" (click)="establecerUltimos7Dias(); filtroRuta=''; cargarDashboard()">
+      <fa-icon [icon]="faTimes"></fa-icon> Limpiar
+    </button>
+  </div> -->
   <div class="tables-grid" *ngIf="!isLoading">
-    
-    <div class="table-card border-green">
+    <!-- Mejores Rendimientos -->
+    <div class="table-card">
       <div class="card-header header-green">
-        <h3><fa-icon [icon]="faTrophy"></fa-icon> Top 10: Mejores Rendimientos (Diésel)</h3>
-        <span class="badge-subtitle">Premia su esfuerzo</span>
+        <h3><fa-icon [icon]="faTrophy"></fa-icon> Top 10: Mejores Rendimientos</h3>
+        <span class="badge-subtitle">Eficiencia Alta</span>
       </div>
       <div class="table-responsive">
         <table class="rrhh-table">
@@ -61,8 +95,8 @@
             <tr>
               <th>#</th>
               <th>Operador</th>
-              <th>Autobús Gral.</th>
-              <th class="text-right">Rendimiento</th>
+              <th>Autobús</th>
+              <th class="text-right">Rend.</th>
             </tr>
           </thead>
           <tbody>
@@ -72,18 +106,16 @@
               <td><span class="bus-tag">BUS {{ op.autobus_frecuente || 'N/A' }}</span></td>
               <td class="text-right text-success fw-bold">{{ op.rendimiento_promedio | number:'1.2-2' }} km/L</td>
             </tr>
-            <tr *ngIf="topMejores.length === 0">
-              <td colspan="4" class="empty-msg">No hay suficientes datos registrados.</td>
-            </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <div class="table-card border-red">
+    <!-- Peores Rendimientos -->
+    <div class="table-card">
       <div class="card-header header-red">
-        <h3><fa-icon [icon]="faTachometerAlt"></fa-icon> Top 10: Peores Rendimientos</h3>
-        <span class="badge-subtitle">Requieren supervisión</span>
+        <h3><fa-icon [icon]="faTachometerAlt"></fa-icon> Top 10: Rendimientos Bajos</h3>
+        <span class="badge-subtitle">Supervisión</span>
       </div>
       <div class="table-responsive">
         <table class="rrhh-table">
@@ -91,8 +123,8 @@
             <tr>
               <th>#</th>
               <th>Operador</th>
-              <th>Autobús Gral.</th>
-              <th class="text-right">Rendimiento</th>
+              <th>Autobús</th>
+              <th class="text-right">Rend.</th>
             </tr>
           </thead>
           <tbody>
@@ -102,9 +134,6 @@
               <td><span class="bus-tag">BUS {{ op.autobus_frecuente || 'N/A' }}</span></td>
               <td class="text-right text-danger fw-bold">{{ op.rendimiento_promedio | number:'1.2-2' }} km/L</td>
             </tr>
-            <tr *ngIf="topPeores.length === 0">
-              <td colspan="4" class="empty-msg">No hay suficientes datos registrados.</td>
-            </tr>
           </tbody>
         </table>
       </div>
@@ -112,4 +141,42 @@
 
   </div>
 
+</div>
+
+<!-- MODAL DE DETALLE DE LICENCIAS (Actionable Insight) -->
+<div class="modal-overlay" *ngIf="modalDetalleVisible" (click)="cerrarModal()">
+  <div class="modal-content detalle-rrhh" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ tituloModalDetalle }}</h3>
+      <button class="btn-close" (click)="cerrarModal()">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="lista-operadores">
+        <div class="operador-item" *ngFor="let op of operadoresDetalle">
+          <div class="op-avatar">
+            <fa-icon [icon]="faUser"></fa-icon>
+          </div>
+          <div class="op-info">
+            <span class="op-nombre">{{ op.nombre_completo }}</span>
+            <span class="op-fecha" *ngIf="op.fecha_vencimiento">
+              Expiración: {{ op.fecha_vencimiento | date:'dd/MM/yyyy' }}
+            </span>
+          </div>
+          <div class="op-badge" [ngClass]="tipoDetalleActivo">
+            {{ tipoDetalleActivo === 'vencidas' ? 'VENCIDA' : (tipoDetalleActivo === 'por_vencer' ? 'PRÓXIMA' : 'PENDIENTE') }}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Mensaje si no hay datos en el detalle -->
+      <div class="empty-msg" *ngIf="operadoresDetalle.length === 0">
+        No hay operadores en esta lista.
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-primary" (click)="cerrarModal()">Cerrar</button>
+    </div>
+  </div>
 </div>

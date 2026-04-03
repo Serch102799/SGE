@@ -14,23 +14,48 @@
           <select id="tipoReporte" class="form-control" [(ngModel)]="tipoReporteSeleccionado">
             <option value="gastos-totales">Gastos Totales</option>
             <option value="mas-utilizadas">Refacciones Más Utilizadas</option>
-            <!-- <option value="stock-bajo">Stock Bajo</option> -->
             <option value="costo-por-autobus-especifico">Historial por Autobús</option>
             <option value="costo-autobus">Gasto de Autobuses</option>
             <option value="movimientos-refaccion">Movimientos por Refacciones</option>
             <option value="historial-por-refaccion">Historial por Refacción</option>
+            <!-- 🚀 NUEVA OPCIÓN AGREGADA -->
+            <option value="movimientos-categoria">Movimientos por Categoría / Sistema</option>
           </select>
         </div>
 
-        <div class="filtro-item" *ngIf="requiereFechas">
+        <!-- Fechas para reportes normales -->
+        <div class="filtro-item" *ngIf="requiereFechas && tipoReporteSeleccionado !== 'movimientos-categoria'">
           <label for="fechaInicio">Desde:</label>
           <input type="date" id="fechaInicio" class="form-control" [(ngModel)]="fechaInicio">
         </div>
 
-        <div class="filtro-item" *ngIf="requiereFechas">
+        <div class="filtro-item" *ngIf="requiereFechas && tipoReporteSeleccionado !== 'movimientos-categoria'">
           <label for="fechaFin">Hasta:</label>
           <input type="date" id="fechaFin" class="form-control" [(ngModel)]="fechaFin">
         </div>
+
+        <!-- ==========================================
+             NUEVOS FILTROS EXCLUSIVOS PARA CATEGORÍAS
+             ========================================== -->
+        <ng-container *ngIf="tipoReporteSeleccionado === 'movimientos-categoria'">
+          <div class="filtro-item">
+            <label>Categoría</label>
+            <select class="form-control" [(ngModel)]="categoriaSeleccionada">
+              <option value="">-- Selecciona una categoría --</option>
+              <option *ngFor="let cat of categoriasDisponibles" [value]="cat">{{ cat }}</option>
+            </select>
+          </div>
+          <div class="filtro-item">
+            <label>Desde:</label>
+            <input type="date" class="form-control" [(ngModel)]="fechaInicioCat">
+          </div>
+          <div class="filtro-item">
+            <label>Hasta:</label>
+            <input type="date" class="form-control" [(ngModel)]="fechaFinCat">
+          </div>
+        </ng-container>
+
+        <!-- AUDITORÍA DE ARTÍCULOS -->
         <div class="buscador-auditoria-container w-100" *ngIf="requiereListaArticulos">
           <hr class="divider">
           <h4 class="auditoria-title"><i class="fas fa-search"></i> Selecciona los artículos a auditar</h4>
@@ -39,13 +64,10 @@
             <div class="filtro-item autocompletar-item">
               <label>Agregar Refacción:</label>
               <mat-form-field appearance="outline" class="w-100 dark-mat-form">
-                <input type="text" matInput placeholder="Escribe para buscar..." [formControl]="refaccionControl"
-                  [matAutocomplete]="autoRef">
-                <mat-autocomplete #autoRef="matAutocomplete" [displayWith]="displayFn"
-                  (optionSelected)="agregarItemLista($event, 'Refacción')">
+                <input type="text" matInput placeholder="Escribe para buscar..." [formControl]="refaccionControl" [matAutocomplete]="autoRef">
+                <mat-autocomplete #autoRef="matAutocomplete" [displayWith]="displayFn" (optionSelected)="agregarItemLista($event, 'Refacción')">
                   <mat-option *ngFor="let option of filteredRefacciones$ | async" [value]="option">
-                    {{option.nombre}} <small class="text-muted">{{option.marca !== 'N/A' ? '(' + option.marca + ')' :
-                      ''}}</small>
+                    {{option.nombre}} <small class="text-muted">{{option.marca !== 'N/A' ? '(' + option.marca + ')' : ''}}</small>
                   </mat-option>
                 </mat-autocomplete>
               </mat-form-field>
@@ -54,13 +76,10 @@
             <div class="filtro-item autocompletar-item">
               <label>Agregar Insumo:</label>
               <mat-form-field appearance="outline" class="w-100 dark-mat-form">
-                <input type="text" matInput placeholder="Escribe para buscar..." [formControl]="insumoControl"
-                  [matAutocomplete]="autoIns">
-                <mat-autocomplete #autoIns="matAutocomplete" [displayWith]="displayFn"
-                  (optionSelected)="agregarItemLista($event, 'Insumo')">
+                <input type="text" matInput placeholder="Escribe para buscar..." [formControl]="insumoControl" [matAutocomplete]="autoIns">
+                <mat-autocomplete #autoIns="matAutocomplete" [displayWith]="displayFn" (optionSelected)="agregarItemLista($event, 'Insumo')">
                   <mat-option *ngFor="let option of filteredInsumos$ | async" [value]="option">
-                    {{option.nombre}} <small class="text-muted">{{option.marca !== 'N/A' ? '(' + option.marca + ')' :
-                      ''}}</small>
+                    {{option.nombre}} <small class="text-muted">{{option.marca !== 'N/A' ? '(' + option.marca + ')' : ''}}</small>
                   </mat-option>
                 </mat-autocomplete>
               </mat-form-field>
@@ -69,34 +88,27 @@
 
           <div class="items-seleccionados-box" *ngIf="itemsSeleccionados.length > 0">
             <div class="item-chip" *ngFor="let item of itemsSeleccionados; let i = index">
-
-              <button class="btn-remove-chip" (click)="eliminarItemLista(i)" title="Quitar de la lista">
-                &times;
-              </button>
-
+              <button class="btn-remove-chip" (click)="eliminarItemLista(i)" title="Quitar de la lista">&times;</button>
               <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="badge" [ngClass]="item.tipo === 'Refacción' ? 'badge-refaccion' : 'badge-insumo'">
-                  {{ item.tipo }}
-                </span>
+                <span class="badge" [ngClass]="item.tipo === 'Refacción' ? 'badge-refaccion' : 'badge-insumo'">{{ item.tipo }}</span>
                 <span class="item-name" style="font-weight: bold;">
-                  {{ item.nombre }} <small style="color: #94a3b8; font-weight: normal;">{{item.marca !== 'N/A' ?
-                    '('+item.marca+')' : ''}}</small>
+                  {{ item.nombre }} <small style="color: #94a3b8; font-weight: normal;">{{item.marca !== 'N/A' ? '('+item.marca+')' : ''}}</small>
                 </span>
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
       <div class="botones-accion-reportes">
-      <button class="btn-limpiar" (click)="limpiarFiltros()" title="Borrar todos los filtros">
-            <i class="fas fa-eraser"></i> Limpiar Filtros
-          </button>
-      <button class="btn-agregar" (click)="generarReporte()" [disabled]="isLoading">
-        <span *ngIf="!isLoading">📊 Generar Reporte</span>
-        <span *ngIf="isLoading">⏳ Cargando...</span>
-      </button>
+        <button class="btn-limpiar" (click)="limpiarFiltros()" title="Borrar todos los filtros">
+          <i class="fas fa-eraser"></i> Limpiar Filtros
+        </button>
+        <!-- BOTÓN DINÁMICO (Ejecuta una función u otra según el reporte) -->
+        <button class="btn-agregar" (click)="tipoReporteSeleccionado === 'movimientos-categoria' ? generarReporteCategoria() : generarReporte()" [disabled]="isLoading || isLoadingReporteCat">
+          <span *ngIf="!isLoading && !isLoadingReporteCat">📊 Generar Reporte</span>
+          <span *ngIf="isLoading || isLoadingReporteCat">⏳ Cargando...</span>
+        </button>
       </div>
 
       <p *ngIf="requiereFechas" style="margin-top: 15px; font-size: 0.85rem; color: #999;">
@@ -104,16 +116,15 @@
       </p>
     </div>
 
-    <div class="results-container" *ngIf="reporteData.length > 0">
+    <!-- ==========================================
+         VISTA DE RESULTADOS (REPORTES NORMALES)
+         ========================================== -->
+    <div class="results-container" *ngIf="reporteData.length > 0 && tipoReporteSeleccionado !== 'movimientos-categoria'">
       <div class="results-header">
         <h4>{{ tituloReporte }}</h4>
         <div class="export-buttons">
-          <button class="btn-exportar" (click)="exportarPDF()">
-            📄 Exportar a PDF
-          </button>
-          <button class="btn-excel" (click)="exportarExcel()">
-            📊 Exportar a Excel
-          </button>
+          <button class="btn-exportar" (click)="iniciarDescargaAnimada('pdf')">📄 Exportar a PDF</button>
+          <button class="btn-excel" (click)="iniciarDescargaAnimada('excel')">📊 Exportar a Excel</button>
         </div>
       </div>
 
@@ -125,27 +136,20 @@
         <table class="tabla-usuarios">
           <thead>
             <tr>
-              <th *ngFor="let columna of columnasReporte">
-                {{ formatearColumna(columna) }}
-              </th>
+              <th *ngFor="let columna of columnasReporte">{{ formatearColumna(columna) }}</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let fila of reporteData" [class.alerta-stock-bajo]="fila.stock_actual < fila.stock_minimo">
-
-              <td *ngFor="let columna of columnasReporte"
-                [class.stock-critico]="columna === 'stock_actual' && fila.stock_actual < fila.stock_minimo">
-
+              <td *ngFor="let columna of columnasReporte" [class.stock-critico]="columna === 'stock_actual' && fila.stock_actual < fila.stock_minimo">
                 <ng-container *ngIf="columna === 'detalles'">
                   <button class="btn-detalles" (click)="abrirModalDetalles(fila)">
                     <i class="fas fa-eye"></i> Ver Desglose
                   </button>
                 </ng-container>
-
                 <ng-container *ngIf="columna !== 'detalles'">
                   {{ formatearValor(fila[columna], columna) }}
                 </ng-container>
-
               </td>
             </tr>
           </tbody>
@@ -153,16 +157,82 @@
       </div>
     </div>
 
-    <div class="empty-table-message" *ngIf="reporteData.length === 0 && !isLoading">
+    <!-- ==========================================
+         VISTA DE RESULTADOS (CATEGORÍAS)
+         ========================================== -->
+    <div class="results-container" *ngIf="movimientosCategoria.length > 0 && tipoReporteSeleccionado === 'movimientos-categoria'">
+      <div class="results-header">
+        <h4><i class="fas fa-layer-group text-info"></i> Reporte de Movimientos: {{ categoriaSeleccionada }}</h4>
+        <div class="export-buttons">
+          <button class="btn-exportar" (click)="iniciarDescargaAnimada('pdf')">📄 Exportar a PDF</button>
+          <button class="btn-excel" (click)="iniciarDescargaAnimada('excel')">📊 Exportar a Excel</button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+        <div class="alert alert-danger" style="flex: 1; min-width: 300px; background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; color: #f8fafc; padding: 15px; margin: 0; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span><strong>Gasto en Salidas ("{{ categoriaSeleccionada }}"):</strong></span>
+          <span class="text-danger" style="font-size: 1.4rem; font-weight: bold;">{{ totalGastadoCategoria | currency:'MXN' }}</span>
+        </div>
+        
+        <div class="alert alert-success" style="flex: 1; min-width: 300px; background: rgba(34, 197, 94, 0.1); border-left: 4px solid #22c55e; color: #f8fafc; padding: 15px; margin: 0; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span><strong>Inversión en Entradas ("{{ categoriaSeleccionada }}"):</strong></span>
+          <span class="text-success" style="font-size: 1.4rem; font-weight: bold;">{{ totalInvertidoCategoria | currency:'MXN' }}</span>
+        </div>
+      </div>
+
+      <div class="tabla-responsive-wrapper">
+        <table class="tabla-usuarios">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Movimiento</th>
+              <th>Artículo</th>
+              <th>Cantidad</th>
+              <th>Destino / Origen</th>
+              <th style="text-align: right;">Costo Implicado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of movimientosCategoria">
+              <td>{{ m.fecha | date:'dd/MMM/yyyy' }}</td>
+              <td>
+                <span class="badge" [ngClass]="m.tipo_movimiento === 'Entrada' ? 'badge-activo' : 'badge-cancelado'">
+                  <i class="fas" [ngClass]="m.tipo_movimiento === 'Entrada' ? 'fa-arrow-down' : 'fa-arrow-up'"></i> {{ m.tipo_movimiento }}
+                </span>
+              </td>
+              <td>
+                <strong>{{ m.articulo }}</strong><br>
+                <small class="text-muted">{{ m.tipo_item }} | No. Parte: {{ m.numero_parte }}</small>
+              </td>
+              <td [ngClass]="m.tipo_movimiento === 'Entrada' ? 'text-success' : 'text-danger'">
+                {{ m.tipo_movimiento === 'Entrada' ? '+' : '-' }}{{ m.cantidad | number }}
+              </td>
+              <td>{{ m.destino_origen || 'No Especificado' }}</td>
+              <td style="text-align: right; font-weight: bold;" [ngClass]="m.tipo_movimiento === 'Entrada' ? 'text-muted' : 'text-danger'">
+                {{ m.costo_total | currency:'MXN' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MENSAJES DE ESTADO -->
+    <div class="empty-table-message" *ngIf="(reporteData.length === 0 && tipoReporteSeleccionado !== 'movimientos-categoria' && !isLoading) || (movimientosCategoria.length === 0 && tipoReporteSeleccionado === 'movimientos-categoria' && !isLoadingReporteCat)">
       No hay datos para mostrar. Genera un reporte para ver los resultados.
     </div>
 
-    <div class="loading-message" *ngIf="isLoading">
-      Generando reporte...
+    <div class="loading-message" *ngIf="isLoading || isLoadingReporteCat">
+      <div class="spinner"></div> Generando reporte...
     </div>
   </div>
 </div>
-<div class="buscador-auditoria-container w-100" *ngIf="requiereListaBuses">
+
+<!-- ==========================================
+     FILTRO DE AUTOBUSES (Para Reporte Autobús Específico)
+     ========================================== -->
+<div class="buscador-auditoria-container w-100" *ngIf="requiereListaBuses && tipoReporteSeleccionado !== 'movimientos-categoria'">
   <hr class="divider">
   <h4 class="auditoria-title"><i class="fas fa-bus"></i> Selecciona los Autobuses a Auditar</h4>
 
@@ -194,22 +264,35 @@
 </div>
 
 
-<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header" [ngClass]="{
-      'header-exito': notificacion.tipo === 'exito',
-      'header-error': notificacion.tipo === 'error',
-      'header-advertencia': notificacion.tipo === 'advertencia'
-    }">
-      <h3>{{ notificacion.titulo }}</h3>
-      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">&times;</button>
+//MODALES
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" style="z-index: 3000; backdrop-filter: blur(5px);">
+  <div class="modal-content modal-animado" (click)="$event.stopPropagation()">
+    
+    <div class="notificacion-body text-center" *ngIf="notificacion.tipo === 'descargando'">
+      <div class="animacion-descarga mt-3">
+        <i class="fas fa-cloud-download-alt pulse-icon"></i>
+        <div class="loader-line mt-4"></div>
+      </div>
+      <h3 class="mt-4 text-info">{{ notificacion.titulo }}</h3>
+      <p class="text-muted mb-2">{{ notificacion.mensaje }}</p>
     </div>
-    <div class="confirm-text">
-      {{ notificacion.mensaje }}
+
+    <div class="notificacion-body text-center" *ngIf="notificacion.tipo !== 'descargando'">
+      <div class="icon-container mt-2" [ngClass]="notificacion.tipo">
+        <i class="fas" [ngClass]="{
+          'fa-check-circle': notificacion.tipo === 'exito',
+          'fa-exclamation-triangle': notificacion.tipo === 'advertencia',
+          'fa-times-circle': notificacion.tipo === 'error'
+        }"></i>
+      </div>
+      <h3 class="mt-3" style="color: #e2e8f0;">{{ notificacion.titulo }}</h3>
+      <p class="text-muted mb-4">{{ notificacion.mensaje }}</p>
+      
+      <button class="btn-guardar w-100" style="padding: 12px; font-size: 1.1rem;" (click)="cerrarModalNotificacion()">
+        Entendido
+      </button>
     </div>
-    <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarModalNotificacion()">Cerrar</button>
-    </div>
+
   </div>
 </div>
 

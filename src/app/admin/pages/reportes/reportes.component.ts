@@ -21,6 +21,14 @@ export class ReportesComponent implements OnInit {
   fechaInicio: string = '';
   fechaFin: string = '';
 
+  // Variables Reporte Categoría
+  categoriasDisponibles: string[] = [];
+  categoriaSeleccionada: string = '';
+  fechaInicioCat: string = '';
+  fechaFinCat: string = '';
+  movimientosCategoria: any[] = [];
+  isLoadingReporteCat = false;
+
   reporteData: any[] = [];
   columnasReporte: string[] = [];
   totalGeneral: number = 0;
@@ -37,14 +45,14 @@ export class ReportesComponent implements OnInit {
   filteredBusesReporte$!: Observable<any[]>;
 
   mostrarModalNotificacion = false;
-  notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
+  notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' | 'descargando' };
 
   modalDetallesVisible: boolean = false;
   busSeleccionado: any = null;
   
   private apiUrl = `${environment.apiUrl}/reportes`;
 
-  // --- CONFIGURACIÓN DE REPORTES (Agregados Razón Social) ---
+  // --- CONFIGURACIÓN DE REPORTES ---
   reportesConfig: { [key: string]: { titulo: string, descripcion: string, requiereFecha: boolean, requiereListaArticulos?: boolean, requiereListaBuses?: boolean } } = {
     'stock-bajo': { titulo: 'Stock Bajo', descripcion: 'Refacciones e insumos con stock por debajo del mínimo', requiereFecha: false },
     'gastos-totales': { titulo: 'Gastos Totales por Entradas', descripcion: 'Resumen de todas las entradas de almacén y su costo total', requiereFecha: true },
@@ -61,6 +69,10 @@ export class ReportesComponent implements OnInit {
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
+    
+    // Cargar opciones para el reporte de categorías
+    this.cargarCategorias();
+
     this.filteredRefacciones$ = this.refaccionControl.valueChanges.pipe(
       startWith(''), debounceTime(400), distinctUntilChanged(),
       switchMap(value => this._buscarApi('refacciones', value || ''))
@@ -81,6 +93,60 @@ export class ReportesComponent implements OnInit {
     );
   }
 
+  // ==========================================
+  // LÓGICA REPORTE POR CATEGORÍA (NUEVO)
+  // ==========================================
+  cargarCategorias() {
+    this.http.get<string[]>(`${this.apiUrl}/categorias-disponibles`).subscribe({
+      next: (data) => this.categoriasDisponibles = data,
+      error: (err) => console.error('Error cargando categorías', err)
+    });
+
+    // Fechas por defecto: Mes actual
+    const hoy = new Date();
+    this.fechaInicioCat = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
+    this.fechaFinCat = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString().split('T')[0];
+  }
+
+  generarReporteCategoria() {
+    if (!this.categoriaSeleccionada || !this.fechaInicioCat || !this.fechaFinCat) {
+      this.mostrarNotificacion('Faltan Datos', 'Asegúrate de seleccionar una categoría y el rango de fechas.', 'advertencia');
+      return;
+    }
+
+    this.isLoadingReporteCat = true;
+    let params = new HttpParams()
+      .set('categoria', this.categoriaSeleccionada)
+      .set('fechaInicio', this.fechaInicioCat)
+      .set('fechaFin', this.fechaFinCat);
+
+    this.http.get<any[]>(`${this.apiUrl}/movimientos-categoria`, { params }).subscribe({
+      next: (data) => {
+        this.movimientosCategoria = data;
+        this.isLoadingReporteCat = false;
+      },
+      error: (err) => {
+        this.mostrarNotificacion('Error', 'No se pudo generar el reporte por categoría.', 'error');
+        console.error('Error generando reporte', err);
+        this.isLoadingReporteCat = false;
+      }
+    });
+  }
+
+  get totalGastadoCategoria() {
+    return this.movimientosCategoria
+      .filter(m => m.tipo_movimiento === 'Salida')
+      .reduce((acc, val) => acc + Number(val.costo_total || 0), 0);
+  }
+  get totalInvertidoCategoria() {
+    return this.movimientosCategoria
+      .filter(m => m.tipo_movimiento === 'Entrada')
+      .reduce((acc, val) => acc + Number(val.costo_total || 0), 0);
+  }
+
+  // ==========================================
+  // BÚSQUEDAS Y AUTOCOMPLETADOS
+  // ==========================================
   private _buscarApi(tipo: 'refacciones' | 'insumos', term: any): Observable<any[]> {
     const searchTerm = typeof term === 'string' ? term : term?.nombre;
     if (!searchTerm || searchTerm.length < 2) return of([]);
@@ -114,6 +180,9 @@ export class ReportesComponent implements OnInit {
 
   eliminarItemLista(index: number) { this.itemsSeleccionados.splice(index, 1); }
 
+  // ==========================================
+  // LÓGICA DE REPORTES GENERALES
+  // ==========================================
   get tituloReporte(): string { return this.reportesConfig[this.tipoReporteSeleccionado]?.titulo || 'Reporte'; }
   get descripcionReporte(): string { return this.reportesConfig[this.tipoReporteSeleccionado]?.descripcion || ''; }
   get requiereFechas(): boolean { return this.reportesConfig[this.tipoReporteSeleccionado]?.requiereFecha || false; }
@@ -169,8 +238,28 @@ export class ReportesComponent implements OnInit {
     this.reporteData = []; this.columnasReporte = []; this.totalGeneral = 0;
   }
 
-  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
-    this.notificacion = { titulo, mensaje, tipo }; this.mostrarModalNotificacion = true;
+  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' | 'descargando' = 'advertencia') {
+    this.notificacion = { titulo, mensaje, tipo }; 
+    this.mostrarModalNotificacion = true;
+  }
+  iniciarDescargaAnimada(tipoExportacion: 'pdf' | 'excel') {
+    if (this.reporteData.length === 0 && this.movimientosCategoria.length === 0) { 
+      this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.', 'advertencia'); 
+      return; 
+    }
+    this.mostrarNotificacion('Procesando', 'Generando tu reporte, por favor espera...', 'descargando');
+
+    setTimeout(() => {
+      try {
+        if (tipoExportacion === 'pdf') {
+          this.exportarPDF();
+        } else {
+          this.exportarExcel();
+        }
+      } catch (error) {
+        this.mostrarNotificacion('Error', 'Hubo un problema al exportar el archivo.', 'error');
+      }
+    }, 800);
   }
   cerrarModalNotificacion() { this.mostrarModalNotificacion = false; }
 
@@ -194,18 +283,70 @@ export class ReportesComponent implements OnInit {
   }
   formatearColumna(columna: string): string { return columna.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); }
 
-  // --- MÉTODOS DE EXPORTACIÓN ---
+  // ==========================================
+  // EXPORTACIONES A PDF / EXCEL
+  // ==========================================
+  // ==========================================
+  // EXPORTACIONES A PDF / EXCEL
+  // ==========================================
   exportarPDF() {
-    if (this.reporteData.length === 0) { this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.'); return; }
+    const isCategoria = this.tipoReporteSeleccionado === 'movimientos-categoria';
+    const dataToExport = isCategoria ? this.movimientosCategoria : this.reporteData;
+
+    if (dataToExport.length === 0) { 
+      this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.'); 
+      return; 
+    }
     
     const doc = new jsPDF('landscape');
+    let startY = 40;
+
+    // --- REPORTE ESPECIAL: CATEGORÍAS ---
+    // --- REPORTE ESPECIAL: CATEGORÍAS ---
+    if (isCategoria) {
+      doc.setFontSize(18); doc.setFont('helvetica', 'bold'); 
+      doc.text(`REPORTE DE MOVIMIENTOS: ${this.categoriaSeleccionada.toUpperCase()}`, 14, 20);
+      doc.setFontSize(11); doc.setFont('helvetica', 'normal'); 
+      doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-MX')}`, 14, 28);
+      doc.text(`Periodo: ${this.fechaInicioCat} al ${this.fechaFinCat}`, 14, 34);
+
+      // Total Salidas (Rojo)
+      doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(239, 68, 68);
+      doc.text(`Gasto en Salidas: $${this.totalGastadoCategoria.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, startY);
+      
+      // Total Entradas (Verde)
+      startY += 8;
+      doc.setTextColor(34, 197, 94);
+      doc.text(`Inversión en Entradas: $${this.totalInvertidoCategoria.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, startY);
+      
+      // Reset de estilos para la tabla
+      doc.setTextColor(0, 0, 0); doc.setFont('helvetica', 'normal'); startY += 10;
+
+      const headersCat = [['FECHA', 'MOVIMIENTO', 'ARTÍCULO', 'CANTIDAD', 'DESTINO / ORIGEN', 'COSTO IMPLICADO']];
+      const bodyCat = this.movimientosCategoria.map(m => [
+        new Date(m.fecha).toLocaleDateString('es-MX'),
+        m.tipo_movimiento,
+        `${m.articulo}\n(${m.tipo_item} | No. Parte: ${m.numero_parte || 'N/A'})`,
+        m.tipo_movimiento === 'Entrada' ? `+${m.cantidad}` : `-${m.cantidad}`,
+        m.destino_origen || 'No Especificado',
+        `$${parseFloat(m.costo_total || 0).toLocaleString('es-MX', {minimumFractionDigits:2})}`
+      ]);
+
+      autoTable(doc, { 
+        startY: startY, head: headersCat, body: bodyCat, 
+        headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 }, 
+        styles: { fontSize: 8, cellPadding: 3 }, margin: { top: 10 } 
+      });
+      doc.save(`Reporte_Categoria_${this.categoriaSeleccionada}_${new Date().getTime()}.pdf`);
+      this.mostrarNotificacion('Éxito', 'PDF exportado correctamente.', 'exito');
+      return;
+    }
+
+    // --- REPORTES GENERALES (Lo que ya tenías) ---
     doc.setFontSize(18); doc.setFont('helvetica', 'bold'); doc.text(this.tituloReporte.toUpperCase(), 14, 20);
     doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-MX')}`, 14, 28);
     if (this.requiereFechas && this.fechaInicio && this.fechaFin) doc.text(`Periodo: ${this.fechaInicio} al ${this.fechaFin}`, 14, 34);
 
-    let startY = 40;
-
-    // --- SOLUCIONES ESPECIALES DE DISEÑO EN PDF ---
     if (this.tipoReporteSeleccionado === 'costo-autobus' || this.tipoReporteSeleccionado === 'costo-por-autobus-especifico') {
       const bodyBus: any[] = [];
       this.reporteData.forEach(item => {
@@ -268,7 +409,6 @@ export class ReportesComponent implements OnInit {
       return;
     }
 
-    // --- REPORTES NORMALES ---
     if (this.tipoReporteSeleccionado === 'gastos-totales' && this.totalGeneral > 0) {
       doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(76, 175, 80);
       doc.text(`TOTAL GENERAL: $${this.totalGeneral.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, startY);
@@ -317,8 +457,48 @@ export class ReportesComponent implements OnInit {
   }
 
   exportarExcel() {
-    if (this.reporteData.length === 0) { this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.'); return; }
+    const isCategoria = this.tipoReporteSeleccionado === 'movimientos-categoria';
+    const dataToExport = isCategoria ? this.movimientosCategoria : this.reporteData;
 
+    if (dataToExport.length === 0) { 
+      this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.'); 
+      return; 
+    }
+
+    // --- REPORTE ESPECIAL: CATEGORÍAS ---
+    if (isCategoria) {
+      const datosExcelCat: any[][] = [];
+      datosExcelCat.push([`REPORTE DE MOVIMIENTOS: ${this.categoriaSeleccionada.toUpperCase()}`]);
+      datosExcelCat.push([`Periodo: ${this.fechaInicioCat} al ${this.fechaFinCat}`]);
+      datosExcelCat.push([`Gasto en Salidas: $${this.totalGastadoCategoria.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`]);
+      datosExcelCat.push([`Inversión en Entradas: $${this.totalInvertidoCategoria.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`]);
+      datosExcelCat.push([]);
+
+      datosExcelCat.push(['FECHA', 'MOVIMIENTO', 'TIPO ITEM', 'ARTÍCULO', 'NO. PARTE', 'CANTIDAD', 'DESTINO / ORIGEN', 'COSTO IMPLICADO']);
+      
+      this.movimientosCategoria.forEach(m => {
+        datosExcelCat.push([
+          new Date(m.fecha).toLocaleDateString('es-MX'),
+          m.tipo_movimiento,
+          m.tipo_item,
+          m.articulo,
+          m.numero_parte || 'N/A',
+          m.tipo_movimiento === 'Entrada' ? m.cantidad : -m.cantidad,
+          m.destino_origen || 'No Especificado',
+          `$${parseFloat(m.costo_total || 0).toLocaleString('es-MX', {minimumFractionDigits:2})}`
+        ]);
+      });
+
+      const worksheet = XLSX.utils.aoa_to_sheet(datosExcelCat);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte Categoría');
+      worksheet['!cols'] = [ { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 25 }, { wch: 15 } ];
+      XLSX.writeFile(workbook, `Reporte_Categoria_${this.categoriaSeleccionada}_${new Date().getTime()}.xlsx`);
+      this.mostrarNotificacion('Éxito', 'Excel exportado correctamente', 'exito');
+      return;
+    }
+
+    // --- REPORTES GENERALES (Lo que ya tenías) ---
     const columnasVisibles = this.columnasReporte.filter(col => col !== 'detalles');
     const headers = columnasVisibles.map(col => this.formatearColumna(col));
     const datosExcel: any[][] = [];
@@ -378,7 +558,7 @@ export class ReportesComponent implements OnInit {
 
     if (this.tipoReporteSeleccionado === 'gastos-totales' && this.totalGeneral > 0) {
       const filaTotales = new Array(headers.length).fill('');
-      filaTotales[headers.length - 1] = `TOTAL: $${this.totalGeneral.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      filaTotales[headers.length - 1] = `TOTAL:$${this.totalGeneral.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       datosExcel.push(filaTotales);
     }
 

@@ -29,10 +29,24 @@ interface jsPDFWithAutoTable extends jsPDF {
       state('closed', style({ maxHeight: '0', opacity: '0', padding: '0' })),
       state('open', style({ maxHeight: '400px', opacity: '1', padding: '16px' })),
       transition('closed <=> open', [animate('0.3s ease-in-out')])
+    ]),
+    // NUEVA ANIMACIÓN: Transición suave para la tabla y el loader
+    trigger('fadeAnimation', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.95)' }),
+        animate('0.4s cubic-bezier(0.2, 0.8, 0.2, 1)', style({ opacity: 1, transform: 'scale(1)' }))
+      ]),
+      transition(':leave', [
+        animate('0.2s ease-in', style({ opacity: 0, transform: 'scale(0.95)' }))
+      ])
     ])
   ]
 })
 export class HistorialCombustibleComponent implements OnInit, OnDestroy {
+
+  fechaInicio: string = '';
+  fechaFin: string = '';
+  isLoading = false;
 
   private apiUrl = `${environment.apiUrl}/cargas-combustible`;
   cargas: any[] = [];
@@ -54,7 +68,7 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   cargandoPagina: boolean = false;
   private searchSubject: Subject<string> = new Subject<string>();
   private searchSubscription?: Subscription;
-  private peticionHttpActual?: Subscription; // Control para evitar la condición de carrera
+  private peticionHttpActual?: Subscription;
 
   exportando: boolean = false;
   exportandoExcel: boolean = false;
@@ -87,7 +101,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.cargarRutas();
 
-    // Suscripción inteligente: Espera 300ms y no repite búsquedas idénticas
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()
@@ -353,10 +366,8 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     this.http.post(`${environment.apiUrl}/superAdmin/registrar-evento`, { tipo_accion: `EXPORTAR_${tipo}`, modulo: 'HISTORIAL_COMBUSTIBLE', detalles: detalles }).subscribe();
   }
 
-async exportarAPDF(): Promise<void> {
+  async exportarAPDF(): Promise<void> {
     this.exportando = true;
-    console.log('📄 Iniciando exportación a PDF...');
-
     try {
       const todasLasCargas = await this.obtenerTodasLasCargas();
       if (!todasLasCargas || todasLasCargas.length === 0) { alert('No hay datos para exportar'); this.exportando = false; return; }
@@ -401,44 +412,24 @@ async exportarAPDF(): Promise<void> {
 
       autoTable(doc, {
         head: [columnas], body: filas, startY: yPos + 5, theme: 'grid',
-        // 1. AUMENTAMOS FUENTE A 7.5 Y PADDING PARA QUE RESPIRE LA LETRA
         styles: { fontSize: 7.5, cellPadding: 1.5, overflow: 'linebreak', halign: 'left', valign: 'middle', textColor: [40, 40, 40], lineColor: [200, 200, 200], lineWidth: 0.1 },
         headStyles: { fillColor: [33, 150, 243], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8, halign: 'center', cellPadding: 2 },
         alternateRowStyles: { fillColor: [245, 245, 245] },
-        
-        // 2. NUEVA DISTRIBUCIÓN DE ANCHOS (Le robamos a los números cortos y le damos a Operador)
         columnStyles: { 
-          0: { cellWidth: 19, halign: 'center' }, // Fecha
-          1: { cellWidth: 11, halign: 'center' }, // Bus
-          2: { cellWidth: 18, halign: 'center' }, // Marca/Mod
-          3: { cellWidth: 38, halign: 'left' },   // Operador (AUMENTADO SIGNIFICATIVAMENTE)
-          4: { cellWidth: 13, halign: 'right' },  // KM Ini
-          5: { cellWidth: 13, halign: 'right' },  // KM Fin
-          6: { cellWidth: 12, halign: 'right' },  // Recorrido
-          7: { cellWidth: 11, halign: 'right' },  // Litros
-          8: { cellWidth: 11, halign: 'center' }, // Rendimiento
-          9: { cellWidth: 15, halign: 'center', fontStyle: 'bold' }, // Calificación
-          10: { cellWidth: 13, halign: 'right', textColor: [239, 68, 68] }, // Desviación
-          11: { cellWidth: 26, halign: 'left' },  // Motivo
-          12: { cellWidth: 'auto', halign: 'left' } // Rutas (Toma lo que sobre)
+          0: { cellWidth: 19, halign: 'center' }, 1: { cellWidth: 11, halign: 'center' }, 2: { cellWidth: 18, halign: 'center' },
+          3: { cellWidth: 38, halign: 'left' }, 4: { cellWidth: 13, halign: 'right' }, 5: { cellWidth: 13, halign: 'right' },
+          6: { cellWidth: 12, halign: 'right' }, 7: { cellWidth: 11, halign: 'right' }, 8: { cellWidth: 11, halign: 'center' },
+          9: { cellWidth: 15, halign: 'center', fontStyle: 'bold' }, 10: { cellWidth: 13, halign: 'right', textColor: [239, 68, 68] },
+          11: { cellWidth: 26, halign: 'left' }, 12: { cellWidth: 'auto', halign: 'left' }
         },
         margin: { left: 10, right: 10 },
-        
         didDrawCell: (data: any) => {
           if (data.column.index === 9 && data.section === 'body') {
             const clasificacion = data.cell.raw; let color: [number, number, number] = [100, 100, 100];
             if (clasificacion === 'Excelente') color = [76, 175, 80]; else if (clasificacion === 'Bueno') color = [33, 150, 243]; else if (clasificacion === 'Regular') color = [255, 193, 7]; else if (clasificacion === 'Malo') color = [244, 67, 54];
-            
-            // Dibujamos el cuadro de color
             doc.setFillColor(color[0], color[1], color[2]); 
             doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-            
-            // 3. AUMENTAMOS LA FUENTE DEL BADGE A 7.5 Y LO CENTRAMOS PERFECTAMENTE
-            doc.setTextColor(255, 255, 255); 
-            doc.setFontSize(7.5); 
-            doc.setFont('helvetica', 'bold'); 
-            
-            // Usamos 'baseline: middle' para que quede perfectamente al centro del cuadro
+            doc.setTextColor(255, 255, 255); doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); 
             doc.text(clasificacion || '-', data.cell.x + data.cell.width / 2, data.cell.y + (data.cell.height / 2), { align: 'center', baseline: 'middle' });
           }
         },

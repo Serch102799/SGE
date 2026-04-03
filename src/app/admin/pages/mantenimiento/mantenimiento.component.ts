@@ -238,6 +238,8 @@ export class MantenimientoComponent implements OnInit {
 
   abrirModalCompletar(servicio: any) {
     this.servicioSeleccionado = servicio; this.modalActivo = 'completar';
+    this.formData.fecha_realizado = new Date().toISOString().split('T')[0];
+    this.formData.km_realizado = null;
     this.detallesRefaccionesAAgregar = []; this.detallesInsumosAAgregar = [];
     this.refaccionControl.setValue(''); this.insumoControl.setValue('');
     this.formData = { km_realizado: servicio.km_actual_bus || 0, fecha_realizado: new Date().toISOString().split('T')[0], observaciones: `Servicio completado.` };
