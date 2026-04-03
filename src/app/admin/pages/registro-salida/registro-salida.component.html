@@ -14,13 +14,36 @@
     <fieldset class="form-section">
       <legend><i class="fas fa-clipboard-list"></i> 1. Datos del Vale de Salida</legend>
       
+      <!-- ==========================================
+           SELECTOR DE DESTINO
+           ========================================== -->
+      <div class="row mb-4 justify-content-center">
+        <div class="col-md-8">
+          <div class="destino-selector">
+            <button type="button" 
+                    class="btn-destino" 
+                    [ngClass]="{'active': tipoDestino === 'Autobus'}" 
+                    (click)="cambiarDestino('Autobus')">
+              <i class="fas fa-bus"></i> Destino: Autobús
+            </button>
+            <button type="button" 
+                    class="btn-destino" 
+                    [ngClass]="{'active': tipoDestino === 'Particular'}" 
+                    (click)="cambiarDestino('Particular')">
+              <i class="fas fa-car"></i> Destino: Flota Administrativa
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="row mb-3">
         <div class="col-md-4 form-group mb-0">
           <label for="fecha_operacion">Fecha de Operación</label>
           <input id="fecha_operacion" type="datetime-local" class="form-control" 
                  [(ngModel)]="salidaMaestro.fecha_operacion" name="fecha_operacion"
-                 [max]="getFormattedCurrentDateTime()" required>
+                 [max]="maxDate" required>
         </div>
+        
         <div class="col-md-4 form-group mb-0">
           <label for="tipoSalida">Tipo de Salida</label>
           <select id="tipoSalida" class="form-control" [(ngModel)]="salidaMaestro.tipoSalida" name="tipoSalida">
@@ -31,32 +54,58 @@
             <option value="Otro">Otro</option>
           </select>
         </div>
+
+        <!-- ==========================================
+             BUSCADOR DINÁMICO (Autobús o Particular)
+             ========================================== -->
         <div class="col-md-4 form-group mb-0">
-          <label for="autobus-input">Buscar Autobús</label>
-          <mat-form-field appearance="outline" class="dark-theme-mat">
-            <input type="text" id="autobus-input" placeholder="Escribe económico..." matInput 
-                   [formControl]="autobusControl" [matAutocomplete]="autoAutobus" required>
-          </mat-form-field>
-          <mat-autocomplete #autoAutobus="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onAutobusSelected($event)">
-            <mat-option *ngFor="let autobus of filteredAutobuses$ | async" [value]="autobus">
-              <i class="fas fa-bus text-muted mr-2"></i> {{ autobus.economico }}
-            </mat-option>
-          </mat-autocomplete>
+          
+          <!-- Búsqueda de Autobús -->
+          <div *ngIf="tipoDestino === 'Autobus'">
+            <label for="autobus-input">Buscar Autobús</label>
+            <mat-form-field appearance="outline" class="dark-theme-mat">
+              <input type="text" id="autobus-input" placeholder="Escribe económico..." matInput 
+                     [formControl]="autobusControl" [matAutocomplete]="autoAutobus" required>
+            </mat-form-field>
+            <mat-autocomplete #autoAutobus="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onAutobusSelected($event)">
+              <mat-option *ngFor="let autobus of filteredAutobuses$ | async" [value]="autobus">
+                <i class="fas fa-bus text-info mr-2"></i> BUS {{ autobus.economico }}
+              </mat-option>
+            </mat-autocomplete>
+          </div>
+
+          <!-- Búsqueda de Vehículo Particular -->
+          <div *ngIf="tipoDestino === 'Particular'">
+            <label for="vehiculo-input">Buscar Vehículo / Propietario</label>
+            <mat-form-field appearance="outline" class="dark-theme-mat">
+              <input type="text" id="vehiculo-input" placeholder="Escribe dueño o auto..." matInput 
+                     [formControl]="vehiculoControl" [matAutocomplete]="autoVehiculo" required>
+            </mat-form-field>
+            <mat-autocomplete #autoVehiculo="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onVehiculoSelected($event)">
+              <mat-option *ngFor="let vehiculo of filteredVehiculos$ | async" [value]="vehiculo">
+                <i class="fas fa-car text-warning mr-2"></i> {{ vehiculo.propietario }} - {{ vehiculo.marca }}
+              </mat-option>
+            </mat-autocomplete>
+          </div>
+
         </div>
       </div>
 
       <div class="row mb-3">
-        <div class="col-md-6 form-group mb-0">
+        <!-- El kilometraje se oculta si es un vehículo particular -->
+        <div class="col-md-6 form-group mb-0" *ngIf="tipoDestino === 'Autobus'">
           <label for="kilometraje">Kilometraje del Autobús</label>
           <div style="position: relative;">
             <input id="kilometraje" type="number" class="form-control" style="padding-right: 40px;" [(ngModel)]="salidaMaestro.kilometraje" name="kilometraje" placeholder="Ej. 150000" required>
             <span style="position: absolute; right: 15px; top: 12px; color: #a0c4ff; font-weight: bold; font-size: 0.9rem;">KM</span>
           </div>
         </div>
-        <div class="col-md-6 form-group mb-0">
-          <label for="empleado">Solicitado Por</label>
+        
+        <!-- Si es particular, el campo de empleado ocupa todo el espacio (o la mitad, como decidas, aquí lo dejo en col-md-6 u 12) -->
+        <div class="form-group mb-0" [ngClass]="tipoDestino === 'Autobus' ? 'col-md-6' : 'col-md-12'">
+          <label for="empleado">Despachado por:</label>
           <select id="empleado" class="form-control" [(ngModel)]="salidaMaestro.solicitadoPorID" name="solicitadoPorID" required>
-            <option [ngValue]="null" disabled>Selecciona un empleado...</option>
+            <option [ngValue]="null" disabled>Selecciona al responsable...</option>
             <option *ngFor="let e of empleados" [ngValue]="e.id_empleado">{{ e.nombre }}</option>
           </select>
         </div>
@@ -70,7 +119,7 @@
       </div>
     </fieldset>
 
-    <fieldset class="form-section">
+    <fieldset class="form-section mt-4">
       <legend><i class="fas fa-cogs"></i> 2. Despachar Refacciones</legend>
       
       <div class="row align-items-end mb-3">
@@ -134,7 +183,7 @@
       </div>
     </fieldset>
 
-    <fieldset class="form-section">
+    <fieldset class="form-section mt-4">
       <legend><i class="fas fa-tint"></i> 3. Despachar Insumos (Líquidos/Consumibles)</legend>
       
       <div class="row align-items-end mb-3">

@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { forkJoin, Observable, of } from 'rxjs';
-import { startWith, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { startWith, debounceTime, distinctUntilChanged, switchMap, map } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { environment } from '../../../../environments/environments';
@@ -11,6 +11,7 @@ import { AuthService } from '../../../services/auth.service';
 
 // --- Interfaces ---
 interface Autobus { id_autobus: number; economico: string; kilometraje_actual: number; }
+interface VehiculoParticular { id_vehiculo: number; propietario: string; marca: string; modelo: string; placas: string; }
 interface Empleado { id_empleado: number; nombre: string; }
 interface RefaccionSimple { id_refaccion: number; nombre: string; marca: string; numero_parte: string; } 
 interface InsumoSimple { id_insumo: number; nombre: string; stock_actual: number; unidad_medida: string; }
@@ -29,25 +30,32 @@ export class RegistroSalidaComponent implements OnInit {
   private apiUrl = environment.apiUrl;
   maxDate: string = this.getFormattedCurrentDateTime();
 
-  // --- Catálogos (solo para dropdowns estáticos) ---
+  // --- Selector de Destino ---
+  tipoDestino: 'Autobus' | 'Particular' = 'Autobus';
+
+  // --- Catálogos ---
   empleados: Empleado[] = [];
+  vehiculosParticulares: VehiculoParticular[] = []; // Se carga completo porque son pocos
   
   // --- Formularios y Listas ---
   salidaMaestro = {
     tipoSalida: 'Mantenimiento Correctivo',
     idAutobus: null as number | null,
+    idVehiculoParticular: null as number | null,
     solicitadoPorID: null as number | null,
     observaciones: '',
-    kilometraje: null as number | null,
+    kilometraje: null as number | null, // Solo para autobuses
     fecha_operacion: this.getFormattedCurrentDateTime()
   };
   
   // --- Lógica para Autocompletes ---
   autobusControl = new FormControl();
+  vehiculoControl = new FormControl();
   refaccionControl = new FormControl();
   insumoControl = new FormControl();
 
   filteredAutobuses$: Observable<Autobus[]>;
+  filteredVehiculos$: Observable<VehiculoParticular[]>;
   filteredRefacciones$: Observable<RefaccionSimple[]>;
   filteredInsumos$: Observable<InsumoSimple[]>;
 
@@ -63,13 +71,31 @@ export class RegistroSalidaComponent implements OnInit {
   notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
   
   constructor(private http: HttpClient, private router: Router, private location: Location, public authService: AuthService) {
-    // Se inicializan los observables para los autocompletes
+    
+    // Autocomplete de Autobuses (API)
     this.filteredAutobuses$ = this.autobusControl.valueChanges.pipe(
       startWith(''),
       debounceTime(300),
       distinctUntilChanged(),
       switchMap(value => this._buscarApi('autobuses', value || ''))
     );
+
+    // Autocomplete de Vehículos Particulares (Filtro Local)
+    this.filteredVehiculos$ = this.vehiculoControl.valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        const term = typeof value === 'string' ? value : (value.propietario || value.marca);
+        if (!term) return [];
+        const lowerTerm = term.toLowerCase();
+        return this.vehiculosParticulares.filter(v => 
+          v.propietario.toLowerCase().includes(lowerTerm) || 
+          v.marca.toLowerCase().includes(lowerTerm) || 
+          v.modelo.toLowerCase().includes(lowerTerm)
+        );
+      })
+    );
+
+    // Autocomplete de Refacciones e Insumos (API)
     this.filteredRefacciones$ = this.refaccionControl.valueChanges.pipe(
       startWith(''),
       debounceTime(400),
@@ -87,28 +113,45 @@ export class RegistroSalidaComponent implements OnInit {
   ngOnInit(): void {
     this.cargarCatalogos();
   }
+
   public getFormattedCurrentDateTime(): string {
     const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // Ajusta a la zona horaria local
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); 
     return now.toISOString().slice(0, 16);
+  }
+
+  // Método para que tu HTML pueda alternar la vista entre Bus y Particular
+  cambiarDestino(destino: 'Autobus' | 'Particular') {
+    this.tipoDestino = destino;
+    this.salidaMaestro.idAutobus = null;
+    this.salidaMaestro.idVehiculoParticular = null;
+    this.salidaMaestro.kilometraje = null;
+    this.autobusControl.setValue('');
+    this.vehiculoControl.setValue('');
   }
 
   private _buscarApi(tipo: 'autobuses' | 'refacciones' | 'insumos', term: any): Observable<any[]> {
     const searchTerm = typeof term === 'string' ? term : term.nombre || term.economico;
-    if (!searchTerm || searchTerm.length < 1) {
-      return of([]);
-    }
+    if (!searchTerm || searchTerm.length < 1) return of([]);
     return this.http.get<any[]>(`${this.apiUrl}/${tipo}/buscar`, { params: { term: searchTerm } });
   }
 
   displayFn(item: any): string {
-    return item ? item.nombre || item.economico : '';
+    if (!item) return '';
+    if (item.economico) return `BUS ${item.economico}`;
+    if (item.propietario) return `${item.propietario} - ${item.marca} ${item.modelo}`;
+    return item.nombre;
   }
 
   onAutobusSelected(event: MatAutocompleteSelectedEvent): void {
     const autobus = event.option.value as Autobus;
     this.salidaMaestro.idAutobus = autobus.id_autobus;
     this.salidaMaestro.kilometraje = autobus.kilometraje_actual;
+  }
+
+  onVehiculoSelected(event: MatAutocompleteSelectedEvent): void {
+    const vehiculo = event.option.value as VehiculoParticular;
+    this.salidaMaestro.idVehiculoParticular = vehiculo.id_vehiculo;
   }
 
   onRefaccionSelected(event: MatAutocompleteSelectedEvent): void {
@@ -123,10 +166,16 @@ export class RegistroSalidaComponent implements OnInit {
   }
   
   cargarCatalogos() {
-    // La carga inicial ahora solo trae el catálogo de empleados
+    // Cargar Empleados
     this.http.get<Empleado[]>(`${this.apiUrl}/empleados`).subscribe({
       next: (empleados) => { this.empleados = empleados; },
-      error: err => this.mostrarNotificacion('Error de Carga', 'No se pudo cargar el catálogo de empleados.', 'error')
+      error: err => this.mostrarNotificacion('Error', 'No se cargaron los empleados.', 'error')
+    });
+
+    // Cargar Vehículos Particulares (Flota administrativa)
+    this.http.get<VehiculoParticular[]>(`${this.apiUrl}/vehiculos-particulares`).subscribe({
+      next: (vehiculos) => { this.vehiculosParticulares = vehiculos; },
+      error: err => console.error('No se pudo cargar la flota administrativa')
     });
   }
   
@@ -170,7 +219,6 @@ export class RegistroSalidaComponent implements OnInit {
       this.mostrarNotificacion('Datos Incompletos', 'Busca y selecciona un insumo y una cantidad válida.');
       return;
     }
-    // Necesitamos obtener el stock actualizado del insumo seleccionado
     this.http.get<InsumoSimple>(`${this.apiUrl}/insumos/${insumoSeleccionado.id_insumo}`).subscribe(insumoDetalle => {
         if (cantidad_usada > insumoDetalle.stock_actual) {
             this.mostrarNotificacion('Stock Insuficiente', `Stock insuficiente. Disponible: ${insumoDetalle.stock_actual}`);
@@ -188,31 +236,48 @@ export class RegistroSalidaComponent implements OnInit {
   
   guardarSalidaCompleta() {
     if (this.isSaving) return;
-    // CAMBIO: Se añade validación para la fecha
-    if (!this.salidaMaestro.idAutobus || !this.salidaMaestro.solicitadoPorID || !this.salidaMaestro.tipoSalida || !this.salidaMaestro.kilometraje || !this.salidaMaestro.fecha_operacion) {
-      this.mostrarNotificacion('Datos Incompletos', 'Completa todos los datos del vale de salida.');
+    
+    if (!this.salidaMaestro.solicitadoPorID || !this.salidaMaestro.tipoSalida || !this.salidaMaestro.fecha_operacion) {
+      this.mostrarNotificacion('Datos Incompletos', 'Completa los datos generales del vale de salida.');
       return;
     }
-    // La validación de kilometraje ahora se basa en el objeto del FormControl
-    const autobusSeleccionado = this.autobusControl.value as Autobus;
-    if (autobusSeleccionado && this.salidaMaestro.kilometraje < autobusSeleccionado.kilometraje_actual) {
-      this.mostrarNotificacion('Dato Inválido', `El kilometraje no puede ser menor al actual (${autobusSeleccionado.kilometraje_actual}).`);
-      return;
+
+    // Validaciones dependiendo del destino
+    if (this.tipoDestino === 'Autobus') {
+      if (!this.salidaMaestro.idAutobus || this.salidaMaestro.kilometraje === null) {
+        this.mostrarNotificacion('Datos Incompletos', 'Selecciona el autobús e ingresa el kilometraje.');
+        return;
+      }
+      const autobusSeleccionado = this.autobusControl.value as Autobus;
+      if (autobusSeleccionado && this.salidaMaestro.kilometraje < autobusSeleccionado.kilometraje_actual) {
+        this.mostrarNotificacion('Dato Inválido', `El kilometraje no puede ser menor al actual (${autobusSeleccionado.kilometraje_actual}).`);
+        return;
+      }
+    } else {
+      if (!this.salidaMaestro.idVehiculoParticular) {
+        this.mostrarNotificacion('Datos Incompletos', 'Selecciona a qué vehículo administrativo se le despachará.');
+        return;
+      }
     }
+
     if (this.detallesRefaccionesAAgregar.length === 0 && this.detallesInsumosAAgregar.length === 0) {
-      this.mostrarNotificacion('Sin Detalles', 'Agrega al menos una refacción o insumo.');
+      this.mostrarNotificacion('Sin Detalles', 'Agrega al menos una refacción o insumo al vale.');
       return;
     }
     
     this.isSaving = true;
+
+    // Generamos el Payload Inteligente
     const payloadMaestro = {
       Tipo_Salida: this.salidaMaestro.tipoSalida,
-      ID_Autobus: this.salidaMaestro.idAutobus,
+      ID_Autobus: this.tipoDestino === 'Autobus' ? this.salidaMaestro.idAutobus : null,
+      ID_Vehiculo_Particular: this.tipoDestino === 'Particular' ? this.salidaMaestro.idVehiculoParticular : null,
       Solicitado_Por_ID: this.salidaMaestro.solicitadoPorID,
       Observaciones: this.salidaMaestro.observaciones,
-      Kilometraje_Autobus: this.salidaMaestro.kilometraje,
+      Kilometraje_Autobus: this.tipoDestino === 'Autobus' ? this.salidaMaestro.kilometraje : null,
       Fecha_Operacion: this.salidaMaestro.fecha_operacion
     };
+
     this.http.post<any>(`${this.apiUrl}/salidas`, payloadMaestro).subscribe({
       next: (respuestaMaestro) => {
         const nuevaSalidaID = respuestaMaestro.id_salida;
@@ -231,15 +296,15 @@ export class RegistroSalidaComponent implements OnInit {
 
         forkJoin(peticionesDetalle).subscribe({
           next: () => this.finalizarGuardado(),
-          error: err => { this.mostrarNotificacion('Error', `Error al guardar los detalles: ${err.error?.message || 'Error desconocido'}`, 'error'); this.isSaving = false; }
+          error: err => { this.mostrarNotificacion('Error', `Error al guardar los detalles.`, 'error'); this.isSaving = false; }
         });
       },
-      error: err => { this.mostrarNotificacion('Error', `Error al crear la salida principal: ${err.error?.message || 'Error desconocido'}`, 'error'); this.isSaving = false; }
+      error: err => { this.mostrarNotificacion('Error', `Error al crear la salida principal.`, 'error'); this.isSaving = false; }
     });
   }
 
   private finalizarGuardado() {
-    sessionStorage.setItem('notificacion', '¡Salida registrada exitosamente!');
+    sessionStorage.setItem('notificacion', '¡Vale de salida registrado exitosamente!');
     this.isSaving = false;
     this.router.navigate(['/admin/salidas']);
   }

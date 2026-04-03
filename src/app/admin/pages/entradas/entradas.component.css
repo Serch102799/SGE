@@ -10,50 +10,22 @@
 }
 
 /* ===================================
-   UTILERÍAS GLASSMORPHISM
-   =================================== */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.15);
-  border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); backdrop-filter: blur(12px);
-}
-
-.mt-4 { margin-top: 1.5rem; }
-.mb-4 { margin-bottom: 1.5rem; }
-.mb-3 { margin-bottom: 1rem; }
-.mb-2 { margin-bottom: 0.5rem; }
-.text-center { text-align: center; }
-.justify-center { justify-content: center; }
-
-/* ===================================
-   HEADER SECTION
-   =================================== */
-.header-section {
-  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
-}
-.header-text h2 { margin: 0 0 5px 0; font-size: 1.8rem; color: #38bdf8; display: flex; align-items: center; gap: 10px; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
-.header-text p { margin: 0; color: #94a3b8; font-size: 0.95rem; }
-.header-actions { display: flex; gap: 15px; flex-wrap: wrap; }
-
-/* ===================================
-   CONTENEDOR PRINCIPAL
+   CONTENEDOR PRINCIPAL GLASSMORPHISM
    =================================== */
 .usuarios-container {
   max-width: 1400px;
-  width: 100%; 
-  margin: 0 auto;
-  /* Fondo oscuro semi-transparente */
-  background-color: rgba(0, 0, 0, 0.85);
-  color: #e0e0e0;
-  border: 1px solid rgba(68, 128, 211, 0.4);
+  width: 100%;
+  margin: 0 auto 20px auto;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.15);
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 
-              0 0 20px rgba(68, 128, 211, 0.2);
-  overflow: hidden;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   animation: fadeInUp 0.5s ease-out;
-  
-  /* Aseguramos un margen inferior para que no quede pegado al final al scrollear */
-  margin-bottom: 20px;
 }
 
 @keyframes fadeInUp {
@@ -61,648 +33,170 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+.mt-4 { margin-top: 1.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mb-1 { margin-bottom: 0.25rem; }
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-white { color: #ffffff !important; }
+
 /* ===================================
-   HEADER Y BOTONES SUPERIORES
+   HEADER SECTION
    =================================== */
 .container-header {
-  background: linear-gradient(135deg, rgba(68, 128, 211, 0.3) 0%, rgba(74, 142, 206, 0.2) 100%);
-  padding: 25px 35px;
-  border-bottom: 2px solid rgba(68, 128, 211, 0.5);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  backdrop-filter: blur(10px);
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+  padding: 20px 25px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.15);
 }
+.container-header h2 { margin: 0; font-size: 1.8rem; color: #10b981; display: flex; align-items: center; gap: 10px; text-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
+.acciones-header { display: flex; gap: 15px; flex-wrap: wrap; }
 
-.container-header h2 {
-  color: #ffffff;
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 0;
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
-  letter-spacing: 0.5px;
-}
-
-.acciones-header {
-  display: flex;
-  gap: 15px;
-}
-
-/* Botón Exportar (Estilo Verde Tecnológico) */
-.btn-exportar {
-  background: rgba(40, 167, 69, 0.15);
-  border: 1px solid rgba(40, 167, 69, 0.4);
-  color: #2ecc71;
-  padding: 10px 20px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-}
-
-.btn-exportar:hover {
-  background: rgba(40, 167, 69, 0.3);
-  color: #fff;
-  box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
-  transform: translateY(-2px);
-}
-
-/* Botón Agregar (Estilo Azul Principal) */
+/* Botones del Header */
 .btn-agregar {
-  background: linear-gradient(135deg, #4480d3 0%, #386bbd 100%);
-  border: 1px solid rgba(68, 128, 211, 0.6);
-  color: white;
-  padding: 10px 24px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(68, 128, 211, 0.4);
-  text-transform: uppercase;
-  white-space: nowrap;
+  background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 12px 20px;
+  border-radius: 10px; font-weight: bold; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px;
+  transition: all 0.3s ease; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); text-transform: uppercase;
 }
+.btn-agregar:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 0 25px rgba(16, 185, 129, 0.7); }
 
-.btn-agregar:hover {
-  background: linear-gradient(135deg, #5690e3 0%, #4480d3 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(68, 128, 211, 0.6);
-}
-
-/* Estilo base (Por defecto verde/Excel) */
 .btn-exportar {
-  background: rgba(40, 167, 69, 0.15);
-  border: 1px solid rgba(40, 167, 69, 0.4);
-  color: #2ecc71;
-  padding: 10px 20px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
+  background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981;
+  padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.3s ease; font-weight: bold; display: flex; align-items: center; gap: 8px;
 }
+.btn-exportar:hover { background: rgba(16, 185, 129, 0.25); color: #fff; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
 
-.btn-exportar:hover {
-  background: rgba(40, 167, 69, 0.3);
-  color: #fff;
-  box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
-  transform: translateY(-2px);
-}
+.btn-exportar.btn-pdf { color: #ef4444; border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.1); }
+.btn-exportar.btn-pdf:hover { background: rgba(239, 68, 68, 0.25); color: #fff; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
 
-/* Modificador para PDF (Rojo) */
-.btn-pdf {
-  background: rgba(220, 53, 69, 0.15);
-  border-color: rgba(220, 53, 69, 0.4);
-  color: #ff6b6b;
-}
-
-.btn-pdf:hover {
-  background: rgba(220, 53, 69, 0.3);
-  color: #fff;
-  box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
-  /* translateY se hereda */
-}
 /* ===================================
-   FILTROS (ESTILO PILL/DARK)
+   FILTROS Y BÚSQUEDA
    =================================== */
-.filtros-container {
-  padding: 25px 35px 10px;
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  background: rgba(0, 0, 0, 0.2);
-}
+.filtros-container { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
+.filtro-item { flex: 1; min-width: 200px; }
+.filtro-item label { display: block; margin-bottom: 8px; color: #10b981; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
 
-.filtro-item {
-  flex: 1;
-  min-width: 200px;
+.form-control { 
+  width: 100%; padding: 12px 20px; border-radius: 30px; border: 1px solid rgba(16, 185, 129, 0.3); 
+  background: rgba(0, 0, 0, 0.4); color: white; transition: all 0.3s ease; font-size: 1rem; outline: none; color-scheme: dark;
 }
-
-.filtro-item label {
-  display: block;
-  margin-bottom: 8px;
-  color: #a0c4ff;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.form-control {
-  width: 100%;
-  padding: 10px 20px;
-  border-radius: 30px; /* Estilo píldora */
-  border: 1px solid rgba(68, 128, 211, 0.4);
-  background: rgba(20, 25, 35, 0.6);
-  color: white;
-  transition: all 0.3s ease;
-  font-size: 1rem;
-}
-
-.form-control:focus {
-  background: rgba(20, 25, 35, 0.9);
-  border-color: #4480d3;
-  outline: none;
-  box-shadow: 0 0 15px rgba(68, 128, 211, 0.3);
-}
+.form-control:focus { background: rgba(0, 0, 0, 0.6); border-color: #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
+select.form-control, textarea.form-control { border-radius: 8px; }
 
 /* ===================================
    TABLA PRINCIPAL
    =================================== */
-.tabla-responsive-wrapper {
-  overflow-x: auto;
-  margin: 0 35px 20px;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.2);
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
+.tabla-responsive-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); background: rgba(0, 0, 0, 0.2); }
+.tabla-usuarios { width: 100%; border-collapse: separate; border-spacing: 0; }
+.tabla-usuarios thead { background: rgba(20, 30, 45, 0.8); }
+.tabla-usuarios th { padding: 15px; text-align: left; color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; border-bottom: 1px solid rgba(16, 185, 129, 0.3); }
+.tabla-usuarios tbody tr { transition: background 0.2s; background: rgba(0, 0, 0, 0.1); }
+.tabla-usuarios tbody td { padding: 15px; vertical-align: middle; color: #cbd5e1; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+.tabla-usuarios tbody tr:hover { background: rgba(16, 185, 129, 0.05); }
 
-.tabla-usuarios {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 0.95rem;
-}
+/* Detalles de Tabla */
+.fila-cancelada { opacity: 0.6; background: rgba(220, 53, 69, 0.05) !important; }
+.fila-cancelada td { text-decoration: line-through; color: #94a3b8; }
+.documento-linea { font-size: 0.9rem; color: #e2e8f0; }
+.alerta-pendiente { color: #fbbf24; background: rgba(245, 158, 11, 0.15); padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; border: 1px solid rgba(245, 158, 11, 0.3); display: inline-block;}
+.empty-table-message { text-align: center; padding: 40px !important; font-style: italic; color: #64748b; }
 
-/* Encabezados */
-.tabla-usuarios thead {
-  background: linear-gradient(135deg, rgba(68, 128, 211, 0.4) 0%, rgba(74, 142, 206, 0.3) 100%);
-  position: sticky; top: 0; z-index: 10;
-}
-
-.tabla-usuarios thead th {
-  padding: 18px 15px;
-  text-align: left;
-  font-weight: 600;
-  color: #f3f3f3;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 1px;
-  border-bottom: 2px solid rgba(68, 128, 211, 0.6);
-  white-space: nowrap;
-}
-
-/* Filas */
-.tabla-usuarios tbody tr {
-  transition: all 0.3s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.tabla-usuarios tbody tr:hover {
-  background: linear-gradient(90deg, 
-    rgba(68, 128, 211, 0.1) 0%, 
-    rgba(74, 142, 206, 0.05) 50%,
-    rgba(68, 128, 211, 0.1) 100%);
-  transform: translateX(5px);
-  box-shadow: 0 4px 20px rgba(68, 128, 211, 0.2);
-  border-left: 3px solid #4480d3;
-}
-
-.tabla-usuarios tbody td {
-  padding: 15px 15px;
-  vertical-align: middle;
-  color: #e0e0e0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* Detalles de Factura/Vale */
-.documento-linea {
-  font-size: 0.9rem;
-  color: #a0c4ff;
-  display: block;
-  margin-bottom: 2px;
-}
-.documento-linea strong {
-  color: #888;
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  margin-right: 5px;
-}
-
-/* Botón Ver Detalles (Tabla) */
-/* =========================================
-   COLUMNA DE ACCIONES
-   ========================================= */
-.acciones {
-  vertical-align: middle;
-  text-align: center;
-  white-space: nowrap;
-}
-
-/* Grupo para alinear los botones */
-.btn-group {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px; /* Separación entre botones */
-}
-
-/* =========================================
-   ESTILOS DE BOTONES (Basado en tu referencia)
-   ========================================= */
-
-/* Estilo Base común (Estructura idéntica a btn-estado) */
+/* ===================================
+   BOTONES DE ACCIÓN EN TABLA (PÍLDORAS NEÓN)
+   =================================== */
+.btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .btn-accion {
-  padding: 6px 12px;       /* Un poco menos ancho si son solo iconos */
-  border-radius: 6px;      /* De tu referencia */
-  cursor: pointer;         /* De tu referencia */
-  font-weight: 600;        /* De tu referencia */
-  font-size: 0.85rem;      /* De tu referencia */
-  transition: all 0.3s ease; /* De tu referencia */
-  display: inline-flex;    
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;         /* Para que no queden muy aplastados si solo tienen icono */
+  padding: 8px 15px; border-radius: 8px; font-size: 0.75rem; font-weight: bold;
+  cursor: pointer; transition: all 0.3s ease; border: 1px solid transparent; text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px;
 }
 
-/* --- 1. VER DETALLES (Azul - Tu referencia exacta) --- */
-.btn-estado {
-  background: rgba(68, 128, 211, 0.2);
-  color: #6a9edc;
-  border: 1px solid rgba(68, 128, 211, 0.4);
-}
+/* FIX AL HTML: Esto oculta los span que traen el texto duplicado de Bootstrap */
+.btn-accion span { display: none !important; }
 
-.btn-estado:hover {
-  background: rgba(68, 128, 211, 0.4);
-  color: white;
-  border-color: #4480d3;
-  box-shadow: 0 0 10px rgba(68, 128, 211, 0.3);
-}
+/* Colores específicos de los botones Neón */
+.btn-estado { background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.3); color: #38bdf8; }
+.btn-estado:hover { background: rgba(56, 189, 248, 0.3); box-shadow: 0 0 10px rgba(56, 189, 248, 0.4); color: white; transform: translateY(-2px); }
 
-/* --- 2. EDITAR (Ámbar/Dorado) --- */
-.btn-editar {
-  background: rgba(255, 193, 7, 0.2);
-  color: #ffc107;
-  border: 1px solid rgba(255, 193, 7, 0.4);
-}
+.btn-alerta { background: rgba(251, 191, 36, 0.15); border-color: rgba(251, 191, 36, 0.3); color: #fbbf24; }
+.btn-alerta:hover { background: rgba(251, 191, 36, 0.3); box-shadow: 0 0 10px rgba(251, 191, 36, 0.4); color: white; transform: translateY(-2px); }
 
-.btn-editar:hover {
-  background: rgba(255, 193, 7, 0.4);
-  color: white;
-  border-color: #ffca2c;
-  box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
-  transform: translateY(-2px); /* Pequeño efecto de elevación */
-}
+.btn-cancelar-icon { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #ef4444; }
+.btn-cancelar-icon:hover { background: rgba(239, 68, 68, 0.3); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); color: white; transform: translateY(-2px); }
 
-/* --- 3. CANCELAR (Rojo) --- */
-.btn-cancelar-icon {
-  background: rgba(220, 53, 69, 0.2);
-  color: #ff6b6b;
-  border: 1px solid rgba(220, 53, 69, 0.4);
-}
+/* ===================================
+   MODALES GLASSMORPHISM
+   =================================== */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 1050; animation: fadeIn 0.3s ease; }
+.modal-content { background: #0f172a; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; box-shadow: 0 0 40px rgba(0, 0, 0, 0.8); width: 90%; max-width: 600px; animation: scaleIn 0.3s ease; display: flex; flex-direction: column; }
+.modal-sm { max-width: 450px !important; }
+.danger-modal { border-color: rgba(239, 68, 68, 0.4); }
 
-.btn-cancelar-icon:hover {
-  background: rgba(220, 53, 69, 0.4);
-  color: white;
-  border-color: #dc3545;
-  box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
-  transform: translateY(-2px);
-}
+.modal-header { padding: 20px 25px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to right, rgba(16, 185, 129, 0.15), transparent); border-radius: 16px 16px 0 0; }
+.header-advertencia { background: linear-gradient(to right, rgba(251, 191, 36, 0.15), transparent); border-bottom-color: #fbbf24; }
+.header-error { background: linear-gradient(to right, rgba(239, 68, 68, 0.15), transparent); border-bottom-color: #ef4444; }
+.header-exito { background: linear-gradient(to right, rgba(16, 185, 129, 0.15), transparent); border-bottom-color: #10b981; }
 
-/* Botón pequeño de cancelar en la tabla */
-.btn-cancelar-icon {
-  background: rgba(220, 53, 69, 0.15);
-  color: #ff6b6b;
-  border: 1px solid rgba(220, 53, 69, 0.4);
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+.modal-header h3 { margin: 0; color: #f8fafc; font-size: 1.3rem; display: flex; align-items: center; gap: 10px;}
+.header-advertencia h3 { color: #fbbf24; }
+.header-error h3 { color: #ef4444; }
+.header-exito h3 { color: #10b981; }
 
-.btn-cancelar-icon:hover {
-  background: rgba(220, 53, 69, 0.4);
-  color: white;
-  border-color: #dc3545;
-  box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
-  transform: scale(1.05);
-}
+.btn-cerrar { background: transparent; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
+.btn-cerrar:hover { color: #ef4444; transform: rotate(90deg); }
 
-/* Modal de Peligro (Danger Modal) */
-.danger-modal {
-  border: 1px solid rgba(220, 53, 69, 0.5) !important;
-  box-shadow: 0 15px 35px rgba(220, 53, 69, 0.2) !important;
-}
+.modal-body { padding: 25px; overflow-y: auto; max-height: 75vh; }
+.modal-footer { padding: 20px 25px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 15px; background: rgba(0,0,0,0.2); border-radius: 0 0 16px 16px; }
 
-.header-error {
-  background: linear-gradient(135deg, rgba(220, 53, 69, 0.3), rgba(15, 23, 42, 0.9)) !important;
-  border-bottom: 1px solid rgba(220, 53, 69, 0.5) !important;
-  color: #ff6b6b !important;
-}
+/* Botones Auxiliares de Modales */
+.btn-cancelar { background: transparent; border: 1px solid rgba(255, 255, 255, 0.2); color: #ccc; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.3s ease; font-weight: bold; display: flex; align-items: center; }
+.btn-cancelar:hover { background: rgba(255, 255, 255, 0.1); color: white; }
 
-.alert-danger-custom {
-  background: rgba(220, 53, 69, 0.1);
-  border-left: 4px solid #ff6b6b;
-  padding: 15px;
-  border-radius: 4px;
-  color: #e2e8f0;
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
+.btn-guardar { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); display: flex; align-items: center; gap: 8px;}
+.btn-guardar:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 0 25px rgba(16, 185, 129, 0.7); }
 
-.btn-danger-neon {
-  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
-  border: none;
-  box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4);
-}
+.btn-danger-neon { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+.btn-danger-neon:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
 
-.btn-danger-neon:hover:not(:disabled) {
-  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-  box-shadow: 0 6px 20px rgba(244, 67, 54, 0.6);
-  transform: translateY(-2px);
-}
+button[disabled] { opacity: 0.5; cursor: not-allowed; box-shadow: none !important; transform: none !important; }
 
-.animation-fade-in {
-  animation: fadeIn 0.3s ease-in-out;
-}
+/* ===================================
+   TABLA DE DETALLES DEL TICKET
+   =================================== */
+.tabla-ticket { width: 100%; border-collapse: separate; border-spacing: 0; }
+.tabla-ticket thead th { background: rgba(16, 185, 129, 0.1); color: #10b981; border-bottom: 1px solid rgba(16, 185, 129, 0.3); padding: 12px; font-size: 0.85rem; text-transform: uppercase; text-align: left;}
+.tabla-ticket tbody td { padding: 12px; color: #e2e8f0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.fila-total { background: rgba(16, 185, 129, 0.05); }
+.label-total { text-align: right; font-weight: bold; color: #94a3b8; padding: 15px; }
+.valor-total { text-align: right; font-weight: 900; color: #10b981; font-size: 1.2rem; padding: 15px; }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.badge { padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+.badge-refaccion { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+.badge-insumo { background: rgba(167, 139, 250, 0.15); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.3); }
 
-/* --- ESTADO CANCELADO (Para la fila) --- */
-.fila-cancelada td {
-  color: #777 !important;
-  text-decoration: line-through;
-  opacity: 0.6;
-}
-.fila-cancelada .btn-group {
-  opacity: 0.5;
-  pointer-events: none; /* Deshabilita clics en una fila cancelada */
-}
-.fila-cancelada .badge {
-  text-decoration: none !important;
-  opacity: 1 !important;
-}
-.empty-table-message {
-  text-align: center;
-  font-style: italic;
-  padding: 40px;
-  color: #aaa;
-}
+/* Alerta Modal Anular */
+.alert-danger-custom { background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 15px; border-radius: 8px; color: #f87171; line-height: 1.6; }
 
 /* ===================================
    PAGINACIÓN
    =================================== */
-.pagination-controls {
-  text-align: center;
-  margin-bottom: 20px;
-  padding-top: 10px;
-}
-
-:host ::ng-deep .ngx-pagination {
-  padding: 0; margin: 0; display: flex; justify-content: center; gap: 5px;
-}
-:host ::ng-deep .ngx-pagination li {
-  display: inline-block; border-radius: 6px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(68, 128, 211, 0.3);
-}
-:host ::ng-deep .ngx-pagination a, :host ::ng-deep .ngx-pagination span {
-  color: #e0e0e0; padding: 8px 14px; display: block; text-decoration: none; font-size: 0.9rem;
-}
-:host ::ng-deep .ngx-pagination .current {
-  background: linear-gradient(135deg, #4480d3 0%, #386bbd 100%);
-  border-color: #4480d3; color: white !important; font-weight: bold;
-  box-shadow: 0 0 10px rgba(68, 128, 211, 0.4);
-}
-:host ::ng-deep .ngx-pagination li:not(.current):hover {
-  background: rgba(68, 128, 211, 0.2); border-color: #4480d3; color: white;
-}
-:host ::ng-deep .ngx-pagination .disabled {
-  opacity: 0.5; cursor: not-allowed; background: transparent; border-color: transparent;
-}
+.pagination-controls { display: flex; justify-content: flex-end; margin-top: 10px; }
+::ng-deep .ngx-pagination { margin-bottom: 0; padding-left: 0; }
+::ng-deep .ngx-pagination li { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; margin: 0 3px; }
+::ng-deep .ngx-pagination li a { color: #f8fafc; text-decoration: none; padding: 5px 12px; display: block; transition: 0.3s; }
+::ng-deep .ngx-pagination li a:hover { background: rgba(16, 185, 129, 0.2); color: #10b981; border-radius: 8px;}
+::ng-deep .ngx-pagination li.current { background: #10b981; color: #0f172a; font-weight: bold; padding: 5px 12px; border-radius: 8px; border: none; }
+::ng-deep .ngx-pagination li.disabled { opacity: 0.4; padding: 5px 12px; color: #94a3b8; }
 
 /* ===================================
-   MODAL DE DETALLES ("TICKET DIGITAL")
+   ANIMACIONES Y RESPONSIVE
    =================================== */
-.modal-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background-color: rgba(0, 0, 15, 0.85);
-  backdrop-filter: blur(8px);
-  display: flex; justify-content: center; align-items: center; z-index: 1000;
-  padding: 20px;
-  animation: fadeInOverlay 0.3s ease-out;
-}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-@keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
-
-.modal-content {
-  /* Fondo oscuro muy profundo */
-  background: linear-gradient(165deg, rgba(20, 25, 40, 0.98) 0%, rgba(10, 15, 25, 0.99) 100%);
-  border: 1px solid rgba(68, 128, 211, 0.3);
-  border-radius: 20px;
-  /* Sombra para efecto flotante */
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 20px rgba(68, 128, 211, 0.1);
-  width: 90%; max-width: 800px;
-  max-height: 90vh;
-  overflow-y: auto;
-  animation: slideUpModal 0.4s ease;
-  display: flex; flex-direction: column;
-}
-
-@keyframes slideUpModal { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-
-/* Header Modal */
-.modal-header {
-  background: linear-gradient(to right, rgba(68, 128, 211, 0.15), transparent);
-  padding: 25px 35px;
-  display: flex; justify-content: space-between; align-items: center;
-  border-bottom: 1px solid rgba(68, 128, 211, 0.2);
-}
-
-.modal-header h3 {
-  margin: 0; color: #ffffff; font-size: 1.5rem; font-weight: 700;
-  text-shadow: 0 0 10px rgba(68, 128, 211, 0.5);
-}
-
-/* Botón Cerrar (X) */
-.btn-cerrar {
-  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #a0c4ff; width: 36px; height: 36px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer;
-  transition: all 0.3s ease;
-}
-.btn-cerrar:hover { background: rgba(255, 102, 102, 0.2); color: white; transform: rotate(90deg); }
-
-/* Body Modal */
-.modal-body { padding: 30px; flex: 1; }
-
-/* Tabla interna de detalles */
-.tabla-ticket {
-  width: 100%; border-collapse: separate; border-spacing: 0;
-  margin-top: 10px;
-}
-
-.tabla-ticket thead th {
-  background: rgba(68, 128, 211, 0.1);
-  color: #a0c4ff;
-  padding: 15px;
-  text-align: left;
-  border-bottom: 2px solid rgba(68, 128, 211, 0.3);
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 1px;
-}
-
-.tabla-ticket tbody tr {
-  background: transparent;
-  transition: background 0.2s;
-}
-.tabla-ticket tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.tabla-ticket tbody td {
-  padding: 12px 15px;
-  color: #e0e0e0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  font-size: 0.95rem;
-}
-
-/* Badges de Tipo (Refacción vs Insumo) */
-.badge {
-  padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.badge-refaccion { 
-  background: rgba(255, 193, 7, 0.15); 
-  color: #ffc107; 
-  border: 1px solid rgba(255, 193, 7, 0.3); 
-  box-shadow: 0 0 5px rgba(255, 193, 7, 0.1);
-}
-.badge-insumo { 
-  background: rgba(23, 162, 184, 0.15); 
-  color: #17a2b8; 
-  border: 1px solid rgba(23, 162, 184, 0.3); 
-  box-shadow: 0 0 5px rgba(23, 162, 184, 0.1);
-}
-
-/* Fila de Totales */
-.fila-total td {
-  border-top: 2px solid rgba(68, 128, 211, 0.3);
-  padding-top: 25px;
-  padding-bottom: 10px;
-}
-
-.label-total {
-  text-align: right;
-  font-size: 1.1rem;
-  color: #a0c4ff;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  padding-right: 15px;
-}
-
-.valor-total {
-  text-align: right;
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: #63d471; /* Verde neón */
-  text-shadow: 0 0 15px rgba(99, 212, 113, 0.4);
-}
-
-/* Footer Modal */
-.modal-footer {
-  display: flex; justify-content: flex-end; padding: 25px 35px;
-  background: linear-gradient(to top, rgba(68, 128, 211, 0.05), transparent);
-  border-top: 1px solid rgba(68, 128, 211, 0.1);
-}
-
-.btn-cancelar {
-  background: transparent; border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ccc; padding: 10px 24px; border-radius: 8px; cursor: pointer;
-  transition: all 0.3s ease;
-}
-.btn-cancelar:hover { background: rgba(255, 255, 255, 0.05); color: white; border-color: rgba(255, 255, 255, 0.4); }
-
-.btn-guardar {
-  background: linear-gradient(135deg, #4480d3 0%, #2a5298 100%);
-  color: white; border: none; padding: 10px 24px; border-radius: 8px;
-  font-weight: 600; cursor: pointer; box-shadow: 0 4px 10px rgba(68, 128, 211, 0.3);
-}
-.btn-guardar:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(68, 128, 211, 0.5); }
-
-/* Notificaciones */
-.header-exito h3 { color: #5cb85c !important; text-shadow: 0 0 10px rgba(92, 184, 92, 0.5); }
-.header-error h3 { color: #d9534f !important; text-shadow: 0 0 10px rgba(217, 83, 79, 0.5); }
-.header-advertencia h3 { color: #f0ad4e !important; text-shadow: 0 0 10px rgba(240, 173, 78, 0.5); }
-
-.confirm-text { color: #e0e0e0; font-size: 1.1rem; text-align: center; }
-
-/* Responsive */
 @media (max-width: 768px) {
-  .container-header { flex-direction: column; gap: 15px; text-align: center; }
+  .container-header { flex-direction: column; text-align: center; }
   .acciones-header { width: 100%; justify-content: center; }
+  .btn-agregar { width: 100%; justify-content: center; }
+  .btn-exportar { width: 48%; justify-content: center; }
   .filtros-container { flex-direction: column; }
-  .tabla-responsive-wrapper { margin: 0 15px 20px; overflow-x: scroll; }
-}
-/* =========================================
-   ALERTA DE FACTURA PENDIENTE
-   ========================================= */
-.alerta-pendiente {
-  display: inline-block;
-  background-color: rgba(245, 158, 11, 0.15); /* Fondo naranja oscuro */
-  color: #fbbf24; /* Texto naranja brillante */
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: 800;
-  font-size: 0.75rem;
-  letter-spacing: 0.5px;
-  animation: pulse-orange 2s infinite;
-}
-
-@keyframes pulse-orange {
-  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
-  70% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-}
-
-/* Botón especial para adjuntar documento */
-.btn-alerta {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.5);
-}
-
-.btn-alerta:hover {
-  background: rgba(245, 158, 11, 0.4);
-  color: white;
-  border-color: #f59e0b;
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
-  transform: translateY(-2px);
-}
-
-/* =========================================
-   FIX MODALES PEQUEÑOS (SM)
-   ========================================= */
-.modal-content.modal-sm { 
-  max-width: 400px; 
-}
-.justify-content-center {
-  display: flex;
-  justify-content: center !important;
-}
-.ms-1 {
-  margin-left: 5px;
-}
-.mb-1 {
-  margin-bottom: 5px;
-}
-.mt-1 {
-  margin-top: 5px;
 }

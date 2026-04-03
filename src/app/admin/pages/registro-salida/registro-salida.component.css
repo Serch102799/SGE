@@ -128,6 +128,42 @@ select.form-control option { background-color: #1e293b; color: white; }
 .badge-refaccion { background: rgba(255, 193, 7, 0.15); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.3); }
 .badge-insumo { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
 
+/* Selector de Destino (Toggle) */
+.destino-selector {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 5px;
+}
+
+.btn-destino {
+  flex: 1;
+  background: transparent;
+  color: #94a3b8;
+  border: none;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-destino:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-destino.active {
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  color: white;
+  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+}
 /* ==========================================================================
    MODALES (ESTILO CYBERPUNK GLASS)
    ========================================================================== */
