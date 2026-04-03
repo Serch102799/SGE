@@ -78,15 +78,18 @@
               
               <button *ngIf="entrada.factura_proveedor === 'PENDIENTE'" class="btn-accion btn-alerta" title="Adjuntar Documento" (click)="abrirModalFactura(entrada)">
                 <i class="fas fa-file-upload"></i> <span class="d-none d-md-inline ms-1">Adjuntar Factura</span>
+              Adjuntar Factura
               </button>
 
               <button class="btn-accion btn-estado" (click)="verDetalles(entrada)" title="Ver Detalles">
                 <i class="fas fa-eye"></i> <span class="d-none d-md-inline ms-1">Detalles</span>
+              Ver Detalles
               </button>
               
               <button *ngIf="authService.hasRole(['SuperUsuario', 'Admin', 'SuperAdmin'])"
                 class="btn-accion btn-cancelar-icon" title="Anular Entrada" (click)="abrirModalCancelar(entrada)">
                 <i class="fas fa-ban"></i> <span class="d-none d-md-inline ms-1">Anular</span>
+              Cancelar Entrada
               </button>
 
             </div>

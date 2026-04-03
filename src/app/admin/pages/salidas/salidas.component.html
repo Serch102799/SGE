@@ -1,287 +1,370 @@
-<div class="usuarios-container">
-    <div class="container-header">
-        <h2>Historial de Vales de Salida</h2>
-        <div class="acciones-header">
-            <button class="btn-exportar" (click)="exportarAExcelCompleto()">
-                <span>&#128196;</span> EXPORTAR EXCEL
-            </button>
+<div class="salidas-container" style="max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+  
+  <!-- ==========================================
+       HEADER SECTION (¡Restaurado!)
+       ========================================== -->
+  <div class="header-section glass-panel">
+    <div class="header-text">
+      <h2><i class="fas fa-clipboard-list"></i> Historial de Vales de Salida</h2>
+      <p>Consulta y gestiona las salidas de almacén para autobuses y flota administrativa.</p>
+    </div>
+    
+    <div class="header-actions">
+      <button class="btn-ghost btn-excel-custom" (click)="exportarAExcelCompleto()" title="Exportar a Excel">
+        <span class="btn-icon-text">&#128196;</span> <span class="d-none-mobile">EXPORTAR EXCEL</span>
+      </button>
+      <button class="btn-ghost btn-pdf-custom" (click)="exportarAPDFCompleto()" title="Exportar a PDF">
+        <span class="btn-icon-text">&#128462;</span> <span class="d-none-mobile">EXPORTAR PDF</span>
+      </button>
+      <button class="btn-neon-primary" (click)="registrarNuevaSalida()">
+        <span class="btn-icon-text">&#43;</span> REGISTRAR NUEVO VALE
+      </button>
+    </div>
+  </div>
 
-            <button class="btn-exportar btn-pdf" (click)="exportarAPDFCompleto()">
-                <span>&#128462;</span> EXPORTAR PDF
-            </button>
-            <button class="btn-agregar" (click)="registrarNuevaSalida()">
-                <span>&#43;</span> Registrar Nuevo Vale
-            </button>
-        </div>
+  <!-- ==========================================
+       MAIN SECTION (Filtros y Tabla)
+       ========================================== -->
+  <div class="main-section glass-panel mt-4">
+    
+    <!-- Filtros -->
+    <div class="filters-bar">
+      <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" placeholder="Buscar por vale, económico, dueño o empleado..." [(ngModel)]="terminoBusqueda" (ngModelChange)="onFiltroChange()">
+      </div>
+      <div class="filter-group date-filter">
+        <label>Desde:</label>
+        <input type="date" class="form-control" [(ngModel)]="fechaInicio" (change)="onFiltroChange()">
+      </div>
+      <div class="filter-group date-filter">
+        <label>Hasta:</label>
+        <input type="date" class="form-control" [(ngModel)]="fechaFin" (change)="onFiltroChange()">
+      </div>
     </div>
 
-    <div class="container-body">
-        <div class="filtros-container">
-            <div class="filtro-item">
-                <input type="text" class="form-control" placeholder="Buscar por económico, tipo o empleado..."
-                    [(ngModel)]="terminoBusqueda" (ngModelChange)="onFiltroChange()">
-            </div>
-            <div class="filtro-item">
-                <label>Desde:</label>
-                <input type="date" class="form-control" [(ngModel)]="fechaInicio" (change)="onFiltroChange()">
-            </div>
-            <div class="filtro-item">
-                <label>Hasta:</label>
-                <input type="date" class="form-control" [(ngModel)]="fechaFin" (change)="onFiltroChange()">
-            </div>
-        </div>
-
-        <div class="contador-resultados">
-            <strong>{{ totalItems }}</strong> vales de salida encontrados
-        </div>
-
-        <div class="tabla-responsive-wrapper">
-            <table class="tabla-usuarios">
-                <thead>
-                    <tr>
-                        <!-- <th>ID</th> -->
-                        <th>Fecha Operación</th>
-                        <th>Tipo</th>
-                        <th>Autobús</th>
-                        <th>Kilometraje</th>
-                        <th>Solicitado Por</th>
-                        <th style="text-align: center;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        *ngFor="let salida of salidas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
-                        <!-- <td>{{ salida.idSalida }}</td> -->
-                        <td>{{ salida.fechaSalida | date:'dd/MM/yyyy h:mm a' }}</td>
-                        <td>{{ salida.tipoSalida }}</td>
-                        <td>{{ salida.economicoAutobus }}</td>
-                        <td>{{ salida.kilometrajeAutobus | number }} km</td>
-                        <td>{{ salida.nombreEmpleado }}</td>
-                        <td class="acciones">
-                            <button class="btn-accion btn-detalles" (click)="verDetalles(salida)">Ver Detalles</button>
-                            <button class="btn-accion btn-agregar-items" (click)="abrirModalAgregarItems(salida)"
-                                *ngIf="authService.hasRole(['Admin', 'Almacenista'])">Agregar</button>
-                        </td>
-                    </tr>
-                    <tr *ngIf="salidas.length === 0">
-                        <td colspan="7" class="empty-table-message">No se encontraron salidas que coincidan con los
-                            filtros.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="pagination-controls">
-            <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente">
-            </pagination-controls>
-        </div>
+    <div class="contador-resultados">
+      <span class="badge-neon badge-primary">{{ totalItems }}</span> vales de salida encontrados
     </div>
+
+    <!-- Tabla -->
+    <div class="table-responsive">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Vale</th>
+            <th>Fecha y Hora</th>
+            <th>Tipo</th>
+            <th>Destino (Bus / Particular)</th>
+            <th>Solicitado Por</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let salida of salidas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+            
+            <td><strong style="color: #38bdf8;">#{{ salida.idSalida }}</strong></td>
+            
+            <td style="color: #cbd5e1;">{{ salida.fechaSalida | date:'dd/MM/yyyy h:mm a' }}</td>
+            
+            <td>
+              <span class="badge-neon" [ngClass]="salida.tipoSalida === 'Mantenimiento' ? 'badge-warning' : 'badge-success'">
+                {{ salida.tipoSalida }}
+              </span>
+            </td>
+            
+            <!-- DESTINO INTELIGENTE -->
+            <td>
+              <div *ngIf="salida.economicoAutobus" class="destino-info">
+                <span class="destino-title"><i class="fas fa-bus text-info"></i> <strong>BUS {{ salida.economicoAutobus }}</strong></span>
+                <span class="destino-sub"><i class="fas fa-tachometer-alt"></i> {{ salida.kilometrajeAutobus | number }} km</span>
+              </div>
+              
+              <div *ngIf="salida.propietario_vehiculo" class="destino-info">
+                <span class="destino-title"><i class="fas fa-car text-warning"></i> <strong>{{ salida.propietario_vehiculo }}</strong></span>
+                <span class="destino-sub">{{ salida.marca_modelo_vehiculo }}</span>
+              </div>
+
+              <div *ngIf="!salida.economicoAutobus && !salida.propietario_vehiculo">
+                <span style="color: #64748b; font-style: italic;">No especificado</span>
+              </div>
+            </td>
+            
+            <td style="color: #e2e8f0;"><i class="fas fa-user-circle text-muted"></i> {{ salida.nombreEmpleado }}</td>
+            
+            <td class="text-center">
+              <div class="acciones-wrapper">
+                <button class="btn-accion btn-detalles-neon" (click)="verDetalles(salida)">
+                  Ver Detalles
+                </button>
+                <button class="btn-accion btn-agregar-neon" (click)="abrirModalAgregarItems(salida)" *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'Almacenista'])">
+                  + Agregar Items
+                </button>
+              </div>
+            </td>
+
+          </tr>
+          
+          <!-- Estado Vacío -->
+          <tr *ngIf="salidas.length === 0">
+            <td colspan="6" class="empty-state">
+              <div class="empty-content">
+                <i class="fas fa-search empty-icon"></i>
+                <h3>No se encontraron vales</h3>
+                <p>Ajusta tus filtros de búsqueda o el rango de fechas.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination-container mt-4" *ngIf="salidas.length > 0">
+      <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente" class="my-custom-pagination"></pagination-controls>
+    </div>
+  </div>
 </div>
 
+<!-- ==========================================
+     MODAL DETALLES DEL VALE
+     ========================================== -->
 <div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
-    <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h3>Detalles de la Salida #{{ salidaSeleccionadaId }}</h3>
-            <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
-        </div>
-        <div class="modal-body">
-            <div class="tabla-responsive-wrapper">
-                <table class="tabla-preview tabla-ticket">
-                    <thead>
-                        <tr>
-                            <th>Tipo</th>
-                            <th>Descripción</th>
-                            <th>Cant. Salida</th>
-                            <th>Cant. Devuelta</th>
-                            <th>Cant. Neta</th>
-                            <th>Costo Unitario</th>
-                            <th>Costo Total</th>
-                            <th *ngIf="authService.hasRole(['SuperUsuario'])" style="text-align: center;">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let detalle of detallesSeleccionados">
-                            <td>
-                                <span class="badge"
-                                    [ngClass]="{'badge-refaccion': detalle.tipo_item === 'refaccion', 'badge-insumo': detalle.tipo_item === 'insumo'}">{{
-                                    detalle.tipo_item }}</span>
-                            </td>
-                            <td>{{ detalle.nombre_item }}</td>
-                            <td>{{ detalle.cantidad | number:'1.2-2' }}</td>
-                            <td>{{ (detalle.cantidad_devuelta || 0) | number:'1.2-2' }}</td>
-                            <td><strong>{{ (detalle.cantidad - (detalle.cantidad_devuelta || 0)) | number:'1.2-2'
-                                    }}</strong></td>
-                            <td>{{ detalle.costo_unitario | currency:'MXN' }}</td>
-                            <td><strong>{{ ((detalle.cantidad - (detalle.cantidad_devuelta || 0)) *
-                                    detalle.costo_unitario) | currency:'MXN' }}</strong></td>
-                            <td class="acciones" *ngIf="authService.hasRole(['SuperUsuario'])">
-                                <button class="btn-accion btn-devolucion"
-                                    *ngIf="(detalle.cantidad - (detalle.cantidad_devuelta || 0)) > 0"
-                                    (click)="abrirModalDevolucion(detalle)">
-                                    Devolver
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalDetalles()">Cerrar</button>
-        </div>
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-receipt text-info"></i> Detalles del Vale #{{ salidaSeleccionadaId }}</h3>
+      <button class="btn-close" (click)="cerrarModalDetalles()"><i class="fas fa-times"></i></button>
     </div>
+    
+    <div class="modal-body">
+      <div class="table-responsive">
+        <table class="modern-table table-sm">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Descripción</th>
+              <th class="text-center">Despachado</th>
+              <th class="text-center">Devuelto</th>
+              <th class="text-center">Neto</th>
+              <th>Costo U.</th>
+              <th>Subtotal</th>
+              <th class="text-center" *ngIf="authService.hasRole(['SuperUsuario'])">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let detalle of detallesSeleccionados">
+              <td>
+                <span class="badge-neon" [ngClass]="detalle.tipo_item === 'refaccion' ? 'badge-primary' : 'badge-warning'">
+                  {{ detalle.tipo_item }}
+                </span>
+              </td>
+              <td style="color: #f8fafc;">{{ detalle.nombre_item }}</td>
+              <td class="text-center">{{ detalle.cantidad | number:'1.2-2' }}</td>
+              <td class="text-center text-danger">{{ (detalle.cantidad_devuelta || 0) | number:'1.2-2' }}</td>
+              <td class="text-center"><strong style="color: #10b981;">{{ (detalle.cantidad - (detalle.cantidad_devuelta || 0)) | number:'1.2-2' }}</strong></td>
+              <td>{{ detalle.costo_unitario | currency:'MXN' }}</td>
+              <td><strong style="color: #38bdf8;">{{ ((detalle.cantidad - (detalle.cantidad_devuelta || 0)) * detalle.costo_unitario) | currency:'MXN' }}</strong></td>
+              
+              <td class="text-center" *ngIf="authService.hasRole(['SuperUsuario'])">
+                <button class="btn-neon-danger btn-sm" 
+                        *ngIf="(detalle.cantidad - (detalle.cantidad_devuelta || 0)) > 0"
+                        (click)="abrirModalDevolucion(detalle)">
+                  <i class="fas fa-undo"></i> Devolver
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="cerrarModalDetalles()">Cerrar</button>
+    </div>
+  </div>
 </div>
+
+<!-- ==========================================
+     MODAL AGREGAR ITEMS AL VALE (EL SALVAVIDAS)
+     ========================================== -->
 <div class="modal-overlay" *ngIf="mostrarModalAgregarItems" (click)="cerrarModalAgregarItems()">
-    <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h3 *ngIf="salidaSeleccionada">Agregar Items al Vale de Salida #{{ salidaSeleccionada.idSalida }}</h3>
-            <button class="btn-cerrar" (click)="cerrarModalAgregarItems()">×</button>
-        </div>
-        <div class="modal-body">
-
-            <fieldset class="form-section-sm">
-                <legend>Items Existentes</legend>
-                <ul class="lista-items-existentes">
-                    <li *ngFor="let item of itemsExistentes">
-                        <span class="badge"
-                            [ngClass]="{'badge-refaccion': item.tipo_item === 'Refacción', 'badge-insumo': item.tipo_item === 'Insumo'}">{{
-                            item.tipo_item }}</span>
-                        {{ item.nombre_item }} - Cantidad: {{ item.cantidad }}
-                    </li>
-                    <li *ngIf="itemsExistentes.length === 0">Esta salida aún no tiene items registrados.</li>
-                </ul>
-            </fieldset>
-
-            <fieldset class="form-section-sm">
-                <legend>Agregar Nueva Refacción</legend>
-                <div class="form-row align-items-end">
-                    <div class="form-group col-md-5">
-                        <label>Buscar Refacción</label>
-                        <mat-form-field appearance="outline" class="full-width">
-                            <input type="text" placeholder="Escribe para buscar..." matInput
-                                [formControl]="refaccionControl" [matAutocomplete]="autoRefaccion">
-                        </mat-form-field>
-                        <mat-autocomplete #autoRefaccion="matAutocomplete" [displayWith]="displayFn"
-                            (optionSelected)="onRefaccionSelectedEnModal($event)">
-                            <mat-option *ngFor="let refaccion of filteredRefacciones$ | async" [value]="refaccion">
-                                {{ refaccion.nombre }} ({{ refaccion.numero_parte || 'S/N' }})
-                            </mat-option>
-                        </mat-autocomplete>
-                    </div>
-                    <div class="form-group col-md-3">
-                        <label>Lote</label>
-                        <select class="form-control" [(ngModel)]="detalleActualRefaccion.id_lote" name="id_lote_modal">
-                            <option [ngValue]="null" disabled>Selecciona un lote...</option>
-                            <option *ngFor="let lote of lotesDisponibles" [ngValue]="lote.id_lote">
-                                {{ lote.nombre_proveedor }} (Disp: {{ lote.cantidad_disponible }})
-                            </option>
-                        </select>
-                    </div>
-                    <div class="form-group col-md-2">
-                        <label>Cantidad</label>
-                        <input type="number" class="form-control"
-                            [(ngModel)]="detalleActualRefaccion.cantidad_despachada" name="cantidad_despachada_modal"
-                            min="1">
-                    </div>
-                    <div class="form-group-button">
-                        <button type="button" class="btn-agregar-detalle" (click)="agregarNuevaRefaccion()">+</button>
-                    </div>
-                </div>
-                <ul class="lista-items-nuevos">
-                    <li *ngFor="let item of itemsNuevosRefacciones">
-                        <span>✅ {{ item.nombre_refaccion }} (Lote: {{ item.nombre_proveedor }}) - Cantidad: {{
-                            item.cantidad_despachada }}</span>
-                    </li>
-                </ul>
-            </fieldset>
-
-            <fieldset class="form-section-sm">
-                <legend>Agregar Nuevo Insumo</legend>
-                <div class="form-row align-items-end">
-                    <div class="form-group col-md-8">
-                        <label>Buscar Insumo</label>
-                        <mat-form-field appearance="outline" class="full-width">
-                            <input type="text" placeholder="Escribe para buscar..." matInput
-                                [formControl]="insumoControl" [matAutocomplete]="autoInsumo">
-                        </mat-form-field>
-                        <mat-autocomplete #autoInsumo="matAutocomplete" [displayWith]="displayFn"
-                            (optionSelected)="onInsumoSelectedEnModal($event)">
-                            <mat-option *ngFor="let insumo of filteredInsumos$ | async" [value]="insumo">
-                                {{ insumo.nombre }} (Stock: {{ insumo.stock_actual }})
-                            </mat-option>
-                        </mat-autocomplete>
-                    </div>
-                    <div class="form-group col-md-2">
-                        <label>Cantidad</label>
-                        <input type="number" step="0.01" class="form-control"
-                            [(ngModel)]="detalleActualInsumo.cantidad_usada" name="cantidad_usada_modal" min="0.01">
-                    </div>
-                    <div class="form-group-button">
-                        <button type="button" class="btn-agregar-detalle" (click)="agregarNuevoInsumo()">+</button>
-                    </div>
-                </div>
-                <ul class="lista-items-nuevos">
-                    <li *ngFor="let item of itemsNuevosInsumos">
-                        <span>✅ {{ item.nombre_insumo }} - Cantidad: {{ item.cantidad_usada }}</span>
-                    </li>
-                </ul>
-            </fieldset>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalAgregarItems()">Cancelar</button>
-            <button type="button" class="btn-accion btn-guardar" (click)="guardarItemsAdicionales()">Guardar
-                Items</button>
-        </div>
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header header-success">
+      <h3><i class="fas fa-plus-circle"></i> Agregar Items al Vale #{{ salidaSeleccionada?.idSalida }}</h3>
+      <button class="btn-close" (click)="cerrarModalAgregarItems()"><i class="fas fa-times"></i></button>
     </div>
+    
+    <div class="modal-body">
+      
+      <!-- Items que ya tiene el vale -->
+      <div class="alert-neon alert-muted mb-4">
+        <h5>Items ya registrados en este vale:</h5>
+        <div class="items-badges-container">
+          <span *ngFor="let item of itemsExistentes" class="badge-neon badge-muted">
+            {{ item.nombre_item }} (x{{ item.cantidad }})
+          </span>
+          <span *ngIf="itemsExistentes.length === 0" class="text-muted-italic">Ninguno.</span>
+        </div>
+      </div>
+
+<div class="form-grid-vertical">
+        
+        <!-- SECCIÓN REFACCIONES -->
+        <div class="glass-panel panel-info">
+          <h4><i class="fas fa-cogs"></i> Agregar Refacción</h4>
+          <div class="form-row-flex">
+            
+            <div class="form-group flex-2 min-w-200">
+              <label>Buscar Refacción</label>
+              <mat-form-field appearance="outline" class="full-width dark-mat-field">
+                <input type="text" placeholder="Ej: Balatas..." matInput [formControl]="refaccionControl" [matAutocomplete]="autoRefaccion">
+              </mat-form-field>
+              <mat-autocomplete #autoRefaccion="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onRefaccionSelectedEnModal($event)">
+                <mat-option *ngFor="let ref of filteredRefacciones$ | async" [value]="ref">
+                  {{ ref.nombre }} ({{ ref.numero_parte || 'S/N' }})
+                </mat-option>
+              </mat-autocomplete>
+            </div>
+
+            <div class="form-group flex-15 min-w-150">
+              <label>Lote / Proveedor</label>
+              <select class="form-control" [(ngModel)]="detalleActualRefaccion.id_lote">
+                <option [ngValue]="null" disabled>Seleccione...</option>
+                <option *ngFor="let lote of lotesDisponibles" [ngValue]="lote.id_lote">
+                  {{ lote.nombre_proveedor }} (Disp: {{ lote.cantidad_disponible }})
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group flex-05 min-w-80">
+              <label>Cant.</label>
+              <input type="number" class="form-control text-center" [(ngModel)]="detalleActualRefaccion.cantidad_despachada" min="1">
+            </div>
+
+            <!-- Botón alineado -->
+            <div class="form-group-btn">
+              <button class="btn-neon-primary btn-add-square" (click)="agregarNuevaRefaccion()" title="Agregar">
+                <i class="fas fa-plus"></i><span *ngIf="false">+</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SECCIÓN INSUMOS -->
+        <div class="glass-panel panel-warning">
+          <h4><i class="fas fa-fill-drip"></i> Agregar Insumo (Líquidos/Grasas)</h4>
+          <div class="form-row-flex">
+            
+            <div class="form-group flex-2 min-w-200">
+              <label>Buscar Insumo</label>
+              <mat-form-field appearance="outline" class="full-width dark-mat-field">
+                <input type="text" placeholder="Ej: Aceite Motor..." matInput [formControl]="insumoControl" [matAutocomplete]="autoInsumo">
+              </mat-form-field>
+              <mat-autocomplete #autoInsumo="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onInsumoSelectedEnModal($event)">
+                <mat-option *ngFor="let ins of filteredInsumos$ | async" [value]="ins">
+                  {{ ins.nombre }} (Stock: {{ ins.stock_actual }})
+                </mat-option>
+              </mat-autocomplete>
+            </div>
+
+            <!-- Spacer invisible para mantener el grid igual que el de arriba -->
+            <div class="form-group flex-15 min-w-150 d-none-mobile" style="visibility: hidden;">
+              <label>Spacer</label><input class="form-control">
+            </div>
+
+            <div class="form-group flex-05 min-w-80">
+              <label>Cant.</label>
+              <input type="number" step="0.01" class="form-control text-center" [(ngModel)]="detalleActualInsumo.cantidad_usada" min="0.01">
+            </div>
+
+            <!-- Botón alineado -->
+            <div class="form-group-btn">
+              <button class="btn-neon-warning btn-add-square" (click)="agregarNuevoInsumo()" title="Agregar">
+                <i class="fas fa-plus"></i><span *ngIf="false">+</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+      <!-- Resumen de lo que se va a guardar -->
+      <div class="mt-4" *ngIf="itemsNuevosRefacciones.length > 0 || itemsNuevosInsumos.length > 0">
+        <h5 class="summary-title">Nuevos items listos para guardar:</h5>
+        <ul class="summary-list">
+          <li *ngFor="let item of itemsNuevosRefacciones" class="summary-item item-info">
+            <i class="fas fa-check-circle"></i> <strong>{{ item.nombre_refaccion }}</strong> (Lote: {{ item.nombre_proveedor }}) - Cantidad: {{ item.cantidad_despachada }}
+          </li>
+          <li *ngFor="let item of itemsNuevosInsumos" class="summary-item item-warning">
+            <i class="fas fa-check-circle"></i> <strong>{{ item.nombre_insumo }}</strong> - Cantidad: {{ item.cantidad_usada }}
+          </li>
+        </ul>
+      </div>
+
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="cerrarModalAgregarItems()">Cancelar</button>
+      <button class="btn-neon-success" (click)="guardarItemsAdicionales()" [disabled]="itemsNuevosRefacciones.length === 0 && itemsNuevosInsumos.length === 0">
+        <i class="fas fa-save"></i> Guardar Todo en el Vale
+      </button>
+    </div>
+  </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h3 [ngClass]="{
-                'header-exito': notificacion.tipo === 'exito',
-                'header-error': notificacion.tipo === 'error',
-                'header-advertencia': notificacion.tipo === 'advertencia'
-            }">
-                {{ notificacion.titulo }}
-            </h3>
-            <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
-        </div>
-        <div class="modal-body">
-            <p class="confirm-text">{{ notificacion.mensaje }}</p>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
-        </div>
+<!-- ==========================================
+     MODAL DE DEVOLUCIÓN
+     ========================================== -->
+<div class="modal-overlay" *ngIf="mostrarModalDevolucion" (click)="cerrarModalDevolucion()" style="z-index: 2000;">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header header-danger">
+      <h3><i class="fas fa-undo"></i> Devolver Refacción</h3>
+      <button class="btn-close" (click)="cerrarModalDevolucion()"><i class="fas fa-times"></i></button>
     </div>
+    <div class="modal-body">
+      <p style="color: #f8fafc; margin-bottom: 15px;">Item: <strong class="text-info">{{ itemParaDevolucion?.nombre_item }}</strong></p>
+      
+      <div class="form-group mb-3">
+        <label>Cantidad a Devolver (Máx: {{ itemParaDevolucion?.cantidad_maxima }}) <span class="text-danger">*</span></label>
+        <input type="number" class="form-control text-center" [(ngModel)]="datosDevolucion.cantidad_devuelta" [max]="itemParaDevolucion?.cantidad_maxima" min="0.01" step="0.01" required>
+      </div>
+      
+      <div class="form-group mb-2">
+        <label>Motivo de la Devolución <span class="text-danger">*</span></label>
+        <textarea class="form-control" [(ngModel)]="datosDevolucion.motivo" rows="3" placeholder="Ej. Pieza equivocada, sobró material..." required></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="cerrarModalDevolucion()">Cancelar</button>
+      <button class="btn-neon-danger" (click)="guardarDevolucion()" [disabled]="!datosDevolucion.motivo || !datosDevolucion.cantidad_devuelta">
+        Confirmar Devolución
+      </button>
+    </div>
+  </div>
 </div>
-<div class="modal-overlay" *ngIf="mostrarModalDevolucion" (click)="cerrarModalDevolucion()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h3 *ngIf="itemParaDevolucion">Registrar Devolución de: {{ itemParaDevolucion.nombre }}</h3>
-            <button class="btn-cerrar" (click)="cerrarModalDevolucion()">×</button>
-        </div>
-        <div class="modal-body">
-            <form (ngSubmit)="guardarDevolucion()">
-                <div class="form-group">
-                    <label for="cantidad_devuelta">Cantidad a Devolver (Máx: {{ itemParaDevolucion.cantidad }})</label>
-                    <input id="cantidad_devuelta" type="number" class="form-control"
-                        [(ngModel)]="datosDevolucion.cantidad_devuelta" name="cantidad_devuelta"
-                        [max]="itemParaDevolucion.cantidad" min="0.01" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label for="motivo_devolucion">Motivo de la Devolución (Obligatorio)</label>
-                    <textarea id="motivo_devolucion" class="form-control" [(ngModel)]="datosDevolucion.motivo"
-                        name="motivo_devolucion" rows="3" required></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-accion btn-cancelar"
-                        (click)="cerrarModalDevolucion()">Cancelar</button>
-                    <button type="submit" class="btn-accion btn-guardar"
-                        [disabled]="!datosDevolucion.motivo || !datosDevolucion.cantidad_devuelta">Confirmar
-                        Devolución</button>
-                </div>
-            </form>
-        </div>
+
+<!-- ==========================================
+     MODAL NOTIFICACIÓN
+     ========================================== -->
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()" style="z-index: 3000;">
+  <div class="modal-content modal-sm text-center" (click)="$event.stopPropagation()">
+    <div class="modal-body">
+      <i class="fas icon-large" [ngClass]="{
+          'fa-check-circle text-success': notificacion.tipo === 'exito',
+          'fa-times-circle text-danger': notificacion.tipo === 'error',
+          'fa-exclamation-triangle text-warning': notificacion.tipo === 'advertencia'
+        }"></i>
+      <h3 [ngClass]="{
+        'text-success': notificacion.tipo === 'exito',
+        'text-danger': notificacion.tipo === 'error',
+        'text-warning': notificacion.tipo === 'advertencia'
+      }">{{ notificacion.titulo }}</h3>
+      <p style="color: #cbd5e1; margin-top: 10px;">{{ notificacion.mensaje }}</p>
     </div>
+    <div class="modal-footer justify-center">
+      <button class="btn-ghost" (click)="cerrarModalNotificacion()">Entendido</button>
+    </div>
+  </div>
 </div>

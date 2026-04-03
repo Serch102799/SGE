@@ -16,7 +16,7 @@
     </div>
   </div>
 
-  <div class="toolbar-section">
+<div class="toolbar-section">
     <div class="filters-grid">
       <div class="filter-group buscador-principal">
         <i class="fas fa-search filter-icon"></i>
@@ -42,11 +42,10 @@
     </div>
   </div>
 
+  <!-- UN SOLO CONTENEDOR PARA EL CUERPO -->
   <div class="container-body p-3">
 
-    <div class="kanban-board" *ngIf="vistaActual === 'kanban'">
-      </div>
-
+    <!-- ==================== VISTA DE TABLA ==================== -->
     <div class="table-view" *ngIf="vistaActual === 'tabla'">
       <div class="table-responsive">
         <table class="report-table">
@@ -92,10 +91,8 @@
       </div>
     </div>
 
-  </div>
-
-  <div class="container-body p-3">
-    <div class="kanban-board">
+    <!-- ==================== VISTA KANBAN ==================== -->
+    <div class="kanban-board" *ngIf="vistaActual === 'kanban'">
       
       <div class="kanban-column col-yonque">
         <div class="column-header">

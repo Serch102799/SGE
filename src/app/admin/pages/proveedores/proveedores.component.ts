@@ -2,7 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environments';
-
+import { 
+  faSearch, faEdit, faTrashAlt, faPlus, 
+  faBuilding, faEnvelope, faPhone, faUserTie, faTimes
+} from '@fortawesome/free-solid-svg-icons';
 
 export interface Proveedor {
   id_proveedor: number;
@@ -21,6 +24,11 @@ export interface Proveedor {
   styleUrls: ['./proveedores.component.css']
 })
 export class ProveedoresComponent implements OnInit {
+
+  // Iconos
+  faSearch = faSearch; faEdit = faEdit; faTrashAlt = faTrashAlt; 
+  faPlus = faPlus; faBuilding = faBuilding; faEnvelope = faEnvelope; 
+  faPhone = faPhone; faUserTie = faUserTie; faTimes = faTimes;
 
   proveedores: Proveedor[] = [];
   proveedoresFiltrados: Proveedor[] = [];
@@ -47,6 +55,17 @@ export class ProveedoresComponent implements OnInit {
   ngOnInit(): void {
     this.obtenerProveedores();
   }
+
+  // --- NUEVA FUNCIÓN PARA LA UI ---
+  obtenerIniciales(nombre: string): string {
+    if (!nombre) return 'PR';
+    const partes = nombre.trim().split(' ');
+    if (partes.length >= 2) {
+      return (partes[0][0] + partes[1][0]).toUpperCase();
+    }
+    return nombre.substring(0, 2).toUpperCase();
+  }
+  // --------------------------------
 
   mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
     this.notificacion = { titulo, mensaje, tipo };

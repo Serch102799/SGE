@@ -53,6 +53,7 @@ import { TallerComponent } from './pages/taller/taller.component';
 import { RecuperadosComponent } from './pages/recuperados/recuperados.component';
 import { DashConsumoComponent } from './pages/dash-consumo/dash-consumo.component';
 import { MantenimientoComponent } from './pages/mantenimiento/mantenimiento.component';
+import { VehiculosParticularesComponent } from './pages/vehiculos-particulares/vehiculos-particulares.component';
 
 @NgModule({
   declarations: [
@@ -95,7 +96,8 @@ import { MantenimientoComponent } from './pages/mantenimiento/mantenimiento.comp
     TallerComponent,
     RecuperadosComponent,
     DashConsumoComponent,
-    MantenimientoComponent
+    MantenimientoComponent,
+    VehiculosParticularesComponent
   ],
   imports: [
     HttpClientModule,

@@ -1,520 +1,326 @@
 /* ===================================
    BASE Y RESET
    =================================== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
-/* ===================================
-   CONTENEDOR HOST (CORREGIDO)
-   =================================== */
 :host {
-  display: block;
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  padding: 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), 
-              url("/assets/img/nF.png") no-repeat center center fixed;
-  background-size: cover;
-  overflow-y: auto;
+  display: block; width: 100%; min-height: 100vh; padding: 20px;
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url("/assets/img/nF.png") no-repeat center center fixed;
+  background-size: cover; overflow-y: auto;
 }
 
 /* ===================================
-   CONTENEDOR PRINCIPAL
+   UTILERÍAS GLASSMORPHISM
    =================================== */
-.usuarios-container {
-  max-width: 1400px;
-  width: 100%;
-  margin: 0 auto;
-  background-color: rgba(0, 0, 0, 0.85);
-  color: #e0e0e0;
-  border: 1px solid rgba(68, 128, 211, 0.4);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 
-              0 0 20px rgba(68, 128, 211, 0.2);
-  overflow: hidden;
-  animation: fadeInUp 0.5s ease-out;
-  margin-bottom: 20px;
+.glass-panel {
+  background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); backdrop-filter: blur(12px);
 }
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.mt-4 { margin-top: 1.5rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.text-center { text-align: center; }
+.justify-center { justify-content: center; }
 
 /* ===================================
-   HEADER Y ACCIONES
+   HEADER SECTION
    =================================== */
-.container-header {
-  background: linear-gradient(135deg, rgba(68, 128, 211, 0.3) 0%, rgba(74, 142, 206, 0.2) 100%);
-  padding: 25px 35px;
-  border-bottom: 2px solid rgba(68, 128, 211, 0.5);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  backdrop-filter: blur(10px);
-  flex-wrap: wrap;
-  gap: 15px;
+.header-section {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
 }
-
-.container-header h2 {
-  color: #ffffff;
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 0;
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
-  letter-spacing: 0.5px;
-}
-
-.acciones-header {
-  display: flex;
-  gap: 15px;
-}
-.btn-exportar {
-  background: rgba(40, 167, 69, 0.15);
-  border: 1px solid rgba(40, 167, 69, 0.4);
-  color: #2ecc71;
-  padding: 10px 20px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-}
-
-.btn-exportar:hover {
-  background: rgba(40, 167, 69, 0.3);
-  color: #fff;
-  box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
-  transform: translateY(-2px);
-}
-
-/* Modificador para PDF (Rojo) */
-.btn-pdf {
-  background: rgba(220, 53, 69, 0.15);
-  border-color: rgba(220, 53, 69, 0.4);
-  color: #ff6b6b;
-}
-
-.btn-pdf:hover {
-  background: rgba(220, 53, 69, 0.3);
-  color: #fff;
-  box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
-  /* translateY se hereda */
-}
-
-/* Botón Agregar (Azul) */
-.btn-agregar {
-  background: linear-gradient(135deg, #4480d3 0%, #386bbd 100%);
-  border: 1px solid rgba(68, 128, 211, 0.6);
-  color: white;
-  padding: 10px 24px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(68, 128, 211, 0.4);
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-.btn-agregar:hover {
-  background: linear-gradient(135deg, #5690e3 0%, #4480d3 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(68, 128, 211, 0.6);
-}
+.header-text h2 { margin: 0 0 5px 0; font-size: 1.8rem; color: #38bdf8; display: flex; align-items: center; gap: 10px; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+.header-text p { margin: 0; color: #94a3b8; font-size: 0.95rem; }
+.header-actions { display: flex; gap: 15px; flex-wrap: wrap; }
 
 /* ===================================
-   FILTROS
+   BOTONES Y ACCIONES (NUEVOS Y MEJORADOS)
    =================================== */
-.filtros-container {
-  padding: 25px 35px 10px;
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  background: rgba(0, 0, 0, 0.2);
-}
+.btn-icon-text { font-size: 1.2rem; margin-right: 5px; }
 
-.filtro-item {
-  flex: 1;
-  min-width: 200px;
+/* Primarios / Azules */
+.btn-neon-primary {
+  background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; border: none; padding: 12px 20px;
+  border-radius: 10px; font-weight: bold; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center;
+  transition: all 0.3s ease; box-shadow: 0 0 15px rgba(14, 165, 233, 0.4); text-transform: uppercase;
 }
+.btn-neon-primary:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 0 25px rgba(14, 165, 233, 0.7); }
 
-.filtro-item label {
-  display: block;
-  margin-bottom: 8px;
-  color: #a0c4ff;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+/* Peligro / Rojos */
+.btn-neon-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 10px 20px;
+  border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
 }
+.btn-neon-danger:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 0 25px rgba(239, 68, 68, 0.7); }
 
-.form-control {
-  width: 100%;
-  padding: 10px 20px;
-  border-radius: 30px;
-  border: 1px solid rgba(68, 128, 211, 0.4);
-  background: rgba(20, 25, 35, 0.6);
-  color: white;
-  transition: all 0.3s ease;
-  font-size: 1rem;
-  color-scheme: dark; /* Para que el calendario del input date sea oscuro */
+/* Éxito / Verdes */
+.btn-neon-success {
+  background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 10px 20px;
+  border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
 }
+.btn-neon-success:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 0 25px rgba(16, 185, 129, 0.7); }
 
-.form-control:focus {
-  background: rgba(20, 25, 35, 0.9);
-  border-color: #4480d3;
-  outline: none;
-  box-shadow: 0 0 15px rgba(68, 128, 211, 0.3);
+/* Advertencia / Amarillos */
+.btn-neon-warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 10px 20px;
+  border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
 }
+.btn-neon-warning:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 0 25px rgba(245, 158, 11, 0.7); }
+
+/* Estados Disabled Generales */
+button[disabled] { opacity: 0.5; cursor: not-allowed; box-shadow: none !important; transform: none !important; }
+
+/* Fantasma / Transparentes */
+.btn-ghost {
+  background: transparent; border: 1px solid rgba(255, 255, 255, 0.2); color: #ccc;
+  padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.3s ease; font-weight: bold; display: flex; align-items: center;
+}
+.btn-ghost:hover { background: rgba(255, 255, 255, 0.1); color: white; }
+
+/* Custom Export Buttons */
+.btn-excel-custom { color: #10b981; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.1); }
+.btn-excel-custom:hover { background: rgba(16, 185, 129, 0.25); color: #fff; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+.btn-pdf-custom { color: #ef4444; border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.1); }
+.btn-pdf-custom:hover { background: rgba(239, 68, 68, 0.25); color: #fff; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+
+/* Botones de Acción en Tabla */
+.acciones-wrapper { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.btn-accion { padding: 8px 15px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; border: 1px solid transparent; text-transform: uppercase; }
+
+.btn-detalles-neon { background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.3); color: #38bdf8; }
+.btn-detalles-neon:hover { background: rgba(56, 189, 248, 0.3); box-shadow: 0 0 10px rgba(56, 189, 248, 0.4); color: white; transform: translateY(-2px); }
+
+.btn-agregar-neon { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #10b981; }
+.btn-agregar-neon:hover { background: rgba(16, 185, 129, 0.3); box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); color: white; transform: translateY(-2px); }
 
 /* ===================================
-   CONTADOR DE RESULTADOS (CORREGIDO)
+   FILTROS Y BÚSQUEDA
    =================================== */
-.contador-resultados {
-  padding: 0 35px; /* Alineado con los bordes de la tabla/filtros */
-  margin: 15px 0;
-  color: #a0c4ff;
-  font-size: 0.9rem;
+.filters-bar { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; align-items: flex-end;}
+.search-box { position: relative; flex: 2; min-width: 250px; }
+.search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #38bdf8; }
+.search-box input {
+  width: 100%; padding: 12px 20px 12px 45px; border-radius: 30px; border: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgba(0, 0, 0, 0.4); color: white; transition: all 0.3s ease; font-size: 1rem; outline: none;
 }
+.search-box input:focus { background: rgba(0, 0, 0, 0.6); border-color: #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
 
-.contador-resultados strong {
-  color: white;
-  font-weight: 700;
-}
+.filter-group label { display: block; margin-bottom: 8px; color: #38bdf8; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+.form-control { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; outline: none; transition: 0.3s; color-scheme: dark; }
+.form-control:focus { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+
+.contador-resultados { color: #94a3b8; font-size: 0.95rem; margin-bottom: 15px; }
 
 /* ===================================
-   TABLA PRINCIPAL
+   TABLA PRINCIPAL Y ESTADOS VACÍOS
    =================================== */
-.tabla-responsive-wrapper {
-  overflow-x: auto;
-  margin: 0 35px 20px;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.2);
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
+.table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); }
+.modern-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.modern-table thead { background: rgba(20, 30, 45, 0.8); }
+.modern-table th { padding: 15px; text-align: left; color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; border-bottom: 1px solid rgba(56, 189, 248, 0.3); }
+.modern-table tbody tr { transition: background 0.2s; background: rgba(0, 0, 0, 0.2); }
+.modern-table tbody td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #cbd5e1; vertical-align: middle; }
+.modern-table tbody tr:hover { background: rgba(56, 189, 248, 0.05); }
 
-.tabla-usuarios {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 0.95rem;
-}
+.table-sm th, .table-sm td { padding: 10px 12px; font-size: 0.85rem; }
 
-.tabla-usuarios thead {
-  background: linear-gradient(135deg, rgba(68, 128, 211, 0.4) 0%, rgba(74, 142, 206, 0.3) 100%);
-  position: sticky; top: 0; z-index: 10;
-}
+.destino-info { display: flex; flex-direction: column; }
+.destino-title { color: #f1f5f9; font-size: 1.05rem; }
+.destino-sub { color: #94a3b8; font-size: 0.85rem; }
 
-.tabla-usuarios thead th {
-  padding: 18px 15px;
-  text-align: left;
-  font-weight: 600;
-  color: #f3f3f3;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 1px;
-  border-bottom: 2px solid rgba(68, 128, 211, 0.6);
-  white-space: nowrap;
-}
+.empty-state { text-align: center; padding: 60px 20px !important; }
+.empty-icon { font-size: 4rem; color: rgba(56, 189, 248, 0.3); margin-bottom: 15px; display: block;}
+.empty-content h3 { color: #f8fafc; margin-bottom: 10px; }
 
-.tabla-usuarios tbody tr {
-  transition: all 0.3s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.tabla-usuarios tbody tr:hover {
-  background: linear-gradient(90deg, 
-    rgba(68, 128, 211, 0.1) 0%, 
-    rgba(74, 142, 206, 0.05) 50%,
-    rgba(68, 128, 211, 0.1) 100%);
-  transform: translateX(5px);
-  box-shadow: 0 4px 20px rgba(68, 128, 211, 0.2);
-  border-left: 3px solid #4480d3;
-}
-
-.tabla-usuarios tbody td {
-  padding: 15px 15px;
-  vertical-align: middle;
-  color: #e0e0e0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* Botones en Tabla */
-.acciones {
-  display: flex; gap: 8px; justify-content: center;
-}
-
-.btn-accion {
-  padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600;
-  cursor: pointer; transition: all 0.3s ease; border: 1px solid transparent; text-transform: uppercase;
-}
-
-.btn-detalles {
-  background: rgba(68, 128, 211, 0.2); color: #6a9edc; border-color: rgba(68, 128, 211, 0.4);
-}
-.btn-detalles:hover {
-  background: rgba(68, 128, 211, 0.4); color: white; border-color: #4480d3;
-}
-
-.btn-agregar-items {
-  background: rgba(23, 162, 184, 0.2); color: #17a2b8; border-color: rgba(23, 162, 184, 0.4);
-}
-.btn-agregar-items:hover {
-  background: rgba(23, 162, 184, 0.4); color: white;
-}
-
-.empty-table-message {
-  text-align: center; font-style: italic; padding: 40px; color: #aaa;
-}
+/* Badges */
+.badge-neon { padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.8rem; display: inline-block; border: 1px solid transparent; text-transform: uppercase;}
+.badge-success { background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: rgba(16, 185, 129, 0.4); }
+.badge-primary { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); }
+.badge-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4); }
+.badge-muted { background: rgba(255,255,255,0.05); color: #94a3b8; border-color: rgba(255,255,255,0.1); }
 
 /* ===================================
-   PAGINACIÓN (CORREGIDO)
-   =================================== */
-.pagination-controls {
-  text-align: center;
-  margin-bottom: 20px;
-  padding-top: 10px;
-}
-
-/* Estilos profundos para ngx-pagination */
-:host ::ng-deep .ngx-pagination {
-  padding: 0;
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  gap: 5px;
-}
-
-:host ::ng-deep .ngx-pagination li {
-  display: inline-block;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(68, 128, 211, 0.3);
-}
-
-:host ::ng-deep .ngx-pagination a, 
-:host ::ng-deep .ngx-pagination span {
-  color: #e0e0e0;
-  padding: 8px 14px;
-  display: block;
-  text-decoration: none;
-  font-size: 0.9rem;
-  border-radius: 6px;
-}
-
-:host ::ng-deep .ngx-pagination .current {
-  background: linear-gradient(135deg, #4480d3 0%, #386bbd 100%);
-  border-color: #4480d3;
-  color: white !important;
-  font-weight: bold;
-  box-shadow: 0 0 10px rgba(68, 128, 211, 0.4);
-}
-
-:host ::ng-deep .ngx-pagination li:not(.current):hover {
-  background: rgba(68, 128, 211, 0.2);
-  border-color: #4480d3;
-}
-
-:host ::ng-deep .ngx-pagination .disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background: transparent;
-  border-color: transparent;
-  color: #666;
-}
-
-/* ===================================
-   MODALES (ESTILO CYBERPUNK GLASS)
+   MODALES GLASSMORPHISM
    =================================== */
 .modal-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background-color: rgba(0, 0, 15, 0.85);
-  backdrop-filter: blur(8px);
-  display: flex; justify-content: center; align-items: center; z-index: 1000;
-  padding: 20px;
-  animation: fadeInOverlay 0.3s ease-out;
+  background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+  display: flex; justify-content: center; align-items: center; z-index: 1050;
+  animation: fadeIn 0.3s ease;
 }
-
-@keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
 
 .modal-content {
-  background: linear-gradient(165deg, rgba(20, 25, 40, 0.98) 0%, rgba(10, 15, 25, 0.99) 100%);
-  border: 1px solid rgba(68, 128, 211, 0.3);
-  border-radius: 20px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 20px rgba(68, 128, 211, 0.1);
-  width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;
-  animation: slideUpModal 0.4s ease;
-  display: flex; flex-direction: column;
+  background: #0f172a; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8); width: 90%; max-width: 600px;
+  animation: scaleIn 0.3s ease; display: flex; flex-direction: column;
 }
-.modal-content.modal-lg { max-width: 900px; }
+.modal-lg { max-width: 900px !important; }
+.modal-sm { max-width: 400px !important; }
 
-@keyframes slideUpModal { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+.modal-header { padding: 20px 25px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { margin: 0; color: #f8fafc; font-size: 1.3rem; }
+.header-success { border-bottom-color: #10b981; }
+.header-danger { border-bottom-color: #ef4444; }
 
-.modal-header {
-  background: linear-gradient(to right, rgba(68, 128, 211, 0.15), transparent);
-  padding: 25px 35px;
-  display: flex; justify-content: space-between; align-items: center;
-  border-bottom: 1px solid rgba(68, 128, 211, 0.2);
-}
+.btn-close { background: transparent; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
+.btn-close:hover { color: #ef4444; transform: rotate(90deg); }
 
-.modal-header h3 {
-  margin: 0; color: #ffffff; font-size: 1.5rem; font-weight: 700;
-  text-shadow: 0 0 10px rgba(68, 128, 211, 0.5);
-}
+.modal-body { padding: 25px; overflow-y: auto; max-height: 75vh; }
+.modal-footer { padding: 20px 25px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 15px; background: rgba(0,0,0,0.2); }
 
-.btn-cerrar {
-  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #a0c4ff; width: 36px; height: 36px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer;
-  transition: all 0.3s ease;
-}
-.btn-cerrar:hover { background: rgba(255, 102, 102, 0.2); color: white; transform: rotate(90deg); }
+/* Secciones Internas del Modal Agregar Items */
+.alert-neon { border-radius: 8px; padding: 15px; }
+.alert-muted { background: rgba(0,0,0,0.4); border-left: 4px solid #94a3b8; }
+.items-badges-container { display: flex; gap: 10px; flex-wrap: wrap; }
+.text-muted-italic { color: #64748b; font-style: italic; }
 
-.modal-body { padding: 30px; flex: 1; }
+.form-grid-vertical { display: grid; grid-template-columns: 1fr; gap: 25px; }
+.panel-info { padding: 20px; background: rgba(56, 189, 248, 0.05); border-color: rgba(56, 189, 248, 0.2); }
+.panel-warning { padding: 20px; background: rgba(245, 158, 11, 0.05); border-color: rgba(245, 158, 11, 0.2); }
 
-/* --- Tabla interna (Ticket) --- */
-.tabla-ticket {
-  width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px;
-}
-.tabla-ticket thead th {
-  background: rgba(68, 128, 211, 0.1); color: #a0c4ff; padding: 15px;
-  text-align: left; border-bottom: 2px solid rgba(68, 128, 211, 0.3); text-transform: uppercase; font-size: 0.8rem;
-}
-.tabla-ticket tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
-.tabla-ticket tbody td {
-  padding: 12px 15px; color: #e0e0e0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.95rem;
-}
+.form-row-flex { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
+.flex-3 { flex: 3; } .flex-2 { flex: 2; } .flex-15 { flex: 1.5; } .flex-1 { flex: 1; } .flex-05 { flex: 0.5; }
+.min-w-250 { min-width: 250px; } .min-w-180 { min-width: 180px; } .min-w-100 { min-width: 100px; } .min-w-80 { min-width: 80px; }
 
-/* Badges */
-.badge {
-  padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-}
-.badge-refaccion { background: rgba(255, 193, 7, 0.15); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.3); }
-.badge-insumo { background: rgba(23, 162, 184, 0.15); color: #17a2b8; border: 1px solid rgba(23, 162, 184, 0.3); }
+.btn-add-square { height: 45px; padding: 0 20px; border-radius: 8px; }
 
-/* --- Estilos para Modal Agregar Items --- */
-.form-section-sm {
-  border: 1px solid rgba(68, 128, 211, 0.2);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 25px;
-  background: rgba(0,0,0,0.2);
-}
+.summary-title { color: #f1f5f9; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+.summary-list { list-style: none; padding: 0; margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
+.summary-item { padding: 8px 15px; border-radius: 6px; }
+.item-info { color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
+.item-warning { color: #fbbf24; background: rgba(245, 158, 11, 0.1); }
 
-.form-section-sm legend {
-  color: #6a9edc; font-weight: 700; padding: 0 10px; font-size: 1rem;
-}
-
-.form-row { display: flex; gap: 15px; flex-wrap: wrap; }
-.form-group { flex: 1; margin-bottom: 10px; }
-.col-md-5 { flex: 5; } .col-md-3 { flex: 3; } .col-md-2 { flex: 2; } .col-md-8 { flex: 8; }
-
-.form-group label {
-  display: block; margin-bottom: 5px; color: #a0c4ff; font-size: 0.8rem; text-transform: uppercase;
-}
-
-/* Botón "+" para agregar item */
-.btn-agregar-detalle {
-  background: #28a745; color: white; border: none; 
-  width: 40px; height: 40px; border-radius: 10px; font-size: 1.5rem;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: all 0.3s; margin-bottom: 3px;
-}
-.btn-agregar-detalle:hover { background: #218838; transform: scale(1.1); }
-
-/* Listas de items agregados */
-.lista-items-existentes, .lista-items-nuevos {
-  list-style: none; padding: 0; margin-top: 10px;
-}
-.lista-items-existentes li, .lista-items-nuevos li {
-  padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #ccc; font-size: 0.9rem;
-}
-.lista-items-nuevos li span { color: #63d471; } /* Texto verde para nuevos */
-
-/* Botón Devolución (Rojo) */
-.btn-devolucion {
-  background: rgba(220, 53, 69, 0.2); color: #e4606d; border: 1px solid rgba(220, 53, 69, 0.4);
-}
-.btn-devolucion:hover { background: rgba(220, 53, 69, 0.4); color: white; }
-
-/* Footer */
-.modal-footer {
-  display: flex; justify-content: flex-end; padding: 25px 35px; gap: 15px;
-  background: linear-gradient(to top, rgba(68, 128, 211, 0.05), transparent); border-top: 1px solid rgba(68, 128, 211, 0.1);
-}
-
-.btn-cancelar {
-  background: transparent; border: 1px solid rgba(255, 255, 255, 0.2); color: #ccc;
-  padding: 10px 24px; border-radius: 8px; cursor: pointer;
-}
-.btn-cancelar:hover { background: rgba(255, 255, 255, 0.05); color: white; }
-
-.btn-guardar {
-  background: linear-gradient(135deg, #4480d3 0%, #2a5298 100%);
-  color: white; border: none; padding: 10px 24px; border-radius: 8px;
-  font-weight: 600; cursor: pointer;
-}
-.btn-guardar:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(68, 128, 211, 0.4); }
-.btn-guardar:disabled { background: #555; cursor: not-allowed; transform: none; box-shadow: none; }
-
-/* Notificaciones */
-.header-exito h3 { color: #5cb85c !important; }
-.header-error h3 { color: #d9534f !important; }
-.header-advertencia h3 { color: #f0ad4e !important; }
-.confirm-text { color: #e0e0e0; font-size: 1.1rem; text-align: center; }
+/* Textos e Íconos */
+.text-danger { color: #ef4444; }
+.text-success { color: #10b981; }
+.text-info { color: #38bdf8; }
+.text-warning { color: #fbbf24; }
+.icon-large { font-size: 4rem; margin-bottom: 15px; display: block;}
 
 /* ===================================
-   OVERRIDES PARA ANGULAR MATERIAL
-   (Para que el autocompletado se vea oscuro)
+   ANGULAR MATERIAL OVERRIDES (DARK MODE)
    =================================== */
-::ng-deep .mat-mdc-form-field {
-  width: 100%;
-}
-::ng-deep .mat-mdc-text-field-wrapper {
-  background-color: rgba(20, 25, 35, 0.6) !important;
-  border-radius: 10px !important;
-  border: 1px solid rgba(68, 128, 211, 0.3);
-}
-::ng-deep .mat-mdc-form-field-focus-overlay {
-  background-color: transparent !important;
-}
-::ng-deep .mat-mdc-input-element {
-  color: white !important;
-}
-::ng-deep .mat-mdc-option {
-  color: white !important;
-  background: #1a1d26 !important;
-}
-::ng-deep .mat-mdc-option:hover, ::ng-deep .mat-mdc-option.mat-mdc-option-active {
-  background: #4480d3 !important;
-}
-::ng-deep .mat-mdc-autocomplete-panel {
-  background: #1a1d26 !important;
-  border: 1px solid #4480d3;
-}
-::ng-deep .mdc-text-field--outlined .mdc-notched-outline {
-  display: none !important; /* Quitamos el borde default de Material */
+/* ===================================
+   ALINEACIÓN Y TAMAÑOS (FLEXBOX FIX)
+   =================================== */
+.form-row-flex { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
+.form-group { margin-bottom: 0; } /* Resetea márgenes para alineación perfecta */
+.form-group-btn { display: flex; align-items: flex-end; height: 100%; margin-bottom: 0; }
+
+.flex-2 { flex: 2; } 
+.flex-15 { flex: 1.5; } 
+.flex-05 { flex: 0.5; }
+
+.min-w-200 { min-width: 200px; } 
+.min-w-150 { min-width: 150px; } 
+.min-w-80 { min-width: 80px; }
+
+/* Botones Cuadrados (+) */
+.btn-add-square { 
+  width: 45px; 
+  height: 45px; 
+  padding: 0; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  border-radius: 8px; 
+  font-size: 1.2rem;
+  color: #ffffff !important; /* Fuerza el color blanco del ícono */
 }
 
-/* Responsive */
+.btn-add-square i { color: #ffffff !important; }
+
+/* Los inputs normales */
+.modal-body .form-control { 
+  height: 45px; 
+  padding: 10px 15px; 
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* ===================================
+   ANGULAR MATERIAL OVERRIDES (FIX DOBLE CAJA)
+   =================================== */
+::ng-deep .dark-mat-field { display: block; width: 100%; }
+
+/* Eliminamos los bordes nativos de Material */
+::ng-deep .dark-mat-field .mdc-text-field--outlined .mdc-notched-outline { 
+  display: none !important; 
+}
+
+/* Estilizamos el contenedor principal para que parezca un form-control normal */
+::ng-deep .dark-mat-field .mat-mdc-text-field-wrapper {
+  background-color: rgba(0, 0, 0, 0.3) !important; 
+  border: 1px solid rgba(255, 255, 255, 0.2); 
+  border-radius: 8px; 
+  height: 45px !important;
+  padding: 0 !important;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Efecto focus en el contenedor */
+::ng-deep .dark-mat-field.mat-focused .mat-mdc-text-field-wrapper {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+/* Alineación interna del texto */
+::ng-deep .dark-mat-field .mat-mdc-form-field-flex { 
+  padding: 0 15px !important; 
+  height: 100% !important; 
+  align-items: center !important; 
+}
+
+::ng-deep .dark-mat-field .mat-mdc-form-field-infix { 
+  padding: 0 !important; 
+  border: none !important;
+  display: flex;
+  align-items: center;
+  min-height: auto !important;
+}
+
+::ng-deep .dark-mat-field input.mat-mdc-input-element { 
+  color: white !important; 
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Panel de Autocompletado */
+::ng-deep .mat-mdc-autocomplete-panel { 
+  background: #1e293b !important; 
+  border: 1px solid #38bdf8 !important; 
+  box-shadow: 0 5px 15px rgba(0,0,0,0.8) !important; 
+}
+::ng-deep .mat-mdc-option { color: #e2e8f0 !important; }
+::ng-deep .mat-mdc-option:hover, ::ng-deep .mat-mdc-option.mat-mdc-option-active { 
+  background: rgba(56, 189, 248, 0.2) !important; 
+  color: #38bdf8 !important; 
+}
+/* ===================================
+   PAGINACIÓN (ngx-pagination)
+   =================================== */
+.pagination-container { display: flex; justify-content: flex-end; }
+::ng-deep .my-custom-pagination .ngx-pagination { margin-bottom: 0; padding-left: 0; }
+::ng-deep .my-custom-pagination .ngx-pagination li { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; margin: 0 3px; }
+::ng-deep .my-custom-pagination .ngx-pagination li a { color: #f8fafc; text-decoration: none; padding: 5px 12px; display: block; transition: 0.3s; }
+::ng-deep .my-custom-pagination .ngx-pagination li a:hover { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-radius: 8px;}
+::ng-deep .my-custom-pagination .ngx-pagination li.current { background: #38bdf8; color: #0f172a; font-weight: bold; padding: 5px 12px; border-radius: 8px; border: none; }
+::ng-deep .my-custom-pagination .ngx-pagination li.disabled { opacity: 0.4; padding: 5px 12px; color: #94a3b8; }
+
+/* ===================================
+   ANIMACIONES Y RESPONSIVE
+   =================================== */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
 @media (max-width: 768px) {
-  .container-header { flex-direction: column; gap: 15px; text-align: center; }
-  .filtros-container { flex-direction: column; }
-  .tabla-responsive-wrapper { margin: 0 15px 20px; overflow-x: scroll; }
-  .form-row { flex-direction: column; gap: 10px; }
+  .header-section { flex-direction: column; text-align: center; }
+  .header-actions { width: 100%; justify-content: center; }
+  .d-none-mobile { display: none; }
+  .btn-icon-text { margin-right: 0 !important; }
+  .form-row-flex { flex-direction: column; align-items: stretch; }
+  .btn-add-square { width: 100%; }
 }

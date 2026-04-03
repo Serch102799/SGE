@@ -17,13 +17,21 @@ export interface Salida {
   idSalida: number;
   fechaSalida: string;
   tipoSalida: string;
-  idAutobus: number;
   solicitadoPorID: number;
   observaciones: string;
-  economicoAutobus: string;
   nombreEmpleado: string;
-  kilometrajeAutobus: number;
+  
+  // Datos de Autobús (Pueden ser nulos si es para un particular)
+  idAutobus?: number;
+  economicoAutobus?: string;
+  kilometrajeAutobus?: number;
+  
+  // Nuevos Datos de Vehículo Particular
+  id_vehiculo_particular?: number;
+  propietario_vehiculo?: string;
+  marca_modelo_vehiculo?: string;
 }
+
 interface RefaccionSimple { id_refaccion: number; nombre: string; marca: string; numero_parte: string; }
 interface InsumoSimple { id_insumo: number; nombre: string; stock_actual: number; unidad_medida: string; }
 interface Lote { id_lote: number; cantidad_disponible: number; nombre_proveedor: string; }
@@ -64,7 +72,7 @@ export class SalidasComponent implements OnInit, OnDestroy {
   itemsNuevosInsumos: any[] = [];
 
   mostrarModalDevolucion = false;
-  itemParaDevolucion: any = null; // Guardará el detalle seleccionado
+  itemParaDevolucion: any = null;
   datosDevolucion = {
     cantidad_devuelta: null as number | null,
     motivo: ''
@@ -117,9 +125,7 @@ export class SalidasComponent implements OnInit, OnDestroy {
 
   private _buscarApi(tipo: 'refacciones' | 'insumos', term: any): Observable<any[]> {
     const searchTerm = typeof term === 'string' ? term : term.nombre;
-    if (!searchTerm || searchTerm.length < 2) {
-      return of([]);
-    }
+    if (!searchTerm || searchTerm.length < 2) return of([]);
     return this.http.get<any[]>(`${environment.apiUrl}/${tipo}/buscar`, { params: { term: searchTerm } });
   }
 
@@ -153,12 +159,17 @@ export class SalidasComponent implements OnInit, OnDestroy {
           idSalida: item.id_salida,
           fechaSalida: item.fecha_operacion,
           tipoSalida: item.tipo_salida,
-          idAutobus: item.id_autobus,
           solicitadoPorID: item.solicitado_por_id,
           observaciones: item.observaciones,
-          economicoAutobus: item.economico_autobus,
           nombreEmpleado: item.nombre_empleado,
-          kilometrajeAutobus: item.kilometraje_autobus
+          // Datos de Autobús
+          idAutobus: item.id_autobus,
+          economicoAutobus: item.economico_autobus,
+          kilometrajeAutobus: item.kilometraje_autobus,
+          // Datos de Vehículo Particular
+          id_vehiculo_particular: item.id_vehiculo_particular,
+          propietario_vehiculo: item.propietario_vehiculo,
+          marca_modelo_vehiculo: item.marca_modelo_vehiculo
         }));
         this.totalItems = response.total || 0;
       },
@@ -170,215 +181,166 @@ export class SalidasComponent implements OnInit, OnDestroy {
     });
   }
 
-  onFiltroChange(): void {
-    this.searchSubject.next();
-  }
-
-  onPageChange(page: number): void {
-    this.currentPage = page;
-    this.obtenerSalidas();
-  }
+  onFiltroChange(): void { this.searchSubject.next(); }
+  onPageChange(page: number): void { this.currentPage = page; this.obtenerSalidas(); }
   
   registrarNuevaSalida() { this.router.navigate(['/admin/registro-salida']); }
 
- exportarAExcelCompleto() {
-  this.mostrarNotificacion('Generando Excel', 'Recopilando información, por favor espere...', 'exito');
+  exportarAExcelCompleto() {
+    this.mostrarNotificacion('Generando Excel', 'Recopilando información, por favor espere...', 'exito');
 
-  // 1. Preparar filtros
-  let params = new HttpParams()
-    .set('page', '1')
-    .set('limit', '100000') 
-    .set('search', this.terminoBusqueda.trim());
+    let params = new HttpParams()
+      .set('page', '1').set('limit', '100000').set('search', this.terminoBusqueda.trim());
+    if (this.fechaInicio) params = params.set('fechaInicio', this.fechaInicio);
+    if (this.fechaFin) params = params.set('fechaFin', this.fechaFin);
 
-  if (this.fechaInicio) params = params.set('fechaInicio', this.fechaInicio);
-  if (this.fechaFin) params = params.set('fechaFin', this.fechaFin);
+    this.http.get<{ data: any[] }>(this.apiUrl, { params }).pipe(
+      switchMap(response => {
+        const salidas = response.data || [];
+        if (salidas.length === 0) throw new Error('No hay datos');
 
-  this.http.get<{ data: any[] }>(this.apiUrl, { params }).pipe(
-    switchMap(response => {
-      const salidas = response.data || [];
-      if (salidas.length === 0) throw new Error('No hay datos');
-
-      // 2. Obtener detalles de cada salida
-      const peticionesDetalles = salidas.map(salida => {
-        // CORRECCIÓN 1: Usar 'id_salida' que es como viene de tu Postgres
-        const id = salida.id_salida; 
-
-        if (!id) {
-            console.warn('Salida sin ID:', salida);
-            return of({ cabecera: salida, detalles: [] });
-        }
-
-        // CORRECCIÓN 2: La ruta en tu backend es /detalles/:id
-        // Tu backend: router.get('/detalles/:idSalida', ...)
-        return this.http.get<any[]>(`${this.apiUrl}/detalles/${id}`).pipe(
-          map(detalles => ({ cabecera: salida, detalles: detalles || [] })),
-          catchError((err) => {
-            console.error(`Error detalles ${id}`, err);
-            return of({ cabecera: salida, detalles: [] });
-          })
-        );
-      });
-
-      return forkJoin(peticionesDetalles);
-    })
-  ).subscribe({
-    next: (dataCompleta) => {
-      const filasExcel: any[] = [];
-
-      dataCompleta.forEach(item => {
-        const cab = (item as { cabecera: any; detalles: any[] }).cabecera;
-        
-        // Fila Cabecera (Datos generales)
-        filasExcel.push({
-          'ID Vale': cab.id_salida,
-          'Fecha': new Date(cab.fecha_operacion).toLocaleString(), // Tu backend usa fecha_operacion
-          'Tipo': cab.tipo_salida,
-          'Autobús': cab.economico_autobus,
-          'Solicitante': cab.nombre_empleado,
-          'Tipo Item': '', 'Descripción': '', 'Cant. Neta': '', 'Costo U.': '', 'Subtotal': ''
+        const peticionesDetalles = salidas.map(salida => {
+          const id = salida.id_salida; 
+          if (!id) return of({ cabecera: salida, detalles: [] });
+          return this.http.get<any[]>(`${this.apiUrl}/detalles/${id}`).pipe(
+            map(detalles => ({ cabecera: salida, detalles: detalles || [] })),
+            catchError(() => of({ cabecera: salida, detalles: [] }))
+          );
         });
 
-        // Fila Detalles (Datos de tu endpoint /detalles/:id)
-        (item as { cabecera: any; detalles: any[] }).detalles.forEach((det: any) => {
-          // Tu endpoint devuelve: cantidad, cantidad_devuelta, tipo_item, nombre_item, costo_unitario
-          const cantidadNeta = (Number(det.cantidad) || 0) - (Number(det.cantidad_devuelta) || 0);
-          const costo = Number(det.costo_unitario) || 0;
+        return forkJoin(peticionesDetalles);
+      })
+    ).subscribe({
+      next: (dataCompleta) => {
+        const filasExcel: any[] = [];
+
+        dataCompleta.forEach(item => {
+          const cab = (item as { cabecera: any; detalles: any[] }).cabecera;
+          
+          // Lógica para determinar el destino (Autobús o Vehículo Particular)
+          const destinoInfo = cab.economico_autobus 
+                              ? `Bus: ${cab.economico_autobus}` 
+                              : (cab.propietario_vehiculo ? `Particular: ${cab.propietario_vehiculo}` : 'N/A');
 
           filasExcel.push({
-            'ID Vale': '', 'Fecha': '', 'Tipo': '', 'Autobús': '', 'Solicitante': '',
-            'Tipo Item': det.tipo_item,   // refaccion / insumo
-            'Descripción': det.nombre_item,
-            'Cant. Neta': cantidadNeta,
-            'Costo U.': costo,
-            'Subtotal': cantidadNeta * costo
+            'ID Vale': cab.id_salida,
+            'Fecha': new Date(cab.fecha_operacion).toLocaleString(),
+            'Tipo': cab.tipo_salida,
+            'Destino': destinoInfo,
+            'Solicitante': cab.nombre_empleado,
+            'Tipo Item': '', 'Descripción': '', 'Cant. Neta': '', 'Costo U.': '', 'Subtotal': ''
           });
+
+          (item as { cabecera: any; detalles: any[] }).detalles.forEach((det: any) => {
+            const cantidadNeta = (Number(det.cantidad) || 0) - (Number(det.cantidad_devuelta) || 0);
+            const costo = Number(det.costo_unitario) || 0;
+
+            filasExcel.push({
+              'ID Vale': '', 'Fecha': '', 'Tipo': '', 'Destino': '', 'Solicitante': '',
+              'Tipo Item': det.tipo_item,
+              'Descripción': det.nombre_item,
+              'Cant. Neta': cantidadNeta,
+              'Costo U.': costo,
+              'Subtotal': cantidadNeta * costo
+            });
+          });
+
+          filasExcel.push({});
         });
 
-        filasExcel.push({}); // Espacio visual
-      });
+        const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(filasExcel);
+        ws['!cols'] = [{wch:10}, {wch:20}, {wch:15}, {wch:25}, {wch:20}, {wch:12}, {wch:30}, {wch:10}, {wch:10}, {wch:12}];
 
-      // Generar archivo
-      const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(filasExcel);
-      const wscols = [{wch:10}, {wch:20}, {wch:15}, {wch:10}, {wch:20}, {wch:12}, {wch:30}, {wch:10}, {wch:10}, {wch:12}];
-      ws['!cols'] = wscols;
+        const wb: XLSX.WorkBook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Reporte Salidas');
+        XLSX.writeFile(wb, `Salidas_Detalladas_${new Date().toISOString().slice(0, 10)}.xlsx`);
+        this.mostrarNotificacion('Éxito', 'Excel generado correctamente.', 'exito');
+      },
+      error: () => this.mostrarNotificacion('Error', 'No se pudo generar el reporte.', 'error')
+    });
+  }
 
-      const wb: XLSX.WorkBook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Reporte Salidas');
-      
-      const fecha = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(wb, `Salidas_Detalladas_${fecha}.xlsx`);
-      
-      this.mostrarNotificacion('Éxito', 'Excel generado correctamente.', 'exito');
-    },
-    error: (err) => {
-      console.error(err);
-      this.mostrarNotificacion('Error', 'No se pudo generar el reporte.', 'error');
-    }
-  });
-}
-exportarAPDFCompleto() {
-  this.mostrarNotificacion('Generando PDF', 'Procesando formato...', 'exito');
+  exportarAPDFCompleto() {
+    this.mostrarNotificacion('Generando PDF', 'Procesando formato...', 'exito');
 
-  let params = new HttpParams()
-    .set('page', '1').set('limit', '100000').set('search', this.terminoBusqueda.trim());
-    
-  if (this.fechaInicio) params = params.set('fechaInicio', this.fechaInicio);
-  if (this.fechaFin) params = params.set('fechaFin', this.fechaFin);
+    let params = new HttpParams().set('page', '1').set('limit', '100000').set('search', this.terminoBusqueda.trim());
+    if (this.fechaInicio) params = params.set('fechaInicio', this.fechaInicio);
+    if (this.fechaFin) params = params.set('fechaFin', this.fechaFin);
 
-  this.http.get<{ data: any[] }>(this.apiUrl, { params }).pipe(
-    switchMap(response => {
-      const salidas = response.data || [];
-      if (salidas.length === 0) throw new Error('No hay datos');
+    this.http.get<{ data: any[] }>(this.apiUrl, { params }).pipe(
+      switchMap(response => {
+        const salidas = response.data || [];
+        if (salidas.length === 0) throw new Error('No hay datos');
 
-      const peticionesDetalles = salidas.map(salida => {
-        const id = salida.id_salida; // Corrección ID
-        if (!id) return of({ cabecera: salida, detalles: [] });
+        const peticionesDetalles = salidas.map(salida => {
+          const id = salida.id_salida;
+          if (!id) return of({ cabecera: salida, detalles: [] });
+          return this.http.get<any[]>(`${this.apiUrl}/detalles/${id}`).pipe(
+            map(detalles => ({ cabecera: salida, detalles: detalles || [] })),
+            catchError(() => of({ cabecera: salida, detalles: [] }))
+          );
+        });
+        return forkJoin(peticionesDetalles);
+      })
+    ).subscribe({
+      next: (dataCompleta) => {
+        const doc = new jsPDF();
+        let yPos = 20;
 
-        // Corrección URL: /detalles/:id
-        return this.http.get<any[]>(`${this.apiUrl}/detalles/${id}`).pipe(
-          map(detalles => ({ cabecera: salida, detalles: detalles || [] })),
-          catchError(() => of({ cabecera: salida, detalles: [] }))
-        );
-      });
-      return forkJoin(peticionesDetalles);
-    })
-  ).subscribe({
-    next: (dataCompleta) => {
-      const doc = new jsPDF();
-      let yPos = 20;
-
-      // Título
-      doc.setFontSize(18);
-      doc.text('Reporte de Vales de Salida', 14, yPos);
-      yPos += 10;
-      doc.setFontSize(10);
-      doc.text(`Generado: ${new Date().toLocaleString()}`, 14, yPos);
-      yPos += 15;
-
-      dataCompleta.forEach(item => {
-        const cab = item.cabecera;
-        
-        // Control de salto de página
-        if (yPos > 270) { doc.addPage(); yPos = 20; }
-
-        // Cabecera del Vale (Gris)
-        doc.setFillColor(240, 240, 240);
-        doc.rect(14, yPos - 5, 182, 18, 'F');
-        
-        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.text('Reporte de Vales de Salida', 14, yPos);
+        yPos += 10;
         doc.setFontSize(10);
-        // Usamos fecha_operacion que viene de tu DB
-        doc.text(`Vale #${cab.id_salida} | ${new Date(cab.fecha_operacion).toLocaleDateString()}`, 16, yPos);
-        
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
-        doc.text(`Tipo: ${cab.tipo_salida}`, 16, yPos + 6);
-        doc.text(`Bus: ${cab.economico_autobus || 'N/A'}`, 80, yPos + 6);
-        doc.text(`Solicitó: ${cab.nombre_empleado || 'N/A'}`, 130, yPos + 6);
-        
+        doc.text(`Generado: ${new Date().toLocaleString()}`, 14, yPos);
         yPos += 15;
 
-        // Tabla de Items
-        const bodyData = item.detalles.map((det: any) => {
-          const neto = (Number(det.cantidad) || 0) - (Number(det.cantidad_devuelta) || 0);
-          const costo = Number(det.costo_unitario) || 0;
-          return [
-              det.tipo_item,      // refaccion / insumo
-              det.nombre_item,    // nombre
-              neto,               // cantidad neta
-              `$${costo.toFixed(2)}`,
-              `$${(neto * costo).toFixed(2)}`
-          ];
+        dataCompleta.forEach(item => {
+          const cab = item.cabecera;
+          if (yPos > 270) { doc.addPage(); yPos = 20; }
+
+          doc.setFillColor(240, 240, 240);
+          doc.rect(14, yPos - 5, 182, 18, 'F');
+          
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.text(`Vale #${cab.id_salida} | ${new Date(cab.fecha_operacion).toLocaleDateString()}`, 16, yPos);
+          
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          
+          const destinoDestacado = cab.economico_autobus ? `Bus ${cab.economico_autobus}` : (cab.propietario_vehiculo ? `Part: ${cab.propietario_vehiculo}` : 'N/A');
+
+          doc.text(`Tipo: ${cab.tipo_salida}`, 16, yPos + 6);
+          doc.text(`Destino: ${destinoDestacado}`, 80, yPos + 6);
+          doc.text(`Solicitó: ${cab.nombre_empleado || 'N/A'}`, 140, yPos + 6);
+          
+          yPos += 15;
+
+          const bodyData = item.detalles.map((det: any) => {
+            const neto = (Number(det.cantidad) || 0) - (Number(det.cantidad_devuelta) || 0);
+            const costo = Number(det.costo_unitario) || 0;
+            return [
+                det.tipo_item, det.nombre_item, neto, `$${costo.toFixed(2)}`, `$${(neto * costo).toFixed(2)}`
+            ];
+          });
+
+          autoTable(doc, {
+            startY: yPos, head: [['Tipo', 'Descripción', 'Cant. Neta', 'Costo U.', 'Subtotal']], body: bodyData,
+            theme: 'grid', styles: { fontSize: 8, cellPadding: 1 }, headStyles: { fillColor: [68, 128, 211], textColor: 255 },
+            margin: { left: 20 }, didDrawPage: (data) => { if (data.cursor) { yPos = data.cursor.y; } }
+          });
+
+          yPos = (doc as any).lastAutoTable.finalY + 10;
+          doc.setDrawColor(200); doc.line(14, yPos - 5, 196, yPos - 5);
         });
 
-        autoTable(doc, {
-          startY: yPos,
-          head: [['Tipo', 'Descripción', 'Cant. Neta', 'Costo U.', 'Subtotal']],
-          body: bodyData,
-          theme: 'grid',
-          styles: { fontSize: 8, cellPadding: 1 },
-          headStyles: { fillColor: [68, 128, 211], textColor: 255 },
-          margin: { left: 20 },
-          didDrawPage: (data) => { if (data.cursor) { yPos = data.cursor.y; } } // Actualizar posición
-        });
+        doc.save(`Salidas_Reporte_${new Date().toISOString().slice(0,10)}.pdf`);
+        this.mostrarNotificacion('Éxito', 'PDF generado correctamente.', 'exito');
+      },
+      error: () => this.mostrarNotificacion('Error', 'No se pudo generar el PDF.', 'error')
+    });
+  }
 
-        // Espacio tras la tabla
-        yPos = (doc as any).lastAutoTable.finalY + 10;
-        
-        // Línea separadora
-        doc.setDrawColor(200);
-        doc.line(14, yPos - 5, 196, yPos - 5);
-      });
-
-      doc.save(`Salidas_Reporte_${new Date().toISOString().slice(0,10)}.pdf`);
-      this.mostrarNotificacion('Éxito', 'PDF generado correctamente.', 'exito');
-    },
-    error: (err) => {
-      console.error(err);
-      this.mostrarNotificacion('Error', 'No se pudo generar el PDF.', 'error');
-    }
-  });
-}
   verDetalles(salida: Salida) {
     this.salidaSeleccionadaId = salida.idSalida;
     this.http.get<any[]>(`${this.apiUrl}/detalles/${salida.idSalida}`).subscribe({
@@ -386,11 +348,14 @@ exportarAPDFCompleto() {
         this.detallesSeleccionados = detalles;
         this.mostrarModalDetalles = true;
       },
-      error: (err) => this.mostrarNotificacion('Error', 'No se pudieron cargar los detalles.', 'error')
+      error: () => this.mostrarNotificacion('Error', 'No se pudieron cargar los detalles.', 'error')
     });
   }
   cerrarModalDetalles() { this.mostrarModalDetalles = false; }
 
+  // =========================================================================
+  // LOGICA: AGREGAR ITEMS A UN VALE YA EXISTENTE
+  // =========================================================================
   abrirModalAgregarItems(salida: Salida) {
     this.salidaSeleccionada = salida;
     this.itemsNuevosRefacciones = [];
@@ -403,6 +368,7 @@ exportarAPDFCompleto() {
       this.mostrarModalAgregarItems = true;
     });
   }
+  
   cerrarModalAgregarItems() { this.mostrarModalAgregarItems = false; }
 
   onRefaccionSelectEnModal() {
@@ -461,6 +427,7 @@ exportarAPDFCompleto() {
   guardarItemsAdicionales() {
     if (!this.salidaSeleccionada) return;
     const peticionesDetalle = [];
+    
     for (const detalle of this.itemsNuevosRefacciones) {
       const payload = { ID_Salida: this.salidaSeleccionada.idSalida, ID_Refaccion: detalle.id_refaccion, Cantidad_Despachada: detalle.cantidad_despachada, ID_Lote: detalle.id_lote };
       peticionesDetalle.push(this.http.post(`${environment.apiUrl}/detalleSalida`, payload));
@@ -469,17 +436,21 @@ exportarAPDFCompleto() {
       const payload = { id_salida: this.salidaSeleccionada.idSalida, id_insumo: detalle.id_insumo, cantidad_usada: detalle.cantidad_usada };
       peticionesDetalle.push(this.http.post(`${environment.apiUrl}/detalle-salida-insumo`, payload));
     }
+    
     if (peticionesDetalle.length === 0) { this.cerrarModalAgregarItems(); return; }
+    
     forkJoin(peticionesDetalle).subscribe({
       next: () => {
         this.mostrarNotificacion('Éxito', 'Items agregados correctamente a la salida.', 'exito');
         this.cerrarModalAgregarItems();
         this.obtenerSalidas();
       },
-      error: (err) => this.mostrarNotificacion('Error', `Error al agregar: ${err.error.message}`, 'error')
+      error: (err) => this.mostrarNotificacion('Error', `Error al agregar: ${err.error?.message || 'Revisa tu conexión'}`, 'error')
     });
   }
   
+  // =========================================================================
+
   revisarNotificaciones() {
     const notificacionMsg = sessionStorage.getItem('notificacion');
     if (notificacionMsg) {
@@ -492,28 +463,22 @@ exportarAPDFCompleto() {
     this.notificacion = { titulo, mensaje, tipo };
     this.mostrarModalNotificacion = true;
   }
-  cerrarModalNotificacion() {
-    this.mostrarModalNotificacion = false;
-  }
+  cerrarModalNotificacion() { this.mostrarModalNotificacion = false; }
+  
   abrirModalDevolucion(detalle: any): void {
     const cantidadMaxima = detalle.cantidad - (detalle.cantidad_devuelta || 0);
     this.itemParaDevolucion = { ...detalle, cantidad_maxima: cantidadMaxima };
     this.datosDevolucion = { cantidad_devuelta: null, motivo: '' };
     this.mostrarModalDevolucion = true;
   }
-
-  cerrarModalDevolucion(): void {
-    this.mostrarModalDevolucion = false;
-  }
+  cerrarModalDevolucion(): void { this.mostrarModalDevolucion = false; }
 
   guardarDevolucion(): void {
     if (!this.itemParaDevolucion || !this.datosDevolucion.cantidad_devuelta || this.datosDevolucion.cantidad_devuelta <= 0 || !this.datosDevolucion.motivo.trim()) {
-      this.mostrarNotificacion('Datos Incompletos', 'Debes ingresar una cantidad y un motivo válidos.');
-      return;
+      this.mostrarNotificacion('Datos Incompletos', 'Debes ingresar una cantidad y un motivo válidos.'); return;
     }
     if (this.datosDevolucion.cantidad_devuelta > this.itemParaDevolucion.cantidad_maxima) {
-      this.mostrarNotificacion('Cantidad Inválida', `No puedes devolver más de la cantidad pendiente (${this.itemParaDevolucion.cantidad_maxima}).`);
-      return;
+      this.mostrarNotificacion('Cantidad Inválida', `No puedes devolver más de la cantidad pendiente (${this.itemParaDevolucion.cantidad_maxima}).`); return;
     }
 
     const payload = {
@@ -530,9 +495,7 @@ exportarAPDFCompleto() {
         this.cerrarModalDetalles();
         this.obtenerSalidas();
       },
-      error: (err) => {
-        this.mostrarNotificacion('Error', err.error?.message || 'No se pudo procesar la devolución.', 'error');
-      }
+      error: (err) => this.mostrarNotificacion('Error', err.error?.message || 'No se pudo procesar la devolución.', 'error')
     });
   }
 }

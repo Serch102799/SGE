@@ -45,6 +45,7 @@ import { TallerComponent } from './pages/taller/taller.component';
 import { RecuperadosComponent } from './pages/recuperados/recuperados.component';
 import { DashConsumoComponent } from './pages/dash-consumo/dash-consumo.component';
 import { MantenimientoComponent } from './pages/mantenimiento/mantenimiento.component';
+import { VehiculosParticularesComponent } from './pages/vehiculos-particulares/vehiculos-particulares.component';
 
 const routes: Routes = [
   {
@@ -265,6 +266,12 @@ const routes: Routes = [
       {
         path: 'mantenimiento',
         component:  MantenimientoComponent,
+        canActivate: [RoleGuard],
+        data: { roles: [ 'SuperUsuario', 'Admin'] }
+      },
+       {
+        path: 'vehiculos-particulares',
+        component:  VehiculosParticularesComponent,
         canActivate: [RoleGuard],
         data: { roles: [ 'SuperUsuario', 'Admin'] }
       },

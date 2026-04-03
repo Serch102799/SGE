@@ -1,34 +1,39 @@
 /* ===================================
    BASE Y RESET
    =================================== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+:host {
+  display: block; width: 100%; min-height: 100vh; padding: 20px;
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url("/assets/img/nF.png") no-repeat center center fixed;
+  background-size: cover; overflow-y: auto;
 }
 
 /* ===================================
-   CONTENEDOR HOST (CORREGIDO)
+   UTILERÍAS GLASSMORPHISM
    =================================== */
-:host {
-  display: block;
-  /* CAMBIO CLAVE 1: Usar height 100% en lugar de 100vh para respetar el layout padre */
-  height: 100%; 
-  width: 100%;
-  
-  /* CAMBIO CLAVE 2: box-sizing hace que el padding esté INCLUIDO en el tamaño, no sumado */
-  box-sizing: border-box; 
-  padding: 20px; 
-
-  /* CAMBIO CLAVE 3: El fondo fijo evita que se vea blanco al hacer scroll */
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), 
-              url("/assets/img/nF.png") no-repeat center center fixed;
-  background-size: cover;
-  
-  /* CAMBIO CLAVE 4: Si hay scroll, que sea interno del componente */
-  overflow-y: auto; 
+.glass-panel {
+  background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); backdrop-filter: blur(12px);
 }
+
+.mt-4 { margin-top: 1.5rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.text-center { text-align: center; }
+.justify-center { justify-content: center; }
+
+/* ===================================
+   HEADER SECTION
+   =================================== */
+.header-section {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+}
+.header-text h2 { margin: 0 0 5px 0; font-size: 1.8rem; color: #38bdf8; display: flex; align-items: center; gap: 10px; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+.header-text p { margin: 0; color: #94a3b8; font-size: 0.95rem; }
+.header-actions { display: flex; gap: 15px; flex-wrap: wrap; }
 
 /* ===================================
    CONTENEDOR PRINCIPAL

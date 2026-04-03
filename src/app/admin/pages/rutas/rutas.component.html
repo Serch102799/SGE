@@ -1,140 +1,191 @@
-<div class="usuarios-container">
-  <div class="container-header">
-    <h2>Catálogo de Rutas</h2>
-    <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel'])">
-      <span>&#43;</span> Agregar Ruta
+<div class="rutas-container" style="max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+  
+  <!-- HEADER SECTION -->
+  <div class="header-section glass-panel">
+    <div class="header-text">
+      <h2><i class="fas fa-map-marked-alt"></i> Catálogo de Rutas</h2>
+      <p>Gestiona los trayectos, distancias y frecuencia diaria de tu flota.</p>
+    </div>
+    <button class="btn-neon-primary" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel'])">
+      <i class="fas fa-plus"></i> Nueva Ruta
     </button>
   </div>
 
-  <div class="container-body">
-    <div class="filtros-container">
-      <div class="filtro-item">
-        <input type="text" class="form-control" placeholder="Buscar por nombre de ruta..."
-          [(ngModel)]="terminoBusqueda" (ngModelChange)="onSearchChange()">
+  <!-- MAIN SECTION -->
+  <div class="main-section glass-panel mt-4">
+    
+    <!-- Barra de Filtros y Búsqueda -->
+    <div class="filters-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+      <div class="search-box" style="flex: 1; min-width: 300px;">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" placeholder="Buscar por nombre de ruta..." [(ngModel)]="terminoBusqueda" (ngModelChange)="onSearchChange()">
+      </div>
+      
+      <div class="contador-resultados" style="color: #94a3b8; font-size: 0.95rem;">
+        <span class="badge-neon badge-primary" style="font-size: 1rem;">{{ totalItems }}</span> rutas encontradas
       </div>
     </div>
 
-    <div class="contador-resultados"><strong>{{ totalItems }}</strong> rutas encontradas</div>
-
-    <div class="tabla-responsive-wrapper">
-      <table class="tabla-usuarios">
+    <!-- Tabla Moderna -->
+    <div class="table-responsive mt-4">
+      <table class="modern-table">
         <thead>
           <tr>
             <th>Nombre de la Ruta</th>
             <th>Descripción</th>
-            <th>KM por Vuelta</th>
-            <th>Vueltas/Día</th>
-            <th style="text-align: center;">Acciones</th>
+            <th class="text-center">KM por Vuelta</th>
+            <th class="text-center">Vueltas / Día</th>
+            <th class="text-center" *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel'])">Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let ruta of rutas | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
-            <td>{{ ruta.nombre_ruta }}</td>
-            <td>{{ ruta.descripcion || '-' }}</td>
-            <td>{{ ruta.kilometraje_vuelta | number:'1.0-0' }} km</td>
-            <td>{{ ruta.vueltas_diarias_promedio }}</td>
-            <td class="acciones" *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel'])">
-              <button class="btn-accion btn-estado" (click)="abrirModal('editar', ruta)">Editar</button>
-              <button class="btn-accion btn-eliminar" (click)="eliminarRuta(ruta.id_ruta)">Eliminar</button>
+            
+            <td>
+              <div style="font-size: 1.05rem; color: #f1f5f9;">
+                <i class="fas fa-map-marker-alt text-info" style="color: #38bdf8; margin-right: 8px;"></i> 
+                <strong>{{ ruta.nombre_ruta }}</strong>
+              </div>
+            </td>
+            
+            <td style="color: #94a3b8;">
+              {{ ruta.descripcion || 'Sin descripción detallada' }}
+            </td>
+            
+            <td class="text-center">
+              <span class="badge-neon badge-warning">
+                <i class="fas fa-road"></i> {{ ruta.kilometraje_vuelta | number:'1.0-0' }} km
+              </span>
+            </td>
+            
+            <td class="text-center">
+              <span class="badge-neon badge-success">
+                <i class="fas fa-sync-alt"></i> {{ ruta.vueltas_diarias_promedio }} vueltas
+              </span>
+            </td>
+            
+            <td class="text-center" *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel'])">
+              <div class="acciones-wrapper">
+                <button class="btn-icon btn-edit" (click)="abrirModal('editar', ruta)" title="Editar Ruta">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon btn-delete" (click)="eliminarRuta(ruta.id_ruta)" title="Eliminar Ruta">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
             </td>
           </tr>
+
+          <!-- Estado Vacío -->
           <tr *ngIf="rutas.length === 0">
-            <td colspan="5" class="empty-table-message">No se encontraron rutas.</td>
+            <td [colSpan]="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel']) ? 5 : 4" class="empty-state">
+              <div class="empty-content">
+                <i class="fas fa-map-signs empty-icon" style="font-size: 3rem; color: rgba(56, 189, 248, 0.3); margin-bottom: 15px;"></i>
+                <h5 style="color: #f8fafc;">No se encontraron rutas</h5>
+                <p style="color: #64748b;">Ajusta tu búsqueda o agrega una nueva ruta al sistema.</p>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="pagination-controls">
-      <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente"></pagination-controls>
+    <!-- Paginación de ngx-pagination adaptada -->
+    <div class="pagination-container mt-4" style="text-align: right;" *ngIf="rutas.length > 0">
+      <pagination-controls 
+        (pageChange)="onPageChange($event)" 
+        previousLabel="Anterior" 
+        nextLabel="Siguiente"
+        class="my-custom-pagination">
+      </pagination-controls>
     </div>
   </div>
 </div>
 
-<!-- MODAL PARA AGREGAR/EDITAR RUTA -->
+<!-- ==========================================
+     MODAL AGREGAR / EDITAR
+     ========================================== -->
 <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
+    
     <div class="modal-header">
-      <h3>{{ modoEdicion ? 'Editar Ruta' : 'Agregar Nueva Ruta' }}</h3>
-      <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+      <h3><i class="fas" [ngClass]="modoEdicion ? 'fa-edit' : 'fa-plus'"></i> {{ modoEdicion ? 'Editar Ruta' : 'Agregar Nueva Ruta' }}</h3>
+      <button class="btn-close" (click)="cerrarModal()"><i class="fas fa-times"></i></button>
     </div>
 
     <div class="modal-body">
-      <form (ngSubmit)="guardarRuta()">
-        <div class="form-group">
-          <label>Nombre de la Ruta <span class="required">*</span></label>
-          <input 
-            type="text" 
-            class="form-control" 
-            [(ngModel)]="rutaSeleccionada.nombre_ruta" 
-            name="nombre_ruta" 
-            placeholder="Ej: Toxpan - Tuxpan"
-            required>
-        </div>
-
-        <div class="form-group">
-          <label>Descripción</label>
-          <textarea 
-            class="form-control" 
-            [(ngModel)]="rutaSeleccionada.descripcion" 
-            name="descripcion" 
-            placeholder="Descripción opcional de la ruta"
-            rows="3"></textarea>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Kilometraje por Vuelta <span class="required">*</span></label>
-            <input 
-              type="number" 
-              step="0.1" 
-              class="form-control" 
-              [(ngModel)]="rutaSeleccionada.kilometraje_vuelta" 
-              name="kilometraje_vuelta" 
-              placeholder="Ej: 12.5"
-              required>
-          </div>
-
-          <div class="form-group">
-            <label>Vueltas Diarias (Promedio) <span class="required">*</span></label>
-            <input 
-              type="number" 
-              step="1" 
-              class="form-control" 
-              [(ngModel)]="rutaSeleccionada.vueltas_diarias_promedio" 
-              name="vueltas_diarias_promedio" 
-              placeholder="Ej: 10"
-              required>
+      <form (ngSubmit)="guardarRuta()" #rutaForm="ngForm">
+        
+        <div class="form-group mb-3">
+          <label>Nombre de la Ruta <span class="text-danger">*</span></label>
+          <div class="input-with-icon">
+            <i class="fas fa-route" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #38bdf8;"></i>
+            <input type="text" class="form-control" style="padding-left: 45px;" [(ngModel)]="rutaSeleccionada.nombre_ruta" name="nombre_ruta" placeholder="Ej: Toxpan - Centro" required>
           </div>
         </div>
 
-        <div class="info-box">
-          <p><strong>Nota:</strong> El "Vueltas Diarias" se utiliza para calcular el kilometraje esperado en modo "Por Días Laborados".</p>
+        <div class="form-group mb-3">
+          <label>Descripción de la trayectoria</label>
+          <textarea class="form-control" [(ngModel)]="rutaSeleccionada.descripcion" name="descripcion" placeholder="Puntos de referencia, paradas principales..." rows="3" style="border-radius: 8px;"></textarea>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
-          <button type="submit" class="btn-accion btn-guardar">{{ modoEdicion ? 'Actualizar' : 'Guardar' }}</button>
+        <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          
+          <div class="form-group">
+            <label>Kilometraje por Vuelta <span class="text-danger">*</span></label>
+            <div class="input-with-icon">
+              <input type="number" step="0.1" class="form-control" [(ngModel)]="rutaSeleccionada.kilometraje_vuelta" name="kilometraje_vuelta" placeholder="Ej: 12.5" required>
+              <span class="input-suffix" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #64748b; font-weight: bold;">km</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Vueltas Diarias (Promedio) <span class="text-danger">*</span></label>
+            <div class="input-with-icon">
+              <input type="number" step="1" class="form-control" [(ngModel)]="rutaSeleccionada.vueltas_diarias_promedio" name="vueltas_diarias_promedio" placeholder="Ej: 10" required>
+              <span class="input-suffix" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #64748b;"><i class="fas fa-sync"></i></span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="alert-neon mt-4" style="background: rgba(56, 189, 248, 0.1); border-left: 4px solid #38bdf8; padding: 15px; border-radius: 8px; color: #cbd5e1; font-size: 0.85rem;">
+          <i class="fas fa-lightbulb text-info"></i> <strong>Nota Estratégica:</strong> El valor de "Vueltas Diarias" es crucial. El sistema lo utilizará para auditar el kilometraje esperado cuando los autobuses se registren en modo "Por Días Laborados".
+        </div>
+
+        <div class="modal-footer mt-4" style="padding-bottom: 0;">
+          <button type="button" class="btn-ghost" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-neon-primary" [disabled]="!rutaForm.form.valid">
+            <i class="fas fa-save"></i> {{ modoEdicion ? 'Actualizar Ruta' : 'Guardar Ruta' }}
+          </button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- MODAL DE NOTIFICACIÓN -->
-<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3 [ngClass]="{'header-exito': notificacion.tipo === 'exito','header-error': notificacion.tipo === 'error','header-advertencia': notificacion.tipo === 'advertencia'}">
-        {{ notificacion.titulo }}
-      </h3>
-      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
-    </div>
+<!-- ==========================================
+     MODAL NOTIFICACIÓN
+     ========================================== -->
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()" style="z-index: 3000;">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()" style="max-width: 400px; text-align: center;">
     <div class="modal-body">
-      <p class="confirm-text">{{ notificacion.mensaje }}</p>
+      <i class="fas" [ngClass]="{
+          'fa-check-circle text-success': notificacion.tipo === 'exito',
+          'fa-times-circle text-danger': notificacion.tipo === 'error',
+          'fa-exclamation-triangle text-warning': notificacion.tipo === 'advertencia'
+        }" style="font-size: 3.5rem; margin-bottom: 15px;"></i>
+      
+      <h3 [ngClass]="{
+        'text-success': notificacion.tipo === 'exito',
+        'text-danger': notificacion.tipo === 'error',
+        'text-warning': notificacion.tipo === 'advertencia'
+      }">{{ notificacion.titulo }}</h3>
+      
+      <p style="color: #cbd5e1; margin-top: 10px;">{{ notificacion.mensaje }}</p>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    <div class="modal-footer" style="justify-content: center;">
+      <button class="btn-ghost" (click)="cerrarModalNotificacion()">Entendido</button>
     </div>
   </div>
 </div>

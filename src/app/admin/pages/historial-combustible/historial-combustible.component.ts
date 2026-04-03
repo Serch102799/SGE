@@ -99,6 +99,7 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.establecerUltimos7Dias();
     this.cargarRutas();
 
     this.searchSubscription = this.searchSubject.pipe(
@@ -110,6 +111,14 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     });
 
     this.obtenerCargas();
+  }
+  establecerUltimos7Dias(): void {
+    const hoy = new Date();
+    const hace7Dias = new Date();
+    hace7Dias.setDate(hoy.getDate() - 7);
+    
+    this.filtroFechaHasta = hoy.toISOString().split('T')[0];
+    this.filtroFechaDesde = hace7Dias.toISOString().split('T')[0];
   }
 
   ngOnDestroy(): void {
@@ -232,8 +241,7 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   limpiarFiltros(): void {
     this.terminoBusqueda = '';
     this.filtroRutasIds = [];
-    this.filtroFechaDesde = '';
-    this.filtroFechaHasta = '';
+    this.establecerUltimos7Dias();
     this.currentPage = 1;
     this.obtenerCargas();
   }

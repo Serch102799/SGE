@@ -1,43 +1,94 @@
-<div class="usuarios-container">
-  <div class="container-header">
-    <h2>Gestión de Proveedores</h2>
-    <button class="btn-agregar" (click)="abrirModal('agregar')">
-      <span>&#43;</span> Agregar Proveedor
+<div class="proveedores-container">
+
+  <!-- HEADER Y BOTÓN AGREGAR -->
+  <div class="header-section glass-panel">
+    <div class="header-text">
+      <h2><fa-icon [icon]="faBuilding"></fa-icon> Gestión de Proveedores</h2>
+      <p>Administra tu directorio de empresas, contactos y RFCs.</p>
+    </div>
+    <button class="btn-neon-primary" (click)="abrirModal('agregar')">
+      <fa-icon [icon]="faPlus"></fa-icon> Nuevo Proveedor
     </button>
   </div>
 
-  <div class="container-body">
-    <div class="filtros-container">
-      <div class="filtro-item">
-        <input 
-          type="text" 
-          class="form-control" 
-          placeholder="Buscar por nombre, contacto o RFC..."
-          [(ngModel)]="terminoBusqueda"
-          (input)="aplicarFiltros()">
-      </div>
+  <!-- SECCIÓN PRINCIPAL (BUSCADOR Y TABLA) -->
+  <div class="main-section glass-panel">
+    
+    <!-- Buscador moderno -->
+    <div class="search-bar">
+      <fa-icon [icon]="faSearch" class="search-icon"></fa-icon>
+      <input type="text" 
+             placeholder="Buscar por nombre, contacto o RFC..." 
+             [(ngModel)]="terminoBusqueda" 
+             (input)="aplicarFiltros()">
     </div>
 
-    <div class="tabla-responsive-wrapper">
-      <table class="tabla-usuarios">
+    <!-- Tabla de Proveedores -->
+    <div class="table-responsive">
+      <table class="modern-table">
         <thead>
           <tr>
-            <th>Nombre</th>
-            <th>Contacto</th>
-            <th>Teléfono</th>
-            <th>Correo</th>
-            <th style="text-align: center;">Acciones</th>
+            <th>Empresa</th>
+            <th>Contacto Principal</th>
+            <th>Datos de Contacto</th>
+            <th class="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let proveedor of proveedoresFiltrados">
-            <td>{{ proveedor.nombre_proveedor }}</td>
-            <td>{{ proveedor.contacto }}</td>
-            <td>{{ proveedor.telefono }}</td>
-            <td>{{ proveedor.correo }}</td>
-            <td class="acciones">
-              <button class="btn-accion btn-estado" (click)="abrirModal('editar', proveedor)">Editar</button>
-              <button class="btn-accion btn-eliminar" (click)="abrirModalBorrar(proveedor)">Eliminar</button>
+          <tr *ngFor="let p of proveedoresFiltrados">
+            
+            <!-- Columna 1: Empresa + Avatar -->
+            <td>
+              <div class="empresa-info">
+                <div class="avatar-circle">{{ obtenerIniciales(p.nombre_proveedor) }}</div>
+                <div class="empresa-detalles">
+                  <span class="empresa-nombre">{{ p.nombre_proveedor }}</span>
+                  <span class="empresa-rfc">RFC: {{ p.rfc || 'No registrado' }}</span>
+                </div>
+              </div>
+            </td>
+
+            <!-- Columna 2: Contacto -->
+            <td>
+              <div class="contacto-info">
+                <fa-icon [icon]="faUserTie" class="icon-sub"></fa-icon>
+                <span>{{ p.contacto || 'Sin contacto' }}</span>
+              </div>
+            </td>
+
+            <!-- Columna 3: Medios de contacto agrupados -->
+            <td>
+              <div class="medios-info">
+                <div class="medio-item" title="Teléfono">
+                  <fa-icon [icon]="faPhone" class="icon-sub"></fa-icon> {{ p.telefono || 'N/A' }}
+                </div>
+                <div class="medio-item" title="Correo">
+                  <fa-icon [icon]="faEnvelope" class="icon-sub"></fa-icon> {{ p.correo || 'N/A' }}
+                </div>
+              </div>
+            </td>
+
+            <!-- Columna 4: Acciones con Iconos -->
+            <td class="text-center">
+              <div class="acciones-wrapper">
+                <button class="btn-icon btn-edit" (click)="abrirModal('editar', p)" title="Editar Proveedor">
+                  <fa-icon [icon]="faEdit"></fa-icon>
+                </button>
+                <button class="btn-icon btn-delete" (click)="abrirModalBorrar(p)" title="Eliminar Proveedor">
+                  <fa-icon [icon]="faTrashAlt"></fa-icon>
+                </button>
+              </div>
+            </td>
+
+          </tr>
+          
+          <!-- Empty State -->
+          <tr *ngIf="proveedoresFiltrados.length === 0">
+            <td colspan="4" class="empty-state">
+              <div class="empty-content">
+                <fa-icon [icon]="faSearch" class="empty-icon"></fa-icon>
+                <p>No se encontraron proveedores que coincidan con tu búsqueda.</p>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -46,62 +97,67 @@
   </div>
 </div>
 
+<!-- ==========================================
+     MODALES (Aquí integraríamos tus modales existentes)
+     Te dejo un esqueleto con el estilo Dark para el modal de Guardar/Editar
+     ========================================== -->
 <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>{{ modoEdicion ? 'Editar Proveedor' : 'Agregar Nuevo Proveedor' }}</h3>
-      <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+      <h3>{{ modoEdicion ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h3>
+      <button class="btn-close" (click)="cerrarModal()"><fa-icon [icon]="faTimes"></fa-icon></button>
     </div>
     <div class="modal-body">
-      <form (ngSubmit)="guardarProveedor()">
-        <div class="form-group"><label>Nombre del Proveedor</label><input type="text" class="form-control" [(ngModel)]="proveedorSeleccionado.nombre_proveedor" name="nombre_proveedor" required></div>
-        <div class="form-group"><label>Contacto</label><input type="text" class="form-control" [(ngModel)]="proveedorSeleccionado.contacto" name="contacto"></div>
-        <div class="form-group"><label>Teléfono</label><input type="text" class="form-control" [(ngModel)]="proveedorSeleccionado.telefono" name="telefono"></div>
-        <div class="form-group"><label>Correo</label><input type="email" class="form-control" [(ngModel)]="proveedorSeleccionado.correo" name="correo"></div>
-        <div class="form-group"><label>Dirección</label><input type="text" class="form-control" [(ngModel)]="proveedorSeleccionado.direccion" name="direccion"></div>
-        <div class="form-group"><label>RFC</label><input type="text" class="form-control" [(ngModel)]="proveedorSeleccionado.rfc" name="rfc"></div>
-        <div class="modal-footer">
-          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
-          <button type="submit" class="btn-accion btn-guardar">Guardar</button>
+      
+      <!-- Tus inputs aquí, estilizados -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nombre Empresa *</label>
+          <input type="text" [(ngModel)]="proveedorSeleccionado.nombre_proveedor" [disabled]="modoEdicion">
         </div>
-      </form>
+        <div class="form-group">
+          <label>RFC</label>
+          <input type="text" [(ngModel)]="proveedorSeleccionado.rfc">
+        </div>
+        <div class="form-group">
+          <label>Contacto Principal</label>
+          <input type="text" [(ngModel)]="proveedorSeleccionado.contacto">
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" [(ngModel)]="proveedorSeleccionado.telefono">
+        </div>
+        <div class="form-group full-width">
+          <label>Correo Electrónico</label>
+          <input type="email" [(ngModel)]="proveedorSeleccionado.correo">
+        </div>
+        <div class="form-group full-width">
+          <label>Dirección Física</label>
+          <input type="text" [(ngModel)]="proveedorSeleccionado.direccion">
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-neon-primary" (click)="guardarProveedor()">
+        {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+      </button>
     </div>
   </div>
 </div>
 
+<!-- Modal Borrar (Diseño rápido Dark) -->
 <div class="modal-overlay" *ngIf="mostrarModalBorrar" (click)="cerrarModalBorrar()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3 class="header-eliminar">Confirmar Eliminación</h3>
-      <button class="btn-cerrar" (click)="cerrarModalBorrar()">×</button>
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-body text-center">
+      <fa-icon [icon]="faTrashAlt" class="danger-icon-large"></fa-icon>
+      <h3>¿Eliminar Proveedor?</h3>
+      <p>¿Estás seguro de eliminar a <strong>{{ proveedorABorrar?.nombre_proveedor }}</strong>? Esta acción no se puede deshacer.</p>
     </div>
-    <div class="modal-body">
-      <p class="confirm-text" *ngIf="proveedorABorrar">¿Estás seguro de que deseas eliminar a <strong>{{ proveedorABorrar.nombre_proveedor }}</strong>?</p>
-      <p class="confirm-warning">Esta acción no se puede deshacer.</p>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBorrar()">Cancelar</button>
-      <button type="button" class="btn-accion btn-confirmar-eliminar" (click)="confirmarEliminacion()">Sí, Eliminar</button>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3 [ngClass]="{
-        'header-exito': notificacion.tipo === 'exito',
-        'header-error': notificacion.tipo === 'error',
-        'header-advertencia': notificacion.tipo === 'advertencia'
-      }">
-        {{ notificacion.titulo }}
-      </h3>
-      <button class="btn-cerrar" (click)="cerrarModalNotificacion()">×</button>
-    </div>
-    <div class="modal-body">
-      <p class="confirm-text">{{ notificacion.mensaje }}</p>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Aceptar</button>
+    <div class="modal-footer justify-center">
+      <button class="btn-ghost" (click)="cerrarModalBorrar()">Cancelar</button>
+      <button class="btn-neon-danger" (click)="confirmarEliminacion()">Sí, eliminar</button>
     </div>
   </div>
 </div>

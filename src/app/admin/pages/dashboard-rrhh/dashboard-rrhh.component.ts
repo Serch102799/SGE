@@ -92,9 +92,19 @@ cargarDashboard() {
 
   this.http.get<any>(`${environment.apiUrl}/dashboard-rrhh`, { params }).subscribe({
     next: (data) => {
+      console.log("DATOS DEL BACKEND:", data);
       this.kpis = data.kpis;
       this.topMejores = data.topMejores;
       this.topPeores = data.topPeores;
+      
+      this.detalleData.vencidas = data.detalles?.vencidas || [];
+      this.detalleData.por_vencer = data.detalles?.por_vencer || [];
+      this.detalleData.sin_licencia = data.detalles?.sin_licencia || [];
+      
+      this.isLoading = false;
+    },
+    error: (err) => {
+      console.error('Error cargando el dashboard:', err);
       this.isLoading = false;
     }
   });
@@ -113,10 +123,8 @@ cargarDashboard() {
       this.operadoresDetalle = this.detalleData.sin_licencia;
     }
 
-    if (this.operadoresDetalle.length > 0) {
-      this.modalDetalleVisible = true;
-      document.body.style.overflow = 'hidden'; // Bloquear scroll del fondo
-    }
+    this.modalDetalleVisible = true;
+    document.body.style.overflow = 'hidden';
   }
 
   cerrarModal() {

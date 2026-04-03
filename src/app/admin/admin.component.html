@@ -114,7 +114,13 @@
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="autobuses" routerLinkActive="active">
-          <fa-icon [icon]="faAutobuses"></fa-icon> <span>Unidades</span>
+          <fa-icon [icon]="faAutobuses"></fa-icon> <span>Autobuses</span>
+        </a>
+      </li>
+
+      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+        <a routerLink="/admin/vehiculos-particulares" routerLinkActive="active">
+          <fa-icon [icon]="faOperadores"></fa-icon> <span>Particulares</span>
         </a>
       </li>
 
