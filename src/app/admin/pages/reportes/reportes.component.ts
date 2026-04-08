@@ -52,25 +52,23 @@ export class ReportesComponent implements OnInit {
   
   private apiUrl = `${environment.apiUrl}/reportes`;
 
-  // --- CONFIGURACIÓN DE REPORTES ---
+  // --- CONFIGURACIÓN DE REPORTES (ACTUALIZADO CON NUEVAS FUNCIONES) ---
   reportesConfig: { [key: string]: { titulo: string, descripcion: string, requiereFecha: boolean, requiereListaArticulos?: boolean, requiereListaBuses?: boolean } } = {
     'stock-bajo': { titulo: 'Stock Bajo', descripcion: 'Refacciones e insumos con stock por debajo del mínimo', requiereFecha: false },
-    'gastos-totales': { titulo: 'Gastos Totales por Entradas', descripcion: 'Resumen de todas las entradas de almacén y su costo total', requiereFecha: true },
-    'compras-razon-social': { titulo: 'Compras por Razón Social', descripcion: 'Total de compras y facturas de almacén agrupadas por la empresa que facturó.', requiereFecha: true },
-    'gastos-razon-social': { titulo: 'Gastos por Razón Social', descripcion: 'Total de salidas, mantenimientos y servicios agrupados por la Razón Social a la que pertenece el autobús.', requiereFecha: true },
+    'gastos-totales': { titulo: 'Gastos Totales de Almacén y Servicios', descripcion: 'Resumen de compras de refacciones, insumos y facturación de talleres o servicios externos.', requiereFecha: true },
+    'compras-razon-social': { titulo: 'Compras por Razón Social', descripcion: 'Total de compras y facturas agrupadas por la empresa que facturó.', requiereFecha: true },
+    'gastos-razon-social': { titulo: 'Gastos por Razón Social / Flota', descripcion: 'Total de salidas y servicios agrupados por Razón Social o Flota Administrativa.', requiereFecha: true },
     'menos-utilizadas': { titulo: 'Refacciones Menos Utilizadas', descripcion: 'Refacciones con menor movimiento en el periodo seleccionado', requiereFecha: true },
     'mas-utilizadas': { titulo: 'Refacciones Más Utilizadas', descripcion: 'Refacciones con mayor movimiento en el periodo seleccionado', requiereFecha: true },
-    'costo-autobus': { titulo: 'Costo por Autobús (General)', descripcion: 'Costo total de mantenimiento por unidad en el periodo seleccionado', requiereFecha: true },
-    'movimientos-refaccion': { titulo: 'Movimientos Generales por Refacción', descripcion: 'Historial general de todas las refacciones que tuvieron movimiento', requiereFecha: true },
-    'historial-por-refaccion': { titulo: 'Historial por Artículos Específicos', descripcion: 'Auditoría de entradas y salidas de una lista personalizada.', requiereFecha: true, requiereListaArticulos: true },
-    'costo-por-autobus-especifico': { titulo: 'Costo por Autobús Específico', descripcion: 'Desglose de gastos de mantenimiento solo de los autobuses seleccionados.', requiereFecha: true, requiereListaBuses: true }
+    'costo-autobus': { titulo: 'Costo por Vehículo (General)', descripcion: 'Costo de mantenimiento, servicios y cascos por Autobús o Vehículo Administrativo.', requiereFecha: true },
+    'movimientos-refaccion': { titulo: 'Movimientos Generales por Refacción', descripcion: 'Historial de entradas y salidas de refacciones.', requiereFecha: true },
+    'historial-por-refaccion': { titulo: 'Historial por Artículos Específicos', descripcion: 'Auditoría de entradas y salidas de una lista personalizada de ítems.', requiereFecha: true, requiereListaArticulos: true },
+    'costo-por-autobus-especifico': { titulo: 'Costo por Vehículo Específico', descripcion: 'Desglose de gastos de mantenimiento de la lista de vehículos seleccionados.', requiereFecha: true, requiereListaBuses: true }
   };
 
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
-    
-    // Cargar opciones para el reporte de categorías
     this.cargarCategorias();
 
     this.filteredRefacciones$ = this.refaccionControl.valueChanges.pipe(
@@ -93,16 +91,11 @@ export class ReportesComponent implements OnInit {
     );
   }
 
-  // ==========================================
-  // LÓGICA REPORTE POR CATEGORÍA (NUEVO)
-  // ==========================================
   cargarCategorias() {
     this.http.get<string[]>(`${this.apiUrl}/categorias-disponibles`).subscribe({
       next: (data) => this.categoriasDisponibles = data,
       error: (err) => console.error('Error cargando categorías', err)
     });
-
-    // Fechas por defecto: Mes actual
     const hoy = new Date();
     this.fechaInicioCat = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
     this.fechaFinCat = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString().split('T')[0];
@@ -113,40 +106,18 @@ export class ReportesComponent implements OnInit {
       this.mostrarNotificacion('Faltan Datos', 'Asegúrate de seleccionar una categoría y el rango de fechas.', 'advertencia');
       return;
     }
-
     this.isLoadingReporteCat = true;
-    let params = new HttpParams()
-      .set('categoria', this.categoriaSeleccionada)
-      .set('fechaInicio', this.fechaInicioCat)
-      .set('fechaFin', this.fechaFinCat);
+    let params = new HttpParams().set('categoria', this.categoriaSeleccionada).set('fechaInicio', this.fechaInicioCat).set('fechaFin', this.fechaFinCat);
 
     this.http.get<any[]>(`${this.apiUrl}/movimientos-categoria`, { params }).subscribe({
-      next: (data) => {
-        this.movimientosCategoria = data;
-        this.isLoadingReporteCat = false;
-      },
-      error: (err) => {
-        this.mostrarNotificacion('Error', 'No se pudo generar el reporte por categoría.', 'error');
-        console.error('Error generando reporte', err);
-        this.isLoadingReporteCat = false;
-      }
+      next: (data) => { this.movimientosCategoria = data; this.isLoadingReporteCat = false; },
+      error: (err) => { this.mostrarNotificacion('Error', 'No se pudo generar el reporte por categoría.', 'error'); this.isLoadingReporteCat = false; }
     });
   }
 
-  get totalGastadoCategoria() {
-    return this.movimientosCategoria
-      .filter(m => m.tipo_movimiento === 'Salida')
-      .reduce((acc, val) => acc + Number(val.costo_total || 0), 0);
-  }
-  get totalInvertidoCategoria() {
-    return this.movimientosCategoria
-      .filter(m => m.tipo_movimiento === 'Entrada')
-      .reduce((acc, val) => acc + Number(val.costo_total || 0), 0);
-  }
+  get totalGastadoCategoria() { return this.movimientosCategoria.filter(m => m.tipo_movimiento === 'Salida').reduce((acc, val) => acc + Number(val.costo_total || 0), 0); }
+  get totalInvertidoCategoria() { return this.movimientosCategoria.filter(m => m.tipo_movimiento === 'Entrada').reduce((acc, val) => acc + Number(val.costo_total || 0), 0); }
 
-  // ==========================================
-  // BÚSQUEDAS Y AUTOCOMPLETADOS
-  // ==========================================
   private _buscarApi(tipo: 'refacciones' | 'insumos', term: any): Observable<any[]> {
     const searchTerm = typeof term === 'string' ? term : term?.nombre;
     if (!searchTerm || searchTerm.length < 2) return of([]);
@@ -166,7 +137,6 @@ export class ReportesComponent implements OnInit {
     else this.mostrarNotificacion('Duplicado', 'Este autobús ya está en la lista.', 'advertencia');
     this.busReporteControl.setValue('');
   }
-
   eliminarBusLista(index: number) { this.busesSeleccionados.splice(index, 1); }
 
   agregarItemLista(event: MatAutocompleteSelectedEvent, tipo: 'Refacción' | 'Insumo') {
@@ -174,15 +144,10 @@ export class ReportesComponent implements OnInit {
     const yaExiste = this.itemsSeleccionados.some(i => i.id === item.id && i.tipo === tipo);
     if (!yaExiste) this.itemsSeleccionados.push(item);
     else this.mostrarNotificacion('Duplicado', `Este artículo ya está en la lista de auditoría.`, 'advertencia');
-    if (tipo === 'Refacción') this.refaccionControl.setValue('');
-    else this.insumoControl.setValue('');
+    if (tipo === 'Refacción') this.refaccionControl.setValue(''); else this.insumoControl.setValue('');
   }
-
   eliminarItemLista(index: number) { this.itemsSeleccionados.splice(index, 1); }
 
-  // ==========================================
-  // LÓGICA DE REPORTES GENERALES
-  // ==========================================
   get tituloReporte(): string { return this.reportesConfig[this.tipoReporteSeleccionado]?.titulo || 'Reporte'; }
   get descripcionReporte(): string { return this.reportesConfig[this.tipoReporteSeleccionado]?.descripcion || ''; }
   get requiereFechas(): boolean { return this.reportesConfig[this.tipoReporteSeleccionado]?.requiereFecha || false; }
@@ -194,7 +159,7 @@ export class ReportesComponent implements OnInit {
     if (!this.tipoReporteSeleccionado) { this.mostrarNotificacion('Selección Requerida', 'Por favor, selecciona un tipo de reporte.'); return; }
     if (this.requiereFechas && (!this.fechaInicio || !this.fechaFin)) { this.mostrarNotificacion('Filtro Requerido', 'Este reporte requiere un rango de fechas.'); return; }
     if (this.requiereListaArticulos && this.itemsSeleccionados.length === 0) { this.mostrarNotificacion('Lista Vacía', 'Busca y agrega al menos un artículo a la lista.'); return; }
-    if (this.requiereListaBuses && this.busesSeleccionados.length === 0) { this.mostrarNotificacion('Lista Vacía', 'Agrega al menos un autobús a la lista.'); return; }
+    if (this.requiereListaBuses && this.busesSeleccionados.length === 0) { this.mostrarNotificacion('Lista Vacía', 'Agrega al menos un vehículo a la lista.'); return; }
     
     this.isLoading = true; this.reporteData = []; this.totalGeneral = 0;
     
@@ -208,7 +173,6 @@ export class ReportesComponent implements OnInit {
       if(idsRefacciones) params = params.set('idsRefacciones', idsRefacciones);
       if(idsInsumos) params = params.set('idsInsumos', idsInsumos);
     }
-
     if (this.tipoReporteSeleccionado === 'costo-por-autobus-especifico') {
       params = params.set('idsAutobuses', this.busesSeleccionados.map(b => b.id).join(','));
     }
@@ -244,21 +208,13 @@ export class ReportesComponent implements OnInit {
   }
   iniciarDescargaAnimada(tipoExportacion: 'pdf' | 'excel') {
     if (this.reporteData.length === 0 && this.movimientosCategoria.length === 0) { 
-      this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.', 'advertencia'); 
-      return; 
+      this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.', 'advertencia'); return; 
     }
     this.mostrarNotificacion('Procesando', 'Generando tu reporte, por favor espera...', 'descargando');
-
     setTimeout(() => {
       try {
-        if (tipoExportacion === 'pdf') {
-          this.exportarPDF();
-        } else {
-          this.exportarExcel();
-        }
-      } catch (error) {
-        this.mostrarNotificacion('Error', 'Hubo un problema al exportar el archivo.', 'error');
-      }
+        if (tipoExportacion === 'pdf') this.exportarPDF(); else this.exportarExcel();
+      } catch (error) { this.mostrarNotificacion('Error', 'Hubo un problema al exportar el archivo.', 'error'); }
     }, 800);
   }
   cerrarModalNotificacion() { this.mostrarModalNotificacion = false; }
@@ -286,72 +242,49 @@ export class ReportesComponent implements OnInit {
   // ==========================================
   // EXPORTACIONES A PDF / EXCEL
   // ==========================================
-  // ==========================================
-  // EXPORTACIONES A PDF / EXCEL
-  // ==========================================
   exportarPDF() {
     const isCategoria = this.tipoReporteSeleccionado === 'movimientos-categoria';
     const dataToExport = isCategoria ? this.movimientosCategoria : this.reporteData;
 
-    if (dataToExport.length === 0) { 
-      this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.'); 
-      return; 
-    }
+    if (dataToExport.length === 0) { this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.'); return; }
     
     const doc = new jsPDF('landscape');
     let startY = 40;
 
-    // --- REPORTE ESPECIAL: CATEGORÍAS ---
-    // --- REPORTE ESPECIAL: CATEGORÍAS ---
     if (isCategoria) {
-      doc.setFontSize(18); doc.setFont('helvetica', 'bold'); 
-      doc.text(`REPORTE DE MOVIMIENTOS: ${this.categoriaSeleccionada.toUpperCase()}`, 14, 20);
-      doc.setFontSize(11); doc.setFont('helvetica', 'normal'); 
-      doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-MX')}`, 14, 28);
+      doc.setFontSize(18); doc.setFont('helvetica', 'bold'); doc.text(`REPORTE DE MOVIMIENTOS: ${this.categoriaSeleccionada.toUpperCase()}`, 14, 20);
+      doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-MX')}`, 14, 28);
       doc.text(`Periodo: ${this.fechaInicioCat} al ${this.fechaFinCat}`, 14, 34);
 
-      // Total Salidas (Rojo)
       doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(239, 68, 68);
       doc.text(`Gasto en Salidas: $${this.totalGastadoCategoria.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, startY);
       
-      // Total Entradas (Verde)
-      startY += 8;
-      doc.setTextColor(34, 197, 94);
-      doc.text(`Inversión en Entradas: $${this.totalInvertidoCategoria.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, startY);
+      startY += 8; doc.setTextColor(34, 197, 94);
+      doc.text(`Inversión en Entradas:$${this.totalInvertidoCategoria.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, startY);
       
-      // Reset de estilos para la tabla
       doc.setTextColor(0, 0, 0); doc.setFont('helvetica', 'normal'); startY += 10;
-
       const headersCat = [['FECHA', 'MOVIMIENTO', 'ARTÍCULO', 'CANTIDAD', 'DESTINO / ORIGEN', 'COSTO IMPLICADO']];
       const bodyCat = this.movimientosCategoria.map(m => [
-        new Date(m.fecha).toLocaleDateString('es-MX'),
-        m.tipo_movimiento,
-        `${m.articulo}\n(${m.tipo_item} | No. Parte: ${m.numero_parte || 'N/A'})`,
-        m.tipo_movimiento === 'Entrada' ? `+${m.cantidad}` : `-${m.cantidad}`,
-        m.destino_origen || 'No Especificado',
-        `$${parseFloat(m.costo_total || 0).toLocaleString('es-MX', {minimumFractionDigits:2})}`
+        new Date(m.fecha).toLocaleDateString('es-MX'), m.tipo_movimiento, `${m.articulo}\n(${m.tipo_item} | No. Parte: ${m.numero_parte || 'N/A'})`,
+        m.tipo_movimiento === 'Entrada' ? `+${m.cantidad}` : `-${m.cantidad}`, m.destino_origen || 'No Especificado', `$${parseFloat(m.costo_total || 0).toLocaleString('es-MX', {minimumFractionDigits:2})}`
       ]);
-
-      autoTable(doc, { 
-        startY: startY, head: headersCat, body: bodyCat, 
-        headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 }, 
-        styles: { fontSize: 8, cellPadding: 3 }, margin: { top: 10 } 
-      });
+      autoTable(doc, { startY: startY, head: headersCat, body: bodyCat, headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 }, styles: { fontSize: 8, cellPadding: 3 }, margin: { top: 10 } });
       doc.save(`Reporte_Categoria_${this.categoriaSeleccionada}_${new Date().getTime()}.pdf`);
       this.mostrarNotificacion('Éxito', 'PDF exportado correctamente.', 'exito');
       return;
     }
 
-    // --- REPORTES GENERALES (Lo que ya tenías) ---
     doc.setFontSize(18); doc.setFont('helvetica', 'bold'); doc.text(this.tituloReporte.toUpperCase(), 14, 20);
     doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-MX')}`, 14, 28);
     if (this.requiereFechas && this.fechaInicio && this.fechaFin) doc.text(`Periodo: ${this.fechaInicio} al ${this.fechaFin}`, 14, 34);
 
+    // Ajuste "Flota Administrativa" para reporte de Costos
     if (this.tipoReporteSeleccionado === 'costo-autobus' || this.tipoReporteSeleccionado === 'costo-por-autobus-especifico') {
       const bodyBus: any[] = [];
       this.reporteData.forEach(item => {
         const marcaModelo = `${item.marca || item.marca_autobus || ''} ${item.modelo || item.anio || item.modelo_autobus || ''}`.trim();
-        const tituloBus = `BUS ${item.autobus} | Empresa: ${item.razon_social || 'S/D'}` + (marcaModelo ? ` (${marcaModelo})` : '');
+        const esParticular = item.autobus === 'Flota Admin' || !item.autobus;
+        const tituloBus = (esParticular ? 'FLOTA ADMINISTRATIVA' : `BUS ${item.autobus}`) + ` | Empresa: ${item.razon_social || 'S/D'}` + (marcaModelo ? ` (${marcaModelo})` : '');
         bodyBus.push([
           { content: item.id_autobus || '-', styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } },
           { content: tituloBus, colSpan: 5, styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } }, 
@@ -363,24 +296,19 @@ export class ReportesComponent implements OnInit {
         if (!Array.isArray(detallesArray)) detallesArray = [];
 
         detallesArray.forEach((rawD: any) => {
-          const d = rawD?.value || rawD;
-          if (!d) return;
+          const d = rawD?.value || rawD; if (!d) return;
           bodyBus.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), d.tipo_item || '-', d.nombre || '-', (d.marca && d.marca !== 'N/A') ? d.marca : '-', { content: d.cantidad || '1', halign: 'center' }, { content: `$${parseFloat(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}`, halign: 'right' }]);
         });
       });
-
-      autoTable(doc, {
-        startY: startY, head: [['ID', 'FECHA / AUTOBÚS', 'TIPO', 'ARTÍCULO / DESC.', 'MARCA / PROV.', 'CANT.', 'SUBTOTAL']], body: bodyBus,
-        headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 }, styles: { fontSize: 8, cellPadding: 3 }, margin: { top: 10 }
-      });
-      doc.save(`Reporte_Autobuses_${new Date().getTime()}.pdf`);
+      autoTable(doc, { startY: startY, head: [['ID', 'FECHA / VEHÍCULO', 'TIPO', 'ARTÍCULO / DESC.', 'MARCA / PROV.', 'CANT.', 'SUBTOTAL']], body: bodyBus, headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 }, styles: { fontSize: 8, cellPadding: 3 }, margin: { top: 10 } });
+      doc.save(`Reporte_Vehiculos_${new Date().getTime()}.pdf`);
       this.mostrarNotificacion('Éxito', 'PDF exportado correctamente.', 'exito');
       return; 
     }
 
     if (this.tipoReporteSeleccionado === 'compras-razon-social' || this.tipoReporteSeleccionado === 'gastos-razon-social') {
       const isCompras = this.tipoReporteSeleccionado === 'compras-razon-social';
-      const customHeaders = isCompras ? ['FECHA / RAZÓN SOCIAL', 'DOCUMENTO / FACT.', 'PROVEEDOR', 'SUBTOTAL'] : ['FECHA / RAZÓN SOCIAL', 'BUS / ORIGEN', 'TIPO / DESC.', 'SUBTOTAL'];
+      const customHeaders = isCompras ? ['FECHA / RAZÓN SOCIAL', 'DOCUMENTO / FACT.', 'PROVEEDOR', 'SUBTOTAL'] : ['FECHA / RAZÓN SOCIAL', 'VEHÍCULO / ORIGEN', 'TIPO / DESC.', 'SUBTOTAL'];
       const bodyRS: any[] = [];
       
       this.reporteData.forEach(item => {
@@ -398,11 +326,12 @@ export class ReportesComponent implements OnInit {
           if (isCompras) {
             bodyRS.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), d.documento || '-', d.proveedor || '-', { content: `$${parseFloat(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}`, halign: 'right' }]);
           } else {
-            bodyRS.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), `BUS ${d.autobus || '-'}`, `${d.tipo}: ${d.descripcion}`, { content: `$${parseFloat(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}`, halign: 'right' }]);
+            // Ajuste "Flota Administrativa" para reporte de Gastos
+            const vehiculoText = d.autobus === 'Flota Admin' || !d.autobus ? 'Flota Admin' : `BUS ${d.autobus}`;
+            bodyRS.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), vehiculoText, `${d.tipo}: ${d.descripcion}`, { content: `$${parseFloat(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}`, halign: 'right' }]);
           }
         });
       });
-      
       autoTable(doc, { startY: startY, head: [customHeaders], body: bodyRS, headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 }, styles: { fontSize: 8, cellPadding: 3 }, margin: { top: 10 } });
       doc.save(`Reporte_RazonSocial_${new Date().getTime()}.pdf`);
       this.mostrarNotificacion('Éxito', 'PDF exportado correctamente.', 'exito');
@@ -430,7 +359,7 @@ export class ReportesComponent implements OnInit {
         body.push(filaPrincipal.map(val => ({ content: val, styles: { fontStyle: 'bold', fillColor: [235, 245, 255] } })));
         
         if (this.tipoReporteSeleccionado === 'gastos-totales') {
-          body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: 'TIPO', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'ARTÍCULO', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'MARCA', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'CANT.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'center' } }, { content: 'COSTO U.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } }, { content: 'SUBTOTAL', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } }]);
+          body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: 'TIPO', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'ARTÍCULO / SERVICIO', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'PROV. / MARCA', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'CANT.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'center' } }, { content: 'COSTO U.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } }, { content: 'SUBTOTAL', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } }]);
         } else {
           body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: 'FECHA', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'MOVIMIENTO', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'ORIGEN / DESTINO', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'CANT.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'center' } }, { content: 'COSTO TOTAL', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } }]);
         }
@@ -460,33 +389,19 @@ export class ReportesComponent implements OnInit {
     const isCategoria = this.tipoReporteSeleccionado === 'movimientos-categoria';
     const dataToExport = isCategoria ? this.movimientosCategoria : this.reporteData;
 
-    if (dataToExport.length === 0) { 
-      this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.'); 
-      return; 
-    }
+    if (dataToExport.length === 0) { this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.'); return; }
 
-    // --- REPORTE ESPECIAL: CATEGORÍAS ---
     if (isCategoria) {
       const datosExcelCat: any[][] = [];
       datosExcelCat.push([`REPORTE DE MOVIMIENTOS: ${this.categoriaSeleccionada.toUpperCase()}`]);
       datosExcelCat.push([`Periodo: ${this.fechaInicioCat} al ${this.fechaFinCat}`]);
       datosExcelCat.push([`Gasto en Salidas: $${this.totalGastadoCategoria.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`]);
-      datosExcelCat.push([`Inversión en Entradas: $${this.totalInvertidoCategoria.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`]);
+      datosExcelCat.push([`Inversión en Entradas:$${this.totalInvertidoCategoria.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`]);
       datosExcelCat.push([]);
 
       datosExcelCat.push(['FECHA', 'MOVIMIENTO', 'TIPO ITEM', 'ARTÍCULO', 'NO. PARTE', 'CANTIDAD', 'DESTINO / ORIGEN', 'COSTO IMPLICADO']);
-      
       this.movimientosCategoria.forEach(m => {
-        datosExcelCat.push([
-          new Date(m.fecha).toLocaleDateString('es-MX'),
-          m.tipo_movimiento,
-          m.tipo_item,
-          m.articulo,
-          m.numero_parte || 'N/A',
-          m.tipo_movimiento === 'Entrada' ? m.cantidad : -m.cantidad,
-          m.destino_origen || 'No Especificado',
-          `$${parseFloat(m.costo_total || 0).toLocaleString('es-MX', {minimumFractionDigits:2})}`
-        ]);
+        datosExcelCat.push([new Date(m.fecha).toLocaleDateString('es-MX'), m.tipo_movimiento, m.tipo_item, m.articulo, m.numero_parte || 'N/A', m.tipo_movimiento === 'Entrada' ? m.cantidad : -m.cantidad, m.destino_origen || 'No Especificado', `$${parseFloat(m.costo_total || 0).toLocaleString('es-MX', {minimumFractionDigits:2})}`]);
       });
 
       const worksheet = XLSX.utils.aoa_to_sheet(datosExcelCat);
@@ -498,7 +413,6 @@ export class ReportesComponent implements OnInit {
       return;
     }
 
-    // --- REPORTES GENERALES (Lo que ya tenías) ---
     const columnasVisibles = this.columnasReporte.filter(col => col !== 'detalles');
     const headers = columnasVisibles.map(col => this.formatearColumna(col));
     const datosExcel: any[][] = [];
@@ -521,7 +435,8 @@ export class ReportesComponent implements OnInit {
         
         if (this.tipoReporteSeleccionado === 'costo-autobus' || this.tipoReporteSeleccionado === 'costo-por-autobus-especifico') {
           const marcaModelo = `${fila.marca || fila.marca_autobus || ''} ${fila.modelo || fila.anio || fila.modelo_autobus || ''}`.trim();
-          datosExcel.push(['', `Autobús: ${fila.autobus} | Empresa: ${fila.razon_social || 'S/D'}`, `Marca/Mod: ${marcaModelo}`, '', '', '', '', '']);
+          const vehiculoTitulo = fila.autobus === 'Flota Admin' || !fila.autobus ? 'Flota Administrativa' : `Autobús: ${fila.autobus}`;
+          datosExcel.push(['', `${vehiculoTitulo} | Empresa: ${fila.razon_social || 'S/D'}`, `Marca/Mod: ${marcaModelo}`, '', '', '', '', '']);
           datosExcel.push(['', '--> FECHA', 'TIPO', 'ARTÍCULO / DESCRIPCIÓN', 'MARCA / PROVEEDOR', 'CANTIDAD', 'COSTO UNIT.', 'SUBTOTAL']);
           detallesArray.forEach((rawD: any) => {
             const d = rawD?.value || rawD; if (!d || Object.keys(d).length === 0) return;
@@ -534,13 +449,14 @@ export class ReportesComponent implements OnInit {
             datosExcel.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), d.documento || '-', d.proveedor || '-', `$${(parseFloat(d.costo_total) || 0).toFixed(2)}`]);
           });
         } else if (this.tipoReporteSeleccionado === 'gastos-razon-social') {
-          datosExcel.push(['', '--> FECHA', 'AUTOBÚS', 'TIPO', 'DESCRIPCIÓN', 'SUBTOTAL']);
+          datosExcel.push(['', '--> FECHA', 'VEHÍCULO', 'TIPO', 'DESCRIPCIÓN', 'SUBTOTAL']);
           detallesArray.forEach((rawD: any) => {
             const d = rawD?.value || rawD; if (!d || Object.keys(d).length === 0) return;
-            datosExcel.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), `BUS ${d.autobus || '-'}`, d.tipo || '-', d.descripcion || '-', `$${(parseFloat(d.costo_total) || 0).toFixed(2)}`]);
+            const vehiculoText = d.autobus === 'Flota Admin' || !d.autobus ? 'Flota Admin' : `BUS ${d.autobus}`;
+            datosExcel.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), vehiculoText, d.tipo || '-', d.descripcion || '-', `$${(parseFloat(d.costo_total) || 0).toFixed(2)}`]);
           });
         } else if (this.tipoReporteSeleccionado === 'gastos-totales') {
-          datosExcel.push(['', '--> TIPO', 'ARTÍCULO', 'MARCA', 'CANTIDAD', 'COSTO UNIT.', 'SUBTOTAL']);
+          datosExcel.push(['', '--> TIPO', 'ARTÍCULO / SERVICIO', 'PROV. / MARCA', 'CANTIDAD', 'COSTO UNIT.', 'SUBTOTAL']);
           detallesArray.forEach((rawD: any) => {
             const d = rawD?.value || rawD; if (!d || Object.keys(d).length === 0) return;
             datosExcel.push(['', d.tipo_item || '-', d.nombre || '-', d.marca || 'N/A', d.cantidad || 0, `$${(parseFloat(d.costo_unitario) || 0).toFixed(2)}`, `$${(parseFloat(d.costo_total) || 0).toFixed(2)}`]);

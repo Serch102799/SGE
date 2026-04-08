@@ -12,13 +12,18 @@
         <div class="filtro-item">
           <label for="tipoReporte">Tipo de Reporte</label>
           <select id="tipoReporte" class="form-control" [(ngModel)]="tipoReporteSeleccionado">
-            <option value="gastos-totales">Gastos Totales</option>
+            <option value="" disabled>-- Selecciona un reporte --</option>
+            <!-- 🚀 TODAS LAS NUEVAS OPCIONES INTEGRADAS -->
+            <option value="stock-bajo">Stock Bajo (Crítico)</option>
+            <option value="gastos-totales">Gastos Totales de Almacén y Servicios</option>
+            <option value="compras-razon-social">Compras por Razón Social</option>
+            <option value="gastos-razon-social">Gastos por Razón Social / Flota</option>
             <option value="mas-utilizadas">Refacciones Más Utilizadas</option>
-            <option value="costo-por-autobus-especifico">Historial por Autobús</option>
-            <option value="costo-autobus">Gasto de Autobuses</option>
-            <option value="movimientos-refaccion">Movimientos por Refacciones</option>
-            <option value="historial-por-refaccion">Historial por Refacción</option>
-            <!-- 🚀 NUEVA OPCIÓN AGREGADA -->
+            <option value="menos-utilizadas">Refacciones Menos Utilizadas</option>
+            <option value="costo-autobus">Costo por Vehículo (General)</option>
+            <option value="costo-por-autobus-especifico">Costo por Vehículo Específico</option>
+            <option value="movimientos-refaccion">Movimientos Generales por Refacción</option>
+            <option value="historial-por-refaccion">Historial por Artículos Específicos</option>
             <option value="movimientos-categoria">Movimientos por Categoría / Sistema</option>
           </select>
         </div>
@@ -104,7 +109,7 @@
         <button class="btn-limpiar" (click)="limpiarFiltros()" title="Borrar todos los filtros">
           <i class="fas fa-eraser"></i> Limpiar Filtros
         </button>
-        <!-- BOTÓN DINÁMICO (Ejecuta una función u otra según el reporte) -->
+        <!-- BOTÓN DINÁMICO -->
         <button class="btn-agregar" (click)="tipoReporteSeleccionado === 'movimientos-categoria' ? generarReporteCategoria() : generarReporte()" [disabled]="isLoading || isLoadingReporteCat">
           <span *ngIf="!isLoading && !isLoadingReporteCat">📊 Generar Reporte</span>
           <span *ngIf="isLoading || isLoadingReporteCat">⏳ Cargando...</span>
@@ -230,15 +235,15 @@
 </div>
 
 <!-- ==========================================
-     FILTRO DE AUTOBUSES (Para Reporte Autobús Específico)
+     FILTRO DE AUTOBUSES (Para Reporte Vehículo Específico)
      ========================================== -->
 <div class="buscador-auditoria-container w-100" *ngIf="requiereListaBuses && tipoReporteSeleccionado !== 'movimientos-categoria'">
   <hr class="divider">
-  <h4 class="auditoria-title"><i class="fas fa-bus"></i> Selecciona los Autobuses a Auditar</h4>
+  <h4 class="auditoria-title"><i class="fas fa-car-side"></i> Selecciona los Vehículos a Auditar</h4>
 
   <div class="buscadores-grid">
     <div class="filtro-item autocompletar-item">
-      <label>Agregar Autobús:</label>
+      <label>Agregar Vehículo (Económico):</label>
       <mat-form-field appearance="outline" class="w-100 dark-mat-form">
         <input type="text" matInput placeholder="Escribe el número económico..." [formControl]="busReporteControl"
           [matAutocomplete]="autoBusRep">
@@ -263,8 +268,7 @@
   </div>
 </div>
 
-
-
+<!-- MODAL NOTIFICACIÓN -->
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" style="z-index: 3000; backdrop-filter: blur(5px);">
   <div class="modal-content modal-animado" (click)="$event.stopPropagation()">
     
@@ -292,23 +296,31 @@
         Entendido
       </button>
     </div>
-
   </div>
 </div>
 
+<!-- ==========================================
+     MODAL DE DESGLOSE (DINÁMICO)
+     ========================================== -->
 <div class="modal-overlay" *ngIf="modalDetallesVisible" (click)="cerrarModalDetalles()" style="z-index: 2000;">
   <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
 
     <div class="modal-header">
-      <h3><i class="fas fa-bus"></i> Desglose de Costos - Bus {{ busSeleccionado?.economico }}</h3>
+      <!-- Título Dinámico: Detecta si es Bus, Flota Administrativa o Razón Social -->
+      <h3>
+        <i class="fas" [ngClass]="busSeleccionado?.autobus ? 'fa-car-side' : 'fa-building'"></i> 
+        Desglose: {{ busSeleccionado?.autobus === 'Flota Admin' || !busSeleccionado?.autobus ? (busSeleccionado?.razon_social || 'Flota Administrativa') : 'Bus ' + busSeleccionado?.autobus }}
+      </h3>
       <button class="btn-cerrar" (click)="cerrarModalDetalles()">×</button>
     </div>
 
     <div class="modal-body">
-      <div class="resumen-modal">
-        <p><strong>Total de Servicios:</strong> {{ busSeleccionado?.num_servicios }}</p>
-        <p><strong>Costo Total:</strong> <span class="text-success">{{ busSeleccionado?.costo_total | currency:'MXN'
-            }}</span></p>
+      <div class="resumen-modal" *ngIf="busSeleccionado?.costo_total_mantenimiento || busSeleccionado?.costo_total_general">
+        <p><strong>Costo Total:</strong> 
+          <span class="text-success" style="font-size: 1.2rem; font-weight: bold; margin-left: 10px;">
+            {{ (busSeleccionado?.costo_total_mantenimiento || busSeleccionado?.costo_total_general) | currency:'MXN' }}
+          </span>
+        </p>
       </div>
 
       <div class="tabla-responsive-wrapper" style="max-height: 400px; overflow-y: auto;">
@@ -316,11 +328,11 @@
           <thead>
             <tr>
               <th>Fecha</th>
-              <th>Tipo</th>
-              <th>Artículo</th>
-              <th>Marca</th>
-              <th style="text-align: right;">Cant.</th>
-              <th style="text-align: right;">Costo Unit.</th>
+              <th>Documento / Tipo</th>
+              <th>Artículo / Servicio</th>
+              <th>Prov. / Marca</th>
+              <th style="text-align: center;">Cant.</th>
+              <th style="text-align: right;">Costo U.</th>
               <th style="text-align: right;">Subtotal</th>
             </tr>
           </thead>
@@ -328,20 +340,18 @@
             <tr *ngFor="let item of busSeleccionado?.detalles">
               <td class="fecha-col">{{ item.fecha | date:'dd/MM/yyyy' }}</td>
               <td>
-                <span class="badge"
-                  [ngClass]="{'badge-refaccion': item.tipo_item === 'Refacción', 'badge-insumo': item.tipo_item === 'Insumo'}">
-                  {{ item.tipo_item }}
+                <span class="badge" [ngClass]="{'badge-refaccion': item.tipo_item === 'Refacción', 'badge-insumo': item.tipo_item === 'Insumo', 'badge-activo': item.tipo_item === 'Servicio Externo'}">
+                  {{ item.tipo_item || item.tipo_movimiento || item.tipo || item.documento || '-' }}
                 </span>
               </td>
-              <td class="desc-col" [title]="item.nombre">{{ item.nombre }}</td>
-              <td>{{ item.marca || 'N/A' }}</td>
-              <td style="text-align: right;">{{ item.cantidad | number:'1.0-2' }}</td>
-              <td style="text-align: right;">{{ item.costo_unitario | currency:'MXN' }}</td>
-              <td style="text-align: right;" class="text-bold">{{ item.costo_total | currency:'MXN' }}</td>
+              <td class="desc-col" [title]="item.nombre || item.descripcion">{{ item.nombre || item.descripcion || '-' }}</td>
+              <td>{{ item.marca || item.proveedor || 'N/A' }}</td>
+              <td style="text-align: center;">{{ item.cantidad || 1 | number:'1.0-2' }}</td>
+              <td style="text-align: right;">{{ (item.costo_unitario || item.costo_total) | currency:'MXN' }}</td>
+              <td style="text-align: right;" class="text-bold text-success">{{ item.costo_total | currency:'MXN' }}</td>
             </tr>
             <tr *ngIf="!busSeleccionado?.detalles?.length">
-              <td colspan="7" class="text-center empty-msg">No hay detalles de refacciones o insumos para este autobús.
-              </td>
+              <td colspan="7" class="text-center empty-msg">No hay desglose detallado para este registro.</td>
             </tr>
           </tbody>
         </table>
@@ -351,6 +361,5 @@
     <div class="modal-footer">
       <button class="btn-cerrar-modal" (click)="cerrarModalDetalles()">Cerrar</button>
     </div>
-
   </div>
 </div>
