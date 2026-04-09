@@ -5,10 +5,11 @@ import { Observable, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, startWith, switchMap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environments';
 
-// LIBRERÍAS DE EXPORTACIÓN
+
+
 import * as XLSX from 'xlsx';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from 'jspdf'; 
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-servicios-externos',
@@ -178,33 +179,98 @@ export class ServiciosExternosComponent implements OnInit {
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Servicios');
     XLSX.writeFile(wb, `Reporte_Servicios_Externos_${new Date().getTime()}.xlsx`);
+
+    this.mostrarNotificacion('Exportación Exitosa', 'El archivo Excel se ha descargado en tu equipo.', 'exito');
   }
 
   exportarPDF() {
-    const doc = new jsPDF('landscape'); // Horizontal para que quepan las columnas
-    doc.text('Reporte de Servicios Externos', 14, 15);
-    
-    const head = [['Fecha', 'Autobús', 'Proveedor', 'Descripción', 'Factura', 'Total', 'Estatus']];
-    const data = this.filteredServicios.map(s => [
-      s.fecha_servicio,
-      `Bus ${s.economico_autobus}`,
-      s.nombre_proveedor,
-      s.descripcion,
-      s.factura_nota,
-      `$${Number(s.costo_total).toFixed(2)}`,
-      s.estatus
-    ]);
+    if (this.filteredServicios.length === 0) {
+      this.mostrarNotificacion('Sin Datos', 'No hay servicios en la lista para exportar a PDF.', 'advertencia');
+      return;
+    }
 
-    (doc as any).autoTable({
-      startY: 20,
-      head: head,
-      body: data,
-      theme: 'grid',
-      headStyles: { fillColor: [14, 165, 233] }, // Color azul moderno
-      styles: { fontSize: 8 }
+    // Inicializamos el documento en horizontal ('landscape')
+    const doc = new jsPDF('landscape');
+    let startY = 40;
+
+    // Encabezado Corporativo
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('REPORTE DE SERVICIOS EXTERNOS (TALLERES)', 14, 20);
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-MX')}`, 14, 28);
+    
+    if (this.filtroFechaInicio && this.filtroFechaFin) {
+      doc.text(`Periodo auditado: ${this.filtroFechaInicio} al ${this.filtroFechaFin}`, 14, 34);
+    } else {
+      doc.text('Periodo auditado: Histórico Completo', 14, 34);
+    }
+
+    // Preparación de los datos para la tabla
+    const head = [['FECHA', 'VEHÍCULO', 'PROVEEDOR / TALLER', 'DESCRIPCIÓN DEL SERVICIO', 'FACTURA / NOTA', 'COSTO TOTAL', 'ESTATUS']];
+    
+    const body = this.filteredServicios.map(s => {
+      // Determinamos si es Bus o Flota Administrativa
+      let vehiculoStr = 'S/N';
+      if (s.economico_autobus) {
+        vehiculoStr = `Bus ${s.economico_autobus}`;
+      } else if (s.id_vehiculo_particular) {
+        vehiculoStr = `Flota Admin.`; // Puedes ajustarlo si el backend trae las placas o modelo
+      }
+
+      // Retornamos el array de la fila
+      return [
+        new Date(s.fecha_servicio).toLocaleDateString('es-MX'),
+        vehiculoStr,
+        s.nombre_proveedor || 'No Especificado',
+        s.descripcion || '-',
+        s.factura_nota || 'S/D',
+        { 
+          content: `$${Number(s.costo_total).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 
+          styles: { halign: 'right', fontStyle: 'bold', textColor: [34, 197, 94] } // Verde para el dinero
+        },
+        {
+          content: s.estatus,
+          styles: { 
+            halign: 'center', 
+            fontStyle: 'bold', 
+            textColor: s.estatus === 'Cancelado' ? [239, 68, 68] : [56, 189, 248] // Rojo si cancelado, Azul si Activo
+          }
+        }
+      ];
     });
 
-    doc.save(`Reporte_Servicios_Externos_${new Date().getTime()}.pdf`);
+    // Inyección de la tabla en el PDF
+    autoTable(doc, {
+      startY: startY,
+      head: head,
+      body: body,
+      headStyles: { 
+        fillColor: [68, 128, 211], 
+        textColor: [255, 255, 255], 
+        fontStyle: 'bold', 
+        fontSize: 9,
+        halign: 'center'
+      },
+      styles: { 
+        fontSize: 8, 
+        cellPadding: 4,
+        lineColor: [200, 200, 200],
+        lineWidth: 0.1
+      },
+      alternateRowStyles: { 
+        fillColor: [245, 248, 250] // Gris/Azul muy clarito
+      },
+      margin: { top: 15 }
+    });
+
+    // Guardado del archivo
+    const timestamp = new Date().getTime();
+    doc.save(`Servicios_Externos_${timestamp}.pdf`);
+    
+    this.mostrarNotificacion('Exportación Exitosa', 'El archivo PDF se ha descargado en tu equipo.', 'exito');
   }
 
   exportarXML() {
@@ -230,6 +296,8 @@ export class ServiciosExternosComponent implements OnInit {
     a.download = `Reporte_Servicios_Externos_${new Date().getTime()}.xml`;
     a.click();
     window.URL.revokeObjectURL(url);
+
+    
   }
 
   // ==========================================
