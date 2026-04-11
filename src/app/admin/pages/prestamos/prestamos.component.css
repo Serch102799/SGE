@@ -404,3 +404,76 @@
   .form-row { flex-direction: column; gap: 10px; }
   .col-md-8, .col-md-2 { width: 100%; }
 }
+/* Estilos para las pestañas (Tabs) */
+.btn-tab {
+  background: transparent;
+  color: #94a3b8;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.3s ease;
+}
+
+.btn-tab:hover {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-activo {
+  color: #38bdf8;
+  border-bottom: 3px solid #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+}
+/* ==========================================
+   PAGINADOR
+   ========================================== */
+.paginador-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  margin-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.paginador-info {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.paginador-controles {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.btn-paginador {
+  background: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-paginador:hover:not([disabled]) {
+  background: #3b82f6;
+  color: #ffffff;
+  border-color: #3b82f6;
+}
+
+.btn-paginador[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.paginador-actual {
+  color: #38bdf8;
+  font-weight: bold;
+  font-size: 0.95rem;
+}

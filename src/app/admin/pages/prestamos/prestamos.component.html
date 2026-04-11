@@ -1,219 +1,288 @@
 <div class="usuarios-container">
-  <div class="container-header">
-    <h2>Control de Préstamos</h2>
-    <button class="btn-agregar" (click)="abrirModalNuevo()">
-      <span>&#43;</span> Prestar Herramienta/Insumo
-    </button>
+  <div class="container-header" style="flex-wrap: wrap; gap: 15px;">
+    <h2><i class="fas fa-tools"></i> Control de Pañol (Préstamos)</h2>
+    
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <button class="btn-cancelar" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4);" (click)="exportarExcel()">
+        <i class="fas fa-file-excel"></i> Exportar Excel
+      </button>
+      <button class="btn-cancelar" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4);" (click)="exportarPDF()">
+        <i class="fas fa-file-pdf"></i> Exportar PDF
+      </button>
+      <button class="btn-agregar" (click)="abrirModalNuevo()">
+        <i class="fas fa-plus"></i> Nuevo Préstamo
+      </button>
+    </div>
   </div>
-<!--   <div class="controles-superiores">
-  <button (click)="cambiarVista('activos')" [class.activo]="vistaActual === 'activos'">
-    🛠️ Préstamos Activos
-  </button>
-  <button (click)="cambiarVista('historico')" [class.activo]="vistaActual === 'historico'">
-    📜 Historial
-  </button>
-
-  <button (click)="exportarExcel()" class="btn-excel">📊 Exportar a Excel</button>
-  <button (click)="exportarPDF()" class="btn-pdf">📄 Exportar a PDF</button>
-</div> -->
 
   <div class="container-body">
-    <div class="tabla-responsive-wrapper">
+    
+    <div class="tabs-container" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 10px;">
+      <button class="btn-tab" 
+              [ngClass]="{'tab-activo': vistaActual === 'activos'}" 
+              (click)="cambiarVista('activos')">
+        <i class="fas fa-hand-holding"></i> Préstamos Activos
+      </button>
+      <button class="btn-tab" 
+              [ngClass]="{'tab-activo': vistaActual === 'historico'}" 
+              (click)="cambiarVista('historico')">
+        <i class="fas fa-history"></i> Historial (Cerrados)
+      </button>
+    </div>
+
+    <div class="filtros-container" *ngIf="vistaActual === 'historico'" style="margin-bottom: 15px;">
+      <div class="filtro-grupo" style="flex: 2;">
+        <label>Buscar (Folio, Mecánico, Artículo)</label>
+        <input type="text" class="form-control" placeholder="Ej. Juan, Taladro, 105..." [(ngModel)]="filtroBusquedaHist" (keyup)="aplicarFiltrosHist()">
+      </div>
+      <div class="filtro-grupo">
+        <label>Desde</label>
+        <input type="date" class="form-control" [(ngModel)]="filtroFechaInicioHist" (change)="aplicarFiltrosHist()">
+      </div>
+      <div class="filtro-grupo">
+        <label>Hasta</label>
+        <input type="date" class="form-control" [(ngModel)]="filtroFechaFinHist" (change)="aplicarFiltrosHist()">
+      </div>
+      <div class="filtro-grupo action-limpiar">
+        <button class="btn-icon-limpiar" (click)="limpiarFiltrosHist()" title="Limpiar Filtros">
+          <i class="fas fa-eraser"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="loading-message" *ngIf="loading">
+      <div class="spinner"></div> Cargando información...
+    </div>
+
+    <div class="tabla-responsive-wrapper" *ngIf="!loading && vistaActual === 'activos'">
       <table class="tabla-usuarios">
         <thead>
           <tr>
-            <th>Fecha</th>
-            <th>Mecánico</th>
-            <th>Ítem</th>
+            <th>Folio</th>
+            <th>Fecha Préstamo</th>
+            <th>Mecánico / Solicitante</th>
             <th>Tipo</th>
-            <th>Prestado</th>
-            <th>Devuelto</th>
-            <th>Pendiente</th>
-            <th>Acción</th>
+            <th>Herramienta / Artículo</th>
+            <th>Prestados</th>
+            <th>Pendientes</th>
+            <th>Acciones</th>
+            <th style="text-align: right;">Responsabilidad ($)</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of prestamosActivos | paginate: { itemsPerPage: itemsPerPage, currentPage: page }">
-            <td>{{ item.fecha_prestamo | date:'dd/MM/yy HH:mm' }}</td>
-            <td>{{ item.solicitante }}</td>
-            <td style="font-weight: bold; color: #fff;">{{ item.nombre_item }}</td>
+          <tr *ngFor="let p of prestamosActivos">
+            <td>#{{ p.id_prestamo }}</td>
+            <td>{{ p.fecha_prestamo | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td><strong>{{ p.solicitante }}</strong></td>
+            <td><span class="badge badge-bus">{{ p.tipo_item | uppercase }}</span></td>
+            <td>{{ p.nombre_item }}</td>
+            <td style="text-align: center;">{{ p.cantidad_prestada }}</td>
+            <td style="text-align: center; color: #ef4444; font-weight: bold;">{{ p.pendiente }}</td>
             <td>
-                <span class="badge" [ngClass]="{'badge-refaccion': item.tipo_item === 'refaccion', 'badge-insumo': item.tipo_item === 'insumo'}">
-                    {{ item.tipo_item | uppercase }}
-                </span>
-            </td>
-            <td>{{ item.cantidad_prestada }}</td>
-            <td>{{ item.cantidad_devuelta }}</td>
-            <td style="color: #f0ad4e; font-weight: bold;">{{ item.pendiente }}</td>
-            <td class="acciones">
-              <button class="btn-accion btn-estado" (click)="abrirModalDevolucion(item)">
-                Devolver
+              <button class="btn-agregar" style="padding: 5px 10px; font-size: 0.85rem;" (click)="abrirModalDevolucion(p)">
+                <i class="fas fa-undo"></i> Devolver
               </button>
             </td>
+            <td style="text-align: right; color: #10b981; font-weight: bold;">
+              {{ p.valor_total_prestado | currency:'MXN' }}
+            </td>
           </tr>
-          <tr *ngIf="prestamosActivos.length === 0 && !loading">
-            <td colspan="8" class="empty-table-message">No hay préstamos activos. Todo el material está en almacén.</td>
+          <tr *ngIf="prestamosActivos.length === 0">
+            <td colspan="9" class="text-center empty-msg">No hay herramientas prestadas actualmente.</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="pagination-controls">
-        <pagination-controls 
-            (pageChange)="page = $event"
-            previousLabel="Anterior"
-            nextLabel="Siguiente">
-        </pagination-controls>
+    <div class="tabla-responsive-wrapper" *ngIf="!loading && vistaActual === 'historico'">
+      <table class="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>Folio</th>
+            <th>Fecha Préstamo</th>
+            <th>Fecha Devolución</th>
+            <th>Mecánico / Solicitante</th>
+            <th>Herramienta / Artículo</th>
+            <th>Cantidad</th>
+            <th>Estado Final</th>
+            <th style="text-align: right;">Responsabilidad ($)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of paginatedHistoricos">
+            <td>#{{ p.id_prestamo }}</td>
+            <td>{{ p.fecha_prestamo | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ p.fecha_devolucion ? (p.fecha_devolucion | date:'dd/MM/yyyy HH:mm') : 'N/A' }}</td>
+            <td><strong>{{ p.solicitante }}</strong></td>
+            <td>{{ p.nombre_item }} <br><small class="text-muted">{{ p.tipo_item | uppercase }}</small></td>
+            <td style="text-align: center;">{{ p.cantidad_prestada }}</td>
+            <td>
+              <span class="badge" 
+                    [ngClass]="p.estado_devolucion === 'BUENO' ? 'badge-activo' : 'badge-cancelado'">
+                {{ p.estado_devolucion || 'CERRADO' }}
+              </span>
+            </td>
+             <td style="text-align: right; color: #10b981; font-weight: bold;">
+              {{ p.valor_total_prestado | currency:'MXN' }}
+            </td>
+          </tr>
+          <tr *ngIf="paginatedHistoricos.length === 0">
+            <td colspan="8" class="text-center empty-msg">No se encontraron préstamos con esos filtros.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div class="paginador-container" *ngIf="filteredHistoricos.length > 0">
+        <div class="paginador-info">
+          Mostrando {{ (paginaActualHist - 1) * itemsPorPaginaHist + 1 }} a 
+          {{ (paginaActualHist * itemsPorPaginaHist) > filteredHistoricos.length ? filteredHistoricos.length : (paginaActualHist * itemsPorPaginaHist) }} 
+          de {{ filteredHistoricos.length }} registros
+        </div>
+        <div class="paginador-controles">
+          <button class="btn-paginador" (click)="cambiarPaginaHist(-1)" [disabled]="paginaActualHist === 1">
+            <i class="fas fa-chevron-left"></i> Anterior
+          </button>
+          <span class="paginador-actual">Pág {{ paginaActualHist }} de {{ totalPaginasHist }}</span>
+          <button class="btn-paginador" (click)="cambiarPaginaHist(1)" [disabled]="paginaActualHist === totalPaginasHist">
+            Siguiente <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
     </div>
+
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalNuevo" (click)="mostrarModalNuevo = false">
-  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+<div class="modal-overlay" *ngIf="mostrarModalNuevo">
+  <div class="modal-content modal-lg">
     <div class="modal-header">
-      <h3>Registrar Nuevo Préstamo</h3>
+      <h3><i class="fas fa-tools"></i> Registrar Préstamo de Pañol</h3>
       <button class="btn-cerrar" (click)="mostrarModalNuevo = false">×</button>
     </div>
     
     <div class="modal-body">
-      
-      <fieldset class="form-section">
-        <legend>1. ¿Quién solicita?</legend>
-        <div class="form-group">
-            <label>Nombre del Mecánico / Solicitante</label>
-            <input type="text" class="form-control" 
-                   placeholder="Escribe el nombre completo..." 
-                   [(ngModel)]="nuevoPrestamo.nombre_solicitante_manual" 
-                   name="nombreSolicitante"
-                   autocomplete="off">
-        </div>
-      </fieldset>
-
-      <fieldset class="form-section">
-        <legend>2. Selección de Material</legend>
-        
-        <div class="modo-selector" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-            <button type="button" class="btn-tipo-calculo" 
-                    [class.active]="tipoItemBusqueda === 'insumo'" 
-                    (click)="cambiarTipoBusqueda('insumo')">
-                Insumos
-            </button>
-            <button type="button" class="btn-tipo-calculo" 
-                    [class.active]="tipoItemBusqueda === 'refaccion'" 
-                    (click)="cambiarTipoBusqueda('refaccion')">
-                Refacciones
-            </button>
-            </div>
-
-        <div class="form-row align-items-end">
-            <div class="form-group col-md-8">
-                <label>Buscar {{ tipoItemBusqueda | titlecase }}</label>
-                <mat-form-field appearance="outline" class="full-width">
-                    <input type="text" placeholder="Escribe para buscar..." matInput [formControl]="itemControl" [matAutocomplete]="autoItem">
-                </mat-form-field>
-                <mat-autocomplete #autoItem="matAutocomplete" [displayWith]="displayFnItem" (optionSelected)="seleccionarItem($event)">
-                    <mat-option *ngFor="let i of filteredItems$ | async" [value]="i">
-                        {{ i.nombre }} (Disp: {{ i.stock_actual || i.cantidad_disponible }})
-                    </mat-option>
-                </mat-autocomplete>
-            </div>
-            <div class="form-group col-md-2">
-                <label>Cant.</label>
-                <input type="number" class="form-control" [(ngModel)]="cantidadAPrestar" min="1">
-            </div>
-            <div class="form-group-button">
-                <button type="button" class="btn-agregar-detalle" (click)="agregarAlCarrito()">Agregar</button>
-            </div>
+      <div class="form-grid">
+        <div class="filtro-item" style="grid-column: 1 / -1;">
+          <label>Mecánico / Solicitante *</label>
+          <input type="text" class="form-control" placeholder="Nombre de quien se lleva la herramienta" [(ngModel)]="nuevoPrestamo.nombre_solicitante_manual">
         </div>
 
-        <table class="tabla-preview" *ngIf="nuevoPrestamo.items.length > 0" style="margin-top: 15px;">
+        <div class="filtro-item" style="grid-column: 1 / -1; margin-top: 15px;">
+          <h4>1. Buscar Herramienta / Insumo</h4>
+          <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <button class="btn-cancelar" [style.background]="tipoItemBusqueda === 'insumo' ? '#3b82f6' : 'transparent'" [style.color]="tipoItemBusqueda === 'insumo' ? '#fff' : '#cbd5e1'" (click)="cambiarTipoBusqueda('insumo')">Insumos</button>
+            <button class="btn-cancelar" [style.background]="tipoItemBusqueda === 'refaccion' ? '#3b82f6' : 'transparent'" [style.color]="tipoItemBusqueda === 'refaccion' ? '#fff' : '#cbd5e1'" (click)="cambiarTipoBusqueda('refaccion')">Refacciones / Herramienta</button>
+          </div>
+          
+          <div style="display: flex; gap: 10px; align-items: flex-end;">
+            <mat-form-field appearance="outline" class="w-100 dark-mat-form" style="flex: 1;">
+              <input type="text" matInput placeholder="Escribe para buscar..." [formControl]="itemControl" [matAutocomplete]="autoItem">
+              <mat-autocomplete #autoItem="matAutocomplete" [displayWith]="displayFnItem" (optionSelected)="seleccionarItem($event)">
+                <mat-option *ngFor="let item of filteredItems$ | async" [value]="item">
+                  {{ item.nombre }} <small class="text-muted">(Stock: {{ item.stock_actual !== undefined ? item.stock_actual : item.cantidad_disponible }})</small>
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+            
+            <div style="width: 100px;">
+              <input type="number" class="form-control" [(ngModel)]="cantidadAPrestar" min="1" placeholder="Cant.">
+            </div>
+            
+            <button class="btn-agregar" (click)="agregarAlCarrito()" [disabled]="!itemSeleccionadoTemporal" style="height: 48px; margin-bottom: 22px;">
+              Agregar
+            </button>
+          </div>
+        </div>
+
+        <div class="filtro-item" style="grid-column: 1 / -1;" *ngIf="nuevoPrestamo.items.length > 0">
+          <h4>2. Lista a Prestar</h4>
+          <table class="tabla-usuarios" style="margin-top: 10px;">
             <thead>
-                <tr>
-                    <th>Ítem</th>
-                    <th>Tipo</th>
-                    <th>Cant.</th>
-                    <th style="text-align: center;">Acción</th>
-                </tr>
+              <tr>
+                <th>Artículo</th>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+                <th>Quitar</th>
+              </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let item of nuevoPrestamo.items; let i = index">
-                    <td>{{ item.nombre }}</td>
-                    <td>
-                        <span class="badge" [ngClass]="{
-                            'badge-insumo': item.tipo === 'insumo', 
-                            'badge-refaccion': item.tipo === 'refaccion' || item.tipo === 'herramienta'
-                        }">{{ item.tipo | uppercase }}</span>
-                    </td>
-                    <td>{{ item.cantidad }}</td>
-                    <td class="acciones">
-                        <button class="btn-eliminar-sm" (click)="eliminarDelCarrito(i)">Quitar</button>
-                    </td>
-                </tr>
+              <tr *ngFor="let item of nuevoPrestamo.items; let i = index">
+                <td>{{ item.nombre }}</td>
+                <td>{{ item.tipo | uppercase }}</td>
+                <td>{{ item.cantidad }}</td>
+                <td>
+                  <button class="btn-cancelar-icon" (click)="eliminarDelCarrito(i)"><i class="fas fa-trash"></i></button>
+                </td>
+              </tr>
             </tbody>
-        </table>
-      </fieldset>
-      
-      <div class="form-group">
-          <label>Observaciones (Opcional)</label>
-          <textarea class="form-control" [(ngModel)]="nuevoPrestamo.observaciones" rows="2" placeholder="Ej. Préstamo por el día..."></textarea>
-      </div>
+          </table>
+        </div>
 
+        <div class="filtro-item" style="grid-column: 1 / -1;">
+          <label>Observaciones</label>
+          <textarea class="form-control" rows="2" [(ngModel)]="nuevoPrestamo.observaciones" placeholder="Ej. Se lleva el taladro para rescate en ruta..."></textarea>
+        </div>
+      </div>
     </div>
+    
     <div class="modal-footer">
-      <button class="btn-accion btn-cancelar" (click)="mostrarModalNuevo = false">Cancelar</button>
-      <button class="btn-accion btn-guardar" (click)="guardarPrestamo()">Confirmar Préstamo</button>
+      <button class="btn-cancelar" (click)="mostrarModalNuevo = false">Cancelar</button>
+      <button class="btn-agregar" (click)="guardarPrestamo()"><i class="fas fa-save"></i> Generar Préstamo</button>
     </div>
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalDevolucion" (click)="mostrarModalDevolucion = false">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h3>Registrar Devolución</h3>
-            <button class="btn-cerrar" (click)="mostrarModalDevolucion = false">×</button>
-        </div>
-        <div class="modal-body" *ngIf="itemParaDevolver">
-            <p style="color: #e0e0e0; font-size: 1.1rem; text-align: center;">
-                Devolviendo: <strong>{{ itemParaDevolver.nombre_item }}</strong><br>
-                Responsable: {{ itemParaDevolver.solicitante }}
-            </p>
-
-            <div class="form-group">
-                <label>Cantidad a Devolver (Pendiente: {{ itemParaDevolver.pendiente }})</label>
-                <input type="number" class="form-control" [(ngModel)]="datosDevolucion.cantidad" [max]="itemParaDevolver.pendiente" min="0.1">
-            </div>
-
-            <div class="form-group">
-                <label>Condición de entrega</label>
-                <select class="form-control" [(ngModel)]="datosDevolucion.estado">
-                    <option value="BUENO">BUENO (Regresa al Stock)</option>
-                    <option value="ROTO">DAÑADO / ROTO (Se descarta)</option>
-                    <option value="VACIO">CONSUMIDO / VACÍO (Se descarta)</option>
-                </select>
-                <small style="color: #a7b7d2; display: block; margin-top: 5px;">
-                    * Si seleccionas "DAÑADO" o "CONSUMIDO", el ítem NO se sumará al inventario.
-                </small>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn-accion btn-cancelar" (click)="mostrarModalDevolucion = false">Cancelar</button>
-            <button class="btn-accion btn-guardar" (click)="confirmarDevolucion()">Confirmar Devolución</button>
-        </div>
+<div class="modal-overlay" *ngIf="mostrarModalDevolucion">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fas fa-undo"></i> Registrar Devolución</h3>
+      <button class="btn-cerrar" (click)="mostrarModalDevolucion = false">×</button>
     </div>
+    
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="filtro-item" style="grid-column: 1 / -1;">
+          <label>Artículo a devolver</label>
+          <input type="text" class="form-control" [value]="itemParaDevolver?.nombre_item" disabled>
+        </div>
+
+        <div class="filtro-item">
+          <label>Pendientes por entregar</label>
+          <input type="text" class="form-control text-danger font-weight-bold" [value]="itemParaDevolver?.pendiente" disabled>
+        </div>
+
+        <div class="filtro-item">
+          <label>Cantidad que devuelve ahora *</label>
+          <input type="number" class="form-control" [(ngModel)]="datosDevolucion.cantidad" min="1" [max]="itemParaDevolver?.pendiente || 1">
+        </div>
+
+        <div class="filtro-item" style="grid-column: 1 / -1;">
+          <label>Estado en el que se entrega *</label>
+          <select class="form-control" [(ngModel)]="datosDevolucion.estado">
+            <option value="BUENO">BUENO (Regresa al inventario)</option>
+            <option value="ROTO">ROTO / DAÑADO (Se da de baja)</option>
+            <option value="VACIO">CONSUMIDO / VACÍO (Insumos)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="mostrarModalDevolucion = false">Cancelar</button>
+      <button class="btn-agregar" (click)="confirmarDevolucion()"><i class="fas fa-check"></i> Confirmar Devolución</button>
+    </div>
+  </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarNotificacion()">
-    <div class="modal-content" style="max-width: 400px;">
-        <div class="modal-header">
-            <h3 [ngClass]="{'header-exito': notificacion.tipo === 'exito', 'header-error': notificacion.tipo === 'error', 'header-advertencia': notificacion.tipo === 'advertencia'}">
-                {{ notificacion.titulo }}
-            </h3>
-        </div>
-        <div class="modal-body">
-            <p class="confirm-text">{{ notificacion.mensaje }}</p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn-accion btn-guardar" (click)="cerrarNotificacion()">Aceptar</button>
-        </div>
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" style="z-index: 2000;">
+  <div class="modal-content">
+    <div class="modal-header" [ngClass]="{'header-exito': notificacion.tipo === 'exito', 'header-error': notificacion.tipo === 'error', 'header-advertencia': notificacion.tipo === 'advertencia'}">
+      <h3>{{ notificacion.titulo }}</h3>
     </div>
+    <div class="confirm-text" style="padding: 20px;">{{ notificacion.mensaje }}</div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarNotificacion()">Entendido</button>
+    </div>
+  </div>
 </div>
