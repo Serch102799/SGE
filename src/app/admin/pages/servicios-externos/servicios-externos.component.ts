@@ -5,8 +5,6 @@ import { Observable, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, startWith, switchMap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environments';
 
-
-
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf'; 
 import autoTable from 'jspdf-autotable';
@@ -115,13 +113,22 @@ export class ServiciosExternosComponent implements OnInit {
       if (this.filtroBus) {
         const termino = this.filtroBus.toLowerCase();
         matchBus = 
-          (servicio.economico_autobus && servicio.economico_autobus.toLowerCase().includes(termino)) ||
+          (servicio.autobus && String(servicio.autobus).toLowerCase().includes(termino)) ||
           (servicio.descripcion && servicio.descripcion.toLowerCase().includes(termino)) ||
           (servicio.factura_nota && servicio.factura_nota.toLowerCase().includes(termino));
       }
 
+      // 🛠️ AQUÍ ESTÁ LA MAGIA REPARADA 🛠️
       if (this.filtroProveedor) {
-        matchProveedor = servicio.id_proveedor == this.filtroProveedor;
+        // 1. Buscamos en el arreglo de 'proveedores' el nombre real usando el ID que manda el HTML
+        const provSeleccionado = this.proveedores.find(p => p.id_proveedor == this.filtroProveedor);
+        
+        if (provSeleccionado) {
+          // 2. Ahora sí, comparamos texto contra texto (ej. "Taller Juan" === "Taller Juan")
+          matchProveedor = servicio.proveedor === provSeleccionado.nombre_proveedor;
+        } else {
+          matchProveedor = false; 
+        }
       }
 
       if (this.filtroFechaInicio) {
@@ -138,7 +145,6 @@ export class ServiciosExternosComponent implements OnInit {
     this.paginaActual = 1;
     this.actualizarPaginacion();
   }
-
   limpiarFiltros() {
     this.filtroBus = ''; this.filtroProveedor = ''; this.filtroFechaInicio = ''; this.filtroFechaFin = '';
     this.aplicarFiltros();
@@ -160,13 +166,14 @@ export class ServiciosExternosComponent implements OnInit {
 
   // ==========================================
   // EXPORTACIONES (EXCEL, PDF, XML)
+  // 🛠️ CORRECCIONES APLICADAS TAMBIÉN AQUÍ 🛠️
   // ==========================================
   exportarExcel() {
     const dataToExport = this.filteredServicios.map(s => ({
-      'ID Servicio': s.id_servicio_externo,
+      'ID Servicio': s.id_servicio, // Antes: id_servicio_externo
       'Fecha': s.fecha_servicio,
-      'Autobús': `Bus ${s.economico_autobus}`,
-      'Proveedor': s.nombre_proveedor,
+      'Autobús': `Bus ${s.autobus || 'S/N'}`, // Antes: economico_autobus
+      'Proveedor': s.proveedor || 'S/N', // Antes: nombre_proveedor
       'Descripción': s.descripcion,
       'Subtotal': s.subtotal,
       'IVA': s.iva_monto,
@@ -189,11 +196,9 @@ export class ServiciosExternosComponent implements OnInit {
       return;
     }
 
-    // Inicializamos el documento en horizontal ('landscape')
     const doc = new jsPDF('landscape');
     let startY = 40;
 
-    // Encabezado Corporativo
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
     doc.text('REPORTE DE SERVICIOS EXTERNOS (TALLERES)', 14, 20);
@@ -208,41 +213,37 @@ export class ServiciosExternosComponent implements OnInit {
       doc.text('Periodo auditado: Histórico Completo', 14, 34);
     }
 
-    // Preparación de los datos para la tabla
     const head = [['FECHA', 'VEHÍCULO', 'PROVEEDOR / TALLER', 'DESCRIPCIÓN DEL SERVICIO', 'FACTURA / NOTA', 'COSTO TOTAL', 'ESTATUS']];
     
     const body = this.filteredServicios.map(s => {
-      // Determinamos si es Bus o Flota Administrativa
       let vehiculoStr = 'S/N';
-      if (s.economico_autobus) {
-        vehiculoStr = `Bus ${s.economico_autobus}`;
+      if (s.autobus) { 
+        vehiculoStr = `Bus ${s.autobus}`;
       } else if (s.id_vehiculo_particular) {
-        vehiculoStr = `Flota Admin.`; // Puedes ajustarlo si el backend trae las placas o modelo
+        vehiculoStr = `Flota Admin.`;
       }
 
-      // Retornamos el array de la fila
       return [
         new Date(s.fecha_servicio).toLocaleDateString('es-MX'),
         vehiculoStr,
-        s.nombre_proveedor || 'No Especificado',
+        s.proveedor || 'No Especificado', // Antes: nombre_proveedor
         s.descripcion || '-',
         s.factura_nota || 'S/D',
         { 
           content: `$${Number(s.costo_total).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 
-          styles: { halign: 'right', fontStyle: 'bold', textColor: [34, 197, 94] } // Verde para el dinero
+          styles: { halign: 'right', fontStyle: 'bold', textColor: [34, 197, 94] }
         },
         {
           content: s.estatus,
           styles: { 
             halign: 'center', 
             fontStyle: 'bold', 
-            textColor: s.estatus === 'Cancelado' ? [239, 68, 68] : [56, 189, 248] // Rojo si cancelado, Azul si Activo
+            textColor: s.estatus === 'Cancelado' ? [239, 68, 68] : [56, 189, 248]
           }
         }
       ];
     });
 
-    // Inyección de la tabla en el PDF
     autoTable(doc, {
       startY: startY,
       head: head,
@@ -261,12 +262,11 @@ export class ServiciosExternosComponent implements OnInit {
         lineWidth: 0.1
       },
       alternateRowStyles: { 
-        fillColor: [245, 248, 250] // Gris/Azul muy clarito
+        fillColor: [245, 248, 250] 
       },
       margin: { top: 15 }
     });
 
-    // Guardado del archivo
     const timestamp = new Date().getTime();
     doc.save(`Servicios_Externos_${timestamp}.pdf`);
     
@@ -277,10 +277,10 @@ export class ServiciosExternosComponent implements OnInit {
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<ServiciosExternos>\n';
     this.filteredServicios.forEach(s => {
       xml += '  <Servicio>\n';
-      xml += `    <ID>${s.id_servicio_externo}</ID>\n`;
+      xml += `    <ID>${s.id_servicio}</ID>\n`; // Antes: id_servicio_externo
       xml += `    <Fecha>${s.fecha_servicio}</Fecha>\n`;
-      xml += `    <Autobus>${s.economico_autobus}</Autobus>\n`;
-      xml += `    <Proveedor>${s.nombre_proveedor || 'S/N'}</Proveedor>\n`;
+      xml += `    <Autobus>${s.autobus || 'S/N'}</Autobus>\n`; // Antes: economico_autobus
+      xml += `    <Proveedor>${s.proveedor || 'S/N'}</Proveedor>\n`; // Antes: nombre_proveedor
       xml += `    <Descripcion>${s.descripcion}</Descripcion>\n`;
       xml += `    <Factura>${s.factura_nota}</Factura>\n`;
       xml += `    <Total>${s.costo_total}</Total>\n`;
@@ -296,8 +296,6 @@ export class ServiciosExternosComponent implements OnInit {
     a.download = `Reporte_Servicios_Externos_${new Date().getTime()}.xml`;
     a.click();
     window.URL.revokeObjectURL(url);
-
-    
   }
 
   // ==========================================
