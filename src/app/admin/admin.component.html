@@ -34,7 +34,7 @@
         </a>
       </li>
 
-      <li *ngIf="authService.hasRole([ 'SuperUsuario'])">
+      <li *ngIf="authService.hasRole([ 'SuperUsuario', 'AdminDiesel'])">
         <a routerLink="dash-consumo" routerLinkActive="active">
           <fa-icon [icon]="faDashboard"></fa-icon> <span>Dash-Consumo</span>
         </a>
