@@ -1,29 +1,42 @@
 <div class="proveedores-container">
 
-  <!-- HEADER Y BOTÓN AGREGAR -->
   <div class="header-section glass-panel">
     <div class="header-text">
       <h2><fa-icon [icon]="faBuilding"></fa-icon> Gestión de Proveedores</h2>
-      <p>Administra tu directorio de empresas, contactos y RFCs.</p>
+      <p>Administra tu directorio de empresas y analiza el volumen de compras.</p>
     </div>
-    <button class="btn-neon-primary" (click)="abrirModal('agregar')">
-      <fa-icon [icon]="faPlus"></fa-icon> Nuevo Proveedor
-    </button>
+    
+    <div class="header-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+      <div class="tabs-container" style="display: flex; gap: 10px; border-right: 2px solid rgba(255,255,255,0.1); padding-right: 15px; margin-right: 5px;">
+        <button class="btn-tab" [ngClass]="{'tab-activo': vistaActual === 'directorio'}" (click)="cambiarVista('directorio')">
+          <i class="fas fa-address-book"></i> Directorio
+        </button>
+        <button class="btn-tab" [ngClass]="{'tab-activo': vistaActual === 'dashboard'}" (click)="cambiarVista('dashboard')">
+          <i class="fas fa-chart-line"></i> Dashboard Financiero
+        </button>
+      </div>
+
+      <button *ngIf="vistaActual === 'directorio'" class="btn-neon-primary" (click)="abrirModal('agregar')">
+        <fa-icon [icon]="faPlus"></fa-icon> Nuevo
+      </button>
+
+      <ng-container *ngIf="vistaActual === 'dashboard'">
+        <button class="btn-cancelar" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4);" (click)="exportarExcel()">
+          <i class="fas fa-file-excel"></i> Excel
+        </button>
+        <button class="btn-cancelar" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4);" (click)="exportarPDF()">
+          <i class="fas fa-file-pdf"></i> PDF
+        </button>
+      </ng-container>
+    </div>
   </div>
 
-  <!-- SECCIÓN PRINCIPAL (BUSCADOR Y TABLA) -->
-  <div class="main-section glass-panel">
-    
-    <!-- Buscador moderno -->
+  <div class="main-section glass-panel" *ngIf="vistaActual === 'directorio'">
     <div class="search-bar">
       <fa-icon [icon]="faSearch" class="search-icon"></fa-icon>
-      <input type="text" 
-             placeholder="Buscar por nombre, contacto o RFC..." 
-             [(ngModel)]="terminoBusqueda" 
-             (input)="aplicarFiltros()">
+      <input type="text" placeholder="Buscar por nombre, contacto o RFC..." [(ngModel)]="terminoBusqueda" (input)="aplicarFiltros()">
     </div>
 
-    <!-- Tabla de Proveedores -->
     <div class="table-responsive">
       <table class="modern-table">
         <thead>
@@ -36,128 +49,247 @@
         </thead>
         <tbody>
           <tr *ngFor="let p of proveedoresFiltrados">
-            
-            <!-- Columna 1: Empresa + Avatar -->
             <td>
-              <div class="empresa-info">
-                <div class="avatar-circle">{{ obtenerIniciales(p.nombre_proveedor) }}</div>
-                <div class="empresa-detalles">
-                  <span class="empresa-nombre">{{ p.nombre_proveedor }}</span>
-                  <span class="empresa-rfc">RFC: {{ p.rfc || 'No registrado' }}</span>
+              <div class="empresa-info" style="display: flex; align-items: center; gap: 15px;">
+                <div class="avatar-circle" style="width: 40px; height: 40px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                  {{ obtenerIniciales(p.nombre_proveedor) }}
+                </div>
+                <div class="empresa-detalles" style="display: flex; flex-direction: column;">
+                  <strong style="color: #e2e8f0; font-size: 1.05rem;">{{ p.nombre_proveedor }}</strong>
+                  <span style="color: #94a3b8; font-size: 0.85rem;">RFC: {{ p.rfc || 'No registrado' }}</span>
                 </div>
               </div>
             </td>
-
-            <!-- Columna 2: Contacto -->
             <td>
-              <div class="contacto-info">
-                <fa-icon [icon]="faUserTie" class="icon-sub"></fa-icon>
+              <div class="contacto-info" style="color: #cbd5e1;">
+                <fa-icon [icon]="faUserTie" style="color: #3b82f6; margin-right: 5px;"></fa-icon>
                 <span>{{ p.contacto || 'Sin contacto' }}</span>
               </div>
             </td>
-
-            <!-- Columna 3: Medios de contacto agrupados -->
             <td>
-              <div class="medios-info">
-                <div class="medio-item" title="Teléfono">
-                  <fa-icon [icon]="faPhone" class="icon-sub"></fa-icon> {{ p.telefono || 'N/A' }}
-                </div>
-                <div class="medio-item" title="Correo">
-                  <fa-icon [icon]="faEnvelope" class="icon-sub"></fa-icon> {{ p.correo || 'N/A' }}
-                </div>
+              <div class="medios-info" style="color: #94a3b8; font-size: 0.9rem;">
+                <div style="margin-bottom: 4px;"><fa-icon [icon]="faPhone" style="margin-right: 5px; width: 14px;"></fa-icon> {{ p.telefono || 'N/A' }}</div>
+                <div><fa-icon [icon]="faEnvelope" style="margin-right: 5px; width: 14px;"></fa-icon> {{ p.correo || 'N/A' }}</div>
               </div>
             </td>
-
-            <!-- Columna 4: Acciones con Iconos -->
             <td class="text-center">
-              <div class="acciones-wrapper">
-                <button class="btn-icon btn-edit" (click)="abrirModal('editar', p)" title="Editar Proveedor">
-                  <fa-icon [icon]="faEdit"></fa-icon>
-                </button>
-                <button class="btn-icon btn-delete" (click)="abrirModalBorrar(p)" title="Eliminar Proveedor">
-                  <fa-icon [icon]="faTrashAlt"></fa-icon>
-                </button>
+              <div style="display: flex; justify-content: center; gap: 10px;">
+                <button class="btn-icon" style="background: rgba(59,130,246,0.1); color: #3b82f6; border: none; padding: 8px; border-radius: 4px; cursor: pointer;" (click)="abrirModal('editar', p)"><fa-icon [icon]="faEdit"></fa-icon></button>
+                <button class="btn-icon" style="background: rgba(239,68,68,0.1); color: #ef4444; border: none; padding: 8px; border-radius: 4px; cursor: pointer;" (click)="abrirModalBorrar(p)"><fa-icon [icon]="faTrashAlt"></fa-icon></button>
               </div>
             </td>
-
           </tr>
-          
-          <!-- Empty State -->
           <tr *ngIf="proveedoresFiltrados.length === 0">
-            <td colspan="4" class="empty-state">
-              <div class="empty-content">
-                <fa-icon [icon]="faSearch" class="empty-icon"></fa-icon>
-                <p>No se encontraron proveedores que coincidan con tu búsqueda.</p>
-              </div>
+            <td colspan="4" style="text-align: center; padding: 40px; color: #94a3b8;">
+              <fa-icon [icon]="faSearch" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></fa-icon>
+              <p>No se encontraron proveedores.</p>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
-</div>
 
-<!-- ==========================================
-     MODALES (Aquí integraríamos tus modales existentes)
-     Te dejo un esqueleto con el estilo Dark para el modal de Guardar/Editar
-     ========================================== -->
-<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>{{ modoEdicion ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h3>
-      <button class="btn-close" (click)="cerrarModal()"><fa-icon [icon]="faTimes"></fa-icon></button>
+
+  <div class="main-section glass-panel" *ngIf="vistaActual === 'dashboard'">
+    
+    <div class="filtros-container" style="display: flex; gap: 15px; margin-bottom: 20px; background: #1e293b; padding: 15px; border-radius: 8px; align-items: flex-end; flex-wrap: wrap;">
+      <div class="filtro-grupo" style="flex: 2; min-width: 250px;">
+        <label style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 5px; display: block;">Seleccionar Proveedor</label>
+        <select class="form-control" [(ngModel)]="filtroIdProveedor" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+          <option value="">📊 Mostrar Todos (Ranking General)</option>
+          <option *ngFor="let p of proveedores" [value]="p.id_proveedor">{{ p.nombre_proveedor }}</option>
+        </select>
+      </div>
+      <div class="filtro-grupo" style="min-width: 150px;">
+        <label style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 5px; display: block;">Desde</label>
+        <input type="date" class="form-control" [(ngModel)]="fechaInicio" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+      </div>
+      <div class="filtro-grupo" style="min-width: 150px;">
+        <label style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 5px; display: block;">Hasta</label>
+        <input type="date" class="form-control" [(ngModel)]="fechaFin" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+      </div>
+      <div class="filtro-grupo">
+        <button class="btn-neon-primary" (click)="generarReporte()" style="height: 42px; padding: 0 20px;">
+          <i class="fas fa-search"></i> Generar
+        </button>
+      </div>
     </div>
-    <div class="modal-body">
-      
-      <!-- Tus inputs aquí, estilizados -->
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Nombre Empresa *</label>
-          <input type="text" [(ngModel)]="proveedorSeleccionado.nombre_proveedor" [disabled]="modoEdicion">
+
+    <div class="loading-message" *ngIf="loadingReporte" style="text-align: center; padding: 30px; color: #38bdf8;">
+      <div class="spinner"></div> Procesando información financiera...
+    </div>
+
+    <div *ngIf="!loadingReporte && !filtroIdProveedor && datosReporte.length > 0">
+      <div class="tarjeta-total" style="background: #1e293b; padding: 20px 30px; border-radius: 12px; border-left: 6px solid #10b981; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 20px;">
+        <h3 style="color: #94a3b8; margin: 0 0 5px 0; font-size: 1.1rem; font-weight: 500;">Gran Total Invertido en Proveedores (Periodo)</h3>
+        <h1 style="color: #10b981; font-size: 2.5rem; margin: 0; font-weight: 800; letter-spacing: -1px;">
+          {{ granTotalGeneral | currency:'MXN' }}
+        </h1>
+      </div>
+
+      <div class="table-responsive">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th style="width: 5%;">Rank</th>
+              <th style="width: 25%;">Proveedor</th>
+              <th style="width: 50%;">Volumen de Compra (Proporción)</th>
+              <th style="text-align: right; width: 20%;">Inversión Total ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of proveedoresPaginados; let i = index">
+              <td style="font-weight: bold; color: #94a3b8; font-size: 1.2rem;">#{{ ((paginaActual - 1) * itemsPorPagina) + i + 1 }}</td>
+              <td>
+                <strong style="color: #e2e8f0; font-size: 1.05rem;">{{ p.proveedor }}</strong><br>
+                <small style="color: #64748b;">{{ p.detalles.length || 0 }} operaciones registradas</small>
+              </td>
+              <td>
+                <div style="width: 100%; height: 12px; background: #334155; border-radius: 6px; overflow: hidden; position: relative;">
+                  <div [style.width]="(p.total_comprado / maxCompraValor) * 100 + '%'" 
+                       style="height: 100%; background: linear-gradient(90deg, #3b82f6 0%, #0ea5e9 100%); border-radius: 6px; transition: width 0.8s ease-in-out;">
+                  </div>
+                </div>
+              </td>
+              <td style="text-align: right; color: #10b981; font-weight: bold; font-size: 1.15rem;">
+                {{ p.total_comprado | currency:'MXN' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div *ngIf="!loadingReporte && filtroIdProveedor && datosReporte.length > 0">
+      <div class="tarjeta-total" style="background: #1e293b; padding: 20px 30px; border-radius: 12px; border-left: 6px solid #38bdf8; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div>
+          <h3 style="color: #94a3b8; margin: 0 0 5px 0; font-size: 1.1rem; font-weight: 500;">Estado de Cuenta Detallado</h3>
+          <h2 style="color: #fff; margin: 0; font-size: 1.8rem;">{{ datosReporte[0].proveedor }}</h2>
         </div>
-        <div class="form-group">
-          <label>RFC</label>
-          <input type="text" [(ngModel)]="proveedorSeleccionado.rfc">
-        </div>
-        <div class="form-group">
-          <label>Contacto Principal</label>
-          <input type="text" [(ngModel)]="proveedorSeleccionado.contacto">
-        </div>
-        <div class="form-group">
-          <label>Teléfono</label>
-          <input type="text" [(ngModel)]="proveedorSeleccionado.telefono">
-        </div>
-        <div class="form-group full-width">
-          <label>Correo Electrónico</label>
-          <input type="email" [(ngModel)]="proveedorSeleccionado.correo">
-        </div>
-        <div class="form-group full-width">
-          <label>Dirección Física</label>
-          <input type="text" [(ngModel)]="proveedorSeleccionado.direccion">
+        <div style="text-align: right;">
+          <p style="color: #94a3b8; margin: 0 0 5px 0;">Total Comprado en Periodo</p>
+          <h1 style="color: #10b981; font-size: 2.2rem; margin: 0; font-weight: 800; letter-spacing: -1px;">
+            {{ datosReporte[0].total_comprado | currency:'MXN' }}
+          </h1>
         </div>
       </div>
 
+      <div class="table-responsive">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Fecha Operación</th>
+              <th>Tipo de Gasto</th>
+              <th>Documento / Factura</th>
+              <th style="text-align: right;">Monto Facturado ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of detallesPaginados">
+              <td style="color: #cbd5e1;">{{ d.fecha | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; border: 1px solid rgba(56,189,248,0.3);">
+                  {{ d.tipo_compra | uppercase }}
+                </span>
+              </td>
+              <td><strong style="color: #e2e8f0;">{{ d.documento }}</strong></td>
+              <td style="text-align: right; color: #10b981; font-weight: bold; font-size: 1.05rem;">
+                {{ d.costo_total | currency:'MXN' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn-ghost" (click)="cerrarModal()">Cancelar</button>
-      <button class="btn-neon-primary" (click)="guardarProveedor()">
+
+    <div class="paginador-container" *ngIf="!loadingReporte && datosReporte.length > 0" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; margin-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+      <div class="paginador-info" style="color: #94a3b8; font-size: 0.9rem;">
+        Mostrando página {{ paginaActual }} de {{ totalPaginas }}
+      </div>
+      <div class="paginador-controles" style="display: flex; align-items: center; gap: 15px;">
+        <button class="btn-cancelar" (click)="cambiarPagina(-1)" [disabled]="paginaActual === 1" style="padding: 8px 16px; border-radius: 6px; cursor: pointer;" [style.opacity]="paginaActual === 1 ? '0.4' : '1'">
+          <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+        <span style="color: #38bdf8; font-weight: bold; font-size: 0.95rem;">Pág {{ paginaActual }}</span>
+        <button class="btn-cancelar" (click)="cambiarPagina(1)" [disabled]="paginaActual === totalPaginas" style="padding: 8px 16px; border-radius: 6px; cursor: pointer;" [style.opacity]="paginaActual === totalPaginas ? '0.4' : '1'">
+          Siguiente <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!loadingReporte && datosReporte.length === 0" style="text-align: center; padding: 60px; color: #64748b;">
+      <i class="fas fa-box-open" style="font-size: 3.5rem; margin-bottom: 15px; opacity: 0.4;"></i>
+      <p style="font-size: 1.1rem;">No se encontraron operaciones en este periodo.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()" style="background: #1e293b; border: 1px solid #334155;">
+    <div class="modal-header" style="border-bottom: 1px solid #334155;">
+      <h3 style="color: white; margin: 0;">{{ modoEdicion ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h3>
+      <button class="btn-close" (click)="cerrarModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;"><fa-icon [icon]="faTimes"></fa-icon></button>
+    </div>
+    <div class="modal-body" style="padding: 20px;">
+      <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 5px; display: block;">Nombre Empresa *</label>
+          <input type="text" [(ngModel)]="proveedorSeleccionado.nombre_proveedor" [disabled]="modoEdicion" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+        </div>
+        <div class="form-group">
+          <label style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 5px; display: block;">RFC</label>
+          <input type="text" [(ngModel)]="proveedorSeleccionado.rfc" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+        </div>
+        <div class="form-group">
+          <label style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 5px; display: block;">Contacto Principal</label>
+          <input type="text" [(ngModel)]="proveedorSeleccionado.contacto" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+        </div>
+        <div class="form-group">
+          <label style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 5px; display: block;">Teléfono</label>
+          <input type="text" [(ngModel)]="proveedorSeleccionado.telefono" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+        </div>
+        <div class="form-group">
+          <label style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 5px; display: block;">Correo Electrónico</label>
+          <input type="email" [(ngModel)]="proveedorSeleccionado.correo" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 5px; display: block;">Dirección Física</label>
+          <input type="text" [(ngModel)]="proveedorSeleccionado.direccion" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="border-top: 1px solid #334155; padding: 15px 20px; display: flex; justify-content: flex-end; gap: 10px;">
+      <button class="btn-ghost" (click)="cerrarModal()" style="background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 8px 15px; border-radius: 6px; cursor: pointer;">Cancelar</button>
+      <button class="btn-neon-primary" (click)="guardarProveedor()" style="background: #3b82f6; border: none; color: white; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
         {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
       </button>
     </div>
   </div>
 </div>
 
-<!-- Modal Borrar (Diseño rápido Dark) -->
 <div class="modal-overlay" *ngIf="mostrarModalBorrar" (click)="cerrarModalBorrar()">
-  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
-    <div class="modal-body text-center">
-      <fa-icon [icon]="faTrashAlt" class="danger-icon-large"></fa-icon>
-      <h3>¿Eliminar Proveedor?</h3>
-      <p>¿Estás seguro de eliminar a <strong>{{ proveedorABorrar?.nombre_proveedor }}</strong>? Esta acción no se puede deshacer.</p>
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()" style="background: #1e293b; border: 1px solid #334155; max-width: 400px;">
+    <div class="modal-body text-center" style="padding: 30px 20px;">
+      <fa-icon [icon]="faTrashAlt" style="font-size: 3rem; color: #ef4444; margin-bottom: 15px; display: block;"></fa-icon>
+      <h3 style="color: white; margin-bottom: 10px;">¿Eliminar Proveedor?</h3>
+      <p style="color: #94a3b8; font-size: 0.95rem; line-height: 1.5;">¿Estás seguro de eliminar a <strong style="color: #e2e8f0;">{{ proveedorABorrar?.nombre_proveedor }}</strong>? Esta acción no se puede deshacer.</p>
     </div>
-    <div class="modal-footer justify-center">
-      <button class="btn-ghost" (click)="cerrarModalBorrar()">Cancelar</button>
-      <button class="btn-neon-danger" (click)="confirmarEliminacion()">Sí, eliminar</button>
+    <div class="modal-footer" style="border-top: 1px solid #334155; padding: 15px 20px; display: flex; justify-content: center; gap: 10px;">
+      <button class="btn-ghost" (click)="cerrarModalBorrar()" style="background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 8px 20px; border-radius: 6px; cursor: pointer;">Cancelar</button>
+      <button class="btn-neon-danger" (click)="confirmarEliminacion()" style="background: #ef4444; border: none; color: white; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" style="z-index: 2000;">
+  <div class="modal-content" style="background: #1e293b; border: 1px solid #334155; max-width: 400px; border-radius: 8px; overflow: hidden;">
+    <div class="modal-header" [ngStyle]="{'background': notificacion.tipo === 'exito' ? 'rgba(16, 185, 129, 0.2)' : (notificacion.tipo === 'error' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)'), 'border-bottom': 'none', 'padding': '15px 20px'}">
+      <h3 [ngStyle]="{'color': notificacion.tipo === 'exito' ? '#10b981' : (notificacion.tipo === 'error' ? '#ef4444' : '#f59e0b'), 'margin': 0}">{{ notificacion.titulo }}</h3>
+    </div>
+    <div class="confirm-text" style="padding: 20px; color: #cbd5e1; font-size: 0.95rem; line-height: 1.5;">{{ notificacion.mensaje }}</div>
+    <div class="modal-footer" style="border-top: 1px solid #334155; padding: 12px 20px; display: flex; justify-content: flex-end;">
+      <button class="btn-ghost" (click)="cerrarModalNotificacion()" style="background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 6px 15px; border-radius: 6px; cursor: pointer;">Entendido</button>
     </div>
   </div>
 </div>
