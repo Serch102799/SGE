@@ -27,6 +27,7 @@ export interface CompraDetalle {
   tipo_compra: string;
   documento: string;
   costo_total: number;
+  articulos: string;
 }
 
 export interface ReporteCompra {
@@ -222,21 +223,21 @@ export class ProveedoresComponent implements OnInit {
     if (!this.filtroIdProveedor) {
       this.datosReporte.forEach((prov) => {
         dataLimpia.push({
-          'Proveedor': `=== ${prov.proveedor.toUpperCase()} ===`, 'Fecha': '', 'Tipo Operación': '', 'Documento / Factura': 'TOTAL PROVEEDOR:', 'Monto ($)': Number(prov.total_comprado)
+          'Proveedor': `=== ${prov.proveedor.toUpperCase()} ===`, 'Fecha': '', 'Tipo Operación': '', 'Documento / Factura': '', 'Artículos / Detalles': 'TOTAL PROVEEDOR:', 'Monto ($)': Number(prov.total_comprado)
         });
         if (prov.detalles) {
           prov.detalles.forEach(d => {
             dataLimpia.push({
-              'Proveedor': '', 'Fecha': new Date(d.fecha).toLocaleDateString(), 'Tipo Operación': d.tipo_compra, 'Documento / Factura': d.documento, 'Monto ($)': Number(d.costo_total)
+              'Proveedor': '', 'Fecha': new Date(d.fecha).toLocaleDateString(), 'Tipo Operación': d.tipo_compra, 'Documento / Factura': d.documento, 'Artículos / Detalles': d.articulos, 'Monto ($)': Number(d.costo_total)
             });
           });
         }
-        dataLimpia.push({}); // Fila vacía
+        dataLimpia.push({});
       });
     } else {
       const prov = this.datosReporte[0];
       dataLimpia = prov.detalles.map(d => ({
-        'Proveedor': prov.proveedor, 'Fecha': new Date(d.fecha).toLocaleDateString(), 'Tipo Operación': d.tipo_compra, 'Documento / Factura': d.documento, 'Monto ($)': Number(d.costo_total)
+        'Proveedor': prov.proveedor, 'Fecha': new Date(d.fecha).toLocaleDateString(), 'Tipo Operación': d.tipo_compra, 'Documento / Factura': d.documento, 'Artículos / Detalles': d.articulos, 'Monto ($)': Number(d.costo_total)
       }));
     }
 
@@ -247,12 +248,13 @@ export class ProveedoresComponent implements OnInit {
     this.mostrarNotificacion('Éxito', 'El archivo Excel se descargó correctamente.', 'exito');
   }
 
+  // 3. ACTUALIZA EXPORTAR PDF
   exportarPDF() {
     if (this.datosReporte.length === 0) {
       this.mostrarNotificacion('Sin Datos', 'No hay información para exportar.', 'advertencia'); return;
     }
 
-    const doc = new jsPDF();
+    const doc = new jsPDF('landscape'); // 👈 LO PONEMOS EN HORIZONTAL PORQUE AHORA HAY MÁS TEXTO
     let yPos = 15;
     doc.setFontSize(16); doc.text('Análisis de Compras por Proveedor', 14, yPos); yPos += 7;
     doc.setFontSize(10); doc.text(`Periodo: ${new Date(this.fechaInicio).toLocaleDateString()} al ${new Date(this.fechaFin).toLocaleDateString()}`, 14, yPos); yPos += 10;
@@ -263,18 +265,18 @@ export class ProveedoresComponent implements OnInit {
       yPos += 10; doc.setTextColor(0, 0, 0);
 
       this.datosReporte.forEach((prov, index) => {
-        if (yPos > 260) { doc.addPage(); yPos = 20; }
-        doc.setFillColor(240, 240, 240); doc.rect(14, yPos - 5, 182, 10, 'F');
+        if (yPos > 180) { doc.addPage(); yPos = 20; }
+        doc.setFillColor(240, 240, 240); doc.rect(14, yPos - 5, 269, 10, 'F');
         doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
         doc.text(`#${index + 1} - ${prov.proveedor}`, 16, yPos);
-        doc.setTextColor(34, 197, 94); doc.text(`Total: $${Number(prov.total_comprado).toLocaleString('es-MX', {minimumFractionDigits:2})}`, 140, yPos);
+        doc.setTextColor(34, 197, 94); doc.text(`Total: $${Number(prov.total_comprado).toLocaleString('es-MX', {minimumFractionDigits:2})}`, 230, yPos);
         doc.setTextColor(0, 0, 0); yPos += 8;
 
         if (prov.detalles && prov.detalles.length > 0) {
-          const bodyData = prov.detalles.map(d => [ new Date(d.fecha).toLocaleDateString(), d.tipo_compra, d.documento, `$${Number(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}` ]);
+          const bodyData = prov.detalles.map(d => [ new Date(d.fecha).toLocaleDateString(), d.tipo_compra, d.documento, d.articulos, `$${Number(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}` ]);
           autoTable(doc, {
-            startY: yPos, head: [['Fecha', 'Operación', 'Documento', 'Costo']], body: bodyData,
-            theme: 'plain', styles: { fontSize: 8, cellPadding: 1 }, headStyles: { textColor: [100, 100, 100], fontStyle: 'bold' },
+            startY: yPos, head: [['Fecha', 'Operación', 'Documento', 'Artículos / Descripción', 'Costo']], body: bodyData,
+            theme: 'plain', styles: { fontSize: 8, cellPadding: 2 }, headStyles: { textColor: [100, 100, 100], fontStyle: 'bold' },
             margin: { left: 20, right: 20 }, didDrawPage: (data) => { if (data.cursor) yPos = data.cursor.y; }
           });
           yPos = (doc as any).lastAutoTable.finalY + 10;
@@ -284,8 +286,8 @@ export class ProveedoresComponent implements OnInit {
       const prov = this.datosReporte[0];
       doc.setTextColor(56, 189, 248); doc.text(`Proveedor: ${prov.proveedor}`, 14, yPos); yPos += 6;
       doc.setTextColor(34, 197, 94); doc.text(`Total Comprado: $${Number(prov.total_comprado).toLocaleString('es-MX', {minimumFractionDigits:2})}`, 14, yPos); yPos += 10;
-      const columnas = [['Fecha', 'Tipo de Operación', 'Documento/Factura', 'Costo']];
-      const filas = prov.detalles.map(d => [ new Date(d.fecha).toLocaleDateString(), d.tipo_compra, d.documento, `$${Number(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}` ]);
+      const columnas = [['Fecha', 'Tipo de Operación', 'Documento', 'Artículos / Descripción', 'Costo']];
+      const filas = prov.detalles.map(d => [ new Date(d.fecha).toLocaleDateString(), d.tipo_compra, d.documento, d.articulos, `$${Number(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}` ]);
       autoTable(doc, { head: columnas, body: filas, startY: yPos, headStyles: { fillColor: [41, 128, 185] } });
     }
 

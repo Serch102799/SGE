@@ -182,7 +182,7 @@
               <th>Fecha Operación</th>
               <th>Tipo de Gasto</th>
               <th>Documento / Factura</th>
-              <th style="text-align: right;">Monto Facturado ($)</th>
+              <th>Artículos / Descripción</th> <th style="text-align: right;">Monto Facturado ($)</th>
             </tr>
           </thead>
           <tbody>
@@ -194,6 +194,11 @@
                 </span>
               </td>
               <td><strong style="color: #e2e8f0;">{{ d.documento }}</strong></td>
+              
+              <td [title]="d.articulos" style="color: #94a3b8; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                {{ d.articulos }}
+              </td>
+
               <td style="text-align: right; color: #10b981; font-weight: bold; font-size: 1.05rem;">
                 {{ d.costo_total | currency:'MXN' }}
               </td>
