@@ -158,7 +158,12 @@
                   {{ detalle.tipo_item }}
                 </span>
               </td>
-              <td style="color: #f8fafc;">{{ detalle.nombre_item }}</td>
+              <td>
+              <strong style="color: #e2e8f0; display: block; margin-bottom: 3px;">{{ detalle.nombre_item }}</strong>
+              <small style="color: #94a3b8; font-family: monospace; font-size: 0.85rem; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">
+                <i class="fas fa-barcode"></i> PN: {{ detalle.numero_parte || 'S/N' }}
+              </small>
+            </td>
               <td class="text-center">{{ detalle.cantidad | number:'1.2-2' }}</td>
               <td class="text-center text-danger">{{ (detalle.cantidad_devuelta || 0) | number:'1.2-2' }}</td>
               <td class="text-center"><strong style="color: #10b981;">{{ (detalle.cantidad - (detalle.cantidad_devuelta || 0)) | number:'1.2-2' }}</strong></td>
