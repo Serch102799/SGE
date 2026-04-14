@@ -97,7 +97,7 @@
       <div class="filtro-grupo" style="flex: 2; min-width: 250px;">
         <label style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 5px; display: block;">Seleccionar Proveedor</label>
         <select class="form-control" [(ngModel)]="filtroIdProveedor" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
-          <option value="">📊 Mostrar Todos (Ranking General)</option>
+          <option value="">Mostrar Todos (Ranking General)</option>
           <option *ngFor="let p of proveedores" [value]="p.id_proveedor">{{ p.nombre_proveedor }}</option>
         </select>
       </div>
