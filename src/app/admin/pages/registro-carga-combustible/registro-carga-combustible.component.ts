@@ -194,15 +194,15 @@ export class RegistroCargaCombustibleComponent implements OnInit {
     let litrosIdealesTeoricos = 0;
     
     // 🕵️‍♂️ LOG 1: ¿Qué autobús y catálogo tenemos?
-    console.log('--- DEPURANDO CRUCE DE RENDIMIENTO ---');
+   /*  console.log('--- DEPURANDO CRUCE DE RENDIMIENTO ---');
     console.log('Modelo Autobús Seleccionado:', this.modeloAutobusActual);
-    console.log('Catálogo de Rendimientos cargado:', this.rendimientos);
+    console.log('Catálogo de Rendimientos cargado:', this.rendimientos); */
 
     for (const r of this.rutas_realizadas) {
        const kmRuta = r.kilometraje * r.vueltas;
        
        // 🕵️‍♂️ LOG 2: ¿Qué ruta estamos buscando?
-       console.log('Buscando configuración para Ruta:', r.nombre_ruta);
+      /*  console.log('Buscando configuración para Ruta:', r.nombre_ruta); */
 
        // BÚSQUEDA A PRUEBA DE MAYÚSCULAS/ESPACIOS
        const rendConfig = this.rendimientos.find(x => 
@@ -214,10 +214,10 @@ export class RegistroCargaCombustibleComponent implements OnInit {
        );
        
        // 🕵️‍♂️ LOG 3: ¿Encontró la configuración?
-       console.log('Resultado de la búsqueda (rendConfig):', rendConfig);
+       /*  console.log('Resultado de la búsqueda (rendConfig):', rendConfig); */
 
        const rendimientoBueno = rendConfig ? parseFloat(String(rendConfig.bueno || rendConfig.rendimiento_bueno)) : 3.5; 
-       console.log(`Aplicando Rendimiento: ${rendimientoBueno} km/L para ${r.nombre_ruta}`);
+       /* console.log(`Aplicando Rendimiento: ${rendimientoBueno} km/L para ${r.nombre_ruta}`); */
        
        litrosIdealesTeoricos += (kmRuta / rendimientoBueno);
     }
