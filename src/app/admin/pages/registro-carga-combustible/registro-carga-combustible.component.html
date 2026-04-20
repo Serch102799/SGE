@@ -7,7 +7,7 @@
   </div>
   <div class="container-body" style="position: relative;">
     
-    <div class="analysis-section sticky-panel">
+<div class="analysis-section sticky-panel">
       <div class="panel-header">
         <i class="fas fa-chart-line"></i> Análisis de Rendimiento en Tiempo Real
       </div>
@@ -17,17 +17,27 @@
           <div class="kpi-value-sm">{{ km_esperados | number:'1.0-0' }} km</div>
           <div class="kpi-label-sm">KM Esperados</div>
         </div>
+        
         <div class="kpi-card-sm">
           <div class="kpi-value-sm">{{ km_recorridos | number:'1.0-0' }} km</div>
           <div class="kpi-label-sm">KM Recorridos</div>
         </div>
+        
         <div class="kpi-card-sm" [ngClass]="{'kpi-alerta': Math.abs(desviacion_km) > umbral_km}">
-          <div class="kpi-value-sm">{{ desviacion_km | number:'1.0-0' }} km</div>
+          <div class="kpi-value-sm">{{ desviacion_km > 0 ? '+' : '' }}{{ desviacion_km | number:'1.0-0' }} km</div>
           <div class="kpi-label-sm">Desviación</div>
         </div>
+        
         <div class="kpi-card-sm">
           <div class="kpi-value-sm">{{ rendimiento_calculado | number:'1.2-2' }} km/l</div>
           <div class="kpi-label-sm">Rendimiento</div>
+        </div>
+
+        <div class="kpi-card-sm" [ngClass]="{'kpi-alerta': litros_desviacion > 0}">
+          <div class="kpi-value-sm" [style.color]="litros_desviacion <= 0 ? '#10b981' : '#ef4444'">
+            {{ litros_desviacion > 0 ? '+' : '' }}{{ litros_desviacion | number:'1.1-2' }} L
+          </div>
+          <div class="kpi-label-sm">Dif. Diésel</div>
         </div>
       </div>
 

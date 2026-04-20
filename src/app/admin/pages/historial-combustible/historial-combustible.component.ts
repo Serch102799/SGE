@@ -393,7 +393,9 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       if (this.filtroRutasIds.length > 0) { doc.text(`Rutas seleccionadas.`, 148.5, yPos, { align: 'center' }); yPos += 4; }
       doc.text(`Generado: ${new Date().toLocaleString('es-MX')}`, 148.5, yPos, { align: 'center' });
 
-      const columnas = this.tipoCalculo === 'vueltas' ? ['Fecha', 'Bus', 'Marca/Mod.', 'Operador', 'KM Ini', 'KM Fin', 'Recorr.', 'Litros', 'Rend.', 'Calif.', 'Desv.', 'Motivo', 'Rutas'] : ['Fecha', 'Bus', 'Marca/Mod.', 'Operador', 'KM Ini', 'KM Fin', 'Recorr.', 'Litros', 'Rend.', 'Calif.', 'Desv.', 'Motivo', 'Despachador'];
+      const columnas = this.tipoCalculo === 'vueltas' 
+        ? ['Fecha', 'Bus', 'Marca/Mod.', 'Operador', 'KM Ini', 'KM Fin', 'Recorr.', 'Litros', 'Rend.', 'Dif. Lts', 'Calif.', 'Desv.', 'Motivo', 'Rutas'] 
+        : ['Fecha', 'Bus', 'Marca/Mod.', 'Operador', 'KM Ini', 'KM Fin', 'Recorr.', 'Litros', 'Rend.', 'Dif. Lts', 'Calif.', 'Desv.', 'Motivo', 'Despachador'];
 
       const filas = todasLasCargas.map(carga => {
         const clasificacion = carga.clasificacion_rendimiento || this.clasificarRendimiento(this.obtenerNumero(carga.rendimiento_calculado), carga.rendimiento_excelente, carga.rendimiento_bueno, carga.rendimiento_regular);
@@ -401,6 +403,9 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
         const kmFinal = this.obtenerNumero(carga.km_final || carga.km_actual);
         const desviacion = this.obtenerNumero(carga.desviacion_km);
         const marcaModelo = `${carga.marca || carga.marca_autobus || ''} ${carga.modelo || carga.anio || carga.modelo_autobus || ''}`.trim() || '-';
+        
+        const difLitros = carga.litros_desviacion != null ? this.obtenerNumero(carga.litros_desviacion) : null;
+        const difLitrosText = difLitros !== null ? `${difLitros > 0 ? '+' : ''}${difLitros.toFixed(2)}` : '-';
 
         const fila = [
           this.formatearFecha(carga.fecha_operacion),
@@ -408,6 +413,7 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
           kmInicial.toLocaleString('en-US'), kmFinal.toLocaleString('en-US'),
           this.obtenerNumero(carga.km_recorridos).toLocaleString('en-US'),
           this.obtenerNumero(carga.litros_cargados).toFixed(2), this.obtenerNumero(carga.rendimiento_calculado).toFixed(2),
+          difLitrosText, 
           clasificacion, desviacion !== 0 ? desviacion.toLocaleString('en-US') : '0', carga.motivo_desviacion || '-'
         ];
         if (this.tipoCalculo === 'vueltas') fila.push(carga.rutas_y_vueltas || carga.rutas_info || '-'); else fila.push(carga.nombre_despachador || '-');
@@ -420,24 +426,34 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
 
       autoTable(doc, {
         head: [columnas], body: filas, startY: yPos + 5, theme: 'grid',
-        styles: { fontSize: 7.5, cellPadding: 1.5, overflow: 'linebreak', halign: 'left', valign: 'middle', textColor: [40, 40, 40], lineColor: [200, 200, 200], lineWidth: 0.1 },
-        headStyles: { fillColor: [33, 150, 243], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8, halign: 'center', cellPadding: 2 },
+        styles: { fontSize: 7, cellPadding: 1.5, overflow: 'linebreak', halign: 'left', valign: 'middle', textColor: [40, 40, 40], lineColor: [200, 200, 200], lineWidth: 0.1 },
+        headStyles: { fillColor: [33, 150, 243], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7.5, halign: 'center', cellPadding: 2 },
         alternateRowStyles: { fillColor: [245, 245, 245] },
         columnStyles: { 
-          0: { cellWidth: 19, halign: 'center' }, 1: { cellWidth: 11, halign: 'center' }, 2: { cellWidth: 18, halign: 'center' },
-          3: { cellWidth: 38, halign: 'left' }, 4: { cellWidth: 13, halign: 'right' }, 5: { cellWidth: 13, halign: 'right' },
-          6: { cellWidth: 12, halign: 'right' }, 7: { cellWidth: 11, halign: 'right' }, 8: { cellWidth: 11, halign: 'center' },
-          9: { cellWidth: 15, halign: 'center', fontStyle: 'bold' }, 10: { cellWidth: 13, halign: 'right', textColor: [239, 68, 68] },
-          11: { cellWidth: 26, halign: 'left' }, 12: { cellWidth: 'auto', halign: 'left' }
+          0: { cellWidth: 17, halign: 'center' }, 1: { cellWidth: 12, halign: 'center' }, 2: { cellWidth: 16, halign: 'center' },
+          3: { cellWidth: 32, halign: 'left' }, 4: { cellWidth: 13, halign: 'right' }, 5: { cellWidth: 12, halign: 'right' },
+          6: { cellWidth: 11, halign: 'right' }, 7: { cellWidth: 12, halign: 'right' }, 8: { cellWidth: 10, halign: 'right' },
+          9: { cellWidth: 11, halign: 'right', fontStyle: 'bold' }, // Dif Lts
+          10: { cellWidth: 14, halign: 'center', fontStyle: 'bold' }, // Calif
+          11: { cellWidth: 11, halign: 'right', textColor: [239, 68, 68] }, // Desv
+          12: { cellWidth: 26, halign: 'left' }, 13: { cellWidth: 'auto', halign: 'left' }
         },
         margin: { left: 10, right: 10 },
+        didParseCell: (data: any) => {
+           if (data.column.index === 9 && data.section === 'body' && data.cell.raw !== '-') {
+               const val = parseFloat(data.cell.raw);
+               if (!isNaN(val)) {
+                   data.cell.styles.textColor = val <= 0 ? [16, 185, 129] : [239, 68, 68];
+               }
+           }
+        },
         didDrawCell: (data: any) => {
-          if (data.column.index === 9 && data.section === 'body') {
+          if (data.column.index === 10 && data.section === 'body') {
             const clasificacion = data.cell.raw; let color: [number, number, number] = [100, 100, 100];
             if (clasificacion === 'Excelente') color = [76, 175, 80]; else if (clasificacion === 'Bueno') color = [33, 150, 243]; else if (clasificacion === 'Regular') color = [255, 193, 7]; else if (clasificacion === 'Malo') color = [244, 67, 54];
             doc.setFillColor(color[0], color[1], color[2]); 
             doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-            doc.setTextColor(255, 255, 255); doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); 
+            doc.setTextColor(255, 255, 255); doc.setFontSize(7); doc.setFont('helvetica', 'bold'); 
             doc.text(clasificacion || '-', data.cell.x + data.cell.width / 2, data.cell.y + (data.cell.height / 2), { align: 'center', baseline: 'middle' });
           }
         },
@@ -459,7 +475,7 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
 
       doc.save(`Historial_Combustible_${new Date().getTime()}.pdf`);
       this.registrarAuditoriaExportacion('PDF', todasLasCargas.length);
-    } catch (error) { alert('Error al exportar a PDF'); } finally { this.exportando = false; }
+    } catch (error) { alert('Error al exportar a PDF'); console.error(error); } finally { this.exportando = false; }
   }
 
   async exportarAExcel(): Promise<void> {
@@ -475,7 +491,9 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
           'Fecha': this.formatearFecha(carga.fecha_operacion), 'Autobús': carga.economico || '-', 'Marca/Modelo': marcaModelo,
           'Operador': carga.nombre_operador || carga.nombre_completo || '-', 'KM Inicial': this.obtenerNumero(carga.km_inicial || carga.km_anterior),
           'KM Final': this.obtenerNumero(carga.km_final || carga.km_actual), 'KM Recorridos': this.obtenerNumero(carga.km_recorridos),
-          'Litros': this.obtenerNumero(carga.litros_cargados), 'Rendimiento (KM/L)': this.obtenerNumero(carga.rendimiento_calculado),
+          'Litros': this.obtenerNumero(carga.litros_cargados), 
+          'Rendimiento (KM/L)': this.obtenerNumero(carga.rendimiento_calculado),
+          'Dif. Diésel (L)': carga.litros_desviacion != null ? this.obtenerNumero(carga.litros_desviacion) : '-', 
           'Calificación': clasificacion, 'Desviación (KM)': this.obtenerNumero(carga.desviacion_km), 'Motivo Desviación': carga.motivo_desviacion || '-',
           ...(this.tipoCalculo === 'vueltas' ? { 'Rutas': carga.rutas_info || carga.rutas_y_vueltas || '-' } : { 'Despachador': carga.nombre_despachador || '-' })
         };
@@ -483,7 +501,8 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
 
       const worksheet = XLSX.utils.json_to_sheet(datosExcel);
       const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, 'Historial');
-      worksheet['!cols'] = [{ wch: 18 }, { wch: 10 }, { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 35 }, { wch: 25 }];
+      
+      worksheet['!cols'] = [{ wch: 18 }, { wch: 10 }, { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 18 }, { wch: 15 }, { wch: 14 }, { wch: 16 }, { wch: 35 }, { wch: 25 }];
 
       const rr = datosExcel.length + 2;
       worksheet[`A${rr}`] = { v: 'RESUMEN', t: 's', s: { font: { bold: true } } };
@@ -494,21 +513,6 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       XLSX.writeFile(workbook, `Historial_Combustible_${new Date().getTime()}.xlsx`);
       this.registrarAuditoriaExportacion('EXCEL', todasLasCargas.length);
     } catch (error) { alert('Error al exportar a Excel.'); } finally { this.exportandoExcel = false; }
-  }
-
-  public formatearFecha(fecha: string): string {
-    if (!fecha) return '-';
-    try { return new Date(fecha).toLocaleString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch { return '-'; }
-  }
-
-  public obtenerNumero(valor: any): number { return isNaN(parseFloat(valor)) ? 0 : parseFloat(valor); }
-
-  public clasificarRendimiento(rendimiento: number, excelente?: number, bueno?: number, regular?: number): string {
-    if (!excelente || !bueno || !regular) return '-';
-    if (rendimiento >= excelente) return 'Excelente';
-    if (rendimiento >= bueno) return 'Bueno';
-    if (rendimiento >= regular) return 'Regular';
-    return 'Malo';
   }
 
   abrirModalInfo(carga: any): void {
@@ -540,5 +544,27 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       case 'Excelente': return 'text-green-600 bg-green-50'; case 'Bueno': return 'text-blue-600 bg-blue-50';
       case 'Regular': return 'text-yellow-600 bg-yellow-50'; case 'Malo': return 'text-red-600 bg-red-50'; default: return 'text-gray-600 bg-gray-50';
     }
+  }
+
+  obtenerNumero(value: any): number {
+    if (value == null || value === '') return 0;
+    const num = parseFloat(value);
+    return isNaN(num) ? 0 : num;
+  }
+
+  formatearFecha(fecha: string): string {
+    if (!fecha) return '-';
+    try {
+      return new Date(fecha).toLocaleDateString('es-MX');
+    } catch {
+      return '-';
+    }
+  }
+
+  private clasificarRendimiento(rendimiento: number, excelente: number, bueno: number, regular: number): string {
+    if (rendimiento >= excelente) return 'Excelente';
+    if (rendimiento >= bueno) return 'Bueno';
+    if (rendimiento >= regular) return 'Regular';
+    return 'Malo';
   }
 }

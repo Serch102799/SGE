@@ -129,6 +129,7 @@
             <th>KM Recorridos</th>
             <th>Litros</th>
             <th>Rendimiento</th>
+            <th>Dif. Diésel</th>
             <th>Estatus</th>
             <th *ngIf="tipoCalculo === 'vueltas'">Rutas y Vueltas</th>
             <th *ngIf="tipoCalculo === 'dias'">Ruta Principal</th>
@@ -150,6 +151,13 @@
               <span [ngClass]="{'alerta-rendimiento': carga.alerta_rendimiento}">
                 {{ carga.rendimiento_calculado | number:'1.2-2' }}
               </span>
+            </td>
+            <td>
+              <strong *ngIf="carga.litros_desviacion !== null && carga.litros_desviacion !== undefined"
+                      [style.color]="carga.litros_desviacion <= 0 ? '#10b981' : '#ef4444'">
+                {{ carga.litros_desviacion > 0 ? '+' : '' }}{{ carga.litros_desviacion | number:'1.1-2' }} L
+              </strong>
+              <span *ngIf="carga.litros_desviacion === null || carga.litros_desviacion === undefined" style="color: #64748b;">-</span>
             </td>
             <td>
               <span class="badge-clasificacion" [ngClass]="{

@@ -1,0 +1,288 @@
+<div class="turismo-container">
+
+  <div class="header-section glass-panel">
+    <div class="header-text">
+      <h2><i class="fas fa-map-marked-alt"></i> Viajes Especiales y Turismo</h2>
+      <p>Control logístico y liquidación financiera de servicios contratados.</p>
+    </div>
+    <div class="header-actions">
+      <div class="view-toggle">
+        <button class="btn-toggle" [ngClass]="{'active': vistaActual === 'kanban'}" (click)="cambiarVista('kanban')">
+          <i class="fas fa-columns"></i> Kanban
+        </button>
+        <button class="btn-toggle" [ngClass]="{'active': vistaActual === 'tabla'}" (click)="cambiarVista('tabla')">
+          <i class="fas fa-table"></i> Tabla
+        </button>
+      </div>
+      <button class="btn-neon-primary" (click)="abrirModalReserva()">
+        <i class="fas fa-plus"></i> Nueva Cotización
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-message" *ngIf="loading"><div class="spinner"></div> Cargando operaciones...</div>
+
+  <div class="kanban-wrapper" *ngIf="!loading && vistaActual === 'kanban'">
+    
+    <div class="kanban-column col-reservado">
+      <div class="column-header">
+        <h3>Pendientes de Asignar</h3><span class="count-badge">{{ viajesReservados.length }}</span>
+      </div>
+      <div class="column-body">
+        <div class="k-card" *ngFor="let v of viajesReservados">
+          <div class="k-card-header">
+            <span class="folio">#{{ v.folio_manual || v.id_viaje }}</span>
+            <span class="fecha">{{ v.fecha_salida | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="k-card-body">
+            <h4 class="cliente"><i class="fas fa-user text-muted"></i> {{ v.nombre_cliente }}</h4>
+            <p class="ruta"><i class="fas fa-map-marker-alt text-warning"></i> Hacia: <strong>{{ v.destino }}</strong></p>
+            <div class="finanzas-mini">
+              <div class="precio">Total: {{ v.costo_total | currency:'MXN' }}</div>
+              <div class="abono" [ngClass]="v.total_abonado < v.costo_total ? 'text-danger' : 'text-success'">Abonado: {{ v.total_abonado | currency:'MXN' }}</div>
+            </div>
+          </div>
+          <div class="k-card-footer">
+            <button class="btn-k-action btn-k-primary" (click)="abrirModalDespacho(v)">
+              <i class="fas fa-bus"></i> Asignar y Despachar
+            </button>
+          </div>
+        </div>
+        <div *ngIf="viajesReservados.length === 0" class="empty-column">No hay reservas pendientes.</div>
+      </div>
+    </div>
+
+    <div class="kanban-column col-enruta">
+      <div class="column-header">
+        <h3>En Ruta / Servicio</h3><span class="count-badge">{{ viajesEnRuta.length }}</span>
+      </div>
+      <div class="column-body">
+        <div class="k-card" *ngFor="let v of viajesEnRuta">
+          <div class="k-card-header">
+            <span class="folio">#{{ v.folio_manual || v.id_viaje }}</span>
+            <span class="badge-blue">EN CURSO</span>
+          </div>
+          <div class="k-card-body">
+            <h4 class="cliente">{{ v.nombre_cliente }}</h4>
+            <p class="ruta"><strong>{{ v.destino }}</strong></p>
+            <div class="logistica-mini">
+              <div><i class="fas fa-bus text-info"></i> ECO: <strong>{{ v.autobus || 'S/N' }}</strong></div>
+              <div><i class="fas fa-id-badge text-muted"></i> {{ v.chofer || 'S/N' }}</div>
+            </div>
+          </div>
+          <div class="k-card-footer" style="display: flex; gap: 5px;">
+            <button class="btn-icon btn-k-ghost" *ngIf="authService.hasRole(['SuperUsuario'])" (click)="revertirEstatus(v, 'RESERVADO')" title="Deshacer despacho"><i class="fas fa-undo"></i></button>
+            <button class="btn-k-action btn-k-warning" style="flex:1;" (click)="abrirModalLiquidacion(v)"><i class="fas fa-file-invoice-dollar"></i> Liquidar Retorno</button>
+          </div>
+        </div>
+        <div *ngIf="viajesEnRuta.length === 0" class="empty-column">No hay unidades en servicio.</div>
+      </div>
+    </div>
+
+    <div class="kanban-column col-liquidado">
+      <div class="column-header">
+        <h3>Viajes Cerrados</h3><span class="count-badge">{{ viajesLiquidados.length }}</span>
+      </div>
+      <div class="column-body">
+        <div class="k-card" *ngFor="let v of viajesLiquidados">
+          <div class="k-card-header">
+            <span class="folio">#{{ v.folio_manual || v.id_viaje }}</span>
+            <span class="badge-green"><i class="fas fa-check-circle"></i> CERRADO</span>
+          </div>
+          <div class="k-card-body">
+            <h4 class="cliente">{{ v.nombre_cliente }}</h4>
+            <p class="ruta text-muted">{{ v.destino }}</p>
+            <div class="logistica-mini mt-2" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);">
+              <div class="text-success"><i class="fas fa-road"></i> {{ v.km_reales || 0 }} km</div>
+              <div class="text-success" title="Rendimiento"><i class="fas fa-gas-pump"></i> {{ (v.rendimiento || 0) | number:'1.1-2' }} km/L</div>
+            </div>
+          </div>
+          <div class="k-card-footer" style="display: flex; gap: 5px;">
+             <button class="btn-icon btn-k-ghost" *ngIf="authService.hasRole(['SuperUsuario'])" (click)="revertirEstatus(v, 'EN RUTA')" title="Reabrir Liquidación"><i class="fas fa-undo"></i></button>
+            <button class="btn-k-action btn-k-success" style="flex:1;"><i class="fas fa-check"></i> Archivado</button>
+          </div>
+        </div>
+        <div *ngIf="viajesLiquidados.length === 0" class="empty-column">No hay historial reciente.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-section glass-panel" *ngIf="!loading && vistaActual === 'tabla'">
+    <div class="search-bar" style="max-width: 500px; margin-bottom: 20px;">
+      <i class="fas fa-search search-icon" style="position: absolute; left: 15px; top: 12px; color: #38bdf8;"></i>
+      <input type="text" placeholder="Buscar cliente, destino o folio..." [(ngModel)]="terminoBusqueda" class="form-control" style="padding-left: 45px;">
+    </div>
+    <div class="table-responsive">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Folio</th><th>Salida</th><th>Cliente</th><th>Ruta (Origen - Destino)</th><th>Unidad / Chofer</th><th style="text-align: right;">Precio Total</th><th>Estatus</th>
+            <th *ngIf="authService.hasRole(['SuperUsuario'])" class="text-center">Admin</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let v of getViajesTabla | paginate: { itemsPerPage: itemsPorPagina, currentPage: paginaActual }">
+            <td><strong>#{{ v.folio_manual || v.id_viaje }}</strong></td>
+            <td>{{ v.fecha_salida | date:'dd/MM/yyyy' }} <br><small class="text-muted">{{ v.hora_salida }}</small></td>
+            <td>{{ v.nombre_cliente }}</td>
+            <td><small class="text-muted">{{ v.lugar_salida }}</small><br><strong>{{ v.destino }}</strong></td>
+            <td>
+              <span *ngIf="v.autobus" class="badge-bus">BUS {{ v.autobus }}</span>
+              <span *ngIf="!v.autobus" class="text-muted italic">Pendiente</span><br>
+              <small class="text-muted">{{ v.chofer }}</small>
+            </td>
+            <td style="text-align: right; color: #10b981; font-weight: bold;">{{ v.costo_total | currency:'MXN' }}</td>
+            <td><span class="badge" [ngClass]="{'badge-warning': v.estatus === 'RESERVADO', 'badge-info': v.estatus === 'EN RUTA', 'badge-success': v.estatus === 'LIQUIDADO'}">{{ v.estatus }}</span></td>
+            <td *ngIf="authService.hasRole(['SuperUsuario'])" class="text-center">
+              <button class="btn-icon" *ngIf="v.estatus === 'EN RUTA'" (click)="revertirEstatus(v, 'RESERVADO')"><i class="fas fa-undo text-warning"></i></button>
+              <button class="btn-icon" *ngIf="v.estatus === 'LIQUIDADO'" (click)="revertirEstatus(v, 'EN RUTA')"><i class="fas fa-undo text-danger"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="getViajesTabla.length === 0"><td colspan="8" class="text-center" style="padding: 30px; color: #94a3b8;">No se encontraron viajes.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination-container mt-4" style="text-align: right;" *ngIf="getViajesTabla.length > itemsPorPagina">
+      <pagination-controls (pageChange)="paginaActual = $event" previousLabel="Ant" nextLabel="Sig"></pagination-controls>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalReserva" (click)="mostrarModalReserva = false">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-book-open"></i> Nueva Cotización de Viaje</h3>
+      <button class="btn-close" (click)="mostrarModalReserva = false"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Folio Manual (Opcional)</label><input type="text" class="form-control" [(ngModel)]="nuevaReserva.folio_manual" placeholder="Ej. T-0740"></div>
+        <div class="form-group"><label>Nombre del Cliente *</label><input type="text" class="form-control" [(ngModel)]="nuevaReserva.nombre_cliente"></div>
+        <div class="form-group"><label>Teléfono Cliente</label><input type="text" class="form-control" [(ngModel)]="nuevaReserva.telefono_cliente"></div>
+        <div class="form-group full-width"><hr style="border-color: #334155; margin: 10px 0;"></div>
+        <div class="form-group"><label>Lugar de Salida *</label><input type="text" class="form-control" [(ngModel)]="nuevaReserva.lugar_salida"></div>
+        <div class="form-group"><label>Destino Principal *</label><input type="text" class="form-control" [(ngModel)]="nuevaReserva.destino"></div>
+        <div class="form-group"><label>Fecha Salida *</label><input type="date" class="form-control" [(ngModel)]="nuevaReserva.fecha_salida"></div>
+        <div class="form-group"><label>Hora Salida *</label><input type="time" class="form-control" [(ngModel)]="nuevaReserva.hora_salida"></div>
+        <div class="form-group"><label>Fecha Regreso</label><input type="date" class="form-control" [(ngModel)]="nuevaReserva.fecha_regreso"></div>
+        <div class="form-group"><label>Hora Regreso</label><input type="time" class="form-control" [(ngModel)]="nuevaReserva.hora_regreso"></div>
+        <div class="form-group full-width"><hr style="border-color: #334155; margin: 10px 0;"></div>
+        
+        <div class="form-group"><label class="text-success">Costo Total del Viaje ($) *</label><input type="number" class="form-control text-success" [(ngModel)]="nuevaReserva.costo_total" style="font-weight: bold; font-size: 1.1rem;"></div>
+        <div class="form-group"><label class="text-info">Abono Inicial ($)</label><input type="number" class="form-control text-info" [(ngModel)]="nuevaReserva.abono_inicial"></div>
+        
+        <div class="form-group"><label class="text-warning">Kilómetros Aprox. (Ida y Vuelta) *</label><input type="number" class="form-control text-warning" [(ngModel)]="nuevaReserva.km_estimados" placeholder="Ej. 200"></div>
+        
+        <div class="form-group full-width"><label>Observaciones Adicionales</label><textarea class="form-control" [(ngModel)]="nuevaReserva.observaciones" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-ghost" (click)="mostrarModalReserva = false">Cancelar</button><button class="btn-neon-primary" (click)="guardarReserva()">Guardar Cotización</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalDespacho" (click)="mostrarModalDespacho = false">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header header-info">
+      <h3><i class="fas fa-bus"></i> Asignación Logística</h3>
+      <button class="btn-close" (click)="mostrarModalDespacho = false"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p class="text-muted mb-4">Busca y selecciona los recursos que cubrirán este servicio.</p>
+      
+      <div class="form-group mb-4">
+        <label style="color: #cbd5e1; font-weight: bold;">Buscar Autobús *</label>
+        <input type="text" class="form-control mt-2" placeholder="Escribe para buscar (Ej: 330)..." 
+               [formControl]="autobusControl" [matAutocomplete]="autoBus" style="font-size: 1.1rem;">
+        <mat-autocomplete #autoBus="matAutocomplete" [displayWith]="displayFnAutobus" (optionSelected)="onAutobusSelected($event)">
+          <mat-option *ngFor="let b of filteredAutobuses$ | async" [value]="b">Bus {{ b.economico }}</mat-option>
+        </mat-autocomplete>
+      </div>
+
+      <div class="form-group mb-3">
+        <label style="color: #cbd5e1; font-weight: bold;">Buscar Operador *</label>
+        <input type="text" class="form-control mt-2" placeholder="Escribe para buscar..." 
+               [formControl]="choferControl" [matAutocomplete]="autoChofer" style="font-size: 1.1rem;">
+        <mat-autocomplete #autoChofer="matAutocomplete" [displayWith]="displayFnChofer" (optionSelected)="onChoferSelected($event)">
+          <mat-option *ngFor="let c of filteredChoferes$ | async" [value]="c">{{ c.nombre_completo || c.nombre }}</mat-option>
+        </mat-autocomplete>
+      </div>
+
+    </div>
+    <div class="modal-footer justify-center">
+      <button class="btn-ghost" (click)="mostrarModalDespacho = false">Cancelar</button>
+      <button class="btn-neon-primary" (click)="guardarDespacho()">Dar Salida</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalLiquidacion" (click)="mostrarModalLiquidacion = false">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header header-warning">
+      <h3><i class="fas fa-file-invoice-dollar"></i> Liquidación y Rendimiento</h3>
+      <button class="btn-close" (click)="mostrarModalLiquidacion = false"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      
+      <div class="alert-neon alert-info mb-4" style="display: flex; justify-content: space-between; align-items: center;">
+        <div><h4 style="margin: 0; color: white;">Precio: {{ datosLiquidacion.costo_total | currency:'MXN' }}</h4><span class="text-muted">Abonado: {{ datosLiquidacion.total_abonado | currency:'MXN' }}</span></div>
+        <div style="text-align: right;"><h4 style="margin: 0;" [ngClass]="calcularUtilidadNeta() > 0 ? 'text-success' : 'text-danger'">Utilidad Neta: {{ calcularUtilidadNeta() | currency:'MXN' }}</h4></div>
+      </div>
+
+      <div class="form-grid">
+        
+        <div class="form-group full-width"><h4 class="text-warning mb-2"><i class="fas fa-tachometer-alt"></i> Telemetría y Rendimiento</h4><hr style="border-color: #334155; margin: 0;"></div>
+        
+        <div class="form-group"><label>KM Inicial (Desde Taller)</label><input type="number" class="form-control" [value]="datosLiquidacion.km_inicial" disabled></div>
+        <div class="form-group"><label>KM Final al Llegar *</label><input type="number" class="form-control border-warning" [(ngModel)]="datosLiquidacion.km_final"></div>
+        <div class="form-group"><label>Litros de Diésel Cargados *</label><input type="number" class="form-control border-warning" [(ngModel)]="datosLiquidacion.litros_diesel" placeholder="Ej. 120"></div>
+        
+        <div class="form-group d-flex" style="flex-direction: column; justify-content: center;">
+          <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px dashed rgba(56, 189, 248, 0.4);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span class="text-muted">KM Esperados: <strong class="text-info">{{ datosLiquidacion.km_estimados }} km</strong></span>
+              <span class="text-muted">KM Reales: 
+                <strong [ngClass]="requiereJustificacionKm ? 'text-danger' : 'text-success'">{{ kmRecorridos }} km</strong>
+              </span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 1.1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
+              <span [ngClass]="rendimientoDiesel >= 2.5 ? 'text-success' : (rendimientoDiesel > 0 ? 'text-warning' : 'text-muted')">
+                <i class="fas fa-gas-pump"></i> RTO: <strong>{{ rendimientoDiesel | number:'1.1-2' }} km/L</strong>
+              </span>
+              <span [ngClass]="requiereJustificacionKm ? 'text-danger' : 'text-success'" style="font-weight: bold;">
+                <i class="fas" [ngClass]="requiereJustificacionKm ? 'fa-exclamation-triangle' : 'fa-check'"></i>
+                Dif: {{ desviacionKm }} km
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group full-width" *ngIf="requiereJustificacionKm" style="animation: slideUpModal 0.3s ease;">
+          <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 15px; border-radius: 4px;">
+            <label class="text-danger" style="font-weight: bold;"><i class="fas fa-engine-warning"></i> Alerta de Desviación: Explique el motivo de la diferencia de kilometraje *</label>
+            <textarea class="form-control" [(ngModel)]="datosLiquidacion.motivo_desviacion_km" rows="2" placeholder="Ej: Se cerró la carretera libre y tuvimos que rodear por autopista..."></textarea>
+          </div>
+        </div>
+
+        <div class="form-group full-width mt-3"><h4 class="text-warning mb-2"><i class="fas fa-money-bill-wave"></i> Gastos Comprobables del Chofer</h4><hr style="border-color: #334155; margin: 0;"></div>
+        
+        <div class="form-group"><label>Gastos en Casetas ($)</label><input type="number" class="form-control" [(ngModel)]="datosLiquidacion.gasto_casetas"></div>
+        <div class="form-group"><label>Sueldo Operador ($)</label><input type="number" class="form-control" [(ngModel)]="datosLiquidacion.gasto_sueldo_chofer"></div>
+        <div class="form-group"><label>Otros Gastos ($)</label><input type="number" class="form-control" [(ngModel)]="datosLiquidacion.otros_gastos"></div>
+        <div class="form-group"><label>Efectivo Entregado al Chofer ($)</label><input type="number" class="form-control" [(ngModel)]="datosLiquidacion.efectivo_entregado"></div>
+        <div class="form-group full-width"><label>Observaciones de Gastos (Opcional)</label><textarea class="form-control" [(ngModel)]="datosLiquidacion.observaciones_gastos" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-ghost" (click)="mostrarModalLiquidacion = false">Cancelar</button><button class="btn-neon-warning" (click)="guardarLiquidacion()"><i class="fas fa-check"></i> Cerrar Viaje y Liquidar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" style="z-index: 3000;">
+  <div class="modal-content modal-sm text-center">
+    <div class="modal-body" style="padding: 30px 20px;">
+      <h3 [ngClass]="{'text-success': notificacion.tipo === 'exito', 'text-warning': notificacion.tipo === 'advertencia', 'text-danger': notificacion.tipo === 'error'}">{{ notificacion.titulo }}</h3>
+      <p style="color: #cbd5e1; margin-top: 15px;">{{ notificacion.mensaje }}</p>
+    </div>
+    <div class="modal-footer" style="justify-content: center;"><button class="btn-ghost" (click)="cerrarNotificacion()">Entendido</button></div>
+  </div>
+</div>

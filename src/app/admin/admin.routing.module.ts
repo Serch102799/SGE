@@ -46,6 +46,7 @@ import { RecuperadosComponent } from './pages/recuperados/recuperados.component'
 import { DashConsumoComponent } from './pages/dash-consumo/dash-consumo.component';
 import { MantenimientoComponent } from './pages/mantenimiento/mantenimiento.component';
 import { VehiculosParticularesComponent } from './pages/vehiculos-particulares/vehiculos-particulares.component';
+import { ViajesTurismoComponent } from './pages/viajes-turismo/viajes-turismo.component';
 
 const routes: Routes = [
   {
@@ -262,6 +263,12 @@ const routes: Routes = [
         component:  RecuperadosComponent,
         canActivate: [RoleGuard],
         data: { roles: [ 'SuperUsuario', 'Admin'] }
+      },
+       {
+        path: 'viajes-turismo',
+        component:  ViajesTurismoComponent,
+        canActivate: [RoleGuard],
+        data: { roles: [ 'SuperUsuario', 'Admin', 'Turismo'] }
       },
       {
         path: 'mantenimiento',
