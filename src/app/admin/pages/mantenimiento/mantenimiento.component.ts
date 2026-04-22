@@ -7,7 +7,7 @@ import { environment } from '../../../../environments/environments';
 import { AuthService } from '../../../services/auth.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 
-interface RefaccionSimple { id_refaccion: number; nombre: string; numero_parte: string; } 
+interface RefaccionSimple { id_refaccion: number; nombre: string; numero_parte: string; }
 interface InsumoSimple { id_insumo: number; nombre: string; stock_actual: number; }
 interface Lote { id_lote: number; cantidad_disponible: number; costo_unitario_compra: number; nombre_proveedor: string; }
 
@@ -37,7 +37,7 @@ export class MantenimientoComponent implements OnInit {
   modalActivo: string = '';
   servicioSeleccionado: any = null;
   formData: any = {};
-  
+
   mostrarModalNotificacion = false;
   notificacion = { titulo: '', mensaje: '', tipo: 'advertencia' };
 
@@ -59,7 +59,7 @@ export class MantenimientoComponent implements OnInit {
   detalleActualInsumo = { id_insumo: null as number | null, cantidad_usada: null as number | null };
   detallesInsumosAAgregar: any[] = [];
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
+  constructor(private http: HttpClient, private authService: AuthService) { }
 
   ngOnInit(): void {
     this.cargarServicios();
@@ -106,7 +106,7 @@ export class MantenimientoComponent implements OnInit {
     this.http.get<Lote[]>(`${environment.apiUrl}/lotes/${refaccion.id_refaccion}`).subscribe(lotes => this.lotesDisponibles = lotes);
   }
 
- agregarDetalleRefaccion() {
+  agregarDetalleRefaccion() {
     const { id_lote, cantidad_despachada } = this.detalleActualRefaccion;
     const ref = this.refaccionControl.value;
 
@@ -122,7 +122,7 @@ export class MantenimientoComponent implements OnInit {
 
     const loteSeleccionadoId = Number(id_lote);
     const lote = this.lotesDisponibles.find(l => l.id_lote === loteSeleccionadoId);
-    
+
     if (!lote) {
       this.mostrarNotificacion('Error', 'No se encontró el lote seleccionado.', 'error');
       return;
@@ -134,25 +134,24 @@ export class MantenimientoComponent implements OnInit {
     }
 
     const costoReal = Number(
-      (lote as any).costo_unitario_final || 
-      (lote as any).costo_unitario_compra || 
-      (lote as any).costo_unitario || 
+      (lote as any).costo_unitario_final ||
+      (lote as any).costo_unitario_compra ||
+      (lote as any).costo_unitario ||
       0
     );
 
-    console.log("Datos del lote seleccionado:", lote); 
+    console.log("Datos del lote seleccionado:", lote);
     console.log("Costo extraído:", costoReal);
 
     this.detallesRefaccionesAAgregar.push({
-      id_lote: loteSeleccionadoId, 
-      id_refaccion: ref.id_refaccion, 
-      nombre_refaccion: ref.nombre, 
+      id_lote: loteSeleccionadoId,
+      id_refaccion: ref.id_refaccion,
+      nombre_refaccion: ref.nombre,
       numero_parte: ref.numero_parte,
-      costo_unitario: costoReal, 
+      costo_unitario: costoReal,
       cantidad_despachada: Number(cantidad_despachada)
     });
-    
-    // Limpiamos
+
     this.refaccionControl.setValue('');
     this.detalleActualRefaccion = { id_refaccion: null, id_lote: null, cantidad_despachada: null };
     this.lotesDisponibles = [];
@@ -168,7 +167,6 @@ export class MantenimientoComponent implements OnInit {
     const { cantidad_usada } = this.detalleActualInsumo;
     const insumo = this.insumoControl.value;
 
-    // 1. Validar que seleccionó algo de la lista
     if (!insumo || typeof insumo === 'string' || !insumo.id_insumo) {
       this.mostrarNotificacion('Selección Inválida', 'Por favor, selecciona un insumo de la lista desplegable.', 'advertencia');
       return;
@@ -178,20 +176,19 @@ export class MantenimientoComponent implements OnInit {
       this.mostrarNotificacion('Datos Incompletos', 'Ingresa una cantidad válida.', 'advertencia');
       return;
     }
-    
+
     this.http.get<InsumoSimple>(`${environment.apiUrl}/insumos/${insumo.id_insumo}`).subscribe(insumoDetalle => {
       if (cantidad_usada > insumoDetalle.stock_actual) {
         this.mostrarNotificacion('Stock Insuficiente', `Solo hay ${insumoDetalle.stock_actual} en stock.`, 'error');
         return;
       }
-      
+
       this.detallesInsumosAAgregar.push({
-        id_insumo: insumo.id_insumo, 
-        nombre_insumo: insumo.nombre, 
+        id_insumo: insumo.id_insumo,
+        nombre_insumo: insumo.nombre,
         cantidad_usada
       });
-      
-      // Limpiamos
+
       this.insumoControl.setValue('');
       this.detalleActualInsumo = { id_insumo: null, cantidad_usada: null };
     });
@@ -217,13 +214,13 @@ export class MantenimientoComponent implements OnInit {
 
   clasificarServicios(servicios: any[]) {
     this.urgentes = []; this.esteMes = []; this.futuros = []; this.completados = [];
-    const hoy = new Date(); const limite = new Date(); limite.setDate(hoy.getDate() + 30); 
+    const hoy = new Date(); const limite = new Date(); limite.setDate(hoy.getDate() + 30);
 
     servicios.forEach(s => {
       if (s.estado === 'Completado') { this.completados.push(s); return; }
       const d = new Date(s.fecha_proximo_servicio); const km = parseInt(s.km_proximo_servicio); const kmAct = parseInt(s.km_actual_bus) || 0;
-      if (d < hoy || kmAct >= km) { s.alerta = d < hoy ? 'Vencido por Tiempo' : 'Vencido por KM'; this.urgentes.push(s); } 
-      else if (d <= limite || (km - kmAct) <= 2000) { s.alerta = (km - kmAct) <= 2000 ? 'Próximo por KM' : 'Próximo por Fecha'; this.esteMes.push(s); } 
+      if (d < hoy || kmAct >= km) { s.alerta = d < hoy ? 'Vencido por Tiempo' : 'Vencido por KM'; this.urgentes.push(s); }
+      else if (d <= limite || (km - kmAct) <= 2000) { s.alerta = (km - kmAct) <= 2000 ? 'Próximo por KM' : 'Próximo por Fecha'; this.esteMes.push(s); }
       else { s.alerta = 'En regla'; this.futuros.push(s); }
     });
   }
@@ -270,7 +267,6 @@ export class MantenimientoComponent implements OnInit {
     const hayInsumos = this.detallesInsumosAAgregar.length > 0;
     const idUsuario = this.authService.getCurrentUser()?.id || 1;
 
-    // Si usaron piezas, PRIMERO creamos la Salida de Almacén usando tus endpoints
     if (hayRefacciones || hayInsumos) {
       const payloadSalida = {
         Tipo_Salida: 'Mantenimiento Preventivo',
@@ -298,19 +294,16 @@ export class MantenimientoComponent implements OnInit {
           }
 
           forkJoin(peticiones).subscribe({
-            next: () => this.finalizarServicio(idSalida), // Llama al paso 2
+            next: () => this.finalizarServicio(idSalida),
             error: () => { this.mostrarNotificacion('Error', 'Fallo al guardar detalles de almacén.', 'error'); this.isSaving = false; }
           });
         },
         error: () => { this.mostrarNotificacion('Error', 'Fallo al crear el vale de salida.', 'error'); this.isSaving = false; }
       });
     } else {
-      // Si no usaron piezas, pasa directo a completar el servicio
       this.finalizarServicio(null);
     }
   }
-
-  // Paso 2: Marcar como completado en la agenda
   finalizarServicio(idSalidaGenerada: number | null) {
     const payload = {
       id_autobus: this.servicioSeleccionado.id_autobus,

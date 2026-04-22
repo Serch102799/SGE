@@ -16,24 +16,31 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 16px;
-  border-bottom: 2px solid #4a6075; /* Color más oscuro que #eee */
+  border-bottom: 2px solid #4a6075;
+  /* Color más oscuro que #eee */
   margin-bottom: 20px;
 }
 
 /* AJUSTADO: Esta es la corrección principal. */
 /* Creamos la "tarjeta" blanca principal aquí. */
 .container-body {
-  padding: 24px; /* Damos padding interno */
-  background-color: #fff; /* ¡NUEVO! */
-  border-radius: 8px; /* ¡NUEVO! */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* ¡NUEVO! */
+  padding: 24px;
+  /* Damos padding interno */
+  background-color: #fff;
+  /* ¡NUEVO! */
+  border-radius: 8px;
+  /* ¡NUEVO! */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  /* ¡NUEVO! */
 }
 
 /* AJUSTADO: El contenedor de filtros ahora es transparente */
 .filtros-container {
   margin-bottom: 20px;
-  padding-bottom: 20px; /* Espacio antes de la tabla */
-  border-bottom: 1px solid #eee; /* Separador */
+  padding-bottom: 20px;
+  /* Espacio antes de la tabla */
+  border-bottom: 1px solid #eee;
+  /* Separador */
 }
 
 .filtros-row {
@@ -117,7 +124,8 @@
   padding: 12px 15px;
   text-align: left;
   border-bottom: 1px solid #dee2e6;
-  color: #333; /* Forzar texto oscuro */
+  color: #333;
+  /* Forzar texto oscuro */
   vertical-align: middle;
 }
 
@@ -151,18 +159,23 @@
   background-color: #ffc107;
   color: #333;
 }
+
 .badge-proceso {
   background-color: #007bff;
 }
+
 .badge-completado {
   background-color: #28a745;
 }
+
 .badge-cancelado {
   background-color: #dc3545;
 }
+
 /* Estado N/A */
 .badge-estado.badge-default {
-  background-color: #6c757d; /* Gris */
+  background-color: #6c757d;
+  /* Gris */
 }
 
 /* Nota: función sugerida en TS (no parte del CSS)
@@ -192,9 +205,11 @@
   font-size: 1.1rem;
   transition: transform 0.2s ease;
 }
+
 .btn-icon:hover {
   transform: scale(1.2);
 }
+
 .btn-icon:disabled {
   color: #ccc;
   cursor: not-allowed;
@@ -204,9 +219,11 @@
 .btn-editar {
   color: #007bff;
 }
+
 .btn-eliminar {
   color: #dc3545;
 }
+
 .btn-aplicar {
   color: #28a745;
 }
@@ -227,29 +244,39 @@
   text-align: right;
   margin-top: 20px;
 }
+
 .pagination-controls .ngx-pagination li {
   color: #007bff;
 }
+
 .pagination-controls .ngx-pagination a,
 .pagination-controls .ngx-pagination button,
 .pagination-controls .ngx-pagination .pagination-previous a::before,
 .pagination-controls .ngx-pagination .pagination-previous span::before,
 .pagination-controls .ngx-pagination .pagination-next a::after,
 .pagination-controls .ngx-pagination .pagination-next span::after {
-  color: #007bff !important; /* Forzar texto azul */
+  color: #007bff !important;
+  /* Forzar texto azul */
   text-decoration: none !important;
 }
+
 .pagination-controls .ngx-pagination a:hover,
 .pagination-controls .ngx-pagination button:hover {
-  background: #e9ecef !important; /* Fondo gris claro al pasar el mouse */
+  background: #e9ecef !important;
+  /* Fondo gris claro al pasar el mouse */
 }
+
 .pagination-controls .ngx-pagination .current {
-  background: #007bff !important; /* Fondo azul */
-  color: #fff !important; /* Texto blanco */
+  background: #007bff !important;
+  /* Fondo azul */
+  color: #fff !important;
+  /* Texto blanco */
   border-radius: 4px;
 }
+
 .pagination-controls .ngx-pagination .disabled {
-  color: #adb5bd !important; /* Texto gris para deshabilitados */
+  color: #adb5bd !important;
+  /* Texto gris para deshabilitados */
 }
 
 /* ============================================ */
@@ -297,12 +324,14 @@
   align-items: center;
   gap: 12px;
 }
+
 .modal-title-container h3 {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
   color: #343a40;
 }
+
 .modal-icon {
   width: 24px;
   height: 24px;
@@ -318,6 +347,7 @@
   padding: 0 8px;
   line-height: 1;
 }
+
 .modal-close-btn-edit:hover {
   color: #343a40;
 }
@@ -348,18 +378,22 @@
   align-items: center;
   gap: 8px;
 }
+
 .btn-primary-edit {
   background-color: #007bff;
   color: white;
 }
+
 .btn-primary-edit:disabled {
   background-color: #a0cfff;
   cursor: not-allowed;
 }
+
 .btn-secondary-edit {
   background-color: #6c757d;
   color: white;
 }
+
 .btn-secondary-edit:disabled {
   background-color: #b0b6bc;
 }
@@ -385,20 +419,24 @@
   padding: 16px;
   margin-bottom: 24px;
 }
+
 .info-section-edit h4 {
   margin: 0 0 12px 0;
   color: #333;
 }
+
 .info-grid-edit {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+
 .info-item-edit .info-label-edit {
   font-weight: 600;
   color: #555;
   margin-right: 8px;
 }
+
 .info-item-edit .info-value-edit {
   font-weight: 500;
   color: #000;
@@ -475,6 +513,7 @@
   font-weight: 600;
   cursor: pointer;
 }
+
 .btn-agregar-detalle:disabled {
   background-color: #a3d9b1;
 }
@@ -547,11 +586,13 @@
   align-items: center;
   border-left: 5px solid;
 }
+
 .info-label {
   font-weight: 600;
   font-size: 0.9rem;
   color: #333;
 }
+
 .info-value {
   font-family: 'Courier New', Courier, monospace;
   font-size: 1.1rem;
@@ -562,6 +603,7 @@
   background-color: #e7f3ff;
   border-color: #007bff;
 }
+
 .info-blue .info-value {
   color: #0056b3;
 }
@@ -570,6 +612,7 @@
   background-color: #eafaea;
   border-color: #28a745;
 }
+
 .info-green .info-value {
   color: #155724;
 }
@@ -578,6 +621,7 @@
   background-color: #fff9e6;
   border-color: #ffc107;
 }
+
 .info-yellow .info-value {
   color: #856404;
 }
@@ -586,6 +630,7 @@
   background-color: #fdeeee;
   border-color: #dc3545;
 }
+
 .info-red .info-value {
   color: #721c24;
 }
@@ -668,9 +713,11 @@
 .modal-exito {
   border-top-color: #28a745;
 }
+
 .modal-exito .modal-titulo-notificacion {
   color: #28a745;
 }
+
 .btn-exito {
   background-color: #28a745;
 }
@@ -678,9 +725,11 @@
 .modal-error {
   border-top-color: #dc3545;
 }
+
 .modal-error .modal-titulo-notificacion {
   color: #dc3545;
 }
+
 .btn-error {
   background-color: #dc3545;
 }
@@ -688,9 +737,11 @@
 .modal-advertencia {
   border-top-color: #ffc107;
 }
+
 .modal-advertencia .modal-titulo-notificacion {
   color: #ffc107;
 }
+
 .btn-advertencia {
   background-color: #ffc107;
   color: #333;
@@ -722,6 +773,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
