@@ -7,9 +7,13 @@ import {
   ViewEncapsulation, ElementRef
 } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import {faOilCan,faRoute, faCar, faBars, faTachometerAlt, faArrowCircleDown, faArrowCircleUp, faCogs, 
-  faTint, faUsersCog, faBus,  faTruck, faChartPie,  faChartBar, 
-  faDolly, faHistory, faWrench, faUserCircle, faCubes, faSignOutAlt, faGasPump, faScrewdriverWrench, faProjectDiagram, faTools, faGauge   } from '@fortawesome/free-solid-svg-icons';
+import {
+  faChartPie, faUsers, faOilCan, faChartLine, faScrewdriverWrench, faHeadset,
+  faBoxOpen, faHandshake, faSliders, faHammer, faCubes, faTruckFast,
+  faHandHoldingHand, faGears, faDroplet, faUserShield, faBus, faCar,
+  faBuilding, faFileLines, faWarehouse, faRecycle, faCodeMerge, faMapLocationDot,
+  faGaugeHigh, faIdCard, faServer, faGasPump, faCircleUser, faRightFromBracket, faBars
+} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-admin',
@@ -21,35 +25,39 @@ import {faOilCan,faRoute, faCar, faBars, faTachometerAlt, faArrowCircleDown, faA
 export class AdminComponent implements OnInit, AfterViewInit {
 
   isCollapsed = false;
-  faEdicionHistorica = faHistory; 
-  faEdicionDetalles = faScrewdriverWrench; 
+  
+  // Iconos asignados acorde al contexto
+  faDashboard = faChartPie;
+  faDashboardRrhh = faUsers;
   faTanques = faOilCan;
   faBars = faBars;
-  faRutas = faRoute;
-  faOperadores = faCar;
+  faRutas = faMapLocationDot;
+  faOperadores = faIdCard;
   faCargaCombustible = faGasPump;
-  faDashboard = faTachometerAlt;
-  faEntradas = faArrowCircleDown;
-  faSalidas = faArrowCircleUp;
-  faRefacciones = faCogs;
-  faInsumos = faTint;
-  faUsuarios = faUsersCog;
+  faDashConsumo = faChartLine;
+  faEntradas = faBoxOpen;
+  faSalidas = faTruckFast;
+  faRefacciones = faGears;
+  faInsumos = faDroplet;
+  faUsuarios = faUserShield;
   faAutobuses = faBus;
-  faProveedores = faTruck;
-  faReportes = faChartPie;
-  faCargaInicial = faDolly;
-  faMiPerfil = faUserCircle;
-  faCerrarSesion = faSignOutAlt;
-  faTachometerAlt = faTachometerAlt;
-  faRecetas = faProjectDiagram;
-  faArmado = faTools;
-  faChartBar = faChartBar;
-  faRendimientos = faGauge;
-  faPrestamos = faTools; 
-  faCogs = faCogs;
+  faParticulares = faCar;
+  faProveedores = faBuilding;
+  faReportes = faFileLines;
+  faCargaInicial = faWarehouse;
+  faMiPerfil = faCircleUser;
+  faCerrarSesion = faRightFromBracket;
+  faAjustesInv = faSliders;
+  faArmado = faHammer;
+  faServicios = faScrewdriverWrench;
+  faRendimientos = faGaugeHigh;
+  faPrestamos = faHandHoldingHand; 
   faArtArmados = faCubes;
-  faTickets = faHistory;
-  faServiciosExternos = faWrench;
+  faTickets = faHeadset;
+  faServiciosExternos = faHandshake;
+  faRecuperados = faRecycle;
+  faHerramientaFusion = faCodeMerge;
+  faAdminPanel = faServer;
   currentUser: any;
   constructor(
     public authService: AuthService,

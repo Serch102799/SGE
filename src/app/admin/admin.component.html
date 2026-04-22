@@ -18,147 +18,147 @@
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'RRHH'])">
         <a routerLink="dashboard" routerLinkActive="active">
-          <fa-icon [icon]="faDashboard"></fa-icon> <span>Dashboard</span>
+          <fa-icon [icon]="faDashboard" class="icon-dash"></fa-icon> <span>Dashboard</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['RRHH', 'SuperUsuario'])">
         <a routerLink="/admin/dashboard-rrhh" routerLinkActive="active">
-          <fa-icon [icon]="faDashboard"></fa-icon> <span>Dashboard RRHH</span>
+          <fa-icon [icon]="faDashboardRrhh" class="icon-dash"></fa-icon> <span>Dashboard RRHH</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['AdminDiesel', 'SuperUsuario'])">
         <a routerLink="/admin/tanques" routerLinkActive="active">
-          <fa-icon [icon]="faTanques"></fa-icon> <span>Admón. Diesel</span>
+          <fa-icon [icon]="faTanques" class="icon-fleet"></fa-icon> <span>Admón. Diesel</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole([ 'SuperUsuario', 'AdminDiesel'])">
         <a routerLink="dash-consumo" routerLinkActive="active">
-          <fa-icon [icon]="faDashboard"></fa-icon> <span>Dash-Consumo</span>
+          <fa-icon [icon]="faDashConsumo" class="icon-dash"></fa-icon> <span>Dash-Consumo</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['SuperUsuario', 'Admin'])">
         <a routerLink="mantenimiento" routerLinkActive="active">
-          <fa-icon [icon]="faChartBar"></fa-icon> <span>Servicios</span>
+          <fa-icon [icon]="faServicios" class="icon-maint"></fa-icon> <span>Servicios</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['SuperUsuario'])">
         <a routerLink="tickets" routerLinkActive="active">
-          <fa-icon [icon]="faTickets"></fa-icon> <span>Soporte</span>
+          <fa-icon [icon]="faTickets" class="icon-admin"></fa-icon> <span>Soporte</span>
         </a>
       </li>
 
 
       <!-- <li *ngIf="authService.hasRole(['SuperUsuario', 'Turismo'])">
         <a routerLink="viajes-turismo" routerLinkActive="active">
-          <fa-icon [icon]="faTickets"></fa-icon> <span>Viajes Turismo</span>
+          <fa-icon [icon]="faTickets" class="icon-fleet"></fa-icon> <span>Viajes Turismo</span>
         </a>
       </li> -->
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="entradas" routerLinkActive="active">
-          <fa-icon [icon]="faEntradas"></fa-icon> <span>Entradas</span>
+          <fa-icon [icon]="faEntradas" class="icon-inv"></fa-icon> <span>Entradas</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="servicios-externos" routerLinkActive="active">
-          <fa-icon [icon]="faServiciosExternos"></fa-icon> <span>Servicios Externos</span>
+          <fa-icon [icon]="faServiciosExternos" class="icon-maint"></fa-icon> <span>Servicios Externos</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['SuperUsuario'])">
         <a routerLink="ajustes" routerLinkActive="active">
-          <fa-icon [icon]="faRecetas"></fa-icon> <span>AjustesInv</span>
+          <fa-icon [icon]="faAjustesInv" class="icon-inv"></fa-icon> <span>AjustesInv</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="registro-produccion" routerLinkActive="active">
-          <fa-icon [icon]="faArmado"></fa-icon> <span>Armar</span>
+          <fa-icon [icon]="faArmado" class="icon-maint"></fa-icon> <span>Armar</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="productos-compuestos" routerLinkActive="active">
-          <fa-icon [icon]="faArtArmados"></fa-icon> <span>Art. Armados</span>
+          <fa-icon [icon]="faArtArmados" class="icon-maint"></fa-icon> <span>Art. Armados</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="salidas" routerLinkActive="active">
-          <fa-icon [icon]="faSalidas"></fa-icon> <span>Salidas</span>
+          <fa-icon [icon]="faSalidas" class="icon-inv"></fa-icon> <span>Salidas</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'Almacenista'])">
         <a routerLink="prestamos" routerLinkActive="active">
-          <fa-icon [icon]="faPrestamos"></fa-icon> <span>Préstamos</span>
+          <fa-icon [icon]="faPrestamos" class="icon-maint"></fa-icon> <span>Préstamos</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="refacciones" routerLinkActive="active">
-          <fa-icon [icon]="faRefacciones"></fa-icon> <span>Gestión de Refacciones</span>
+          <fa-icon [icon]="faRefacciones" class="icon-maint"></fa-icon> <span>Gestión de Refacciones</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="insumos" routerLinkActive="active">
-          <fa-icon [icon]="faInsumos"></fa-icon> <span>Gestión de Insumos</span>
+          <fa-icon [icon]="faInsumos" class="icon-maint"></fa-icon> <span>Gestión de Insumos</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['SuperUsuario', 'Admin'])">
         <a routerLink="usuarios" routerLinkActive="active">
-          <fa-icon [icon]="faUsuarios"></fa-icon> <span>Usuarios</span>
+          <fa-icon [icon]="faUsuarios" class="icon-admin"></fa-icon> <span>Usuarios</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="autobuses" routerLinkActive="active">
-          <fa-icon [icon]="faAutobuses"></fa-icon> <span>Autobuses</span>
+          <fa-icon [icon]="faAutobuses" class="icon-fleet"></fa-icon> <span>Autobuses</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="/admin/vehiculos-particulares" routerLinkActive="active">
-          <fa-icon [icon]="faOperadores"></fa-icon> <span>Particulares</span>
+          <fa-icon [icon]="faParticulares" class="icon-fleet"></fa-icon> <span>Particulares</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="proveedores" routerLinkActive="active">
-          <fa-icon [icon]="faProveedores"></fa-icon> <span>Proveedores</span>
+          <fa-icon [icon]="faProveedores" class="icon-admin"></fa-icon> <span>Proveedores</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['SuperUsuario', 'Admin'])">
         <a routerLink="reportes" routerLinkActive="active">
-          <fa-icon [icon]="faReportes"></fa-icon> <span>Reportes</span>
+          <fa-icon [icon]="faReportes" class="icon-dash"></fa-icon> <span>Reportes</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="inventario-inicial" routerLinkActive="active">
-          <fa-icon [icon]="faCargaInicial"></fa-icon> <span>Carga Inicial</span>
+          <fa-icon [icon]="faCargaInicial" class="icon-inv"></fa-icon> <span>Carga Inicial</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['SuperUsuario', 'Admin'])">
         <a routerLink="/admin/recuperados" routerLinkActive="active">
-          <fa-icon [icon]="faEdicionHistorica"></fa-icon>
+          <fa-icon [icon]="faRecuperados" class="icon-admin"></fa-icon>
           <span>Recuperados</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['SuperUsuario'])">
         <a routerLink="/admin/herramienta-fusion" routerLinkActive="active">
-          <fa-icon [icon]="faEdicionHistorica"></fa-icon>
+          <fa-icon [icon]="faHerramientaFusion" class="icon-admin"></fa-icon>
           <span>Herramienta de Fusión</span>
         </a>
       </li>
@@ -166,49 +166,49 @@
 
       <!-- <li *ngIf="authService.hasRole(['SuperUsuario', 'Admin'])">
         <a routerLink="/admin/taller" routerLinkActive="active">
-          <fa-icon [icon]="faEdicionDetalles"></fa-icon> <span>Taller</span>
+          <fa-icon [icon]="faEdicionDetalles" class="icon-maint"></fa-icon> <span>Taller</span>
         </a>
       </li> -->
 
       <!--  <li *ngIf="authService.hasRole(['SuperUsuario'])">
         <a routerLink="/admin/edicion-detalles" routerLinkActive="active">
-          <fa-icon [icon]="faEdicionDetalles"></fa-icon> <span>Corrección de Errores</span>
+          <fa-icon [icon]="faEdicionDetalles" class="icon-admin"></fa-icon> <span>Corrección de Errores</span>
         </a>
       </li> -->
 
       <li *ngIf="authService.hasRole(['AdminDiesel', 'SuperUsuario'])">
         <a routerLink="rutas" routerLinkActive="active">
-          <fa-icon [icon]="faRutas"></fa-icon> <span>Rutas</span>
+          <fa-icon [icon]="faRutas" class="icon-fleet"></fa-icon> <span>Rutas</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['SuperUsuario'])">
         <a routerLink="/admin/rendimientos" routerLinkActive="active">
-          <fa-icon [icon]="faRendimientos"></fa-icon> <span>Rendimientos</span>
+          <fa-icon [icon]="faRendimientos" class="icon-fleet"></fa-icon> <span>Rendimientos</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['SuperUsuario', 'RRHH'])">
         <a routerLink="/admin/operadores" routerLinkActive="active">
-          <fa-icon [icon]="faOperadores"></fa-icon> <span>Operadores</span>
+          <fa-icon [icon]="faOperadores" class="icon-fleet"></fa-icon> <span>Operadores</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['SuperUsuario'])">
         <a routerLink="/admin/admin-panel" routerLinkActive="active">
-          <fa-icon [icon]="faTanques"></fa-icon> <span>x</span>
+          <fa-icon [icon]="faAdminPanel" class="icon-admin"></fa-icon> <span>Admin Panel</span>
         </a>
       </li>
 
       <li *ngIf="authService.hasRole(['SuperUsuario', 'AdminDiesel'])">
         <a routerLink="/admin/registro-carga-combustible" routerLinkActive="active">
-          <fa-icon [icon]="faCargaCombustible"></fa-icon> <span>Carga de Combustible</span>
+          <fa-icon [icon]="faCargaCombustible" class="icon-fleet"></fa-icon> <span>Carga de Combustible</span>
         </a>
       </li>
 
       <li>
         <a routerLink="perfil" routerLinkActive="active">
-          <fa-icon [icon]="faMiPerfil"></fa-icon> <span>Mi Perfil</span>
+          <fa-icon [icon]="faMiPerfil" class="icon-user"></fa-icon> <span>Mi Perfil</span>
         </a>
       </li>
     </ul>

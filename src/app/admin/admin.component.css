@@ -189,11 +189,33 @@
 /* Iconos de los enlaces */
 .sidebar-nav li a fa-icon, 
 .sidebar-nav li a i {
-  font-size: 1.2em;
+  font-size: 1.25em; /* Ligeramente más grande para resaltar */
   margin-right: 15px;
   width: 25px;
   text-align: center;
-  transition: margin 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   COLORES VIVOS PARA ICONOS DEL MENÚ (Categorías)
+   ========================================================================== */
+.icon-dash { color: #38bdf8; filter: drop-shadow(0 0 3px rgba(56,189,248,0.4)); } /* Cyan */
+.icon-inv { color: #34d399; filter: drop-shadow(0 0 3px rgba(52,211,153,0.4)); } /* Verde esmeralda */
+.icon-maint { color: #fbbf24; filter: drop-shadow(0 0 3px rgba(251,191,36,0.4)); } /* Ámbar / Naranja */
+.icon-fleet { color: #a78bfa; filter: drop-shadow(0 0 3px rgba(167,139,250,0.4)); } /* Púrpura */
+.icon-admin { color: #f43f5e; filter: drop-shadow(0 0 3px rgba(244,63,94,0.4)); } /* Rosa / Rojo */
+.icon-user { color: #94a3b8; filter: drop-shadow(0 0 3px rgba(148,163,184,0.4)); } /* Gris perla */
+
+/* Efecto hover vibrante */
+.sidebar-nav li a:hover fa-icon {
+  transform: scale(1.15) rotate(3deg);
+  filter: brightness(1.2) drop-shadow(0 0 6px currentColor);
+}
+
+/* Efecto activo más fuerte */
+.sidebar-nav li a.active fa-icon {
+  transform: scale(1.1);
+  filter: brightness(1.4) drop-shadow(0 0 8px currentColor);
 }
 
 .sidebar-nav li a span {

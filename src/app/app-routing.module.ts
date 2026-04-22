@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { NotFoundComponent } from './shared/not-found/not-found.component';
 // No necesitas importar DashboardComponent aquí si se carga vía AdminModule
 
 const routes: Routes = [
@@ -9,20 +10,22 @@ const routes: Routes = [
     pathMatch: 'full',
   },
   {
-    path: 'auth', // Aquí se carga tu AuthModule (que contiene el login)
+    path: 'auth',
     loadChildren: () =>
       import('./auth/auth.module').then((m) => m.AuthModule),
   },
   {
-    path: 'admin', // Aquí se carga tu AdminModule
+    path: 'admin',
     loadChildren: () =>
       import('./admin/admin.module').then((m) => m.AdminModule),
-    // Aquí es donde podrías poner un AuthGuard para proteger toda la sección /admin
-    // canLoad: [AuthGuard]
   },
   {
-    path: '**', // Si la ruta no coincide con ninguna, redirige al login
-    redirectTo: 'auth/login',
+    path: '404',
+    component: NotFoundComponent
+  },
+  {
+    path: '**',
+    redirectTo: '404',
   },
 ];
 
@@ -30,4 +33,4 @@ const routes: Routes = [
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule],
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }
