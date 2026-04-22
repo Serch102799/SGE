@@ -63,7 +63,12 @@ export class ReportesComponent implements OnInit {
     'costo-autobus': { titulo: 'Costo por Vehículo (General)', descripcion: 'Costo de mantenimiento, servicios y cascos por Autobús o Vehículo Administrativo.', requiereFecha: true },
     'movimientos-refaccion': { titulo: 'Movimientos Generales por Refacción', descripcion: 'Historial de entradas y salidas de refacciones.', requiereFecha: true },
     'historial-por-refaccion': { titulo: 'Historial por Artículos Específicos', descripcion: 'Auditoría de entradas y salidas de una lista personalizada de ítems.', requiereFecha: true, requiereListaArticulos: true },
-    'costo-por-autobus-especifico': { titulo: 'Costo por Vehículo Específico', descripcion: 'Desglose de gastos de mantenimiento de la lista de vehículos seleccionados.', requiereFecha: true, requiereListaBuses: true }
+    'costo-por-autobus-especifico': { titulo: 'Costo por Vehículo Específico', descripcion: 'Desglose de gastos de mantenimiento de la lista de vehículos seleccionados.', requiereFecha: true, requiereListaBuses: true },
+    'detalle-gastos-salidas': { 
+        titulo: 'Salidas Totales', 
+        descripcion: 'Desglose exacto de cada salida de almacén, servicios y préstamos de herramientas.', 
+        requiereFecha: true 
+    },
   };
 
   constructor(private http: HttpClient) { }
@@ -338,10 +343,19 @@ export class ReportesComponent implements OnInit {
       return;
     }
 
+    // TOTAL VERDE PARA GASTOS TOTALES
     if (this.tipoReporteSeleccionado === 'gastos-totales' && this.totalGeneral > 0) {
       doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(76, 175, 80);
       doc.text(`TOTAL GENERAL: $${this.totalGeneral.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, startY);
-      doc.setTextColor(0, 0, 0); doc.setFont('helvetica', 'normal'); startY = 48;
+      doc.setTextColor(0, 0, 0); doc.setFont('helvetica', 'normal'); startY += 8;
+    }
+
+    //TOTAL ROJO PARA LA AUDITORÍA ANALÍTICA DE GASTOS
+    if (this.tipoReporteSeleccionado === 'detalle-gastos-salidas') {
+      const granTotalSalidas = this.reporteData.reduce((sum, item) => sum + (parseFloat(item.costo_total) || 0), 0);
+      doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(239, 68, 68); // Color Rojo
+      doc.text(`TOTAL GASTOS/SALIDAS: $${granTotalSalidas.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, startY);
+      doc.setTextColor(0, 0, 0); doc.setFont('helvetica', 'normal'); startY += 8;
     }
 
     const columnasVisibles = this.columnasReporte.filter(col => col !== 'detalles');
@@ -475,6 +489,14 @@ export class ReportesComponent implements OnInit {
     if (this.tipoReporteSeleccionado === 'gastos-totales' && this.totalGeneral > 0) {
       const filaTotales = new Array(headers.length).fill('');
       filaTotales[headers.length - 1] = `TOTAL:$${this.totalGeneral.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      datosExcel.push(filaTotales);
+    }
+
+    if (this.tipoReporteSeleccionado === 'detalle-gastos-salidas') {
+      const granTotalSalidas = this.reporteData.reduce((sum, item) => sum + (parseFloat(item.costo_total) || 0), 0);
+      const filaTotales = new Array(headers.length).fill('');
+      // Lo colocamos en la última columna
+      filaTotales[headers.length - 1] = `TOTAL:$${granTotalSalidas.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       datosExcel.push(filaTotales);
     }
 

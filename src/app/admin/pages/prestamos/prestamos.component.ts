@@ -290,12 +290,15 @@ export class PrestamosComponent implements OnInit {
   private _buscarItem(term: any): Observable<ItemBusqueda[]> {
     const searchTerm = typeof term === 'string' ? term : term.nombre;
     if (!searchTerm || searchTerm.length < 2) return of([]);
+    
     const endpoint = this.tipoItemBusqueda === 'insumo' ? 'insumos' : 'refacciones';
+    
     return this.http.get<any[]>(`${this.apiUrl}/${endpoint}/buscar`, { params: { term: searchTerm } })
       .pipe(map(items => items.map(i => ({
-        id: this.tipoItemBusqueda === 'insumo' ? i.id_insumo : i.id_refaccion,
+        id: i.id || (this.tipoItemBusqueda === 'insumo' ? i.id_insumo : i.id_refaccion),
         nombre: i.nombre,
-        stock_actual: this.tipoItemBusqueda === 'insumo' ? i.stock_actual : i.cantidad_disponible,
+        stock_actual: Number(i.stock_actual ?? i.stock ?? i.cantidad_disponible ?? 0),
+        
         tipo: this.tipoItemBusqueda 
       }))));
   }

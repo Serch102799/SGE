@@ -256,7 +256,7 @@ const routes: Routes = [
         path: 'dash-consumo',
         component:  DashConsumoComponent,
         canActivate: [RoleGuard],
-        data: { roles: [ 'SuperUsuario'] }
+        data: { roles: [ 'SuperUsuario', 'AdminDiesel'] }
       },
       {
         path: 'recuperados',

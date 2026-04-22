@@ -100,9 +100,6 @@ export class DashboardComponent implements OnInit {
   public pieComprasData: ChartData<'pie'> = { labels: [], datasets: [] };
   public pieGastosData: ChartData<'pie'> = { labels: [], datasets: [] };
 
-  private coloresCompras = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#f97316'];
-  private coloresGastos = ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e'];
-
   constructor(private http: HttpClient, private authService: AuthService) {
     Chart.register(...registerables);
     const user = this.authService.getCurrentUser();
@@ -114,13 +111,13 @@ export class DashboardComponent implements OnInit {
     this.cargarEstadisticas();
     this.cargarKpisFinancieros();
     this.cargarKpiServicios();
-    this.cargarTopAutobuses(); // <-- NUEVO: Carga la gráfica dinámica al iniciar
+    this.cargarTopAutobuses(); 
   }
 
   // ==========================================
   // INICIALIZACIÓN DE FECHAS
   // ==========================================
-  establecerMesActual() {
+establecerMesActual() {
     const hoy = new Date();
     const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
@@ -128,16 +125,14 @@ export class DashboardComponent implements OnInit {
     const primerDiaStr = primerDia.toISOString().split('T')[0];
     const ultimoDiaStr = ultimoDia.toISOString().split('T')[0];
 
-    // Para el filtro Financiero
     this.fechaInicioKPI = primerDiaStr;
     this.fechaFinKPI = ultimoDiaStr;
 
-    // Para el filtro del Top 5 Autobuses
     this.fechaInicioTopBus = primerDiaStr;
     this.fechaFinTopBus = ultimoDiaStr;
   }
 
-  cargarKpiServicios() {
+ cargarKpiServicios() {
     this.http.get<any>(`${environment.apiUrl}/servicios/kpi-pendientes`).subscribe({
       next: (res) => { this.serviciosPendientes = res.pendientes || 0; },
       error: (err) => console.error('Error al cargar KPI de servicios', err)
@@ -157,8 +152,6 @@ export class DashboardComponent implements OnInit {
           this.topStockInsumosData.labels = data.topStockInsumos.map(item => item.nombre);
           this.topStockInsumosData.datasets[0].data = data.topStockInsumos.map(item => item.stock_actual);
         }
-        // NOTA: Hemos quitado la carga de topCostoAutobuses de aquí, ahora lo hace cargarTopAutobuses()
-        
         this.chart?.update();
         this.isLoading = false; 
       },
@@ -169,35 +162,19 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  // ==========================================
-  // CARGA DINÁMICA DE TOP 5 AUTOBUSES
-  // ==========================================
   cargarTopAutobuses() {
-    // Si alguna fecha está vacía, no hace la petición
     if (!this.fechaInicioTopBus || !this.fechaFinTopBus) return;
 
-    const params = {
-      fechaInicio: this.fechaInicioTopBus,
-      fechaFin: this.fechaFinTopBus
-    };
+    const params = { fechaInicio: this.fechaInicioTopBus, fechaFin: this.fechaFinTopBus };
 
-    // Asegúrate de que la ruta coincida con el backend que creaste
-    // Por ejemplo: '/dashboard/top-autobuses' o '/reportes/top-autobuses' o '/salidas/top-autobuses'
     this.http.get<any[]>(`${environment.apiUrl}/dashboard/top-autobuses`, { params }).subscribe({
       next: (data) => {
-        // Mapeamos los datos dependiendo de cómo los llame tu backend 
-        // (ej: item.autobus o item.economico y item.gasto_total o item.costo_total)
         const labels = data.map(item => item.autobus || item.economico || 'Desconocido');
         const values = data.map(item => parseFloat(item.gasto_total || item.costo_total || 0));
 
-        // Reasignamos el objeto de datos para que Chart.js detecte el cambio y anime
         this.topCostoAutobusesData = {
           labels: labels,
-          datasets: [{ 
-            data: values, 
-            label: 'Costo Total ($)', 
-            backgroundColor: 'rgba(239, 68, 68, 0.8)' 
-          }]
+          datasets: [{ data: values, label: 'Costo Total ($)', backgroundColor: 'rgba(239, 68, 68, 0.8)' }]
         };
       },
       error: (err) => console.error('Error al cargar el Top de Autobuses Dinámico', err)
@@ -213,28 +190,50 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  // ==========================================
+  // CARGA DINÁMICA DE KPIs FINANCIEROS
+  // ==========================================
   cargarKpisFinancieros() {
     this.isLoadingKpis = true;
     const params = { fechaInicio: this.fechaInicioKPI, fechaFin: this.fechaFinKPI };
 
     this.http.get<any>(this.apiUrlKpis, { params }).subscribe({
       next: (data) => {
+        
         const comprasLabels = data.compras.map((c: any) => c.razon_social);
         const comprasValues = data.compras.map((c: any) => parseFloat(c.total));
         this.granTotalCompras = comprasValues.reduce((acc: number, val: number) => acc + val, 0);
 
+        const coloresDinCompras = comprasLabels.map((etiqueta: string) => {
+          if (etiqueta === 'Devolución de Préstamos') return '#8b5cf6'; // Morado brillante
+          if (etiqueta === 'A8M') return '#3b82f6'; // Azul
+          if (etiqueta === 'Flota Administrativa') return '#10b981'; // Verde
+          if (etiqueta === 'Sin Razón Social') return '#f59e0b'; // Naranja
+          return '#64748b'; // Gris por defecto
+        });
+
         this.pieComprasData = {
           labels: comprasLabels,
-          datasets: [{ data: comprasValues, backgroundColor: this.coloresCompras, hoverOffset: 20 }]
+          datasets: [{ data: comprasValues, backgroundColor: coloresDinCompras, hoverOffset: 20 }]
         };
 
         const gastosLabels = data.gastos.map((g: any) => g.razon_social);
         const gastosValues = data.gastos.map((g: any) => parseFloat(g.total));
         this.granTotalGastos = gastosValues.reduce((acc: number, val: number) => acc + val, 0);
 
+        // ASIGNACIÓN DINÁMICA DE COLORES PARA GASTOS
+        const coloresDinGastos = gastosLabels.map((etiqueta: string) => {
+          if (etiqueta === 'Préstamos') return '#d946ef'; // Magenta brillante
+          if (etiqueta === 'A8M') return '#ef4444';
+          if (etiqueta === 'GIALJU') return '#bd8dce'; // Rojo
+          if (etiqueta === 'Sin Razón Social') return '#f97316'; // Naranja fuerte
+          if (etiqueta === 'Flota Administrativa') return '#84cc16'; // Verde limón
+          return '#eab308'; // Amarillo por defecto
+        });
+
         this.pieGastosData = {
           labels: gastosLabels,
-          datasets: [{ data: gastosValues, backgroundColor: this.coloresGastos, hoverOffset: 20 }]
+          datasets: [{ data: gastosValues, backgroundColor: coloresDinGastos, hoverOffset: 20 }]
         };
 
         this.isLoadingKpis = false;
