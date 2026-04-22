@@ -143,11 +143,11 @@
         </a>
       </li>
 
-      <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+      <!-- <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="inventario-inicial" routerLinkActive="active">
           <fa-icon [icon]="faCargaInicial"></fa-icon> <span>Carga Inicial</span>
         </a>
-      </li>
+      </li> -->
 
       <li *ngIf="authService.hasRole(['SuperUsuario', 'Admin'])">
         <a routerLink="/admin/recuperados" routerLinkActive="active">
@@ -170,11 +170,11 @@
         </a>
       </li> -->
 
-      <li *ngIf="authService.hasRole(['SuperUsuario'])">
+      <!--  <li *ngIf="authService.hasRole(['SuperUsuario'])">
         <a routerLink="/admin/edicion-detalles" routerLinkActive="active">
           <fa-icon [icon]="faEdicionDetalles"></fa-icon> <span>Corrección de Errores</span>
         </a>
-      </li>
+      </li> -->
 
       <li *ngIf="authService.hasRole(['AdminDiesel', 'SuperUsuario'])">
         <a routerLink="rutas" routerLinkActive="active">

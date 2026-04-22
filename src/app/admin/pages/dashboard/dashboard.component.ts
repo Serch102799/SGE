@@ -18,7 +18,7 @@ interface DashboardStats {
   ultimasEntradas: any[];
   ultimasSalidas: any[];
   // Ya no usamos el estático, pero lo dejamos en la interfaz por si tu backend antiguo aún lo manda
-  topCostoAutobuses?: { economico: string, costo_total: number }[]; 
+  topCostoAutobuses?: { economico: string, costo_total: number }[];
 }
 
 @Component({
@@ -34,14 +34,14 @@ export class DashboardComponent implements OnInit {
   fechaFinTopBus: string = '';
 
   nombreUsuario: string = '';
-  faCalendarAlt = faCalendarAlt; 
-  currentDate: Date = new Date(); 
+  faCalendarAlt = faCalendarAlt;
+  currentDate: Date = new Date();
   stats: DashboardStats | null = null;
   serviciosPendientes: number = 0;
-  
+
   private apiUrlStats = `${environment.apiUrl}/dashboard/stats`;
   private apiUrlKpis = `${environment.apiUrl}/reportes/dashboard-kpis`;
-  
+
   @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
 
   isLoading: boolean = true;
@@ -71,15 +71,15 @@ export class DashboardComponent implements OnInit {
     scales: { y: { beginAtZero: true, ticks: { color: '#e0e0e0' } }, x: { ticks: { color: '#e0e0e0' } } }
   };
   public topStockInsumosData: ChartData<'bar'> = {
-    labels: [], datasets: [{ data: [], label: 'Stock Actual', backgroundColor: 'rgba(77, 182, 172, 0.8)' }] 
+    labels: [], datasets: [{ data: [], label: 'Stock Actual', backgroundColor: 'rgba(77, 182, 172, 0.8)' }]
   };
 
   // Gráfica de Top 5 Autobuses
   public topCostoAutobusesOptions: ChartConfiguration['options'] = {
     responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } },
-    scales: { 
-      y: { ticks: { color: '#e0e0e0' } }, 
-      x: { ticks: { color: '#e0e0e0' } } 
+    scales: {
+      y: { ticks: { color: '#e0e0e0' } },
+      x: { ticks: { color: '#e0e0e0' } }
     }
   };
   public topCostoAutobusesData: ChartData<'bar'> = {
@@ -111,13 +111,13 @@ export class DashboardComponent implements OnInit {
     this.cargarEstadisticas();
     this.cargarKpisFinancieros();
     this.cargarKpiServicios();
-    this.cargarTopAutobuses(); 
+    this.cargarTopAutobuses();
   }
 
   // ==========================================
   // INICIALIZACIÓN DE FECHAS
   // ==========================================
-establecerMesActual() {
+  establecerMesActual() {
     const hoy = new Date();
     const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
@@ -132,7 +132,7 @@ establecerMesActual() {
     this.fechaFinTopBus = ultimoDiaStr;
   }
 
- cargarKpiServicios() {
+  cargarKpiServicios() {
     this.http.get<any>(`${environment.apiUrl}/servicios/kpi-pendientes`).subscribe({
       next: (res) => { this.serviciosPendientes = res.pendientes || 0; },
       error: (err) => console.error('Error al cargar KPI de servicios', err)
@@ -140,7 +140,7 @@ establecerMesActual() {
   }
 
   cargarEstadisticas() {
-    this.isLoading = true; 
+    this.isLoading = true;
     this.http.get<DashboardStats>(this.apiUrlStats).subscribe({
       next: (data) => {
         this.stats = data;
@@ -153,7 +153,7 @@ establecerMesActual() {
           this.topStockInsumosData.datasets[0].data = data.topStockInsumos.map(item => item.stock_actual);
         }
         this.chart?.update();
-        this.isLoading = false; 
+        this.isLoading = false;
       },
       error: (err) => {
         console.error('Error al cargar estadísticas base', err);
@@ -199,17 +199,22 @@ establecerMesActual() {
 
     this.http.get<any>(this.apiUrlKpis, { params }).subscribe({
       next: (data) => {
-        
+
         const comprasLabels = data.compras.map((c: any) => c.razon_social);
         const comprasValues = data.compras.map((c: any) => parseFloat(c.total));
         this.granTotalCompras = comprasValues.reduce((acc: number, val: number) => acc + val, 0);
 
         const coloresDinCompras = comprasLabels.map((etiqueta: string) => {
-          if (etiqueta === 'Devolución de Préstamos') return '#8b5cf6'; // Morado brillante
-          if (etiqueta === 'A8M') return '#3b82f6'; // Azul
-          if (etiqueta === 'Flota Administrativa') return '#10b981'; // Verde
-          if (etiqueta === 'Sin Razón Social') return '#f59e0b'; // Naranja
-          return '#64748b'; // Gris por defecto
+
+          if (etiqueta === 'Devolución de Préstamos') return '#06b6d4';
+          if (etiqueta === 'TRESA') return '#ef4444';
+          if (etiqueta === 'A8M') return '#3b82f6';
+          if (etiqueta === 'MARTRESS') return '#eab308';
+          if (etiqueta === 'GIALJU') return '#8b5cf6';
+          if (etiqueta === 'Flota Administrativa') return '#10b981';
+          if (etiqueta === 'Sin Razón Social') return '#f97316';
+
+          return '#64748b';
         });
 
         this.pieComprasData = {
@@ -221,14 +226,16 @@ establecerMesActual() {
         const gastosValues = data.gastos.map((g: any) => parseFloat(g.total));
         this.granTotalGastos = gastosValues.reduce((acc: number, val: number) => acc + val, 0);
 
-        // ASIGNACIÓN DINÁMICA DE COLORES PARA GASTOS
         const coloresDinGastos = gastosLabels.map((etiqueta: string) => {
-          if (etiqueta === 'Préstamos') return '#d946ef'; // Magenta brillante
-          if (etiqueta === 'A8M') return '#ef4444';
-          if (etiqueta === 'GIALJU') return '#bd8dce'; // Rojo
-          if (etiqueta === 'Sin Razón Social') return '#f97316'; // Naranja fuerte
-          if (etiqueta === 'Flota Administrativa') return '#84cc16'; // Verde limón
-          return '#eab308'; // Amarillo por defecto
+          if (etiqueta === 'Préstamos' || etiqueta === 'Material en Préstamo') return '#ec4899';
+          if (etiqueta === 'TRESA') return '#ef4444';
+          if (etiqueta === 'A8M') return '#3b82f6';
+          if (etiqueta === 'MARTRESS') return '#eab308';
+          if (etiqueta === 'GIALJU') return '#8b5cf6';
+          if (etiqueta === 'Flota Administrativa') return '#10b981';
+          if (etiqueta === 'Sin Razón Social') return '#f97316';
+
+          return '#64748b';
         });
 
         this.pieGastosData = {

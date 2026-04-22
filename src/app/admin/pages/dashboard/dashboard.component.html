@@ -62,7 +62,7 @@
 
     <div class="financial-section">
       <div class="financial-header">
-        <h3>📊 Resumen Financiero por Empresa</h3>
+        <h3>Resumen Financiero</h3>
         <div class="date-filters">
           <div class="filter-group">
             <label>Desde:</label>
@@ -131,22 +131,23 @@
          ========================================== -->
     <div class="charts-grid-single">
       <div class="chart-container">
-        
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
           <h3 style="margin: 0;">Gasto Total por Autobús (Top 5)</h3>
-          
+
           <div style="display: flex; gap: 15px; align-items: center;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="color: #94a3b8; font-size: 0.85rem;">Desde:</span>
-              <input type="date" class="form-control" 
-                     style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; outline: none; color-scheme: dark;" 
-                     [(ngModel)]="fechaInicioTopBus" (change)="cargarTopAutobuses()">
+              <input type="date" class="form-control"
+                style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; outline: none; color-scheme: dark;"
+                [(ngModel)]="fechaInicioTopBus" (change)="cargarTopAutobuses()">
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="color: #94a3b8; font-size: 0.85rem;">Hasta:</span>
-              <input type="date" class="form-control" 
-                     style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; outline: none; color-scheme: dark;" 
-                     [(ngModel)]="fechaFinTopBus" (change)="cargarTopAutobuses()">
+              <input type="date" class="form-control"
+                style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; outline: none; color-scheme: dark;"
+                [(ngModel)]="fechaFinTopBus" (change)="cargarTopAutobuses()">
             </div>
           </div>
         </div>
