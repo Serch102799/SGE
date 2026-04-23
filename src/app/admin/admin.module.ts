@@ -55,6 +55,7 @@ import { DashConsumoComponent } from './pages/dash-consumo/dash-consumo.componen
 import { MantenimientoComponent } from './pages/mantenimiento/mantenimiento.component';
 import { VehiculosParticularesComponent } from './pages/vehiculos-particulares/vehiculos-particulares.component';
 import { ViajesTurismoComponent } from './pages/viajes-turismo/viajes-turismo.component';
+import { DashTurismoComponent } from './pages/dash-turismo/dash-turismo.component';
 
 @NgModule({
   declarations: [
@@ -99,7 +100,8 @@ import { ViajesTurismoComponent } from './pages/viajes-turismo/viajes-turismo.co
     DashConsumoComponent,
     MantenimientoComponent,
     VehiculosParticularesComponent,
-    ViajesTurismoComponent
+    ViajesTurismoComponent,
+    DashTurismoComponent
   ],
   imports: [
     HttpClientModule,

@@ -28,15 +28,23 @@ export interface ViajeTurismo {
   chofer?: string;
 }
 
+export interface DestinoTurismo {
+  id?: number;
+  nombre_destino: string;
+  lugar_salida: string;
+  km_estimados: number;
+  costo_sugerido: number;
+}
+
 @Component({
-  selector: 'app-viajes-turismo',
+  selector: 'app-dash-turismo',
   standalone: false,
-  templateUrl: './viajes-turismo.component.html',
-  styleUrls: ['./viajes-turismo.component.css']
+  templateUrl: './dash-turismo.component.html',
+  styleUrls: ['./dash-turismo.component.css']
 })
-export class ViajesTurismoComponent implements OnInit {
+export class DashTurismoComponent implements OnInit {
   
-  vistaActual: 'kanban' | 'tabla' | 'formulario' = 'kanban';
+  vistaActual: 'kanban' | 'formulario' | 'destinos' = 'kanban';
   private apiUrl = `${environment.apiUrl}/viajes-turismo`;
 
   todosLosViajes: ViajeTurismo[] = [];
@@ -45,20 +53,33 @@ export class ViajesTurismoComponent implements OnInit {
   viajesLiquidados: ViajeTurismo[] = [];
   autobusesDisponibles: any[] = [];
   
+  // Destinos precargados
+  destinosPreCargados: DestinoTurismo[] = [
+    { nombre_destino: 'Cancún, Quintana Roo', lugar_salida: 'Terminal Central', km_estimados: 3200, costo_sugerido: 45000 },
+    { nombre_destino: 'Acapulco, Guerrero', lugar_salida: 'Terminal Central', km_estimados: 800, costo_sugerido: 15000 },
+    { nombre_destino: 'Puerto Vallarta, Jalisco', lugar_salida: 'Terminal Central', km_estimados: 1200, costo_sugerido: 22000 },
+    { nombre_destino: 'Ciudad de México (Centro Histórico)', lugar_salida: 'Terminal Central', km_estimados: 300, costo_sugerido: 8000 }
+  ];
+  
   autobusControl = new FormControl(); 
   choferControl = new FormControl();
+  destinoControl = new FormControl();
+
   filteredAutobuses$: Observable<any[]>; 
   filteredChoferes$: Observable<any[]>;
+  filteredDestinos$: Observable<DestinoTurismo[]>;
 
   terminoBusqueda: string = ''; 
   paginaActual: number = 1; 
   itemsPorPagina: number = 10; 
   loading = false;
 
-  mostrarModalReserva = false; 
   mostrarModalDespacho = false; 
   mostrarModalLiquidacion = false; 
   mostrarModalNotificacion = false;
+  mostrarModalNuevoDestino = false;
+
+  nuevoDestino: DestinoTurismo = { nombre_destino: '', lugar_salida: '', km_estimados: 0, costo_sugerido: 0 };
 
   nuevaReserva = { 
     folio_manual: '', fecha_salida: '', hora_salida: '', fecha_regreso: '', hora_regreso: '', 
@@ -87,14 +108,22 @@ export class ViajesTurismoComponent implements OnInit {
       startWith(''), debounceTime(300), distinctUntilChanged(), 
       switchMap(value => this._buscarApi('operadores', value || ''))
     );
+    this.filteredDestinos$ = this.destinoControl.valueChanges.pipe(
+      startWith(''),
+      switchMap(value => this._filtrarDestinos(value || ''))
+    );
   }
 
   ngOnInit(): void {
     this.cargarViajes();
-    // Extraemos la data de forma segura para evitar el error del .find()
     this.http.get<any>(`${environment.apiUrl}/autobuses`).subscribe(res => {
       this.autobusesDisponibles = res.data || res; 
     });
+  }
+
+  private _filtrarDestinos(value: string | DestinoTurismo): Observable<DestinoTurismo[]> {
+    const filterValue = typeof value === 'string' ? value.toLowerCase() : value.nombre_destino.toLowerCase();
+    return of(this.destinosPreCargados.filter(d => d.nombre_destino.toLowerCase().includes(filterValue)));
   }
 
   private _buscarApi(tipo: 'autobuses' | 'operadores', term: any): Observable<any[]> {
@@ -105,6 +134,7 @@ export class ViajesTurismoComponent implements OnInit {
 
   displayFnAutobus(item: any): string { return item ? `Bus ${item.economico}` : ''; }
   displayFnChofer(item: any): string { return item ? (item.nombre_completo || item.nombre) : ''; }
+  displayFnDestino(item: any): string { return item ? item.nombre_destino : ''; }
 
   onAutobusSelected(event: MatAutocompleteSelectedEvent): void { 
     this.datosDespacho.id_autobus = event.option.value.id_autobus; 
@@ -115,7 +145,40 @@ export class ViajesTurismoComponent implements OnInit {
     this.datosDespacho.id_chofer = val.id_operador || val.id_empleado || val.id; 
   }
 
-  cambiarVista(vista: 'kanban' | 'tabla' | 'formulario') { this.vistaActual = vista; }
+  onDestinoSelected(event: MatAutocompleteSelectedEvent): void {
+    const dest: DestinoTurismo = event.option.value;
+    this.nuevaReserva.destino = dest.nombre_destino;
+    this.nuevaReserva.lugar_salida = dest.lugar_salida;
+    this.nuevaReserva.km_estimados = dest.km_estimados;
+    this.nuevaReserva.costo_total = dest.costo_sugerido;
+  }
+
+  checkDestinoNuevo() {
+    const term = typeof this.destinoControl.value === 'string' ? this.destinoControl.value : this.destinoControl.value?.nombre_destino;
+    if (term) {
+      this.nuevaReserva.destino = term;
+      const existe = this.destinosPreCargados.find(d => d.nombre_destino.toLowerCase() === term.toLowerCase());
+      if (!existe) {
+        if(confirm(`El destino "${term}" no está guardado en tu catálogo frecuente. ¿Deseas guardarlo para futuros viajes?`)) {
+          this.nuevoDestino.nombre_destino = term;
+          this.mostrarModalNuevoDestino = true;
+        }
+      }
+    }
+  }
+
+  guardarDestinoNuevo() {
+    this.destinosPreCargados.push({...this.nuevoDestino});
+    this.mostrarNotificacion('Destino Guardado', 'El destino se ha agregado a tu catálogo.', 'exito');
+    this.mostrarModalNuevoDestino = false;
+  }
+
+  cambiarVista(vista: 'kanban' | 'formulario' | 'destinos') { 
+    this.vistaActual = vista; 
+    if (vista === 'formulario') {
+      this.destinoControl.setValue('');
+    }
+  }
 
   cargarViajes() {
     this.loading = true;
@@ -138,22 +201,13 @@ export class ViajesTurismoComponent implements OnInit {
     this.viajesLiquidados = viajes.filter(v => v.estatus === 'LIQUIDADO').slice(0, 15);
   }
 
-  get getViajesTabla() {
-    if (!this.terminoBusqueda) return this.todosLosViajes;
-    const term = this.terminoBusqueda.toLowerCase();
-    return this.todosLosViajes.filter(v => 
-      v.nombre_cliente.toLowerCase().includes(term) || 
-      v.destino.toLowerCase().includes(term) || 
-      (v.folio_manual && v.folio_manual.toLowerCase().includes(term))
-    );
-  }
-
   abrirFormularioReserva() {
     this.nuevaReserva = { 
       folio_manual: '', fecha_salida: '', hora_salida: '', fecha_regreso: '', hora_regreso: '', 
       nombre_cliente: '', telefono_cliente: '', lugar_salida: '', destino: '', 
       costo_total: null, abono_inicial: null, observaciones: '', km_estimados: null 
     };
+    this.destinoControl.setValue('');
     this.vistaActual = 'formulario';
   }
 
@@ -162,7 +216,7 @@ export class ViajesTurismoComponent implements OnInit {
       this.mostrarNotificacion('Incompleto', 'Llena los campos obligatorios (*).', 'advertencia'); return; 
     }
     this.http.post(`${this.apiUrl}/reserva`, this.nuevaReserva).subscribe({
-      next: () => { this.mostrarNotificacion('Éxito', 'Cotización de contrato guardada.', 'exito'); this.vistaActual = 'kanban'; this.cargarViajes(); },
+      next: () => { this.mostrarNotificacion('Éxito', 'Contrato de viaje generado.', 'exito'); this.vistaActual = 'kanban'; this.cargarViajes(); },
       error: (err) => this.mostrarNotificacion('Error', err.error?.message || 'Error al guardar.', 'error')
     });
   }
@@ -198,7 +252,6 @@ export class ViajesTurismoComponent implements OnInit {
     this.mostrarModalLiquidacion = true;
   }
 
-  // --- TELEMETRÍA DINÁMICA ---
   get kmRecorridos() {
     if (!this.datosLiquidacion.km_final || !this.datosLiquidacion.km_inicial) return 0;
     return this.datosLiquidacion.km_final - this.datosLiquidacion.km_inicial;
@@ -220,13 +273,11 @@ export class ViajesTurismoComponent implements OnInit {
     if (!this.datosLiquidacion.km_final || this.datosLiquidacion.km_final <= this.datosLiquidacion.km_inicial) { 
       this.mostrarNotificacion('Error', 'El KM Final debe ser mayor al Inicial.', 'error'); return; 
     }
-
     if (this.requiereJustificacionKm && !this.datosLiquidacion.motivo_desviacion_km) {
       this.mostrarNotificacion('Alerta Logística', 'La desviación de kilómetros es alta. Debes escribir una justificación.', 'advertencia'); return;
     }
 
     const payload = { ...this.datosLiquidacion, rendimiento: this.rendimientoDiesel };
-
     this.http.post(`${this.apiUrl}/liquidacion`, payload).subscribe({
       next: () => { this.mostrarNotificacion('Liquidado', 'Viaje cerrado y estadísticas actualizadas.', 'exito'); this.mostrarModalLiquidacion = false; this.cargarViajes(); },
       error: (err) => this.mostrarNotificacion('Error', err.error?.message || 'No se pudo liquidar.', 'error')

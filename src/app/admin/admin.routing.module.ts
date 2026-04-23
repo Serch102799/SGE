@@ -47,6 +47,7 @@ import { DashConsumoComponent } from './pages/dash-consumo/dash-consumo.componen
 import { MantenimientoComponent } from './pages/mantenimiento/mantenimiento.component';
 import { VehiculosParticularesComponent } from './pages/vehiculos-particulares/vehiculos-particulares.component';
 import { ViajesTurismoComponent } from './pages/viajes-turismo/viajes-turismo.component';
+import { DashTurismoComponent } from './pages/dash-turismo/dash-turismo.component';
 
 const routes: Routes = [
   {
@@ -264,9 +265,15 @@ const routes: Routes = [
         canActivate: [RoleGuard],
         data: { roles: [ 'SuperUsuario', 'Admin'] }
       },
-       {
+      {
         path: 'viajes-turismo',
         component:  ViajesTurismoComponent,
+        canActivate: [RoleGuard],
+        data: { roles: [ 'SuperUsuario', 'Admin', 'Turismo'] }
+      },
+      {
+        path: 'dash-turismo',
+        component:  DashTurismoComponent,
         canActivate: [RoleGuard],
         data: { roles: [ 'SuperUsuario', 'Admin', 'Turismo'] }
       },

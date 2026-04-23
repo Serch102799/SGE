@@ -13,24 +13,26 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
     trigger('formState', [
       state('hidden', style({
         opacity: 0,
-        transform: 'scale(0.95) translateY(-20px)'
+        transform: 'scale(0.8) translateY(40px)',
+        filter: 'blur(10px)'
       })),
       state('visible', style({
         opacity: 1,
-        transform: 'scale(1) translateY(0)'
+        transform: 'scale(1) translateY(0)',
+        filter: 'blur(0px)'
       })),
-      transition('hidden <=> visible', animate('600ms cubic-bezier(0.34, 1.56, 0.64, 1)'))
+      transition('hidden <=> visible', animate('800ms cubic-bezier(0.175, 0.885, 0.32, 1.1)'))
     ]),
     trigger('logoState', [
       state('expanded', style({
-        transform: 'translateY(-80px) scale(0.6)',
-        opacity: 0.7
+        transform: 'translateY(-120px) scale(0.6)',
+        opacity: 0.8
       })),
       state('collapsed', style({
         transform: 'translateY(0) scale(1)',
         opacity: 1
       })),
-      transition('* <=> *', animate('600ms cubic-bezier(0.34, 1.56, 0.64, 1)'))
+      transition('* <=> *', animate('800ms cubic-bezier(0.175, 0.885, 0.32, 1.1)'))
     ])
   ]
 })

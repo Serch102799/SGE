@@ -1,27 +1,29 @@
 <div class="turismo-container">
 
+  <!-- TOP TABS NAVIGATION -->
   <div class="header-section glass-panel">
     <div class="header-text">
-      <h2><i class="fas fa-map-marked-alt"></i> Viajes Especiales y Turismo</h2>
-      <p>Control logístico y liquidación financiera de servicios contratados.</p>
+      <h2><i class="fas fa-map-marked-alt"></i> Dash-Turismo</h2>
+      <p>Panel principal de Viajes, Contratos y Destinos Frecuentes.</p>
     </div>
     <div class="header-actions">
       <div class="view-toggle">
         <button class="btn-toggle" [ngClass]="{'active': vistaActual === 'kanban'}" (click)="cambiarVista('kanban')">
-          <i class="fas fa-columns"></i> Kanban
+          <i class="fas fa-columns"></i> Tablero
         </button>
-        <button class="btn-toggle" [ngClass]="{'active': vistaActual === 'tabla'}" (click)="cambiarVista('tabla')">
-          <i class="fas fa-table"></i> Tabla
+        <button class="btn-toggle" [ngClass]="{'active': vistaActual === 'destinos'}" (click)="cambiarVista('destinos')">
+          <i class="fas fa-map-signs"></i> Rutas / Destinos
+        </button>
+        <button class="btn-toggle" [ngClass]="{'active': vistaActual === 'formulario'}" (click)="abrirFormularioReserva()" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border-color: #10b981;">
+          <i class="fas fa-file-contract"></i> Nuevo Contrato
         </button>
       </div>
-      <button class="btn-neon-primary" (click)="abrirFormularioReserva()">
-        <i class="fas fa-plus"></i> Nueva Cotización
-      </button>
     </div>
   </div>
 
   <div class="loading-message" *ngIf="loading"><div class="spinner"></div> Cargando operaciones...</div>
 
+  <!-- TAB: KANBAN -->
   <div class="kanban-wrapper" *ngIf="!loading && vistaActual === 'kanban'">
     
     <div class="kanban-column col-reservado">
@@ -107,48 +109,7 @@
     </div>
   </div>
 
-  <div class="main-section glass-panel" *ngIf="!loading && vistaActual === 'tabla'">
-    <div class="search-bar" style="max-width: 500px; margin-bottom: 20px;">
-      <i class="fas fa-search search-icon" style="position: absolute; left: 15px; top: 12px; color: #38bdf8;"></i>
-      <input type="text" placeholder="Buscar cliente, destino o folio..." [(ngModel)]="terminoBusqueda" class="form-control" style="padding-left: 45px;">
-    </div>
-    <div class="table-responsive">
-      <table class="modern-table">
-        <thead>
-          <tr>
-            <th>Folio</th><th>Salida</th><th>Cliente</th><th>Ruta (Origen - Destino)</th><th>Unidad / Chofer</th><th style="text-align: right;">Precio Total</th><th>Estatus</th>
-            <th *ngIf="authService.hasRole(['SuperUsuario'])" class="text-center">Admin</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let v of getViajesTabla | paginate: { itemsPerPage: itemsPorPagina, currentPage: paginaActual }">
-            <td><strong>#{{ v.folio_manual || v.id_viaje }}</strong></td>
-            <td>{{ v.fecha_salida | date:'dd/MM/yyyy' }} <br><small class="text-muted">{{ v.hora_salida }}</small></td>
-            <td>{{ v.nombre_cliente }}</td>
-            <td><small class="text-muted">{{ v.lugar_salida }}</small><br><strong>{{ v.destino }}</strong></td>
-            <td>
-              <span *ngIf="v.autobus" class="badge-bus">BUS {{ v.autobus }}</span>
-              <span *ngIf="!v.autobus" class="text-muted italic">Pendiente</span><br>
-              <small class="text-muted">{{ v.chofer }}</small>
-            </td>
-            <td style="text-align: right; color: #10b981; font-weight: bold;">{{ v.costo_total | currency:'MXN' }}</td>
-            <td><span class="badge" [ngClass]="{'badge-warning': v.estatus === 'RESERVADO', 'badge-info': v.estatus === 'EN RUTA', 'badge-success': v.estatus === 'LIQUIDADO'}">{{ v.estatus }}</span></td>
-            <td *ngIf="authService.hasRole(['SuperUsuario'])" class="text-center">
-              <button class="btn-icon" *ngIf="v.estatus === 'EN RUTA'" (click)="revertirEstatus(v, 'RESERVADO')"><i class="fas fa-undo text-warning"></i></button>
-              <button class="btn-icon" *ngIf="v.estatus === 'LIQUIDADO'" (click)="revertirEstatus(v, 'EN RUTA')"><i class="fas fa-undo text-danger"></i></button>
-            </td>
-          </tr>
-          <tr *ngIf="getViajesTabla.length === 0"><td colspan="8" class="text-center" style="padding: 30px; color: #94a3b8;">No se encontraron viajes.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="pagination-container mt-4" style="text-align: right;" *ngIf="getViajesTabla.length > itemsPorPagina">
-      <pagination-controls (pageChange)="paginaActual = $event" previousLabel="Ant" nextLabel="Sig"></pagination-controls>
-    </div>
-  </div>
-</div>
-
-  <!-- VISTA DE FORMULARIO DE CONTRATO (NUEVA COTIZACIÓN) -->
+  <!-- TAB: FORMULARIO CONTRATO -->
   <div class="form-container" *ngIf="!loading && vistaActual === 'formulario'" style="margin-top: 20px; animation: fadeIn 0.4s ease-out;">
     <div class="container-header">
       <h2><i class="fas fa-file-contract"></i> Contrato de Prestación de Servicios Turísticos</h2>
@@ -181,9 +142,20 @@
       <fieldset class="form-section">
         <legend>2. Itinerario y Logística</legend>
         <div class="form-row">
+          <div class="form-group col-md-12">
+             <label class="text-info"><i class="fas fa-search"></i> Buscar Destino Frecuente (Autocompletado)</label>
+             <mat-form-field appearance="outline" class="full-width dark-autocomplete">
+               <input type="text" placeholder="Escribe el nombre del destino..." matInput [formControl]="destinoControl" [matAutocomplete]="autoDestino" (blur)="checkDestinoNuevo()" style="color: white !important;">
+               <mat-autocomplete #autoDestino="matAutocomplete" [displayWith]="displayFnDestino" (optionSelected)="onDestinoSelected($event)">
+                 <mat-option *ngFor="let d of filteredDestinos$ | async" [value]="d">
+                   {{ d.nombre_destino }} ({{ d.km_estimados }} km)
+                 </mat-option>
+               </mat-autocomplete>
+             </mat-form-field>
+          </div>
           <div class="form-group col-md-6">
             <label>Lugar de Salida (Origen) *</label>
-            <input type="text" class="form-control" [(ngModel)]="nuevaReserva.lugar_salida" placeholder="Ej. Terminal Centro, Frente a Catedral...">
+            <input type="text" class="form-control" [(ngModel)]="nuevaReserva.lugar_salida" placeholder="Ej. Terminal Centro">
           </div>
           <div class="form-group col-md-6">
             <label>Destino Principal *</label>
@@ -246,6 +218,42 @@
     </div>
   </div>
 
+  <!-- TAB: DESTINOS -->
+  <div class="main-section glass-panel" *ngIf="!loading && vistaActual === 'destinos'" style="animation: fadeIn 0.4s ease-out;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h3 style="color: white;"><i class="fas fa-map"></i> Catálogo de Destinos Frecuentes</h3>
+      <button class="btn-neon-primary" (click)="mostrarModalNuevoDestino = true">
+        <i class="fas fa-plus"></i> Nuevo Destino
+      </button>
+    </div>
+    <div class="table-responsive">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Destino Principal</th>
+            <th>Lugar de Salida Común</th>
+            <th>KM Estimados (Ida/Vuelta)</th>
+            <th>Costo Sugerido</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of destinosPreCargados">
+            <td><strong>{{ d.nombre_destino }}</strong></td>
+            <td>{{ d.lugar_salida }}</td>
+            <td>{{ d.km_estimados }} km</td>
+            <td style="color: #10b981; font-weight: bold;">{{ d.costo_sugerido | currency:'MXN' }}</td>
+          </tr>
+          <tr *ngIf="destinosPreCargados.length === 0">
+            <td colspan="4" class="text-center" style="padding: 20px;">No hay destinos registrados.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODALS -->
 <div class="modal-overlay" *ngIf="mostrarModalDespacho" (click)="mostrarModalDespacho = false">
   <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header header-info">
@@ -254,25 +262,24 @@
     </div>
     <div class="modal-body">
       <p class="text-muted mb-4">Busca y selecciona los recursos que cubrirán este servicio.</p>
-      
       <div class="form-group mb-4">
         <label style="color: #cbd5e1; font-weight: bold;">Buscar Autobús *</label>
-        <input type="text" class="form-control mt-2" placeholder="Escribe para buscar (Ej: 330)..." 
-               [formControl]="autobusControl" [matAutocomplete]="autoBus" style="font-size: 1.1rem;">
+        <mat-form-field appearance="outline" class="full-width">
+            <input type="text" placeholder="Escribe para buscar..." [formControl]="autobusControl" [matAutocomplete]="autoBus" matInput>
+        </mat-form-field>
         <mat-autocomplete #autoBus="matAutocomplete" [displayWith]="displayFnAutobus" (optionSelected)="onAutobusSelected($event)">
           <mat-option *ngFor="let b of filteredAutobuses$ | async" [value]="b">Bus {{ b.economico }}</mat-option>
         </mat-autocomplete>
       </div>
-
       <div class="form-group mb-3">
         <label style="color: #cbd5e1; font-weight: bold;">Buscar Operador *</label>
-        <input type="text" class="form-control mt-2" placeholder="Escribe para buscar..." 
-               [formControl]="choferControl" [matAutocomplete]="autoChofer" style="font-size: 1.1rem;">
+        <mat-form-field appearance="outline" class="full-width">
+            <input type="text" placeholder="Escribe para buscar..." [formControl]="choferControl" [matAutocomplete]="autoChofer" matInput>
+        </mat-form-field>
         <mat-autocomplete #autoChofer="matAutocomplete" [displayWith]="displayFnChofer" (optionSelected)="onChoferSelected($event)">
           <mat-option *ngFor="let c of filteredChoferes$ | async" [value]="c">{{ c.nombre_completo || c.nombre }}</mat-option>
         </mat-autocomplete>
       </div>
-
     </div>
     <div class="modal-footer justify-center">
       <button class="btn-ghost" (click)="mostrarModalDespacho = false">Cancelar</button>
@@ -282,56 +289,44 @@
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalLiquidacion" (click)="mostrarModalLiquidacion = false">
-  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+   <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-header header-warning">
       <h3><i class="fas fa-file-invoice-dollar"></i> Liquidación y Rendimiento</h3>
       <button class="btn-close" (click)="mostrarModalLiquidacion = false"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
-      
       <div class="alert-neon alert-info mb-4" style="display: flex; justify-content: space-between; align-items: center;">
         <div><h4 style="margin: 0; color: white;">Precio: {{ datosLiquidacion.costo_total | currency:'MXN' }}</h4><span class="text-muted">Abonado: {{ datosLiquidacion.total_abonado | currency:'MXN' }}</span></div>
         <div style="text-align: right;"><h4 style="margin: 0;" [ngClass]="calcularUtilidadNeta() > 0 ? 'text-success' : 'text-danger'">Utilidad Neta: {{ calcularUtilidadNeta() | currency:'MXN' }}</h4></div>
       </div>
-
       <div class="form-grid">
-        
         <div class="form-group full-width"><h4 class="text-warning mb-2"><i class="fas fa-tachometer-alt"></i> Telemetría y Rendimiento</h4><hr style="border-color: #334155; margin: 0;"></div>
-        
         <div class="form-group"><label>KM Inicial (Desde Taller)</label><input type="number" class="form-control" [value]="datosLiquidacion.km_inicial" disabled></div>
         <div class="form-group"><label>KM Final al Llegar *</label><input type="number" class="form-control border-warning" [(ngModel)]="datosLiquidacion.km_final"></div>
         <div class="form-group"><label>Litros de Diésel Cargados *</label><input type="number" class="form-control border-warning" [(ngModel)]="datosLiquidacion.litros_diesel" placeholder="Ej. 120"></div>
-        
         <div class="form-group d-flex" style="flex-direction: column; justify-content: center;">
           <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px dashed rgba(56, 189, 248, 0.4);">
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
               <span class="text-muted">KM Esperados: <strong class="text-info">{{ datosLiquidacion.km_estimados }} km</strong></span>
-              <span class="text-muted">KM Reales: 
-                <strong [ngClass]="requiereJustificacionKm ? 'text-danger' : 'text-success'">{{ kmRecorridos }} km</strong>
-              </span>
+              <span class="text-muted">KM Reales: <strong [ngClass]="requiereJustificacionKm ? 'text-danger' : 'text-success'">{{ kmRecorridos }} km</strong></span>
             </div>
-            
             <div style="display: flex; justify-content: space-between; font-size: 1.1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
               <span [ngClass]="rendimientoDiesel >= 2.5 ? 'text-success' : (rendimientoDiesel > 0 ? 'text-warning' : 'text-muted')">
                 <i class="fas fa-gas-pump"></i> RTO: <strong>{{ rendimientoDiesel | number:'1.1-2' }} km/L</strong>
               </span>
               <span [ngClass]="requiereJustificacionKm ? 'text-danger' : 'text-success'" style="font-weight: bold;">
-                <i class="fas" [ngClass]="requiereJustificacionKm ? 'fa-exclamation-triangle' : 'fa-check'"></i>
-                Dif: {{ desviacionKm }} km
+                <i class="fas" [ngClass]="requiereJustificacionKm ? 'fa-exclamation-triangle' : 'fa-check'"></i> Dif: {{ desviacionKm }} km
               </span>
             </div>
           </div>
         </div>
-
         <div class="form-group full-width" *ngIf="requiereJustificacionKm" style="animation: slideUpModal 0.3s ease;">
           <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 15px; border-radius: 4px;">
             <label class="text-danger" style="font-weight: bold;"><i class="fas fa-engine-warning"></i> Alerta de Desviación: Explique el motivo de la diferencia de kilometraje *</label>
             <textarea class="form-control" [(ngModel)]="datosLiquidacion.motivo_desviacion_km" rows="2" placeholder="Ej: Se cerró la carretera libre y tuvimos que rodear por autopista..."></textarea>
           </div>
         </div>
-
         <div class="form-group full-width mt-3"><h4 class="text-warning mb-2"><i class="fas fa-money-bill-wave"></i> Gastos Comprobables del Chofer</h4><hr style="border-color: #334155; margin: 0;"></div>
-        
         <div class="form-group"><label>Gastos en Casetas ($)</label><input type="number" class="form-control" [(ngModel)]="datosLiquidacion.gasto_casetas"></div>
         <div class="form-group"><label>Sueldo Operador ($)</label><input type="number" class="form-control" [(ngModel)]="datosLiquidacion.gasto_sueldo_chofer"></div>
         <div class="form-group"><label>Otros Gastos ($)</label><input type="number" class="form-control" [(ngModel)]="datosLiquidacion.otros_gastos"></div>
@@ -340,6 +335,37 @@
       </div>
     </div>
     <div class="modal-footer"><button class="btn-ghost" (click)="mostrarModalLiquidacion = false">Cancelar</button><button class="btn-neon-warning" (click)="guardarLiquidacion()"><i class="fas fa-check"></i> Cerrar Viaje y Liquidar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalNuevoDestino" (click)="mostrarModalNuevoDestino = false" style="z-index: 2500;">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header header-info">
+      <h3><i class="fas fa-map-pin"></i> Guardar Destino Frecuente</h3>
+      <button class="btn-close" (click)="mostrarModalNuevoDestino = false"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group mb-3">
+        <label>Nombre del Destino</label>
+        <input type="text" class="form-control" [(ngModel)]="nuevoDestino.nombre_destino" readonly>
+      </div>
+      <div class="form-group mb-3">
+        <label>Lugar de Salida Común</label>
+        <input type="text" class="form-control" [(ngModel)]="nuevoDestino.lugar_salida" placeholder="Ej. Terminal Centro">
+      </div>
+      <div class="form-group mb-3">
+        <label>KM Estimados (Ida y Vuelta)</label>
+        <input type="number" class="form-control" [(ngModel)]="nuevoDestino.km_estimados">
+      </div>
+      <div class="form-group mb-3">
+        <label>Costo Sugerido Base ($)</label>
+        <input type="number" class="form-control text-success" [(ngModel)]="nuevoDestino.costo_sugerido">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="mostrarModalNuevoDestino = false">Omitir</button>
+      <button class="btn-neon-primary" (click)="guardarDestinoNuevo()">Guardar Catálogo</button>
+    </div>
   </div>
 </div>
 
