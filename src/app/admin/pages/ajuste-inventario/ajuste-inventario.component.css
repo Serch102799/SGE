@@ -4,8 +4,7 @@
 :host {
   display: block;
   padding: 40px 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), 
-              url("/assets/img/nF.png") no-repeat center center fixed;
+  background-image: var(--bg-image); background-color: var(--bg-dark-main); background-size: cover; background-position: center center; background-attachment: fixed;
   background-size: cover;
 }
 
@@ -14,7 +13,7 @@
   width: 95%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.8);
-  color: #e0e0e0;
+  color: var(--text-light);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
@@ -25,7 +24,7 @@
 .container-header {
   background-color: rgba(28, 28, 28, 0.7);
   padding: 20px 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -34,7 +33,7 @@
 }
 
 .container-header h2 {
-  color: #ffffff;
+  color: var(--text-white);
   margin: 0;
   font-size: 1.8rem;
   flex: 1;
@@ -105,7 +104,7 @@
 .filtro-item label {
   font-size: 13px;
   font-weight: 600;
-  color: #cbd5e1;
+  color: var(--text-light);
 }
 
 .filtro-busqueda {
@@ -125,7 +124,7 @@
   font-size: 14px;
   transition: all 0.3s ease;
   background-color: rgba(30, 41, 59, 0.5);
-  color: #e2e8f0;
+  color: var(--text-light);
 }
 
 .form-control:focus {
@@ -191,7 +190,7 @@
 .tabla-usuarios td {
   padding: 12px 15px;
   vertical-align: middle;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .tabla-usuarios thead th {
@@ -205,12 +204,12 @@
 }
 
 .tabla-usuarios tbody td {
-  color: #e0e0e0;
+  color: var(--text-light);
   border-top: 1px solid #38404a;
 }
 
 .tabla-usuarios tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--bg-hover-light);
 }
 
 .td-motivo {
@@ -223,7 +222,7 @@
 .empty-table-message {
   text-align: center;
   padding: 40px !important;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-style: italic;
 }
 
@@ -364,7 +363,7 @@
 }
 
 .modal-close-btn-edit {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--border-color);
   border: 2px solid rgba(255, 255, 255, 0.3);
   color: white;
   font-size: 32px;
@@ -783,7 +782,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px var(--bg-hover-light);
 }
 
 .btn-edit:disabled {

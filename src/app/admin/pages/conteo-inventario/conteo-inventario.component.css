@@ -30,7 +30,7 @@
   /* ¡NUEVO! */
   border-radius: 8px;
   /* ¡NUEVO! */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px var(--bg-hover-light);
   /* ¡NUEVO! */
 }
 
@@ -299,7 +299,7 @@
 }
 
 .modal-content-edit {
-  background: #ffffff;
+  background: var(--text-white);
   border-radius: 8px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
   width: 100%;
@@ -681,7 +681,7 @@
   background: none;
   border: none;
   font-size: 1.8rem;
-  color: #aaa;
+  color: var(--text-muted);
   cursor: pointer;
 }
 
@@ -762,7 +762,7 @@
 
 .spinner-small-edit {
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top: 2px solid #ffffff;
+  border-top: 2px solid var(--text-white);
   border-radius: 50%;
   width: 16px;
   height: 16px;

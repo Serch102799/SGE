@@ -3,14 +3,13 @@
    ========================================================================== */
    :host {
   display: block; width: 100%; height: 100%; box-sizing: border-box; padding: 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), 
-              url("/assets/img/nF.png") no-repeat center center fixed;
+  background-image: var(--bg-image); background-color: var(--bg-dark-main); background-size: cover; background-position: center center; background-attachment: fixed;
   background-size: cover; overflow-y: auto;
 }
 .usuarios-container {
   padding: 20px;
   background-color: transparent; /* Así hereda el fondo global oscuro de la app */
-  color: #f8fafc;
+  color: var(--text-white);
 }
 
 .container-header {
@@ -50,9 +49,9 @@
    TABLA DE TICKETS (ESTILO ELEGANTE)
    ========================================================================== */
 .tabla-responsive-wrapper {
-  background: #1e293b;
+  background: var(--bg-dark-card);
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--bg-hover-light);
   overflow-x: auto;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
 }
@@ -61,24 +60,24 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.85rem;
-  color: #cbd5e1;
+  color: var(--text-light);
 }
 
 .tabla-usuarios th {
-  background: #0f172a;
-  color: #94a3b8;
+  background: var(--bg-dark-main);
+  color: var(--text-muted);
   padding: 15px;
   text-align: left;
   text-transform: uppercase;
   font-weight: 700;
   font-size: 0.75rem;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid #1e293b;
+  border-bottom: 2px solid var(--bg-dark-card);
 }
 
 .tabla-usuarios td {
   padding: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
 }
 
@@ -88,12 +87,12 @@
 }
 
 .tabla-usuarios tr:hover {
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--bg-hover-light);
 }
 
 /* --- TIPOGRAFÍA Y CÓDIGOS --- */
 .ruta-code {
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--bg-tertiary);
   padding: 5px 8px;
   border-radius: 6px;
   font-family: 'Courier New', Courier, monospace;
@@ -105,7 +104,7 @@
 .desc-text {
   margin: 6px 0 0 0;
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--text-muted);
   max-width: 350px;
   white-space: normal; 
   line-height: 1.4;
@@ -180,8 +179,8 @@
 /* ==========================================================================
    MODALES (Confirmación y Notificaciones)
    ========================================================================== */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; }
-.modal-content { background: #1e293b; border-radius: 12px; width: 400px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark-overlay); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; }
+.modal-content { background: var(--bg-dark-card); border-radius: 12px; width: 400px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid var(--border-color); }
 .modal-header { padding: 18px 25px; display: flex; justify-content: space-between; align-items: center; }
 .header-exito { background-color: #10b981; color: white; }
 .header-error { background-color: #ef4444; color: white; }
@@ -189,6 +188,6 @@
 .modal-header h3 { margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
 .btn-cerrar { background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; opacity: 0.8; transition: opacity 0.2s;}
 .btn-cerrar:hover { opacity: 1; }
-.modal-footer { padding: 15px 25px; display: flex; justify-content: flex-end; background: #0f172a; border-top: 1px solid rgba(255, 255, 255, 0.05); }
-.btn-cancelar { background: #475569; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
-.btn-cancelar:hover { background: #334155; }
+.modal-footer { padding: 15px 25px; display: flex; justify-content: flex-end; background: var(--bg-dark-main); border-top: 1px solid var(--bg-hover-light); }
+.btn-cancelar { background: var(--border-secondary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+.btn-cancelar:hover { background: var(--border-primary); }

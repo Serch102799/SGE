@@ -129,18 +129,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-hover-light);
   border-radius: 50%;
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 40px rgba(0, 238, 255, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 0 40px rgba(0, 238, 255, 0.2), inset 0 0 20px var(--bg-hover-light);
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transform-style: preserve-3d;
 }
 
 .logo-container:not(.active) .logo:hover {
   transform: rotateY(15deg) rotateX(10deg) scale(1.1);
-  box-shadow: 0 0 60px rgba(0, 238, 255, 0.4), inset 0 0 30px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 60px rgba(0, 238, 255, 0.4), inset 0 0 30px var(--border-color);
   border-color: rgba(0, 238, 255, 0.5);
 }
 
@@ -174,7 +174,7 @@
 
 /* Contenedor del formulario */
 .form-container {
-  background: padding-box linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+  background: padding-box linear-gradient(135deg, var(--border-color), var(--border-color));
   backdrop-filter: blur(30px) saturate(200%);
   border-radius: 24px;
   padding: 50px 40px;
@@ -182,7 +182,7 @@
   width: 100%;
   max-width: 440px;
   position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
 }
 
 /* Añadir un glow sutil detrás del formulario */
@@ -260,14 +260,14 @@
 .form-input {
   width: 100%;
   padding: 18px 20px 18px 50px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
   border-radius: 14px;
   font-size: 16px;
   color: #fff;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: inset 0 2px 4px var(--bg-hover-light);
 }
 
 .form-input::placeholder {
@@ -303,7 +303,7 @@
 .form-input:focus {
   background: rgba(0, 0, 0, 0.4);
   border-color: rgba(0, 238, 255, 0.5);
-  box-shadow: 0 0 15px rgba(0, 238, 255, 0.2), inset 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 0 15px rgba(0, 238, 255, 0.2), inset 0 2px 4px var(--bg-hover-light);
 }
 
 .form-input:focus ~ svg {
@@ -426,7 +426,7 @@
 }
 
 .btn-submit:disabled {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-color);
   color: rgba(255, 255, 255, 0.3);
   box-shadow: none;
   cursor: not-allowed;
@@ -453,8 +453,8 @@
   position: absolute;
   top: 20px;
   right: 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-hover-light);
+  border: 1px solid var(--border-color);
   color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   width: 36px;

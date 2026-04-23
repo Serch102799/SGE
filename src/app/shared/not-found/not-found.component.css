@@ -40,10 +40,10 @@
   text-align: center;
   z-index: 10;
   padding: 40px;
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--bg-tertiary);
   border-radius: 20px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--border-color);
   box-shadow: 0 15px 35px rgba(0,0,0,0.5);
   max-width: 600px;
 }
@@ -70,11 +70,11 @@
 .not-found-content h2 {
   font-size: 2rem;
   margin-bottom: 15px;
-  color: #f8fafc;
+  color: var(--text-white);
 }
 
 .not-found-content p {
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 1.1rem;
   margin-bottom: 30px;
   line-height: 1.6;
@@ -120,7 +120,7 @@
 .sat-body {
   position: absolute;
   width: 40px; height: 40px;
-  background: #cbd5e1;
+  background: var(--text-light);
   border-radius: 8px;
   top: 20px; left: 20px;
   box-shadow: inset -5px -5px 10px rgba(0,0,0,0.3);
@@ -131,8 +131,8 @@
   width: 50px; height: 30px;
   background: #38bdf8;
   top: 25px;
-  border: 2px solid #0f172a;
-  background-image: linear-gradient(transparent 50%, rgba(0,0,0,0.1) 50%);
+  border: 2px solid var(--bg-dark-main);
+  background-image: linear-gradient(transparent 50%, var(--bg-hover-light) 50%);
   background-size: 100% 4px;
 }
 
@@ -142,7 +142,7 @@
 .sat-antenna {
   position: absolute;
   width: 4px; height: 30px;
-  background: #94a3b8;
+  background: var(--text-muted);
   top: -10px; left: 38px;
 }
 .sat-antenna::before {

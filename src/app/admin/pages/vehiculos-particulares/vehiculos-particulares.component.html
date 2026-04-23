@@ -1,19 +1,19 @@
-<div class="flota-admin-container">
+﻿<div class="flota-admin-container">
   
   <!-- HEADER -->
-  <div class="header-section glass-panel">
+  <div class="header-section card">
     <div class="header-text">
       <h2><i class="fas fa-car"></i> Flota Administrativa</h2>
       <p>Gestión de vehículos particulares (Dueños, Gerencia y Empleados).</p>
     </div>
-    <button class="btn-neon-primary" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
+    <button class="btn-primary" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
       <i class="fas fa-plus"></i> Registrar Vehículo
     </button>
   </div>
 
   <!-- BUSCADOR -->
   <div class="main-section mt-4">
-    <div class="filters-bar glass-panel mb-4">
+    <div class="filters-bar card mb-4">
       <div class="search-box">
         <i class="fas fa-search search-icon"></i>
         <input type="text" placeholder="Buscar por dueño, marca, modelo o placa..." [(ngModel)]="terminoBusqueda" (keyup)="aplicarFiltro()">
@@ -23,7 +23,7 @@
     <!-- GRID DE TARJETAS -->
     <div class="vehiculos-grid" *ngIf="vehiculosFiltrados.length > 0">
       
-      <div class="vehiculo-card glass-panel" *ngFor="let vehiculo of vehiculosFiltrados">
+      <div class="card" *ngFor="let vehiculo of vehiculosFiltrados">
         
         <div class="card-header-v">
           <div class="avatar-circle">{{ obtenerIniciales(vehiculo.propietario) }}</div>
@@ -61,7 +61,7 @@
     </div>
 
     <!-- ESTADO VACÍO -->
-    <div class="glass-panel empty-state" *ngIf="vehiculosFiltrados.length === 0">
+    <div class="card empty-state" *ngIf="vehiculosFiltrados.length === 0">
       <i class="fas fa-car-side empty-icon"></i>
       <h3>No se encontraron vehículos</h3>
       <p>Registra los vehículos del personal para asignarles salidas de almacén correctamente.</p>
@@ -120,8 +120,8 @@
         </div>
 
         <div class="modal-footer mt-4" style="padding-bottom: 0;">
-          <button type="button" class="btn-ghost" (click)="cerrarModal()">Cancelar</button>
-          <button type="submit" class="btn-neon-primary" [disabled]="!vehiculoForm.form.valid || isSaving">
+          <button type="button" class="btn-outline" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="!vehiculoForm.form.valid || isSaving">
             <i class="fas fa-save"></i> {{ modoEdicion ? 'Actualizar' : 'Guardar Vehículo' }}
           </button>
         </div>
@@ -141,8 +141,8 @@
       <p style="color: #cbd5e1; margin-top: 10px;">¿Estás seguro de eliminar el vehículo <strong>{{ vehiculoAEliminar?.marca }} {{ vehiculoAEliminar?.modelo }}</strong> asignado a <strong>{{ vehiculoAEliminar?.propietario }}</strong>?</p>
     </div>
     <div class="modal-footer" style="justify-content: center;">
-      <button class="btn-ghost" (click)="cerrarModalEliminar()">Cancelar</button>
-      <button class="btn-neon-danger" (click)="eliminar()">Sí, Dar de baja</button>
+      <button class="btn-outline" (click)="cerrarModalEliminar()">Cancelar</button>
+      <button class="btn-danger" (click)="eliminar()">Sí, Dar de baja</button>
     </div>
   </div>
 </div>
@@ -166,7 +166,8 @@
       <p style="color: #cbd5e1; margin-top: 10px;">{{ notificacion.mensaje }}</p>
     </div>
     <div class="modal-footer" style="justify-content: center;">
-      <button class="btn-ghost" (click)="cerrarModalNotificacion()">Entendido</button>
+      <button class="btn-outline" (click)="cerrarModalNotificacion()">Entendido</button>
     </div>
   </div>
 </div>
+

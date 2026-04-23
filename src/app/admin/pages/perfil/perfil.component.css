@@ -17,8 +17,7 @@
   height: 100%;
   box-sizing: border-box;
   padding: 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), 
-              url("/assets/img/nF.png") no-repeat center center fixed;
+  background-image: var(--bg-image); background-color: var(--bg-dark-main); background-size: cover; background-position: center center; background-attachment: fixed;
   background-size: cover;
   overflow-y: auto;
 }
@@ -31,7 +30,7 @@
   width: 100%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.85);
-  color: #e0e0e0;
+  color: var(--text-light);
   border: 1px solid rgba(68, 128, 211, 0.4);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 
@@ -59,7 +58,7 @@
 }
 
 .container-header h2 {
-  color: #ffffff;
+  color: var(--text-white);
   font-size: 2rem;
   font-weight: 700;
   margin: 0;
@@ -72,7 +71,7 @@
    =================================== */
 .container-body {
   padding: 40px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-hover);
 }
 
 .profile-layout {
@@ -86,7 +85,7 @@
    CARDS DE PERFIL
    =================================== */
 .profile-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-hover-light);
   border: 1px solid rgba(68, 128, 211, 0.3);
   border-radius: 12px;
   padding: 30px;
@@ -105,7 +104,7 @@
   font-size: 1.4rem;
   margin-bottom: 25px;
   padding-bottom: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
   font-weight: 600;
 }
 
@@ -113,9 +112,9 @@
 .info-card p {
   font-size: 1.1rem;
   margin-bottom: 15px;
-  color: #e0e0e0;
+  color: var(--text-light);
   padding: 10px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-hover);
   border-radius: 8px;
   border-left: 3px solid #4480d3; /* Acento azul a la izquierda */
 }
@@ -242,14 +241,14 @@
 .header-advertencia h3 { color: #f0ad4e !important; }
 
 .btn-cerrar {
-  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-hover-light); border: 1px solid var(--border-color);
   color: #a0c4ff; width: 30px; height: 30px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 .btn-cerrar:hover { background: rgba(255, 102, 102, 0.2); color: white; }
 
 .modal-body { padding: 25px; }
-.confirm-text { color: #e0e0e0; font-size: 1rem; text-align: center; }
+.confirm-text { color: var(--text-light); font-size: 1rem; text-align: center; }
 
 /* Responsive */
 @media (max-width: 768px) {

@@ -3,8 +3,7 @@
   display: block;
   min-height: 100vh;
   padding: 40px 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
-              url("/assets/img/nF.png") no-repeat center center fixed;
+  background-image: var(--bg-image); background-color: var(--bg-dark-main); background-size: cover; background-position: center center; background-attachment: fixed;
   background-size: cover;
 }
 
@@ -12,7 +11,7 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
-  color: #f8fafc;
+  color: var(--text-white);
 }
 
 /* --- BIENVENIDA (HEADER) --- */
@@ -30,7 +29,7 @@
 }
 
 .welcome-text h2 { margin: 0 0 5px 0; font-size: 2rem; color: #fff; }
-.welcome-text p { margin: 0; color: #94a3b8; font-size: 1rem; }
+.welcome-text p { margin: 0; color: var(--text-muted); font-size: 1rem; }
 .date-badge { 
   background: rgba(0, 0, 0, 0.4); 
   padding: 8px 18px; 
@@ -50,7 +49,7 @@
 
 .kpi-card {
   background: rgba(30, 41, 59, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   padding: 25px;
   border-radius: 15px;
   display: flex;
@@ -58,7 +57,7 @@
   gap: 20px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 15px var(--bg-hover);
 }
 
 .kpi-card.clickable { cursor: pointer; }
@@ -84,7 +83,7 @@
 .kpi-info p { 
   margin: 8px 0 0 0; 
   font-size: 0.85rem; 
-  color: #94a3b8; 
+  color: var(--text-muted); 
   text-transform: uppercase; 
   letter-spacing: 1px;
   font-weight: 600;
@@ -115,7 +114,7 @@
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--bg-hover-light);
   backdrop-filter: blur(10px);
 }
 
@@ -138,11 +137,11 @@
 
 .table-responsive { overflow-x: auto; padding: 10px 20px 20px 20px; }
 .rrhh-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-.rrhh-table th { text-align: left; padding: 12px 10px; color: #64748b; font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid #334155; }
-.rrhh-table td { padding: 15px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); color: #cbd5e1; }
-.rrhh-table tr:hover td { background: rgba(255, 255, 255, 0.03); }
+.rrhh-table th { text-align: left; padding: 12px 10px; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid var(--border-primary); }
+.rrhh-table td { padding: 15px 10px; border-bottom: 1px solid var(--bg-hover-light); color: var(--text-light); }
+.rrhh-table tr:hover td { background: var(--bg-hover-light); }
 
-.rank-num { font-weight: bold; color: #94a3b8; font-size: 1.1rem; }
+.rank-num { font-weight: bold; color: var(--text-muted); font-size: 1.1rem; }
 .bus-tag { background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.2); }
 
 /* --- MODAL SYSTEM --- */
@@ -159,7 +158,7 @@
 }
 
 .modal-content.detalle-rrhh {
-  background: #0f172a;
+  background: var(--bg-dark-main);
   border: 1px solid rgba(56, 189, 248, 0.3);
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
   width: 90%;
@@ -175,7 +174,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h3 { margin: 0; font-size: 1.3rem; color: #38bdf8; }
@@ -187,10 +186,10 @@
   display: flex;
   align-items: center;
   gap: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--bg-hover-light);
   transition: background 0.2s;
 }
-.operador-item:hover { background: rgba(255, 255, 255, 0.03); }
+.operador-item:hover { background: var(--bg-hover-light); }
 
 .op-avatar {
   width: 45px; height: 45px;
@@ -202,7 +201,7 @@
 
 .op-info { flex: 1; display: flex; flex-direction: column; }
 .op-nombre { font-weight: 600; font-size: 1rem; color: #f1f5f9; }
-.op-fecha { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
+.op-fecha { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
 
 .op-badge {
   font-size: 0.7rem;
@@ -217,8 +216,8 @@
 
 .modal-footer {
   padding: 20px 25px;
-  background: rgba(15, 23, 42, 0.6);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
   display: flex;
   justify-content: flex-end;
 }
@@ -249,7 +248,7 @@
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 25px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   align-items: flex-end;
   backdrop-filter: blur(10px);
 }
@@ -268,7 +267,7 @@
 }
 
 .filter-group input, .filter-group select {
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--bg-secondary);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
   padding: 8px 12px;
@@ -294,9 +293,9 @@
 .performance-section {
   background: rgba(30, 41, 59, 0.4);
   border-radius: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--bg-hover-light);
   padding: 20px;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 0 20px var(--bg-hover);
 }
 
 .performance-header {
@@ -307,18 +306,18 @@
   gap: 20px;
   margin-bottom: 20px;
   padding-bottom: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .performance-title h3 {
   margin: 0 0 5px 0;
-  color: #f8fafc;
+  color: var(--text-white);
   font-size: 1.4rem;
 }
 
 .performance-title p {
   margin: 0;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 
@@ -334,10 +333,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--bg-tertiary);
   padding: 5px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
 }
 
 .filter-group label {
@@ -350,7 +349,7 @@
 .filter-group input, .filter-group select {
   background: transparent;
   border: none;
-  color: #f8fafc;
+  color: var(--text-white);
   font-size: 0.85rem;
   outline: none;
 }

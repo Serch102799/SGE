@@ -1,14 +1,14 @@
 :host {
   display: block;
   padding: 40px 20px;
-  background-color: #1a1d24; /* Un fondo oscuro sólido para el dashboard */
+  background-color: var(--bg-dark-main); /* Un fondo oscuro sólido para el dashboard */
 }
 /* Base y Fondo */
 :host {
   display: block;
   min-height: 100vh;
   padding: 40px 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/nF.jpg") no-repeat center center fixed;
+  background-image: var(--bg-image); background-color: var(--bg-dark-main); background-size: cover; background-position: center center; background-attachment: fixed;
   background-size: cover;
 }
 
@@ -16,15 +16,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(15, 23, 42, 0.8));
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), var(--bg-secondary));
   padding: 25px 30px;
   border-radius: 12px;
   border: 1px solid rgba(56, 189, 248, 0.2);
   margin-bottom: 30px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 20px var(--bg-hover);
 }
 .welcome-text h2 { margin: 0 0 5px 0; font-size: 2rem; color: #fff; }
-.welcome-text p { margin: 0; color: #94a3b8; font-size: 1rem; }
+.welcome-text p { margin: 0; color: var(--text-muted); font-size: 1rem; }
 .date-badge { background: rgba(0,0,0,0.4); padding: 8px 15px; border-radius: 20px; font-weight: 600; color: #38bdf8; }
 /* Contenedor Principal */
 .usuarios-container {
@@ -43,14 +43,14 @@
 .container-header {
   background-color: rgba(28, 28, 28, 0.7);
   padding: 20px 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .container-header h2 {
-  color: #ffffff;
+  color: var(--text-white);
   margin: 0;
   font-size: 1.8rem;
 }
@@ -88,7 +88,7 @@
 .tabla-usuarios th, .tabla-usuarios td {
   padding: 15px;
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .tabla-usuarios thead th {
@@ -100,10 +100,10 @@
 }
 
 .tabla-usuarios tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--bg-hover-light);
 }
 
-.tabla-usuarios td { color: #e0e0e0; }
+.tabla-usuarios td { color: var(--text-light); }
 .acciones { text-align: center; display: flex; gap: 10px; justify-content: center; }
 
 /* Botones de Acción en tabla */
@@ -116,9 +116,9 @@
   transition: all 0.2s ease;
 }
 
-.btn-estado { background-color: rgba(68, 128, 211, 0.7); color: #ffffff; }
+.btn-estado { background-color: rgba(68, 128, 211, 0.7); color: var(--text-white); }
 .btn-estado:hover { background-color: #4480d3; border-color: #6a9edc; }
-.btn-eliminar { background-color: rgba(255, 102, 102, 0.7); color: #ffffff; }
+.btn-eliminar { background-color: rgba(255, 102, 102, 0.7); color: var(--text-white); }
 .btn-eliminar:hover { background-color: #ff6666; border-color: #ff8c8c; }
 
 /* Wrapper Responsive para Tabla */
@@ -132,16 +132,16 @@
   cursor: pointer;
   transition: all 0.3s ease;
   z-index: 1000;
-  color: #ffffff;
+  color: var(--text-white);
   font-size: 24px;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+  text-shadow: 1px 1px 4px var(--bg-dark-overlay);
 }
 .back-arrow:hover { transform: scale(1.2); }
 
 /* --- Estilos para MODALES --- */
 .modal-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--bg-dark-overlay);
   display: flex; justify-content: center; align-items: center; z-index: 1000;
 }
 .modal-content {
@@ -154,17 +154,17 @@
 }
 .modal-header {
   display: flex; justify-content: space-between; align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 15px; margin-bottom: 20px;
 }
-.modal-header h3 { margin: 0; color: #ffffff; font-size: 1.5rem; }
+.modal-header h3 { margin: 0; color: var(--text-white); font-size: 1.5rem; }
 .btn-cerrar {
-  background: none; border: none; color: #aaa;
+  background: none; border: none; color: var(--text-muted);
   font-size: 2rem; cursor: pointer; transition: color 0.2s ease;
 }
-.btn-cerrar:hover { color: #ffffff; }
+.btn-cerrar:hover { color: var(--text-white); }
 .form-group { margin-bottom: 15px; }
-.form-group label { display: block; margin-bottom: 8px; color: #e0e0e0; font-size: 0.9rem; }
+.form-group label { display: block; margin-bottom: 8px; color: var(--text-light); font-size: 0.9rem; }
 .form-control {
   width: 100%; background-color: rgba(74, 142, 206, 0.2) !important;
   border: 1px solid rgba(255, 255, 255, 0.4); padding: 12px;
@@ -213,16 +213,16 @@ td.stock-critico {
 .btn-cancelar:hover { background-color: #777; }
 @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 .modal-header .header-eliminar { color: #ff6666; }
-.confirm-text { color: #e0e0e0; font-size: 1.1rem; line-height: 1.6; text-align: center; margin-bottom: 10px; }
-.confirm-text strong { color: #ffffff; font-weight: 600; }
-.confirm-warning { color: #aaa; font-size: 0.9rem; text-align: center; margin-top: 20px; }
+.confirm-text { color: var(--text-light); font-size: 1.1rem; line-height: 1.6; text-align: center; margin-bottom: 10px; }
+.confirm-text strong { color: var(--text-white); font-weight: 600; }
+.confirm-warning { color: var(--text-muted); font-size: 0.9rem; text-align: center; margin-top: 20px; }
 .btn-confirmar-eliminar { background-color: #d9534f; color: white; border: 1px solid #d43f3a; }
 .btn-confirmar-eliminar:hover { background-color: #c9302c; border-color: #ac2925; }
 :host {
   display: block;
   min-height: 100vh;
   padding: 40px 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/nF.png") no-repeat center center fixed;
+  background-image: var(--bg-image); background-color: var(--bg-dark-main); background-size: cover; background-position: center center; background-attachment: fixed;
   background-size: cover;
 }
 .charts-grid {
@@ -258,7 +258,7 @@ td.stock-critico {
   width: 95%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.8);
-  color: #e0e0e0;
+  color: var(--text-light);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
@@ -278,13 +278,13 @@ td.stock-critico {
 
 .movimiento-card {
   background-color: rgba(0, 0, 0, 0.658);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   padding: 25px;
 }
 
 .movimiento-card h3 {
-  color: #ffffff;
+  color: var(--text-white);
   margin-bottom: 20px;
   text-align: center;
 }
@@ -297,17 +297,17 @@ td.stock-critico {
 .tabla-movimientos th, .tabla-movimientos td {
   padding: 12px 10px;
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .tabla-movimientos thead th {
   font-size: 0.9rem;
-  color: #aaa;
+  color: var(--text-muted);
   text-transform: uppercase;
 }
 
 .tabla-movimientos tbody td {
-  color: #e0e0e0;
+  color: var(--text-light);
 }
 
 .dashboard-container {
@@ -392,17 +392,17 @@ td.stock-critico {
 }
 .kpi-card {
   background-color: rgba(0, 0, 0, 0.658);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   padding: 25px;
   text-align: center;
-  color: #e0e0e0;
+  color: var(--text-light);
 }
 
 .kpi-value {
   font-size: 3rem;
   font-weight: bold;
-  color: #ffffff;
+  color: var(--text-white);
   margin-bottom: 10px;
 }
 .kpi-grid .kpi-card:first-child {
@@ -413,7 +413,7 @@ td.stock-critico {
 
 .kpi-label {
   font-size: 1rem;
-  color: #ffffff;
+  color: var(--text-white);
 }
 
 .kpi-alerta {
@@ -433,13 +433,13 @@ td.stock-critico {
 /* Contenedor de la gráfica */
 .chart-container {
   background-color: rgba(0, 0, 0, 0.664);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   padding: 25px;
 }
 
 .chart-container h3 {
-  color: #ffffff;
+  color: var(--text-white);
   margin-bottom: 20px;
   text-align: center;
 }
@@ -453,7 +453,7 @@ td.stock-critico {
    ========================================= */
 .financial-section {
   background-color: rgba(0, 0, 0, 0.658); /* MISMO FONDO QUE EL RESTO DEL DASHBOARD */
-  border: 1px solid rgba(255, 255, 255, 0.1); /* MISMO BORDE */
+  border: 1px solid var(--border-color); /* MISMO BORDE */
   border-radius: 10px; /* MISMO RADIO */
   padding: 25px;
   margin-bottom: 25px;
@@ -467,13 +467,13 @@ td.stock-critico {
   margin-bottom: 30px;
   flex-wrap: wrap;
   gap: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Línea divisoria muy sutil */
+  border-bottom: 1px solid var(--bg-hover-light); /* Línea divisoria muy sutil */
   padding-bottom: 15px;
 }
 
 .financial-header h3 {
   margin: 0;
-  color: #ffffff; /* Mismo color de títulos */
+  color: var(--text-white); /* Mismo color de títulos */
   font-size: 1.3rem;
   font-weight: 500;
 }
@@ -499,7 +499,7 @@ td.stock-critico {
 .filter-group input {
   background: rgba(74, 142, 206, 0.2); 
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #f8fafc;
+  color: var(--text-white);
   padding: 8px 12px;
   border-radius: 6px;
   outline: none;
@@ -543,7 +543,7 @@ td.stock-critico {
 .bg-gastos h2 { color: #f87171; margin: 5px 0 0 0; font-size: 2rem;}
 
 .pie-title-badge span {
-  color: #cbd5e1;
+  color: var(--text-light);
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -559,9 +559,9 @@ td.stock-critico {
   align-items: center;
   justify-content: center;
   height: 200px;
-  color: #64748b;
+  color: var(--text-muted);
   font-style: italic;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--border-color);
   border-radius: 8px;
   width: 100%;
 }
@@ -589,12 +589,12 @@ td.stock-critico {
   margin-top: 25px;
   margin-bottom: 35px; 
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.7); 
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-secondary); 
+  border: 1px solid var(--border-color);
   border-left: 5px solid #10b981; 
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 10px var(--bg-hover);
 }
 
 .kpi-mantenimiento-banner:hover {
@@ -640,7 +640,7 @@ td.stock-critico {
 .alerta-verde .banner-value { color: #10b981; }
 
 .banner-label {
-  color: #e2e8f0;
+  color: var(--text-light);
   font-size: 1.1rem;
   font-weight: 500;
 }

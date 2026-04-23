@@ -1,22 +1,22 @@
-<div class="salidas-container" style="max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+﻿<div class="salidas-container" style="max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
   
   <!-- ==========================================
        HEADER SECTION (¡Restaurado!)
        ========================================== -->
-  <div class="header-section glass-panel">
+  <div class="header-section card">
     <div class="header-text">
       <h2><i class="fas fa-clipboard-list"></i> Historial de Vales de Salida</h2>
       <p>Consulta y gestiona las salidas de almacén para autobuses y flota administrativa.</p>
     </div>
     
     <div class="header-actions">
-      <button class="btn-ghost btn-excel-custom" (click)="exportarAExcelCompleto()" title="Exportar a Excel">
+      <button class="btn-outline btn-excel-custom" (click)="exportarAExcelCompleto()" title="Exportar a Excel">
         <span class="btn-icon-text">&#128196;</span> <span class="d-none-mobile">EXPORTAR EXCEL</span>
       </button>
-      <button class="btn-ghost btn-pdf-custom" (click)="exportarAPDFCompleto()" title="Exportar a PDF">
+      <button class="btn-outline btn-pdf-custom" (click)="exportarAPDFCompleto()" title="Exportar a PDF">
         <span class="btn-icon-text">&#128462;</span> <span class="d-none-mobile">EXPORTAR PDF</span>
       </button>
-      <button class="btn-neon-primary" (click)="registrarNuevaSalida()">
+      <button class="btn-primary" (click)="registrarNuevaSalida()">
         <span class="btn-icon-text">&#43;</span> REGISTRAR NUEVO VALE
       </button>
     </div>
@@ -25,7 +25,7 @@
   <!-- ==========================================
        MAIN SECTION (Filtros y Tabla)
        ========================================== -->
-  <div class="main-section glass-panel mt-4">
+  <div class="main-section card mt-4">
     
     <!-- Filtros -->
     <div class="filters-bar">
@@ -44,12 +44,12 @@
     </div>
 
     <div class="contador-resultados">
-      <span class="badge-neon badge-primary">{{ totalItems }}</span> vales de salida encontrados
+      <span class="badge badge-primary">{{ totalItems }}</span> vales de salida encontrados
     </div>
 
     <!-- Tabla -->
     <div class="table-responsive">
-      <table class="modern-table">
+      <table class="data-table">
         <thead>
           <tr>
             <th>Vale</th>
@@ -68,7 +68,7 @@
             <td style="color: #cbd5e1;">{{ salida.fechaSalida | date:'dd/MM/yyyy h:mm a' }}</td>
             
             <td>
-              <span class="badge-neon" [ngClass]="salida.tipoSalida === 'Mantenimiento' ? 'badge-warning' : 'badge-success'">
+              <span class="badge" [ngClass]="salida.tipoSalida === 'Mantenimiento' ? 'badge-warning' : 'badge-success'">
                 {{ salida.tipoSalida }}
               </span>
             </td>
@@ -94,10 +94,10 @@
             
             <td class="text-center">
               <div class="acciones-wrapper">
-                <button class="btn-accion btn-detalles-neon" (click)="verDetalles(salida)">
+                <button class="btn-accion btn-info" (click)="verDetalles(salida)">
                   Ver Detalles
                 </button>
-                <button class="btn-accion btn-agregar-neon" (click)="abrirModalAgregarItems(salida)" *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'Almacenista'])">
+                <button class="btn-accion btn-primary" (click)="abrirModalAgregarItems(salida)" *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'Almacenista'])">
                   + Agregar Items
                 </button>
               </div>
@@ -138,7 +138,7 @@
     
     <div class="modal-body">
       <div class="table-responsive">
-        <table class="modern-table table-sm">
+        <table class="data-table table-sm">
           <thead>
             <tr>
               <th>Tipo</th>
@@ -154,7 +154,7 @@
           <tbody>
             <tr *ngFor="let detalle of detallesSeleccionados">
               <td>
-                <span class="badge-neon" [ngClass]="detalle.tipo_item === 'refaccion' ? 'badge-primary' : 'badge-warning'">
+                <span class="badge" [ngClass]="detalle.tipo_item === 'refaccion' ? 'badge-primary' : 'badge-warning'">
                   {{ detalle.tipo_item }}
                 </span>
               </td>
@@ -171,7 +171,7 @@
               <td><strong style="color: #38bdf8;">{{ ((detalle.cantidad - (detalle.cantidad_devuelta || 0)) * detalle.costo_unitario) | currency:'MXN' }}</strong></td>
               
               <td class="text-center" *ngIf="authService.hasRole(['SuperUsuario'])">
-                <button class="btn-neon-danger btn-sm" 
+                <button class="btn-danger btn-sm" 
                         *ngIf="(detalle.cantidad - (detalle.cantidad_devuelta || 0)) > 0"
                         (click)="abrirModalDevolucion(detalle)">
                   <i class="fas fa-undo"></i> Devolver
@@ -184,7 +184,7 @@
     </div>
     
     <div class="modal-footer">
-      <button class="btn-ghost" (click)="cerrarModalDetalles()">Cerrar</button>
+      <button class="btn-outline" (click)="cerrarModalDetalles()">Cerrar</button>
     </div>
   </div>
 </div>
@@ -206,7 +206,7 @@
       <div class="alert-neon alert-muted mb-4">
         <h5>Items ya registrados en este vale:</h5>
         <div class="items-badges-container">
-          <span *ngFor="let item of itemsExistentes" class="badge-neon badge-muted">
+          <span *ngFor="let item of itemsExistentes" class="badge badge-muted">
             {{ item.nombre_item }} (x{{ item.cantidad }})
           </span>
           <span *ngIf="itemsExistentes.length === 0" class="text-muted-italic">Ninguno.</span>
@@ -216,7 +216,7 @@
 <div class="form-grid-vertical">
         
         <!-- SECCIÓN REFACCIONES -->
-        <div class="glass-panel panel-info">
+        <div class="card panel-info">
           <h4><i class="fas fa-cogs"></i> Agregar Refacción</h4>
           <div class="form-row-flex">
             
@@ -249,7 +249,7 @@
 
             <!-- Botón alineado -->
             <div class="form-group-btn">
-              <button class="btn-neon-primary btn-add-square" (click)="agregarNuevaRefaccion()" title="Agregar">
+              <button class="btn-primary btn-add-square" (click)="agregarNuevaRefaccion()" title="Agregar">
                 <i class="fas fa-plus"></i><span *ngIf="false">+</span>
               </button>
             </div>
@@ -258,7 +258,7 @@
         </div>
 
         <!-- SECCIÓN INSUMOS -->
-        <div class="glass-panel panel-warning">
+        <div class="card panel-warning">
           <h4><i class="fas fa-fill-drip"></i> Agregar Insumo (Líquidos/Grasas)</h4>
           <div class="form-row-flex">
             
@@ -286,7 +286,7 @@
 
             <!-- Botón alineado -->
             <div class="form-group-btn">
-              <button class="btn-neon-warning btn-add-square" (click)="agregarNuevoInsumo()" title="Agregar">
+              <button class="btn-warning btn-add-square" (click)="agregarNuevoInsumo()" title="Agregar">
                 <i class="fas fa-plus"></i><span *ngIf="false">+</span>
               </button>
             </div>
@@ -311,8 +311,8 @@
     </div>
     
     <div class="modal-footer">
-      <button class="btn-ghost" (click)="cerrarModalAgregarItems()">Cancelar</button>
-      <button class="btn-neon-success" (click)="guardarItemsAdicionales()" [disabled]="itemsNuevosRefacciones.length === 0 && itemsNuevosInsumos.length === 0">
+      <button class="btn-outline" (click)="cerrarModalAgregarItems()">Cancelar</button>
+      <button class="btn-success" (click)="guardarItemsAdicionales()" [disabled]="itemsNuevosRefacciones.length === 0 && itemsNuevosInsumos.length === 0">
         <i class="fas fa-save"></i> Guardar Todo en el Vale
       </button>
     </div>
@@ -342,8 +342,8 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-ghost" (click)="cerrarModalDevolucion()">Cancelar</button>
-      <button class="btn-neon-danger" (click)="guardarDevolucion()" [disabled]="!datosDevolucion.motivo || !datosDevolucion.cantidad_devuelta">
+      <button class="btn-outline" (click)="cerrarModalDevolucion()">Cancelar</button>
+      <button class="btn-danger" (click)="guardarDevolucion()" [disabled]="!datosDevolucion.motivo || !datosDevolucion.cantidad_devuelta">
         Confirmar Devolución
       </button>
     </div>
@@ -369,7 +369,8 @@
       <p style="color: #cbd5e1; margin-top: 10px;">{{ notificacion.mensaje }}</p>
     </div>
     <div class="modal-footer justify-center">
-      <button class="btn-ghost" (click)="cerrarModalNotificacion()">Entendido</button>
+      <button class="btn-outline" (click)="cerrarModalNotificacion()">Entendido</button>
     </div>
   </div>
 </div>
+

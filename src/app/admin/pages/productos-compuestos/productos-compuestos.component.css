@@ -3,8 +3,7 @@
   display: block;
   min-height: 100vh;
   padding: 40px 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), 
-              url("/assets/img/nF.png") no-repeat center center fixed;
+  background-image: var(--bg-image); background-color: var(--bg-dark-main); background-size: cover; background-position: center center; background-attachment: fixed;
   background-size: cover;
 }
 
@@ -13,10 +12,10 @@
   width: 95%;
   margin: 0 auto;
   background-color: rgba(15, 23, 42, 0.9); /* Azul muy oscuro para mejor contraste */
-  color: #e0e0e0;
+  color: var(--text-light);
   border: 1px solid rgba(68, 128, 211, 0.4);
   border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 10px 40px var(--bg-dark-overlay);
   overflow: hidden;
 }
 
@@ -31,7 +30,7 @@
 }
 
 .container-header h2 {
-  color: #ffffff;
+  color: var(--text-white);
   font-size: 1.8rem;
   margin: 0;
   font-weight: 700;
@@ -51,14 +50,14 @@
   border: 1px solid rgba(74, 142, 206, 0.4);
   border-radius: 10px;
   padding: 25px 30px;
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--bg-hover-light);
   position: relative;
   transition: all 0.3s ease;
 }
 
 .form-section:hover {
   box-shadow: 0 0 15px rgba(74, 142, 206, 0.15);
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--bg-hover-light);
 }
 
 .form-section legend {
@@ -92,7 +91,7 @@
 
 .form-group label {
   display: block;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin-bottom: 8px;
   font-size: 0.95rem;
   font-weight: 600;
@@ -104,7 +103,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
   padding: 12px 15px;
-  color: #ffffff !important;
+  color: var(--text-white) !important;
   font-size: 1rem;
   transition: all 0.3s ease;
   box-sizing: border-box;
@@ -191,18 +190,18 @@
 .tabla-usuarios td {
   padding: 15px 20px;
   vertical-align: middle;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: #e0e0e0;
+  border-bottom: 1px solid var(--bg-hover-light);
+  color: var(--text-light);
   font-size: 0.95rem;
 }
 
 .tabla-usuarios tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--bg-hover-light);
 }
 
 .empty-table-message {
   text-align: center;
-  color: #64748b;
+  color: var(--text-muted);
   font-style: normal;
   padding: 40px 20px;
 }
@@ -236,8 +235,8 @@
 }
 
 .modal-content {
-  background-color: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: var(--bg-dark-card);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
   width: 90%;
@@ -258,7 +257,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 25px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h3 {
@@ -272,12 +271,12 @@
 .btn-cerrar {
   background: none; 
   border: none; 
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 1.5rem; 
   cursor: pointer; 
   transition: color 0.3s ease;
 }
-.btn-cerrar:hover { color: #ffffff; }
+.btn-cerrar:hover { color: var(--text-white); }
 
 .modal-body {
   padding: 25px;
@@ -289,13 +288,13 @@
   display: flex;
   justify-content: flex-end;
   padding: 20px 25px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(0,0,0,0.2);
+  border-top: 1px solid var(--bg-hover-light);
+  background: var(--bg-hover);
 }
 
 .confirm-text {
   font-size: 1.1rem;
-  color: #e2e8f0;
+  color: var(--text-light);
   margin-bottom: 5px;
 }
 
@@ -312,7 +311,7 @@ input[type="search"],
 input[type="number"],
 input[type="datetime-local"],
 textarea {
-  color: #ffffff !important;
+  color: var(--text-white) !important;
   caret-color: #38bdf8;
 }
 

@@ -15,8 +15,7 @@
   display: block;
   min-height: 100vh;
   padding: 40px 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), 
-              url("/assets/img/nF.png") no-repeat center center fixed;
+  background-image: var(--bg-image); background-color: var(--bg-dark-main); background-size: cover; background-position: center center; background-attachment: fixed;
   background-size: cover;
 }
 
@@ -29,7 +28,7 @@
   width: 98%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.85);
-  color: #e0e0e0;
+  color: var(--text-light);
   border: 1px solid rgba(68, 128, 211, 0.4);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 
@@ -57,7 +56,7 @@
 }
 
 .container-header h2 {
-  color: #ffffff;
+  color: var(--text-white);
   font-size: 2rem;
   font-weight: 700;
   margin: 0;
@@ -183,8 +182,8 @@
 /* Filas */
 .tabla-usuarios tbody tr {
   transition: all 0.3s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--bg-hover-light);
+  background: var(--bg-hover);
 }
 
 .tabla-usuarios tbody tr:hover {
@@ -200,7 +199,7 @@
 .tabla-usuarios tbody td {
   padding: 15px 15px;
   vertical-align: middle;
-  color: #e0e0e0;
+  color: var(--text-light);
 }
 
 /* ===================================
@@ -265,7 +264,7 @@
 }
 .btn-estado:hover {
   background: rgba(68, 128, 211, 0.4);
-  color: #ffffff;
+  color: var(--text-white);
   border-color: #4480d3;
 }
 
@@ -277,7 +276,7 @@
 }
 .btn-eliminar:hover {
   background: rgba(217, 83, 79, 0.4);
-  color: #ffffff;
+  color: var(--text-white);
   border-color: #ff6666;
 }
 
@@ -289,7 +288,7 @@
 }
 .btn-reactivar:hover {
   background: rgba(99, 212, 113, 0.4);
-  color: #ffffff;
+  color: var(--text-white);
   border-color: #5cb85c;
 }
 
@@ -297,7 +296,7 @@
   text-align: center;
   font-style: italic;
   padding: 20px;
-  color: #aaa;
+  color: var(--text-muted);
 }
 
 /* ===================================
@@ -307,7 +306,7 @@
   text-align: center;
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--border-color);
 }
 
 :host ::ng-deep .ngx-pagination {
@@ -317,7 +316,7 @@
   display: inline-block; border-radius: 6px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(68, 128, 211, 0.3);
 }
 :host ::ng-deep .ngx-pagination a, :host ::ng-deep .ngx-pagination span {
-  color: #e0e0e0; padding: 8px 14px; display: block; text-decoration: none; font-size: 0.9rem;
+  color: var(--text-light); padding: 8px 14px; display: block; text-decoration: none; font-size: 0.9rem;
 }
 :host ::ng-deep .ngx-pagination .current {
   background: linear-gradient(135deg, #4480d3 0%, #386bbd 100%);
@@ -369,7 +368,7 @@
 }
 
 .modal-header h3 {
-  margin: 0; color: #ffffff; font-size: 1.5rem; font-weight: 700;
+  margin: 0; color: var(--text-white); font-size: 1.5rem; font-weight: 700;
   text-shadow: 0 0 10px rgba(68, 128, 211, 0.5);
 }
 
@@ -380,7 +379,7 @@
 
 /* Botón Cerrar */
 .btn-cerrar {
-  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-hover-light); border: 1px solid var(--border-color);
   color: #a0c4ff; width: 36px; height: 36px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer;
   transition: all 0.3s ease;
@@ -405,7 +404,7 @@
   width: 100%; padding: 12px 15px;
   border: 2px solid rgba(68, 128, 211, 0.2); border-radius: 10px;
   background: rgba(10, 12, 18, 0.6) !important;
-  color: #ffffff !important; font-size: 1rem;
+  color: var(--text-white) !important; font-size: 1rem;
   transition: all 0.3s ease;
 }
 .form-control:focus {
@@ -416,7 +415,7 @@
 
 hr { border: 0; border-top: 1px solid rgba(68, 128, 211, 0.2); margin: 20px 0; }
 
-.confirm-text { color: #e0e0e0; font-size: 1.1rem; text-align: center; margin-bottom: 15px; }
+.confirm-text { color: var(--text-light); font-size: 1.1rem; text-align: center; margin-bottom: 15px; }
 .confirm-text strong { color: white; font-weight: 700; }
 
 /* Footer Modal */
@@ -440,7 +439,7 @@ hr { border: 0; border-top: 1px solid rgba(68, 128, 211, 0.2); margin: 20px 0; }
   background: transparent; border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ccc; padding: 12px 24px; border-radius: 10px; cursor: pointer;
 }
-.btn-cancelar:hover { background: rgba(255, 255, 255, 0.05); color: white; }
+.btn-cancelar:hover { background: var(--bg-hover-light); color: white; }
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -462,7 +461,7 @@ hr { border: 0; border-top: 1px solid rgba(68, 128, 211, 0.2); margin: 20px 0; }
   background: linear-gradient(135deg, #1a1c24 0%, #0f1219 100%);
   border-radius: 16px;
   box-shadow: 0 25px 60px rgba(0,0,0,0.8), 
-              0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+              0 0 0 1px var(--border-color) inset;
   overflow: hidden;
   font-family: 'Segoe UI', sans-serif;
   color: white;
@@ -594,7 +593,7 @@ hr { border: 0; border-top: 1px solid rgba(68, 128, 211, 0.2); margin: 20px 0; }
   font-size: 0.95rem;
   color: #fff;
   font-weight: 600;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 2px;
 }
 
@@ -622,14 +621,14 @@ hr { border: 0; border-top: 1px solid rgba(68, 128, 211, 0.2); margin: 20px 0; }
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  background: rgba(0,0,0,0.2);
+  background: var(--bg-hover);
   z-index: 1;
 }
 
 .signature-area {
   font-family: 'Brush Script MT', cursive;
   font-size: 1.2rem;
-  color: #aaa;
+  color: var(--text-muted);
   border-top: 1px solid #555;
   padding-top: 5px;
   width: 150px;
@@ -716,7 +715,7 @@ hr { border: 0; border-top: 1px solid rgba(68, 128, 211, 0.2); margin: 20px 0; }
 }
 .badge-sin-registro { 
   background-color: rgba(148, 163, 184, 0.15) !important; 
-  color: #94a3b8 !important; 
+  color: var(--text-muted) !important; 
   border: 1px solid rgba(148, 163, 184, 0.3) !important; 
 }
 

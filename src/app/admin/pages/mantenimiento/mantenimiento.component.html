@@ -1,4 +1,4 @@
-<div class="dashboard-container mt-4 mb-5" style="max-width: 98%;">
+﻿<div class="dashboard-container mt-4 mb-5" style="max-width: 98%;">
   <div class="financial-section">
     <div class="financial-header" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">
       <h3><i class="fas fa-tools text-info"></i> Agenda de Mantenimiento Preventivo</h3>
@@ -31,7 +31,7 @@
         <h3>🔴 Urgentes / Atrasados <span class="badge">{{ urgentes.length }}</span></h3>
       </div>
       <div class="column-body">
-        <div class="kanban-card card-danger" *ngFor="let s of urgentes">
+        <div class="kanban-card-danger" *ngFor="let s of urgentes">
           <div class="card-title"><i class="fas fa-bus"></i> Bus {{ s.economico }}</div>
           <div class="card-alerta badge-danger"><i class="fas fa-exclamation-triangle"></i> {{ s.alerta }}</div>
           <div class="card-info mt-2">
@@ -58,7 +58,7 @@
         <h3>🟡 Próximos (30 días) <span class="badge">{{ esteMes.length }}</span></h3>
       </div>
       <div class="column-body">
-        <div class="kanban-card card-warning" *ngFor="let s of esteMes">
+        <div class="kanban-card-warning" *ngFor="let s of esteMes">
           <div class="card-title"><i class="fas fa-bus"></i> Bus {{ s.economico }}</div>
           <div class="card-alerta badge-warning"><i class="fas fa-clock"></i> {{ s.alerta }}</div>
           <div class="card-info mt-2">
@@ -85,7 +85,7 @@
         <h3>🟢 Futuros <span class="badge">{{ futuros.length }}</span></h3>
       </div>
       <div class="column-body">
-        <div class="kanban-card card-success" *ngFor="let s of futuros">
+        <div class="kanban-card-success" *ngFor="let s of futuros">
           <div class="card-title"><i class="fas fa-bus text-muted"></i> Bus {{ s.economico }}</div>
           <div class="card-info mt-2">
             <div><small class="text-muted">Límite KM:</small> <strong>{{ s.km_proximo_servicio | number }}</strong>
@@ -436,3 +436,4 @@
 
   </div>
 </div>
+

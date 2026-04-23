@@ -2,7 +2,7 @@
   display: block;
   min-height: 100vh;
   padding: 40px 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/nF.png") no-repeat center center fixed;
+  background-image: var(--bg-image); background-color: var(--bg-dark-main); background-size: cover; background-position: center center; background-attachment: fixed;
   background-size: cover;
 }
 
@@ -13,7 +13,7 @@
 
 .financial-section {
   background-color: rgba(0, 0, 0, 0.658);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   padding: 25px;
   margin-bottom: 25px;
@@ -25,13 +25,13 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--bg-hover-light);
   padding-bottom: 15px;
 }
 
 .financial-header h3 {
   margin: 0;
-  color: #ffffff;
+  color: var(--text-white);
   font-size: 1.3rem;
   font-weight: 500;
 }
@@ -57,7 +57,7 @@
 .filter-group input {
   background: rgba(74, 142, 206, 0.2); 
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #f8fafc;
+  color: var(--text-white);
   padding: 8px 12px;
   border-radius: 6px;
   outline: none;
@@ -78,7 +78,7 @@
 
 .kpi-card {
   background-color: rgba(0, 0, 0, 0.658);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   border-left: 5px solid #4ade80;
   border-radius: 10px;
   padding: 25px;
@@ -88,7 +88,7 @@
 .kpi-value {
   font-size: 3rem;
   font-weight: bold;
-  color: #ffffff;
+  color: var(--text-white);
   margin-top: 10px;
 }
 
@@ -100,13 +100,13 @@
 
 .chart-container {
   background-color: rgba(0, 0, 0, 0.664);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   padding: 25px;
 }
 
 .chart-container h3 {
-  color: #ffffff;
+  color: var(--text-white);
   margin-bottom: 20px;
   text-align: center;
 }
@@ -126,7 +126,7 @@
   align-items: center;
   justify-content: center;
   height: 200px;
-  color: #64748b;
+  color: var(--text-muted);
   font-style: italic;
 }
 

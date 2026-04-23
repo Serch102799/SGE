@@ -4,15 +4,17 @@ import {
   Component,
   OnInit,
   HostListener,
-  ViewEncapsulation, ElementRef
+  ViewEncapsulation, ElementRef, Inject, PLATFORM_ID
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 import {
   faChartPie, faUsers, faOilCan, faChartLine, faScrewdriverWrench, faHeadset,
   faBoxOpen, faHandshake, faSliders, faHammer, faCubes, faTruckFast,
   faHandHoldingHand, faGears, faDroplet, faUserShield, faBus, faCar,
   faBuilding, faFileLines, faWarehouse, faRecycle, faCodeMerge, faMapLocationDot,
-  faGaugeHigh, faIdCard, faServer, faGasPump, faCircleUser, faRightFromBracket, faBars
+  faGaugeHigh, faIdCard, faServer, faGasPump, faCircleUser, faRightFromBracket, faBars,
+  faSun, faMoon
 } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -58,18 +60,35 @@ export class AdminComponent implements OnInit, AfterViewInit {
   faRecuperados = faRecycle;
   faHerramientaFusion = faCodeMerge;
   faAdminPanel = faServer;
+  faSun = faSun;
+  faMoon = faMoon;
+  isLightMode = false;
+
   currentUser: any;
   constructor(
     public authService: AuthService,
     private el: ElementRef,
     private ngZone: NgZone,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
   }
   ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.isLightMode = localStorage.getItem('theme') === 'light';
+    }
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
     });
   }
+  
+  toggleTheme(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.isLightMode = !this.isLightMode;
+    const theme = this.isLightMode ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }
+
   toggleSidebar(): void {
     this.isCollapsed = !this.isCollapsed;
   }

@@ -5,22 +5,22 @@
   display: block;
   min-height: 100vh;
   padding: 40px 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), url("/assets/img/nF.png") no-repeat center center fixed;
+  background-image: var(--bg-image); background-color: var(--bg-dark-main); background-size: cover; background-position: center center; background-attachment: fixed;
   background-size: cover;
 }
 .welcome-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(15, 23, 42, 0.8));
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), var(--bg-secondary));
   padding: 25px 30px;
   border-radius: 12px;
   border: 1px solid rgba(56, 189, 248, 0.2);
   margin-bottom: 30px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 20px var(--bg-hover);
 }
 .welcome-text h2 { margin: 0 0 5px 0; font-size: 2rem; color: #fff; }
-.welcome-text p { margin: 0; color: #94a3b8; font-size: 1rem; }
+.welcome-text p { margin: 0; color: var(--text-muted); font-size: 1rem; }
 .date-badge { background: rgba(0,0,0,0.4); padding: 8px 15px; border-radius: 20px; font-weight: 600; color: #38bdf8; }
 /* ============================================= */
 /* --- CONTENEDOR PRINCIPAL --- */
@@ -30,7 +30,7 @@
   width: 95%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.8);
-  color: #e0e0e0;
+  color: var(--text-light);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
@@ -288,7 +288,7 @@
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px var(--bg-hover);
 }
 
 .btn-estado {
@@ -322,7 +322,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--bg-dark-overlay);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -353,7 +353,7 @@
 
 .modal-header {
   padding: 1.5rem 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -362,13 +362,13 @@
 .modal-header h3 {
   margin: 0;
   font-size: 1.5rem;
-  color: #ffffff;
+  color: var(--text-white);
 }
 
 .btn-cerrar {
   background: none;
   border: none;
-  color: #aaa;
+  color: var(--text-muted);
   font-size: 2rem;
   cursor: pointer;
   line-height: 1;
@@ -376,7 +376,7 @@
 }
 
 .btn-cerrar:hover {
-  color: #ffffff;
+  color: var(--text-white);
 }
 
 .modal-body {
@@ -387,7 +387,7 @@
 
 .modal-footer {
   padding: 1.5rem 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--border-color);
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
@@ -539,7 +539,7 @@
 }
 
 .confirm-text {
-  color: #e0e0e0;
+  color: var(--text-light);
   font-size: 1rem;
   line-height: 1.6;
   text-align: center;

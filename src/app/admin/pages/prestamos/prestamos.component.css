@@ -17,8 +17,7 @@
   height: 100%;
   box-sizing: border-box;
   padding: 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), 
-              url("/assets/img/nF.png") no-repeat center center fixed;
+  background-image: var(--bg-image); background-color: var(--bg-dark-main); background-size: cover; background-position: center center; background-attachment: fixed;
   background-size: cover;
   overflow-y: auto;
 }
@@ -31,7 +30,7 @@
   width: 100%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.85);
-  color: #e0e0e0;
+  color: var(--text-light);
   border: 1px solid rgba(68, 128, 211, 0.4);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 
@@ -60,7 +59,7 @@
 }
 
 .container-header h2 {
-  color: #ffffff;
+  color: var(--text-white);
   font-size: 2rem;
   font-weight: 700;
   margin: 0;
@@ -98,15 +97,15 @@
    =================================== */
 .container-body {
   padding: 30px 35px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-hover);
 }
 
 .tabla-responsive-wrapper {
   overflow-x: auto;
   border-radius: 12px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-hover);
   box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--bg-hover-light);
 }
 
 .tabla-usuarios {
@@ -137,8 +136,8 @@
 /* Filas */
 .tabla-usuarios tbody tr {
   transition: all 0.3s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--bg-hover-light);
+  background: var(--bg-hover-light);
 }
 
 .tabla-usuarios tbody tr:hover {
@@ -154,8 +153,8 @@
 .tabla-usuarios tbody td {
   padding: 15px 15px;
   vertical-align: middle;
-  color: #e0e0e0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-light);
+  border-bottom: 1px solid var(--bg-hover-light);
 }
 
 /* Badges */
@@ -181,7 +180,7 @@
 }
 
 .empty-table-message {
-  text-align: center; font-style: italic; padding: 40px; color: #aaa; font-size: 1.1rem;
+  text-align: center; font-style: italic; padding: 40px; color: var(--text-muted); font-size: 1.1rem;
 }
 
 /* ===================================
@@ -191,7 +190,7 @@
   text-align: center;
   margin-top: 20px;
   padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--bg-hover-light);
 }
 
 :host ::ng-deep .ngx-pagination {
@@ -211,7 +210,7 @@
 
 :host ::ng-deep .ngx-pagination a,
 :host ::ng-deep .ngx-pagination span {
-  color: #e0e0e0;
+  color: var(--text-light);
   padding: 8px 14px;
   display: block;
   text-decoration: none;
@@ -277,12 +276,12 @@
 }
 
 .modal-header h3 {
-  margin: 0; color: #ffffff; font-size: 1.5rem; font-weight: 700;
+  margin: 0; color: var(--text-white); font-size: 1.5rem; font-weight: 700;
   text-shadow: 0 0 10px rgba(68, 128, 211, 0.5);
 }
 
 .btn-cerrar {
-  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-hover-light); border: 1px solid var(--border-color);
   color: #a0c4ff; width: 36px; height: 36px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer;
   transition: all 0.3s ease;
@@ -295,7 +294,7 @@
 .form-section {
   border: 1px solid rgba(68, 128, 211, 0.2);
   border-radius: 12px; padding: 20px; margin-bottom: 25px;
-  background: rgba(0,0,0,0.2);
+  background: var(--bg-hover);
 }
 .form-section legend {
   color: #6a9edc; font-weight: 700; padding: 0 10px; font-size: 1rem;
@@ -323,10 +322,10 @@
   display: flex; gap: 10px;
 }
 .btn-tipo-calculo {
-  flex: 1; padding: 12px; background: rgba(255,255,255,0.05); color: #ccc;
-  border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;
+  flex: 1; padding: 12px; background: var(--bg-hover-light); color: #ccc;
+  border: 1px solid var(--border-color); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;
 }
-.btn-tipo-calculo:hover { background: rgba(255,255,255,0.1); color: white; }
+.btn-tipo-calculo:hover { background: var(--border-color); color: white; }
 .btn-tipo-calculo.active {
   background: rgba(68, 128, 211, 0.3); border-color: #4480d3; color: white;
   box-shadow: 0 0 10px rgba(68, 128, 211, 0.2);
@@ -350,7 +349,7 @@
   background: rgba(68, 128, 211, 0.15); color: #a0c4ff; padding: 10px; font-size: 0.8rem; text-align: left;
 }
 .tabla-preview td {
-  padding: 10px; color: #e0e0e0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem;
+  padding: 10px; color: var(--text-light); border-bottom: 1px solid var(--bg-hover-light); font-size: 0.9rem;
 }
 .btn-eliminar-sm {
   background: transparent; color: #e4606d; border: 1px solid #e4606d; padding: 4px 10px;
@@ -368,7 +367,7 @@
   background: transparent; border: 1px solid rgba(255, 255, 255, 0.2); color: #ccc;
   padding: 10px 24px; border-radius: 8px; cursor: pointer;
 }
-.btn-cancelar:hover { background: rgba(255, 255, 255, 0.05); color: white; }
+.btn-cancelar:hover { background: var(--bg-hover-light); color: white; }
 
 .btn-guardar {
   background: linear-gradient(135deg, #4480d3 0%, #2a5298 100%);
@@ -381,7 +380,7 @@
 .header-exito h3 { color: #5cb85c !important; }
 .header-error h3 { color: #d9534f !important; }
 .header-advertencia h3 { color: #f0ad4e !important; }
-.confirm-text { color: #e0e0e0; font-size: 1.1rem; text-align: center; }
+.confirm-text { color: var(--text-light); font-size: 1.1rem; text-align: center; }
 
 /* ===================================
    OVERRIDES PARA ANGULAR MATERIAL
@@ -407,7 +406,7 @@
 /* Estilos para las pestañas (Tabs) */
 .btn-tab {
   background: transparent;
-  color: #94a3b8;
+  color: var(--text-muted);
   border: none;
   padding: 10px 20px;
   font-size: 1rem;
@@ -418,8 +417,8 @@
 }
 
 .btn-tab:hover {
-  color: #e2e8f0;
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-light);
+  background: var(--bg-hover-light);
 }
 
 .tab-activo {
@@ -436,11 +435,11 @@
   align-items: center;
   padding: 15px 0;
   margin-top: 15px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--border-color);
 }
 
 .paginador-info {
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
@@ -451,9 +450,9 @@
 }
 
 .btn-paginador {
-  background: #1e293b;
-  color: #e2e8f0;
-  border: 1px solid #334155;
+  background: var(--bg-dark-card);
+  color: var(--text-light);
+  border: 1px solid var(--border-primary);
   padding: 8px 16px;
   border-radius: 6px;
   font-weight: 500;
@@ -463,7 +462,7 @@
 
 .btn-paginador:hover:not([disabled]) {
   background: #3b82f6;
-  color: #ffffff;
+  color: var(--text-white);
   border-color: #3b82f6;
 }
 

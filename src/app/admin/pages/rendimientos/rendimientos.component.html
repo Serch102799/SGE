@@ -1,18 +1,18 @@
-<div class="rendimientos-container">
+﻿<div class="rendimientos-container">
   
   <!-- HEADER SECTION -->
-  <div class="header-section glass-panel">
+  <div class="header-section card">
     <div class="header-text">
       <h2><i class="fas fa-tachometer-alt"></i> Gestión de Rendimientos</h2>
       <p>Configura los parámetros de consumo (km/L) ideales para cada modelo y ruta.</p>
     </div>
-    <button class="btn-neon-primary" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel'])">
+    <button class="btn-primary" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario', 'AdminDiesel'])">
       <i class="fas fa-plus"></i> Nuevo Rendimiento
     </button>
   </div>
 
   <!-- MAIN SECTION: Filtros y Tabla -->
-  <div class="main-section glass-panel mt-4">
+  <div class="main-section card mt-4">
     
     <!-- Filtros y Búsqueda -->
     <div class="filters-bar">
@@ -31,7 +31,7 @@
 
     <!-- Tabla de Rendimientos -->
     <div class="table-responsive">
-      <table class="modern-table">
+      <table class="data-table">
         <thead>
           <tr>
             <th>Modelo</th>
@@ -55,13 +55,13 @@
             </td>
             
             <td class="text-center">
-              <span class="badge-neon badge-success">≥ {{ rendimiento.rendimiento_excelente }} km/L</span>
+              <span class="badge badge-success">≥ {{ rendimiento.rendimiento_excelente }} km/L</span>
             </td>
             <td class="text-center">
-              <span class="badge-neon badge-primary">≥ {{ rendimiento.rendimiento_bueno }} km/L</span>
+              <span class="badge badge-primary">≥ {{ rendimiento.rendimiento_bueno }} km/L</span>
             </td>
             <td class="text-center">
-              <span class="badge-neon badge-warning">≥ {{ rendimiento.rendimiento_regular }} km/L</span>
+              <span class="badge badge-warning">≥ {{ rendimiento.rendimiento_regular }} km/L</span>
             </td>
             
             <td class="text-center">
@@ -118,13 +118,13 @@
   </div>
 
   <!-- Leyenda Informativa -->
-  <div class="legend-panel glass-panel mt-4">
+  <div class="legend-panel card mt-4">
     <h6><i class="fas fa-info-circle text-info"></i> Información sobre Clasificaciones</h6>
     <div class="legend-grid">
-      <div class="legend-item"><span class="badge-neon badge-success">Excelente</span> Rendimiento ideal.</div>
-      <div class="legend-item"><span class="badge-neon badge-primary">Bueno</span> Dentro de lo esperado.</div>
-      <div class="legend-item"><span class="badge-neon badge-warning">Regular</span> Requiere atención moderada.</div>
-      <div class="legend-item"><span class="badge-neon badge-danger">Malo</span> Inferior al valor regular. Crítico.</div>
+      <div class="legend-item"><span class="badge badge-success">Excelente</span> Rendimiento ideal.</div>
+      <div class="legend-item"><span class="badge badge-primary">Bueno</span> Dentro de lo esperado.</div>
+      <div class="legend-item"><span class="badge badge-warning">Regular</span> Requiere atención moderada.</div>
+      <div class="legend-item"><span class="badge badge-danger">Malo</span> Inferior al valor regular. Crítico.</div>
     </div>
   </div>
 </div>
@@ -163,7 +163,7 @@
 
         <!-- Rendimientos -->
         <div class="form-group">
-          <label><span class="badge-neon badge-success">Excelente</span> *</label>
+          <label><span class="badge badge-success">Excelente</span> *</label>
           <div class="input-with-icon">
             <input type="number" step="0.01" min="0" placeholder="5.50" [(ngModel)]="seleccionado.rendimiento_excelente" class="form-control">
             <span class="input-suffix">km/L</span>
@@ -171,7 +171,7 @@
         </div>
 
         <div class="form-group">
-          <label><span class="badge-neon badge-primary">Bueno</span> *</label>
+          <label><span class="badge badge-primary">Bueno</span> *</label>
           <div class="input-with-icon">
             <input type="number" step="0.01" min="0" placeholder="4.50" [(ngModel)]="seleccionado.rendimiento_bueno" class="form-control">
             <span class="input-suffix">km/L</span>
@@ -179,7 +179,7 @@
         </div>
 
         <div class="form-group">
-          <label><span class="badge-neon badge-warning">Regular</span> *</label>
+          <label><span class="badge badge-warning">Regular</span> *</label>
           <div class="input-with-icon">
             <input type="number" step="0.01" min="0" placeholder="3.50" [(ngModel)]="seleccionado.rendimiento_regular" class="form-control">
             <span class="input-suffix">km/L</span>
@@ -202,8 +202,8 @@
     </div>
 
     <div class="modal-footer">
-      <button class="btn-ghost" (click)="cerrarModal()">Cancelar</button>
-      <button class="btn-neon-primary" (click)="guardar()">Guardar Cambios</button>
+      <button class="btn-outline" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-primary" (click)="guardar()">Guardar Cambios</button>
     </div>
   </div>
 </div>
@@ -218,8 +218,8 @@
       <p class="text-danger mt-2"><small>Esta acción no se puede deshacer.</small></p>
     </div>
     <div class="modal-footer justify-center">
-      <button class="btn-ghost" (click)="cerrarModalEliminar()">Cancelar</button>
-      <button class="btn-neon-danger" (click)="eliminar()">Sí, eliminar</button>
+      <button class="btn-outline" (click)="cerrarModalEliminar()">Cancelar</button>
+      <button class="btn-danger" (click)="eliminar()">Sí, eliminar</button>
     </div>
   </div>
 </div>
@@ -241,7 +241,8 @@
       <p>{{ notificacion.mensaje }}</p>
     </div>
     <div class="modal-footer justify-center">
-      <button class="btn-ghost" (click)="cerrarModalNotificacion()">Entendido</button>
+      <button class="btn-outline" (click)="cerrarModalNotificacion()">Entendido</button>
     </div>
   </div>
 </div>
+

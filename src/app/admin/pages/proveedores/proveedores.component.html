@@ -1,6 +1,6 @@
-<div class="proveedores-container">
+﻿<div class="proveedores-container">
 
-  <div class="header-section glass-panel">
+  <div class="header-section card">
     <div class="header-text">
       <h2><fa-icon [icon]="faBuilding"></fa-icon> Gestión de Proveedores</h2>
       <p>Administra tu directorio de empresas y analiza el volumen de compras.</p>
@@ -16,7 +16,7 @@
         </button>
       </div>
 
-      <button *ngIf="vistaActual === 'directorio'" class="btn-neon-primary" (click)="abrirModal('agregar')">
+      <button *ngIf="vistaActual === 'directorio'" class="btn-primary" (click)="abrirModal('agregar')">
         <fa-icon [icon]="faPlus"></fa-icon> Nuevo
       </button>
 
@@ -31,14 +31,14 @@
     </div>
   </div>
 
-  <div class="main-section glass-panel" *ngIf="vistaActual === 'directorio'">
+  <div class="main-section card" *ngIf="vistaActual === 'directorio'">
     <div class="search-bar">
       <fa-icon [icon]="faSearch" class="search-icon"></fa-icon>
       <input type="text" placeholder="Buscar por nombre, contacto o RFC..." [(ngModel)]="terminoBusqueda" (input)="aplicarFiltros()">
     </div>
 
     <div class="table-responsive">
-      <table class="modern-table">
+      <table class="data-table">
         <thead>
           <tr>
             <th>Empresa</th>
@@ -91,7 +91,7 @@
   </div>
 
 
-  <div class="main-section glass-panel" *ngIf="vistaActual === 'dashboard'">
+  <div class="main-section card" *ngIf="vistaActual === 'dashboard'">
     
     <div class="filtros-container" style="display: flex; gap: 15px; margin-bottom: 20px; background: #1e293b; padding: 15px; border-radius: 8px; align-items: flex-end; flex-wrap: wrap;">
       <div class="filtro-grupo" style="flex: 2; min-width: 250px;">
@@ -110,7 +110,7 @@
         <input type="date" class="form-control" [(ngModel)]="fechaFin" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
       </div>
       <div class="filtro-grupo">
-        <button class="btn-neon-primary" (click)="generarReporte()" style="height: 42px; padding: 0 20px;">
+        <button class="btn-primary" (click)="generarReporte()" style="height: 42px; padding: 0 20px;">
           <i class="fas fa-search"></i> Generar
         </button>
       </div>
@@ -129,7 +129,7 @@
       </div>
 
       <div class="table-responsive">
-        <table class="modern-table">
+        <table class="data-table">
           <thead>
             <tr>
               <th style="width: 5%;">Rank</th>
@@ -176,7 +176,7 @@
       </div>
 
       <div class="table-responsive">
-        <table class="modern-table">
+        <table class="data-table">
           <thead>
             <tr>
               <th>Fecha Operación</th>
@@ -265,8 +265,8 @@
       </div>
     </div>
     <div class="modal-footer" style="border-top: 1px solid #334155; padding: 15px 20px; display: flex; justify-content: flex-end; gap: 10px;">
-      <button class="btn-ghost" (click)="cerrarModal()" style="background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 8px 15px; border-radius: 6px; cursor: pointer;">Cancelar</button>
-      <button class="btn-neon-primary" (click)="guardarProveedor()" style="background: #3b82f6; border: none; color: white; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+      <button class="btn-outline" (click)="cerrarModal()" style="background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 8px 15px; border-radius: 6px; cursor: pointer;">Cancelar</button>
+      <button class="btn-primary" (click)="guardarProveedor()" style="background: #3b82f6; border: none; color: white; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
         {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
       </button>
     </div>
@@ -281,8 +281,8 @@
       <p style="color: #94a3b8; font-size: 0.95rem; line-height: 1.5;">¿Estás seguro de eliminar a <strong style="color: #e2e8f0;">{{ proveedorABorrar?.nombre_proveedor }}</strong>? Esta acción no se puede deshacer.</p>
     </div>
     <div class="modal-footer" style="border-top: 1px solid #334155; padding: 15px 20px; display: flex; justify-content: center; gap: 10px;">
-      <button class="btn-ghost" (click)="cerrarModalBorrar()" style="background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 8px 20px; border-radius: 6px; cursor: pointer;">Cancelar</button>
-      <button class="btn-neon-danger" (click)="confirmarEliminacion()" style="background: #ef4444; border: none; color: white; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Sí, eliminar</button>
+      <button class="btn-outline" (click)="cerrarModalBorrar()" style="background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 8px 20px; border-radius: 6px; cursor: pointer;">Cancelar</button>
+      <button class="btn-danger" (click)="confirmarEliminacion()" style="background: #ef4444; border: none; color: white; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Sí, eliminar</button>
     </div>
   </div>
 </div>
@@ -294,7 +294,8 @@
     </div>
     <div class="confirm-text" style="padding: 20px; color: #cbd5e1; font-size: 0.95rem; line-height: 1.5;">{{ notificacion.mensaje }}</div>
     <div class="modal-footer" style="border-top: 1px solid #334155; padding: 12px 20px; display: flex; justify-content: flex-end;">
-      <button class="btn-ghost" (click)="cerrarModalNotificacion()" style="background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 6px 15px; border-radius: 6px; cursor: pointer;">Entendido</button>
+      <button class="btn-outline" (click)="cerrarModalNotificacion()" style="background: transparent; border: 1px solid #475569; color: #cbd5e1; padding: 6px 15px; border-radius: 6px; cursor: pointer;">Entendido</button>
     </div>
   </div>
 </div>
+

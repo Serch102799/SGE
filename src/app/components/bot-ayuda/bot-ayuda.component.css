@@ -52,10 +52,10 @@
 /* --- LA VENTANA DEL BOT --- */
 .bot-window {
   width: 350px;
-  background-color: #1e293b;
+  background-color: var(--bg-dark-card);
   border-radius: 12px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -77,16 +77,16 @@
 
 /* Header de la ventana */
 .bot-header {
-  background-color: #0f172a;
+  background-color: var(--bg-dark-main);
   padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--bg-hover-light);
 }
 
 .bot-header-title {
-  color: #f8fafc;
+  color: var(--text-white);
   font-weight: bold;
   font-size: 1.1rem;
   display: flex;
@@ -97,7 +97,7 @@
 .btn-close-bot {
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 1.5rem;
   cursor: pointer;
   transition: color 0.2s;
@@ -107,14 +107,14 @@
 /* Pestañas (Tabs) */
 .bot-tabs {
   display: flex;
-  background-color: #0f172a;
+  background-color: var(--bg-dark-main);
 }
 
 .bot-tab-btn {
   flex: 1;
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--text-muted);
   padding: 12px 0;
   font-size: 0.85rem;
   font-weight: 600;
@@ -127,7 +127,7 @@
   gap: 8px;
 }
 
-.bot-tab-btn:hover { color: #cbd5e1; }
+.bot-tab-btn:hover { color: var(--text-light); }
 .bot-tab-btn.active {
   color: #38bdf8;
   border-bottom: 2px solid #38bdf8;
@@ -138,11 +138,11 @@
 .bot-body {
   padding: 20px;
   min-height: 200px;
-  color: #cbd5e1;
+  color: var(--text-light);
 }
 
 .context-title {
-  color: #f8fafc;
+  color: var(--text-white);
   margin: 0 0 10px 0;
   font-size: 1rem;
   display: flex;
@@ -153,13 +153,13 @@
 .context-text {
   font-size: 0.9rem;
   line-height: 1.5;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 /* Formulario de Tickets */
 .ticket-info {
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin-top: 0;
   margin-bottom: 15px;
 }
@@ -173,14 +173,14 @@
 
 .form-group label {
   font-size: 0.8rem;
-  color: #cbd5e1;
+  color: var(--text-light);
   font-weight: 600;
 }
 
 .bot-input {
-  background-color: #0f172a;
-  border: 1px solid #334155;
-  color: #f8fafc;
+  background-color: var(--bg-dark-main);
+  border: 1px solid var(--border-primary);
+  color: var(--text-white);
   padding: 10px;
   border-radius: 6px;
   font-size: 0.85rem;
@@ -226,7 +226,7 @@ textarea.bot-input {
   left: 0; 
   width: 100vw; 
   height: 100vh; 
-  background: rgba(0,0,0,0.7); 
+  background: var(--bg-dark-overlay); 
   backdrop-filter: blur(4px); 
   display: flex; 
   justify-content: center; 
@@ -234,12 +234,12 @@ textarea.bot-input {
   z-index: 99999; /* Z-index máximo para el bot */
 }
 .modal-content { 
-  background: #1e293b; 
+  background: var(--bg-dark-card); 
   border-radius: 12px; 
   width: 380px; 
   overflow: hidden; 
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
-  border: 1px solid rgba(255, 255, 255, 0.1); 
+  border: 1px solid var(--border-color); 
   animation: fadeIn 0.3s ease-out forwards;
 }
 .modal-header { 
@@ -272,11 +272,11 @@ textarea.bot-input {
   padding: 15px 25px; 
   display: flex; 
   justify-content: flex-end; 
-  background: #0f172a; 
-  border-top: 1px solid rgba(255, 255, 255, 0.05); 
+  background: var(--bg-dark-main); 
+  border-top: 1px solid var(--bg-hover-light); 
 }
 .btn-cancelar { 
-  background: #475569; 
+  background: var(--border-secondary); 
   color: white; 
   border: none; 
   padding: 10px 20px; 
@@ -285,20 +285,20 @@ textarea.bot-input {
   font-weight: 600; 
   transition: background 0.2s; 
 }
-.btn-cancelar:hover { background: #334155; }
+.btn-cancelar:hover { background: var(--border-primary); }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .context-title {
-  color: #f8fafc;
+  color: var(--text-white);
   margin: 0 0 10px 0;
   font-size: 1.05rem;
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--bg-hover-light);
   padding-bottom: 10px;
 }
 .context-title i {
@@ -307,7 +307,7 @@ textarea.bot-input {
 
 .context-desc {
   font-size: 0.85rem;
-  color: #cbd5e1;
+  color: var(--text-light);
   margin-bottom: 18px;
   line-height: 1.5;
 }
@@ -315,7 +315,7 @@ textarea.bot-input {
 /* Lista de Pasos */
 .context-steps h5 {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--text-muted);
   text-transform: uppercase;
   margin: 0 0 10px 0;
   letter-spacing: 0.5px;

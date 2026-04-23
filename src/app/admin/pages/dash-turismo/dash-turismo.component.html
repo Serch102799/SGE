@@ -1,7 +1,7 @@
-<div class="turismo-container">
+﻿<div class="turismo-container">
 
   <!-- TOP TABS NAVIGATION -->
-  <div class="header-section glass-panel">
+  <div class="header-section card">
     <div class="header-text">
       <h2><i class="fas fa-map-marked-alt"></i> Dash-Turismo</h2>
       <p>Panel principal de Viajes, Contratos y Destinos Frecuentes.</p>
@@ -31,12 +31,12 @@
         <h3>Pendientes de Asignar</h3><span class="count-badge">{{ viajesReservados.length }}</span>
       </div>
       <div class="column-body">
-        <div class="k-card" *ngFor="let v of viajesReservados">
-          <div class="k-card-header">
+        <div class="card" *ngFor="let v of viajesReservados">
+          <div class="card-header">
             <span class="folio">#{{ v.folio_manual || v.id_viaje }}</span>
             <span class="fecha">{{ v.fecha_salida | date:'dd/MM/yyyy' }}</span>
           </div>
-          <div class="k-card-body">
+          <div class="card-body">
             <h4 class="cliente"><i class="fas fa-user text-muted"></i> {{ v.nombre_cliente }}</h4>
             <p class="ruta"><i class="fas fa-map-marker-alt text-warning"></i> Hacia: <strong>{{ v.destino }}</strong></p>
             <div class="finanzas-mini">
@@ -44,8 +44,8 @@
               <div class="abono" [ngClass]="v.total_abonado < v.costo_total ? 'text-danger' : 'text-success'">Abonado: {{ v.total_abonado | currency:'MXN' }}</div>
             </div>
           </div>
-          <div class="k-card-footer">
-            <button class="btn-k-action btn-k-primary" (click)="abrirModalDespacho(v)">
+          <div class="card-footer">
+            <button class="btn-accion btn-primary" (click)="abrirModalDespacho(v)">
               <i class="fas fa-bus"></i> Asignar y Despachar
             </button>
           </div>
@@ -59,12 +59,12 @@
         <h3>En Ruta / Servicio</h3><span class="count-badge">{{ viajesEnRuta.length }}</span>
       </div>
       <div class="column-body">
-        <div class="k-card" *ngFor="let v of viajesEnRuta">
-          <div class="k-card-header">
+        <div class="card" *ngFor="let v of viajesEnRuta">
+          <div class="card-header">
             <span class="folio">#{{ v.folio_manual || v.id_viaje }}</span>
             <span class="badge-blue">EN CURSO</span>
           </div>
-          <div class="k-card-body">
+          <div class="card-body">
             <h4 class="cliente">{{ v.nombre_cliente }}</h4>
             <p class="ruta"><strong>{{ v.destino }}</strong></p>
             <div class="logistica-mini">
@@ -72,9 +72,9 @@
               <div><i class="fas fa-id-badge text-muted"></i> {{ v.chofer || 'S/N' }}</div>
             </div>
           </div>
-          <div class="k-card-footer" style="display: flex; gap: 5px;">
-            <button class="btn-icon btn-k-ghost" *ngIf="authService.hasRole(['SuperUsuario'])" (click)="revertirEstatus(v, 'RESERVADO')" title="Deshacer despacho"><i class="fas fa-undo"></i></button>
-            <button class="btn-k-action btn-k-warning" style="flex:1;" (click)="abrirModalLiquidacion(v)"><i class="fas fa-file-invoice-dollar"></i> Liquidar Retorno</button>
+          <div class="card-footer" style="display: flex; gap: 5px;">
+            <button class="btn-icon btn-outline" *ngIf="authService.hasRole(['SuperUsuario'])" (click)="revertirEstatus(v, 'RESERVADO')" title="Deshacer despacho"><i class="fas fa-undo"></i></button>
+            <button class="btn-accion btn-warning" style="flex:1;" (click)="abrirModalLiquidacion(v)"><i class="fas fa-file-invoice-dollar"></i> Liquidar Retorno</button>
           </div>
         </div>
         <div *ngIf="viajesEnRuta.length === 0" class="empty-column">No hay unidades en servicio.</div>
@@ -86,12 +86,12 @@
         <h3>Viajes Cerrados</h3><span class="count-badge">{{ viajesLiquidados.length }}</span>
       </div>
       <div class="column-body">
-        <div class="k-card" *ngFor="let v of viajesLiquidados">
-          <div class="k-card-header">
+        <div class="card" *ngFor="let v of viajesLiquidados">
+          <div class="card-header">
             <span class="folio">#{{ v.folio_manual || v.id_viaje }}</span>
             <span class="badge-green"><i class="fas fa-check-circle"></i> CERRADO</span>
           </div>
-          <div class="k-card-body">
+          <div class="card-body">
             <h4 class="cliente">{{ v.nombre_cliente }}</h4>
             <p class="ruta text-muted">{{ v.destino }}</p>
             <div class="logistica-mini mt-2" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);">
@@ -99,9 +99,9 @@
               <div class="text-success" title="Rendimiento"><i class="fas fa-gas-pump"></i> {{ (v.rendimiento || 0) | number:'1.1-2' }} km/L</div>
             </div>
           </div>
-          <div class="k-card-footer" style="display: flex; gap: 5px;">
-             <button class="btn-icon btn-k-ghost" *ngIf="authService.hasRole(['SuperUsuario'])" (click)="revertirEstatus(v, 'EN RUTA')" title="Reabrir Liquidación"><i class="fas fa-undo"></i></button>
-            <button class="btn-k-action btn-k-success" style="flex:1;"><i class="fas fa-check"></i> Archivado</button>
+          <div class="card-footer" style="display: flex; gap: 5px;">
+             <button class="btn-icon btn-outline" *ngIf="authService.hasRole(['SuperUsuario'])" (click)="revertirEstatus(v, 'EN RUTA')" title="Reabrir Liquidación"><i class="fas fa-undo"></i></button>
+            <button class="btn-accion btn-success" style="flex:1;"><i class="fas fa-check"></i> Archivado</button>
           </div>
         </div>
         <div *ngIf="viajesLiquidados.length === 0" class="empty-column">No hay historial reciente.</div>
@@ -219,15 +219,15 @@
   </div>
 
   <!-- TAB: DESTINOS -->
-  <div class="main-section glass-panel" *ngIf="!loading && vistaActual === 'destinos'" style="animation: fadeIn 0.4s ease-out;">
+  <div class="main-section card" *ngIf="!loading && vistaActual === 'destinos'" style="animation: fadeIn 0.4s ease-out;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <h3 style="color: white;"><i class="fas fa-map"></i> Catálogo de Destinos Frecuentes</h3>
-      <button class="btn-neon-primary" (click)="mostrarModalNuevoDestino = true">
+      <button class="btn-primary" (click)="mostrarModalNuevoDestino = true">
         <i class="fas fa-plus"></i> Nuevo Destino
       </button>
     </div>
     <div class="table-responsive">
-      <table class="modern-table">
+      <table class="data-table">
         <thead>
           <tr>
             <th>Destino Principal</th>
@@ -282,8 +282,8 @@
       </div>
     </div>
     <div class="modal-footer justify-center">
-      <button class="btn-ghost" (click)="mostrarModalDespacho = false">Cancelar</button>
-      <button class="btn-neon-primary" (click)="guardarDespacho()">Dar Salida</button>
+      <button class="btn-outline" (click)="mostrarModalDespacho = false">Cancelar</button>
+      <button class="btn-primary" (click)="guardarDespacho()">Dar Salida</button>
     </div>
   </div>
 </div>
@@ -334,7 +334,7 @@
         <div class="form-group full-width"><label>Observaciones de Gastos (Opcional)</label><textarea class="form-control" [(ngModel)]="datosLiquidacion.observaciones_gastos" rows="2"></textarea></div>
       </div>
     </div>
-    <div class="modal-footer"><button class="btn-ghost" (click)="mostrarModalLiquidacion = false">Cancelar</button><button class="btn-neon-warning" (click)="guardarLiquidacion()"><i class="fas fa-check"></i> Cerrar Viaje y Liquidar</button></div>
+    <div class="modal-footer"><button class="btn-outline" (click)="mostrarModalLiquidacion = false">Cancelar</button><button class="btn-warning" (click)="guardarLiquidacion()"><i class="fas fa-check"></i> Cerrar Viaje y Liquidar</button></div>
   </div>
 </div>
 
@@ -363,8 +363,8 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-ghost" (click)="mostrarModalNuevoDestino = false">Omitir</button>
-      <button class="btn-neon-primary" (click)="guardarDestinoNuevo()">Guardar Catálogo</button>
+      <button class="btn-outline" (click)="mostrarModalNuevoDestino = false">Omitir</button>
+      <button class="btn-primary" (click)="guardarDestinoNuevo()">Guardar Catálogo</button>
     </div>
   </div>
 </div>
@@ -375,6 +375,8 @@
       <h3 [ngClass]="{'text-success': notificacion.tipo === 'exito', 'text-warning': notificacion.tipo === 'advertencia', 'text-danger': notificacion.tipo === 'error'}">{{ notificacion.titulo }}</h3>
       <p style="color: #cbd5e1; margin-top: 15px;">{{ notificacion.mensaje }}</p>
     </div>
-    <div class="modal-footer" style="justify-content: center;"><button class="btn-ghost" (click)="cerrarNotificacion()">Entendido</button></div>
+    <div class="modal-footer" style="justify-content: center;"><button class="btn-outline" (click)="cerrarNotificacion()">Entendido</button></div>
   </div>
 </div>
+
+

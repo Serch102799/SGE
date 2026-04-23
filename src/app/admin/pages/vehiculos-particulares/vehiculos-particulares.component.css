@@ -2,7 +2,7 @@
 
 :host {
   display: block; width: 100%; min-height: 100vh; padding: 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url("/assets/img/nF.png") no-repeat center center fixed;
+  background-image: var(--bg-image); background-color: var(--bg-dark-main); background-size: cover; background-position: center center; background-attachment: fixed;
   background-size: cover; overflow-y: auto;
 }
 
@@ -10,7 +10,7 @@
 
 /* Paneles Glass */
 .glass-panel {
-  background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.15);
+  background: var(--bg-secondary); border: 1px solid rgba(56, 189, 248, 0.15);
   border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); backdrop-filter: blur(12px);
 }
 
@@ -20,7 +20,7 @@
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
 }
 .header-text h2 { margin: 0 0 5px 0; font-size: 1.8rem; color: #38bdf8; display: flex; align-items: center; gap: 10px; }
-.header-text p { margin: 0; color: #94a3b8; font-size: 0.95rem; }
+.header-text p { margin: 0; color: var(--text-muted); font-size: 0.95rem; }
 
 /* Botones Principales */
 .btn-neon-primary {
@@ -38,7 +38,7 @@
 .btn-neon-danger:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(239, 68, 68, 0.7); }
 
 .btn-ghost { background: transparent; border: 1px solid rgba(255, 255, 255, 0.2); color: #ccc; padding: 10px 24px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold;}
-.btn-ghost:hover { background: rgba(255, 255, 255, 0.1); color: white; }
+.btn-ghost:hover { background: var(--border-color); color: white; }
 
 /* Buscador */
 .search-box { position: relative; max-width: 600px; width: 100%; }
@@ -63,32 +63,32 @@
 .vehiculo-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 15px rgba(56, 189, 248, 0.2); }
 
 .card-header-v {
-  padding: 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.05);
-  background: rgba(255, 255, 255, 0.02);
+  padding: 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--bg-hover-light);
+  background: var(--border-color);
 }
 .avatar-circle {
   width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #0ea5e9, #3b82f6);
   color: white; font-weight: bold; font-size: 1.2rem; display: flex; justify-content: center; align-items: center;
   box-shadow: 0 4px 10px rgba(14, 165, 233, 0.4); flex-shrink: 0;
 }
-.owner-info h4 { margin: 0 0 5px 0; color: #f8fafc; font-size: 1.1rem; }
-.puesto-tag { background: rgba(255,255,255,0.1); color: #cbd5e1; font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; }
+.owner-info h4 { margin: 0 0 5px 0; color: var(--text-white); font-size: 1.1rem; }
+.puesto-tag { background: var(--border-color); color: var(--text-light); font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; }
 
 .card-body-v { padding: 20px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
 .info-row { display: flex; justify-content: space-between; align-items: flex-start; font-size: 0.9rem; }
 .align-items-center { align-items: center !important; }
-.info-label { color: #94a3b8; font-weight: 500; }
-.info-value { color: #e2e8f0; text-align: right; }
+.info-label { color: var(--text-muted); font-weight: 500; }
+.info-value { color: var(--text-light); text-align: right; }
 
 /* DISEÑO REALISTA DE PLACA DE AUTO */
 .placa-box {
-  background: #f8fafc; color: #0f172a; font-weight: 900; font-size: 1.1rem; letter-spacing: 2px;
-  padding: 6px 15px; border-radius: 6px; border: 2px solid #94a3b8;
-  box-shadow: inset 0 0 5px rgba(0,0,0,0.2), 0 2px 5px rgba(0,0,0,0.3); text-transform: uppercase;
+  background: var(--text-white); color: var(--bg-dark-main); font-weight: 900; font-size: 1.1rem; letter-spacing: 2px;
+  padding: 6px 15px; border-radius: 6px; border: 2px solid var(--text-muted);
+  box-shadow: inset 0 0 5px var(--bg-hover), 0 2px 5px rgba(0,0,0,0.3); text-transform: uppercase;
 }
 
 .card-footer-v {
-  padding: 15px 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2);
+  padding: 15px 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--bg-hover-light); background: var(--bg-hover);
 }
 
 .btn-icon { width: 35px; height: 35px; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.3s; border: 1px solid transparent; }
@@ -100,25 +100,25 @@
 /* ESTADO VACÍO */
 .empty-state { text-align: center; padding: 60px 20px !important; }
 .empty-icon { font-size: 4rem; margin-bottom: 20px; color: rgba(56, 189, 248, 0.3); }
-.empty-state h3 { color: #f8fafc; margin-bottom: 10px; }
-.empty-state p { color: #94a3b8; }
+.empty-state h3 { color: var(--text-white); margin-bottom: 10px; }
+.empty-state p { color: var(--text-muted); }
 
 /* MODALES */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 1050; animation: fadeIn 0.3s ease; }
-.modal-content { background: #0f172a; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; box-shadow: 0 0 40px rgba(0,0,0,0.8); width: 90%; max-width: 600px; animation: scaleIn 0.3s ease; display: flex; flex-direction: column; }
+.modal-content { background: var(--bg-dark-main); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; box-shadow: 0 0 40px rgba(0,0,0,0.8); width: 90%; max-width: 600px; animation: scaleIn 0.3s ease; display: flex; flex-direction: column; }
 .modal-sm { max-width: 400px; }
-.modal-header { padding: 20px 25px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+.modal-header { padding: 20px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
 .modal-header h3 { margin: 0; color: #38bdf8; font-size: 1.3rem; }
-.btn-close { background: transparent; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
+.btn-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
 .btn-close:hover { color: #ef4444; transform: rotate(90deg); }
 .modal-body { padding: 25px; overflow-y: auto; max-height: 70vh; }
-.modal-footer { padding: 20px 25px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 15px; background: rgba(0,0,0,0.2); }
+.modal-footer { padding: 20px 25px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 15px; background: var(--bg-hover); }
 
 /* Formulario Modal */
 .section-title { color: #38bdf8; border-bottom: 1px solid rgba(56, 189, 248, 0.3); padding-bottom: 8px; margin-bottom: 15px; font-size: 1rem; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .full-width { grid-column: 1 / -1; }
-.form-group label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 0.85rem; font-weight: bold; }
+.form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.85rem; font-weight: bold; }
 .form-control { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; outline: none; transition: 0.3s; }
 .form-control:focus { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
 .text-danger { color: #ef4444; }

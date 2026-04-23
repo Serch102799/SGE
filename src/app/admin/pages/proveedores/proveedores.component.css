@@ -14,8 +14,7 @@
   height: 100%;
   min-height: 100vh;
   padding: 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.125), rgba(0, 0, 0, 0.125)), 
-              url("/assets/img/nF.png") no-repeat center center fixed;
+  background-image: var(--bg-image); background-color: var(--bg-dark-main); background-size: cover; background-position: center center; background-attachment: fixed;
   background-size: cover;
   overflow-y: auto;
 }
@@ -28,7 +27,7 @@
   width: 100%;
   margin: 0 auto;
   background-color: rgba(15, 23, 42, 0.85); /* Tono Dark Slate más elegante */
-  color: #e2e8f0;
+  color: var(--text-light);
   border: 1px solid rgba(56, 189, 248, 0.3);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 
@@ -59,7 +58,7 @@
 }
 
 .header-text h2 {
-  color: #ffffff;
+  color: var(--text-white);
   font-size: 2rem;
   font-weight: 700;
   margin: 0;
@@ -71,7 +70,7 @@
 
 .header-text p { 
   margin: 5px 0 0 0; 
-  color: #94a3b8; 
+  color: var(--text-muted); 
   font-size: 1rem; 
 }
 
@@ -132,7 +131,7 @@
 .btn-cancelar {
   background: rgba(30, 41, 59, 0.7);
   border: 1px solid rgba(148, 163, 184, 0.3);
-  color: #cbd5e1;
+  color: var(--text-light);
   padding: 10px 20px;
   font-size: 0.95rem;
   font-weight: 600;
@@ -146,7 +145,7 @@
 }
 .btn-cancelar:hover:not([disabled]) {
   background: rgba(71, 85, 105, 0.8);
-  color: #ffffff;
+  color: var(--text-white);
   border-color: rgba(148, 163, 184, 0.6);
   transform: translateY(-2px);
 }
@@ -159,7 +158,7 @@
 .btn-ghost {
   background: transparent; 
   border: 1px solid rgba(148, 163, 184, 0.4); 
-  color: #94a3b8;
+  color: var(--text-muted);
   padding: 10px 24px; 
   border-radius: 8px; 
   cursor: pointer; 
@@ -193,7 +192,7 @@
 }
 .btn-tab {
   background: transparent;
-  color: #64748b;
+  color: var(--text-muted);
   border: none;
   padding: 10px 20px;
   font-size: 1rem;
@@ -206,8 +205,8 @@
   gap: 8px;
 }
 .btn-tab:hover {
-  color: #e2e8f0;
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-light);
+  background: var(--bg-hover-light);
 }
 .tab-activo {
   color: #38bdf8;
@@ -243,7 +242,7 @@
   padding: 12px 20px 12px 50px;
   border-radius: 30px;
   border: 1px solid rgba(51, 65, 85, 0.8);
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--bg-secondary);
   color: white;
   transition: all 0.3s ease;
   font-size: 1rem;
@@ -262,7 +261,7 @@
 .table-responsive {
   overflow-x: auto;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--bg-tertiary);
   border: 1px solid rgba(51, 65, 85, 0.6);
 }
 
@@ -282,7 +281,7 @@
   padding: 18px 15px;
   text-align: left;
   font-weight: 600;
-  color: #cbd5e1;
+  color: var(--text-light);
   text-transform: uppercase;
   font-size: 0.8rem;
   letter-spacing: 1px;
@@ -302,7 +301,7 @@
 .modern-table tbody td {
   padding: 15px 15px;
   vertical-align: middle;
-  color: #e2e8f0;
+  color: var(--text-light);
   border-bottom: 1px solid rgba(51, 65, 85, 0.5);
 }
 
@@ -311,7 +310,7 @@
    =================================== */
 .modal-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--bg-dark-overlay);
   backdrop-filter: blur(5px);
   display: flex; justify-content: center; align-items: center; z-index: 1000;
   padding: 20px;
@@ -321,8 +320,8 @@
 @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
 
 .modal-content {
-  background: #0f172a;
-  border: 1px solid #334155;
+  background: var(--bg-dark-main);
+  border: 1px solid var(--border-primary);
   border-radius: 16px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
   width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;
@@ -337,12 +336,12 @@
 .modal-header {
   padding: 20px 25px;
   display: flex; justify-content: space-between; align-items: center;
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid var(--border-primary);
   background: rgba(30, 41, 59, 0.5);
 }
 
 .btn-close {
-  background: transparent; border: none; color: #64748b;
+  background: transparent; border: none; color: var(--text-muted);
   font-size: 1.5rem; cursor: pointer; transition: 0.2s ease;
 }
 .btn-close:hover { color: #ef4444; }

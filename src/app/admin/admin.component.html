@@ -218,10 +218,17 @@
         <div class="user-name">{{ currentUser.nombre }}</div>
         <div class="user-role">{{ currentUser.puesto }}</div>
       </div>
-      <button class="logout-button" (click)="logout()" [title]="isCollapsed ? 'Cerrar Sesión' : ''">
-        <fa-icon [icon]="faCerrarSesion"></fa-icon>
-        <span *ngIf="!isCollapsed">Cerrar Sesión</span>
-      </button>
+      <div style="display: flex; gap: 10px; width: 100%; flex-direction: column;">
+        <!-- <button class="logout-button" (click)="toggleTheme()" [title]="isCollapsed ? 'Cambiar Tema' : ''"
+          style="background: var(--bg-hover-light); border-color: var(--border-color);">
+          <fa-icon [icon]="isLightMode ? faMoon : faSun"></fa-icon>
+          <span *ngIf="!isCollapsed">{{ isLightMode ? 'Modo Oscuro' : 'Modo Claro' }}</span>
+        </button> -->
+        <button class="logout-button" (click)="logout()" [title]="isCollapsed ? 'Cerrar Sesión' : ''">
+          <fa-icon [icon]="faCerrarSesion"></fa-icon>
+          <span *ngIf="!isCollapsed">Cerrar Sesión</span>
+        </button>
+      </div>
     </div>
   </div>
 
