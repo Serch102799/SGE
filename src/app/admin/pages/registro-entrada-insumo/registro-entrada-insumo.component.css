@@ -1,4 +1,4 @@
-/* Base y Fondo */
+﻿/* Base y Fondo */
 :host {
   display: block;
   min-height: 100vh;
@@ -9,7 +9,7 @@
 
 /* Contenedor Principal */
 .usuarios-container {
-  max-width: 1200px;
+  max-width: 100%;
   width: 95%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.8);
@@ -40,7 +40,7 @@
   padding: 30px;
 }
 
-/* Botón para "Agregar" */
+/* BotÃ³n para "Agregar" */
 .btn-agregar {
   background-color: #4480d3;
   border: none;
@@ -87,7 +87,7 @@
 .tabla-usuarios td { color: var(--text-light); }
 .acciones { text-align: center; display: flex; gap: 10px; justify-content: center; }
 
-/* Botones de Acción en tabla */
+/* Botones de AcciÃ³n en tabla */
 .btn-accion {
   padding: 6px 12px;
   font-size: 0.85rem;
@@ -160,12 +160,12 @@
   display: flex;
   gap: 20px;
   margin-bottom: 25px;
-  flex-wrap: wrap; /* Para que se adapte en pantallas pequeñas */
+  flex-wrap: wrap; /* Para que se adapte en pantallas pequeÃ±as */
 }
 
 .filtro-item {
   flex: 1;
-  min-width: 200px; /* Ancho mínimo para cada filtro */
+  min-width: 200px; /* Ancho mÃ­nimo para cada filtro */
 }
 
 /* Reutilizamos la clase .form-control que ya tienes */
@@ -174,14 +174,14 @@
 }
 tr.alerta-stock-bajo {
   background-color: rgba(217, 83, 79, 0.15); /* Fondo rojo muy sutil */
-  border-left: 4px solid #d9534f; /* Línea roja a la izquierda para destacar */
+  border-left: 4px solid #d9534f; /* LÃ­nea roja a la izquierda para destacar */
 }
 
 tr.alerta-stock-bajo:hover {
-  background-color: rgba(217, 83, 79, 0.25); /* Un rojo un poco más intenso al pasar el mouse */
+  background-color: rgba(217, 83, 79, 0.25); /* Un rojo un poco mÃ¡s intenso al pasar el mouse */
 }
 
-/* Estilo para resaltar el número del stock */
+/* Estilo para resaltar el nÃºmero del stock */
 td.stock-critico {
   color: #ff8a8a; /* Color de texto rojo claro */
   font-weight: bold;
@@ -191,7 +191,7 @@ host { /* ... */ }
 .usuarios-container { /* ... */ }
 /* etc... */
 
-/* --- Estilos específicos para este componente --- */
+/* --- Estilos especÃ­ficos para este componente --- */
 .form-section {
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
@@ -219,7 +219,7 @@ host { /* ... */ }
 }
 
 .form-group-refaccion {
-  flex: 2; /* Dar más espacio al selector de refacciones */
+  flex: 2; /* Dar mÃ¡s espacio al selector de refacciones */
 }
 
 .form-group-button {
@@ -256,7 +256,7 @@ host { /* ... */ }
 }
 
 .form-container {
-  max-width: 1200px;
+  max-width: 100%;
   width: 95%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.8);
@@ -376,7 +376,7 @@ select.form-control option {
   color: var(--text-white) !important; /* Letra blanca para el texto ingresado */
 }
 
-/* Cambia el color del borde cuando el campo está enfocado (seleccionado) */
+/* Cambia el color del borde cuando el campo estÃ¡ enfocado (seleccionado) */
 :host ::ng-deep .mat-mdc-form-field.mat-focused .mdc-notched-outline > * {
   color: var(--text-white) !important; /* Borde blanco cuando se hace clic */
 }

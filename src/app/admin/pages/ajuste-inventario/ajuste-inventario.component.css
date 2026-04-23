@@ -1,4 +1,4 @@
-/* ============================================ */
+﻿/* ============================================ */
 /* BASE Y CONTENEDOR PRINCIPAL */
 /* ============================================ */
 :host {
@@ -9,7 +9,7 @@
 }
 
 .contenedor-principal {
-  max-width: 1400px;
+  max-width: 100%;
   width: 95%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.8);
@@ -257,7 +257,7 @@
 }
 
 /* ============================================ */
-/* BOTONES DE ACCIÓN */
+/* BOTONES DE ACCIÃ“N */
 /* ============================================ */
 .actions-cell {
   text-align: center;
@@ -287,7 +287,7 @@
 }
 
 /* ============================================ */
-/* MODAL DE EDICIÓN */
+/* MODAL DE EDICIÃ“N */
 /* ============================================ */
 .modal-backdrop-edit {
   position: fixed;
@@ -319,7 +319,7 @@
 }
 
 .modal-large {
-  max-width: 1100px;
+  max-width: 100%;
 }
 
 @keyframes slideUp {

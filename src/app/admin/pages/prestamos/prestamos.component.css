@@ -1,4 +1,4 @@
-/* ===================================
+﻿/* ===================================
    BASE Y RESET
    =================================== */
 * {
@@ -26,7 +26,7 @@
    CONTENEDOR PRINCIPAL
    =================================== */
 .usuarios-container {
-  max-width: 1400px;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.85);
@@ -67,7 +67,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Botón Agregar Préstamo (Verde Neón) */
+/* BotÃ³n Agregar PrÃ©stamo (Verde NeÃ³n) */
 .btn-agregar {
   background: linear-gradient(135deg, #28a745 0%, #218838 100%);
   border: 1px solid rgba(40, 167, 69, 0.6);
@@ -172,7 +172,7 @@
   cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; border: 1px solid transparent;
 }
 
-.btn-estado { /* Botón Devolver */
+.btn-estado { /* BotÃ³n Devolver */
   background: rgba(240, 173, 78, 0.2); color: #f0ad4e; border-color: rgba(240, 173, 78, 0.4);
 }
 .btn-estado:hover {
@@ -184,7 +184,7 @@
 }
 
 /* ===================================
-   PAGINACIÓN (AGREGADO)
+   PAGINACIÃ“N (AGREGADO)
    =================================== */
 .pagination-controls {
   text-align: center;
@@ -403,7 +403,7 @@
   .form-row { flex-direction: column; gap: 10px; }
   .col-md-8, .col-md-2 { width: 100%; }
 }
-/* Estilos para las pestañas (Tabs) */
+/* Estilos para las pestaÃ±as (Tabs) */
 .btn-tab {
   background: transparent;
   color: var(--text-muted);

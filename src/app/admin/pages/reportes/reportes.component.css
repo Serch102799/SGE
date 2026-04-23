@@ -1,4 +1,4 @@
-/* Base y Fondo */
+﻿/* Base y Fondo */
 :host {
   display: block;
   min-height: 100vh;
@@ -9,10 +9,10 @@
 
 /* Contenedor Principal */
 .usuarios-container {
-  max-width: 1400px;
+  max-width: 100%;
   width: 95%;
   margin: 0 auto;
-  background-color: rgba(15, 23, 42, 0.85); /* Un tono más azulado oscuro para hacer match con el neón */
+  background-color: rgba(15, 23, 42, 0.85); /* Un tono mÃ¡s azulado oscuro para hacer match con el neÃ³n */
   color: var(--text-light);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -43,7 +43,7 @@
   padding: 35px;
 }
 
-/* Sección de Selección de Reporte */
+/* SecciÃ³n de SelecciÃ³n de Reporte */
 .report-section {
   background: linear-gradient(135deg, rgba(68, 128, 211, 0.1) 0%, var(--bg-hover) 100%);
   padding: 25px;
@@ -273,7 +273,7 @@ select.form-control option {
   color: #4ade80;
 }
 
-/* Stock crítico */
+/* Stock crÃ­tico */
 tr.alerta-stock-bajo {
   background-color: rgba(239, 68, 68, 0.1);
 }
@@ -310,7 +310,7 @@ td.stock-critico {
 .text-muted { color: var(--text-muted) !important; }
 .text-bold { font-weight: bold; color: var(--text-white); }
 
-/* Botón para abrir detalles en la tabla */
+/* BotÃ³n para abrir detalles en la tabla */
 .btn-detalles {
   background: rgba(56, 189, 248, 0.15);
   color: #38bdf8;
@@ -419,7 +419,7 @@ td.stock-critico {
 .desc-col { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .empty-msg { padding: 30px !important; color: var(--text-muted) !important; font-style: italic; }
 
-/* Botón de cerrar modal */
+/* BotÃ³n de cerrar modal */
 .btn-cerrar-modal {
   background: transparent;
   color: #ccc;
@@ -437,7 +437,7 @@ td.stock-critico {
 }
 
 /* ==========================================
-   Buscadores de Auditoría
+   Buscadores de AuditorÃ­a
    ========================================== */
 .buscador-auditoria-container {
   grid-column: 1 / -1;
@@ -532,7 +532,7 @@ td.stock-critico {
 @keyframes bounceIn { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
 
-/* Animación de Descarga */
+/* AnimaciÃ³n de Descarga */
 .animacion-descarga { font-size: 4rem; color: #38bdf8; display: flex; flex-direction: column; align-items: center; }
 .pulse-icon { animation: pulseCloud 1.5s infinite; }
 @keyframes pulseCloud { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; text-shadow: 0 0 20px rgba(56, 189, 248, 0.8); } 100% { transform: scale(0.95); opacity: 0.8; } }

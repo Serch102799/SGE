@@ -1,5 +1,5 @@
-/* ==========================================================================
-   CONFIGURACIÓN GLOBAL Y FONDOS
+﻿/* ==========================================================================
+   CONFIGURACIÃ“N GLOBAL Y FONDOS
    ========================================================================== */
 :host {
   display: block; min-height: 100vh; padding: 20px 20px 40px;
@@ -8,7 +8,7 @@
 }
 
 .usuarios-container {
-  max-width: 1400px; width: 95%; margin: 0 auto;
+  max-width: 100%; width: 95%; margin: 0 auto;
   background-color: rgba(15, 23, 42, 0.9); color: var(--text-light);
   border: 1px solid rgba(68, 128, 211, 0.4); border-radius: 12px;
   box-shadow: 0 10px 40px var(--bg-dark-overlay); overflow: hidden;
@@ -106,7 +106,7 @@ select.form-control option { background-color: var(--bg-dark-card); color: white
 .btn-cancelar { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; }
 .btn-cancelar:hover { background: #ef4444; color: white; }
 
-/* Botón Agregar a Lista (Azul) */
+/* BotÃ³n Agregar a Lista (Azul) */
 .btn-agregar-lista {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: 1px solid rgba(59, 130, 246, 0.5);
   height: 42px; font-size: 0.95rem; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.3s ease;

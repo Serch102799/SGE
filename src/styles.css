@@ -199,7 +199,8 @@ h2, h3 {
    CONTENEDORES PRINCIPALES
    ============================================ */
 .main-container {
-  max-width: 1600px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
   background-color: var(--bg-dark-card);
   border: 1px solid var(--border-color-strong);
@@ -211,7 +212,8 @@ h2, h3 {
 .usuarios-container,
 .container-principal {
   padding: var(--spacing-xl);
-  max-width: 1400px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
 }
 

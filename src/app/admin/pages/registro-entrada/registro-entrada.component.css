@@ -1,4 +1,4 @@
-/* === Fondo y contenedor principal === */
+﻿/* === Fondo y contenedor principal === */
 :host {
   display: block; min-height: 100vh; padding: 20px 20px 40px;
   background-image: var(--bg-image); background-color: var(--bg-dark-main); background-size: cover; background-position: center center; background-attachment: fixed;
@@ -6,7 +6,7 @@
 }
 
 .usuarios-container {
-  max-width: 1400px; width: 95%; margin: 0 auto;
+  max-width: 100%; width: 95%; margin: 0 auto;
   background-color: rgba(15, 23, 42, 0.9); color: var(--text-light);
   border: 1px solid rgba(68, 128, 211, 0.4); border-radius: 12px;
   box-shadow: 0 10px 40px var(--bg-dark-overlay); overflow: hidden;
@@ -112,7 +112,7 @@
   margin-left: -10px;
 }
 
-/* 1. Le damos el "aire" (padding) a TODAS las columnas sin excepción */
+/* 1. Le damos el "aire" (padding) a TODAS las columnas sin excepciÃ³n */
 .col-md-3, .col-md-4, .col-md-6, .col-md-8, .col-md-9, .col-md-12 {
   padding-right: 10px;
   padding-left: 10px;
@@ -163,13 +163,13 @@
     max-width: 100%;
   }
 }
-/* Utilidades rápidas */
+/* Utilidades rÃ¡pidas */
 .mb-0 { margin-bottom: 0 !important; }
 .mb-3 { margin-bottom: 15px !important; }
 .w-100 { width: 100% !important; }
 .text-center { text-align: center !important; }
 
-/* Botón Agregar a Lista */
+/* BotÃ³n Agregar a Lista */
 .btn-agregar-lista {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
@@ -216,7 +216,7 @@
 }
 
 /* ==========================================================
-   FIX: BOTÓN "AGREGAR A LISTA" (Proporciones exactas)
+   FIX: BOTÃ“N "AGREGAR A LISTA" (Proporciones exactas)
    ========================================================== */
 .btn-agregar-lista {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
@@ -243,7 +243,7 @@
   background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
 }
 
-/* Fix para el contenedor del botón y checkbox */
+/* Fix para el contenedor del botÃ³n y checkbox */
 .contenedor-boton-add {
   display: flex; 
   flex-direction: column; 

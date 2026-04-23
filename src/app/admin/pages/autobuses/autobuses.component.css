@@ -1,4 +1,4 @@
-/* ===================================
+﻿/* ===================================
    BASE Y RESET
    =================================== */
 * {
@@ -23,7 +23,7 @@
    CONTENEDOR PRINCIPAL
    =================================== */
 .usuarios-container {
-  max-width: 1400px;
+  max-width: 100%;
   width: 98%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.85);
@@ -62,7 +62,7 @@
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-/* Botón Agregar */
+/* BotÃ³n Agregar */
 .btn-agregar {
   background: linear-gradient(135deg, #4480d3 0%, #386bbd 100%);
   border: 1px solid rgba(68, 128, 211, 0.6);
@@ -105,7 +105,7 @@
 .filtros-container .form-control {
   width: 100%;
   padding: 12px 20px;
-  border-radius: 30px; /* Redondo tipo píldora */
+  border-radius: 30px; /* Redondo tipo pÃ­ldora */
   border: 1px solid rgba(68, 128, 211, 0.4);
   background: rgba(0, 0, 0, 0.4);
   color: white;
@@ -209,11 +209,11 @@
 .btn-sync { background: rgba(99, 212, 113, 0.2); color: #7ed888; border-color: rgba(99, 212, 113, 0.4); }
 .btn-sync:hover { background: rgba(99, 212, 113, 0.4); color: white; }
 
-/* Mensaje vacío */
+/* Mensaje vacÃ­o */
 .empty-table-message { text-align: center; font-style: italic; padding: 20px; color: var(--text-muted); }
 
 /* ===================================
-   PAGINACIÓN
+   PAGINACIÃ“N
    =================================== */
 .pagination-controls { text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); }
 
@@ -234,7 +234,7 @@
   padding: 20px;
 }
 
-/* Diseño Cyberpunk Glass */
+/* DiseÃ±o Cyberpunk Glass */
 .modal-content {
   background: linear-gradient(165deg, rgba(20, 25, 40, 0.95) 0%, rgba(10, 15, 25, 0.98) 100%);
   border: 1px solid rgba(68, 128, 211, 0.3);
@@ -291,12 +291,12 @@
 .btn-cancelar:hover { background: var(--bg-hover-light); color: white; }
 
 /* ===================================
-   MODAL HISTORIAL (DISEÑO VERDE/OSCURO)
+   MODAL HISTORIAL (DISEÃ‘O VERDE/OSCURO)
    =================================== */
 /* Hacemos el modal ancho */
 .modal-content.modal-lg {
-  max-width: 1100px; width: 95%;
-  background: #1a1d26; /* Fondo sólido oscuro limpio */
+  max-width: 100%; width: 95%;
+  background: #1a1d26; /* Fondo sÃ³lido oscuro limpio */
   border: 1px solid rgba(68, 128, 211, 0.2);
 }
 
@@ -316,7 +316,7 @@
 }
 
 .costo-total-container span {
-  color: #5cb85c; /* VERDE NEÓN */
+  color: #5cb85c; /* VERDE NEÃ“N */
   font-weight: 700; font-size: 1.8rem; margin-left: 10px;
   text-shadow: 0 0 10px rgba(92, 184, 92, 0.3);
 }
@@ -341,7 +341,7 @@
 }
 
 .costo-info span {
-  color: #5cb85c; /* Verde neón para el dinero */
+  color: #5cb85c; /* Verde neÃ³n para el dinero */
   font-weight: 700;
   font-size: 1.5rem;
   margin-left: 10px;
@@ -367,7 +367,7 @@
   color: white;
 }
 
-/* Botón Excel (Verde Tech) */
+/* BotÃ³n Excel (Verde Tech) */
 .btn-excel {
   background: rgba(33, 115, 70, 0.2);
   border-color: rgba(33, 115, 70, 0.5);
@@ -380,7 +380,7 @@
   transform: translateY(-2px);
 }
 
-/* Botón PDF (Rojo Intenso) */
+/* BotÃ³n PDF (Rojo Intenso) */
 .btn-pdf {
   background: rgba(200, 35, 51, 0.2);
   border-color: rgba(200, 35, 51, 0.5);
@@ -402,7 +402,7 @@
 /* Tabla interna de historial */
 .tabla-preview { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px; }
 .tabla-preview thead th {
-  background: #2c3e50; /* Encabezado gris/azul oscuro sólido */
+  background: #2c3e50; /* Encabezado gris/azul oscuro sÃ³lido */
   color: #fff; padding: 15px; text-align: left;
   font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;
 }
@@ -410,11 +410,11 @@
 .tabla-preview tbody td { padding: 12px 15px; color: #ccc; font-size: 0.95rem; }
 
 /* ===================================
-   MODAL FICHA TÉCNICA (NO TOCAR)
+   MODAL FICHA TÃ‰CNICA (NO TOCAR)
    =================================== */
 .modal-content-ficha {
   background: linear-gradient(135deg, var(--bg-dark-card) 0%, var(--bg-dark-main) 100%);
-  border-radius: 20px; max-width: 1000px; width: 100%; max-height: 90vh;
+  border-radius: 20px; max-width: 100%; width: 100%; max-height: 90vh;
   display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   border: 1px solid var(--border-color); overflow: hidden;
 }
@@ -440,7 +440,7 @@
 .btn-primary-ficha { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; display: flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; }
 .btn-cerrar-ficha { background: rgba(255, 255, 255, 0.2); border: none; border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; }
 
-/* Mensajes de Confirmación */
+/* Mensajes de ConfirmaciÃ³n */
 .header-eliminar { color: #ff6666 !important; }
 .confirm-text { color: var(--text-light); font-size: 1.1rem; text-align: center; }
 .confirm-text strong { color: white; }

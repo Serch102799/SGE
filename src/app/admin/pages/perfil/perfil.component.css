@@ -1,4 +1,4 @@
-/* ===================================
+﻿/* ===================================
    BASE Y RESET
    =================================== */
 * {
@@ -26,7 +26,7 @@
    CONTENEDOR PRINCIPAL
    =================================== */
 .usuarios-container {
-  max-width: 1200px; /* Un poco más estrecho para perfil */
+  max-width: 100%; /* Un poco mÃ¡s estrecho para perfil */
   width: 100%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.85);
@@ -108,7 +108,7 @@
   font-weight: 600;
 }
 
-/* --- TARJETA DE INFORMACIÓN --- */
+/* --- TARJETA DE INFORMACIÃ“N --- */
 .info-card p {
   font-size: 1.1rem;
   margin-bottom: 15px;
@@ -128,7 +128,7 @@
   letter-spacing: 0.5px;
 }
 
-/* --- TARJETA DE CONTRASEÑA (FORMULARIO) --- */
+/* --- TARJETA DE CONTRASEÃ‘A (FORMULARIO) --- */
 .form-group {
   margin-bottom: 20px;
 }
@@ -167,7 +167,7 @@
   display: block;
 }
 
-/* Footer del Formulario (Botón) */
+/* Footer del Formulario (BotÃ³n) */
 .modal-footer { /* Reutilizando la clase aunque no sea modal */
   display: flex;
   justify-content: flex-end;
@@ -184,7 +184,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  width: 100%; /* Botón ancho en la tarjeta */
+  width: 100%; /* BotÃ³n ancho en la tarjeta */
 }
 
 .btn-guardar:hover {
@@ -202,7 +202,7 @@
 }
 
 /* ===================================
-   MODAL DE NOTIFICACIÓN (ESTÁNDAR)
+   MODAL DE NOTIFICACIÃ“N (ESTÃNDAR)
    =================================== */
 .modal-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -253,7 +253,7 @@
 /* Responsive */
 @media (max-width: 768px) {
   .profile-layout {
-    grid-template-columns: 1fr; /* Una columna en móvil */
+    grid-template-columns: 1fr; /* Una columna en mÃ³vil */
   }
   .container-header {
     text-align: center;

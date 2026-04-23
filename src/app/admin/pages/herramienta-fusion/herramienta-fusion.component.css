@@ -1,5 +1,5 @@
-/* ==========================================================================
-   CONFIGURACIÓN GLOBAL Y FONDOS
+﻿/* ==========================================================================
+   CONFIGURACIÃ“N GLOBAL Y FONDOS
    ========================================================================== */
 :host {
   display: block;
@@ -11,7 +11,7 @@
 }
 
 .usuarios-container {
-  max-width: 1200px;
+  max-width: 100%;
   width: 95%;
   margin: 0 auto;
   background-color: rgba(15, 23, 42, 0.9);
@@ -41,7 +41,7 @@
   border-bottom-color: rgba(245, 158, 11, 0.4);
 }
 .container-header h2 { 
-  color: #fbbf24; /* Amarillo ámbar */
+  color: #fbbf24; /* Amarillo Ã¡mbar */
   font-size: 1.8rem; 
   margin: 0; 
   font-weight: 700; 
@@ -54,7 +54,7 @@
 .container-body { padding: 40px 30px; }
 
 /* ==========================================================================
-   TARJETAS DE FUSIÓN (CARDS)
+   TARJETAS DE FUSIÃ“N (CARDS)
    ========================================================================== */
 .row {
   display: flex;
@@ -93,7 +93,7 @@
 .card-fusion-body { padding: 25px; min-height: 250px; }
 
 /* ==========================================================================
-   PREVIEW DE ARTÍCULO (La cajita con el ID y N° de Parte)
+   PREVIEW DE ARTÃCULO (La cajita con el ID y NÂ° de Parte)
    ========================================================================== */
 .item-preview {
   margin-top: 20px;
@@ -211,7 +211,7 @@
 .modal-content.modal-sm { max-width: 450px; }
 @keyframes slideUpModal { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Headers específicos del Modal */
+/* Headers especÃ­ficos del Modal */
 .modal-header { 
   padding: 20px 25px; 
   display: flex; justify-content: space-between; align-items: center; 

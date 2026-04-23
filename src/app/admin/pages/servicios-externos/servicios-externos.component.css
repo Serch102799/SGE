@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    ESTRUCTURA PRINCIPAL
    ========================================================================== */
    :host {
@@ -13,7 +13,7 @@
 }
 
 .usuarios-container {
-   max-width: 1200px;
+   max-width: 100%;
   width: 95%;
   margin: 0 auto;
   background-color: rgba(15, 23, 42, 0.85); /* Azul muy oscuro semitransparente */
@@ -47,7 +47,7 @@
 
 /* --- BOTONES PRINCIPALES --- */
 .btn-agregar {
-  background-color: #2563eb !important; /* Azul sólido elegante, sin degradados raros */
+  background-color: #2563eb !important; /* Azul sÃ³lido elegante, sin degradados raros */
   background-image: none !important;
   color: white !important;
   border: none;
@@ -120,7 +120,7 @@
   vertical-align: middle;
 }
 
-/* --- COLORES DE FILA (GARANTÍAS) --- */
+/* --- COLORES DE FILA (GARANTÃAS) --- */
 .tabla-usuarios tr {
   transition: background-color 0.2s ease;
   background-color: transparent;
@@ -130,7 +130,7 @@
   background-color: var(--bg-hover-light);
 }
 
-/* Iluminación sutil y borde izquierdo para las garantías */
+/* IluminaciÃ³n sutil y borde izquierdo para las garantÃ­as */
 tr.garantia-activa {
   background-color: rgba(46, 204, 113, 0.04) !important;
   border-left: 4px solid #2ecc71;
@@ -164,7 +164,7 @@ tr.fila-cancelada {
 .badge-activo { background: rgba(46, 204, 113, 0.15); color: #2ecc71; }
 .badge-cancelado { background: rgba(231, 76, 60, 0.15); color: #e74c3c; text-decoration: line-through; }
 
-/* Botón de borrar/cancelar en la tabla */
+/* BotÃ³n de borrar/cancelar en la tabla */
 .btn-cancelar-icon {
   background: rgba(231, 76, 60, 0.1);
   color: #ef4444;
@@ -228,7 +228,7 @@ tr.fila-cancelada {
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  max-height: 90vh; /* Evita que el modal sea más alto que la pantalla */
+  max-height: 90vh; /* Evita que el modal sea mÃ¡s alto que la pantalla */
 }
 
 .modal-header {
@@ -328,7 +328,7 @@ textarea.form-control {
 }
 .con-icono { padding-left: 38px !important; }
 
-/* Recuadros de Finanzas y Garantía */
+/* Recuadros de Finanzas y GarantÃ­a */
 .finanzas-box, .garantia-box {
   background: rgba(15, 23, 42, 0.5);
   padding: 20px;
@@ -347,7 +347,7 @@ textarea.form-control {
 .totales-display p { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
 .totales-display h4 { margin: 5px 0 0 0; font-size: 1.4rem; color: #00e676; font-weight: 700; }
 
-/* --- SWITCHES (Botón On/Off) --- */
+/* --- SWITCHES (BotÃ³n On/Off) --- */
 .checkbox-wrapper { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
 .chk-text { color: var(--text-white); font-weight: 500; font-size: 0.9rem; }
 
@@ -453,7 +453,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 }
 
 /* ==========================================
-   PAGINACIÓN
+   PAGINACIÃ“N
    ========================================== */
 .paginador-container {
   display: flex;

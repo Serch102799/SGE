@@ -1,4 +1,4 @@
-/* ===================================
+﻿/* ===================================
    BASE Y RESET
    =================================== */
 * {
@@ -30,7 +30,7 @@
 }
 
 .usuarios-container {
-  max-width: 1400px;
+  max-width: 100%;
   width: 95%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.85);
@@ -59,7 +59,7 @@
   justify-content: space-between;
   align-items: center;
   backdrop-filter: blur(10px);
-  flex-wrap: wrap; /* Para móviles */
+  flex-wrap: wrap; /* Para mÃ³viles */
   gap: 20px;
 }
 
@@ -83,7 +83,7 @@
     margin-top: 5px;
 }
 
-/* --- NUEVO: BARRA DE BÚSQUEDA --- */
+/* --- NUEVO: BARRA DE BÃšSQUEDA --- */
 .search-wrapper {
     position: relative;
     max-width: 400px;
@@ -115,7 +115,7 @@
     color: rgba(255, 255, 255, 0.5);
 }
 
-/* BOTÓN AGREGAR */
+/* BOTÃ“N AGREGAR */
 .btn-agregar {
   background: linear-gradient(135deg, #4480d3 0%, #386bbd 100%);
   border: 1px solid rgba(68, 128, 211, 0.6);
@@ -297,12 +297,12 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border: 1px solid transparent;
-  min-width: 90px;          /* Ancho mínimo uniforme */
+  min-width: 90px;          /* Ancho mÃ­nimo uniforme */
   transition: all 0.3s ease;
   backdrop-filter: blur(4px); /* Efecto vidrio */
 }
 
-/* --- ESTADO ACTIVO (Verde Neón) --- */
+/* --- ESTADO ACTIVO (Verde NeÃ³n) --- */
 .estado-activo {
   background: rgba(99, 212, 113, 0.15); /* Fondo verde transparente */
   color: #63d471;                       /* Texto verde brillante */
@@ -316,7 +316,7 @@
   transform: translateY(-1px);
 }
 
-/* --- ESTADO INACTIVO (Rojo Neón) --- */
+/* --- ESTADO INACTIVO (Rojo NeÃ³n) --- */
 .estado-inactivo {
   background: rgba(255, 102, 102, 0.15); /* Fondo rojo transparente */
   color: #ff8c8c;                        /* Texto rojo suave */
@@ -330,7 +330,7 @@
   transform: translateY(-1px);
 }
 
-/* Eliminar los estilos antiguos si tenías puntos (::before) */
+/* Eliminar los estilos antiguos si tenÃ­as puntos (::before) */
 .estado-activo::before,
 .estado-inactivo::before {
   content: none;
@@ -390,7 +390,7 @@
 }
 
 /* ===================================
-   PAGINACIÓN (NUEVO)
+   PAGINACIÃ“N (NUEVO)
    =================================== */
 .pagination-container {
     display: flex;
@@ -460,7 +460,7 @@
   border: 2px solid rgba(68, 128, 211, 0.5);
   border-radius: 16px;
   width: 90%;
-  max-width: 600px; /* Un poco más ancho para formularios de usuario */
+  max-width: 600px; /* Un poco mÃ¡s ancho para formularios de usuario */
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 60px var(--bg-dark-overlay), 0 0 30px rgba(68, 128, 211, 0.3);
@@ -688,22 +688,22 @@ input:checked + .slider:before {
   border: 1px solid var(--bg-hover-light);
 }
 
-/* Cada celda de información */
+/* Cada celda de informaciÃ³n */
 .detalle-item {
   display: flex;
   flex-direction: column; /* IMPORTANTE: Pone la etiqueta arriba del valor */
   align-items: flex-start;
   justify-content: center;
-  overflow: hidden; /* Evita que textos largos rompan el diseño */
+  overflow: hidden; /* Evita que textos largos rompan el diseÃ±o */
 }
 
-/* La etiqueta pequeña (Ej: USUARIO) */
+/* La etiqueta pequeÃ±a (Ej: USUARIO) */
 .detalle-item .label {
   font-size: 0.65rem;
   color: #888; /* Color gris para diferenciar */
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 4px; /* Separación entre etiqueta y valor */
+  margin-bottom: 4px; /* SeparaciÃ³n entre etiqueta y valor */
   font-weight: 600;
 }
 
@@ -712,13 +712,13 @@ input:checked + .slider:before {
   font-size: 0.95rem;
   color: #fff;
   font-weight: 500;
-  white-space: nowrap; /* Evita que se rompa en dos líneas si es posible */
+  white-space: nowrap; /* Evita que se rompa en dos lÃ­neas si es posible */
   text-overflow: ellipsis;
   overflow: hidden;
   width: 100%;
 }
 
-/* Ajuste del Avatar para que se vea más pro */
+/* Ajuste del Avatar para que se vea mÃ¡s pro */
 .avatar-img {
   width: 110px;
   height: 110px;

@@ -1,4 +1,4 @@
-/* ===================================
+﻿/* ===================================
    BASE Y RESET
    =================================== */
 * {
@@ -23,10 +23,10 @@
    CONTENEDOR PRINCIPAL
    =================================== */
 .proveedores-container {
-  max-width: 1400px;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto;
-  background-color: rgba(15, 23, 42, 0.85); /* Tono Dark Slate más elegante */
+  background-color: rgba(15, 23, 42, 0.85); /* Tono Dark Slate mÃ¡s elegante */
   color: var(--text-light);
   border: 1px solid rgba(56, 189, 248, 0.3);
   border-radius: 16px;
@@ -78,7 +78,7 @@
    SISTEMA DE BOTONES (CORREGIDO Y UNIFICADO)
    =================================== */
 
-/* Botón Principal (Azul Neón) */
+/* BotÃ³n Principal (Azul NeÃ³n) */
 .btn-neon-primary {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   border: 1px solid rgba(59, 130, 246, 0.5);
@@ -103,7 +103,7 @@
   box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
 }
 
-/* Botón Peligro (Rojo Neón - Modal Borrar) */
+/* BotÃ³n Peligro (Rojo NeÃ³n - Modal Borrar) */
 .btn-neon-danger {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   border: 1px solid rgba(239, 68, 68, 0.5);
@@ -127,7 +127,7 @@
   box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
 }
 
-/* Botón Secundario (Exportaciones, Paginación, Cancelar) */
+/* BotÃ³n Secundario (Exportaciones, PaginaciÃ³n, Cancelar) */
 .btn-cancelar {
   background: rgba(30, 41, 59, 0.7);
   border: 1px solid rgba(148, 163, 184, 0.3);
@@ -154,7 +154,7 @@
   cursor: not-allowed;
 }
 
-/* Botón Transparente (Ghost) */
+/* BotÃ³n Transparente (Ghost) */
 .btn-ghost {
   background: transparent; 
   border: 1px solid rgba(148, 163, 184, 0.4); 
@@ -171,7 +171,7 @@
   border-color: white;
 }
 
-/* Botones de Acción (Tabla) */
+/* Botones de AcciÃ³n (Tabla) */
 .btn-icon {
   width: 36px; height: 36px; border-radius: 8px; font-size: 1rem;
   display: flex; justify-content: center; align-items: center;
@@ -184,7 +184,7 @@
 .btn-delete:hover { background: #ef4444; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); }
 
 /* ===================================
-   PESTAÑAS (TABS)
+   PESTAÃ‘AS (TABS)
    =================================== */
 .tabs-container {
   display: flex;

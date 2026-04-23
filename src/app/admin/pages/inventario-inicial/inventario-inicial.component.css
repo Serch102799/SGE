@@ -1,4 +1,4 @@
-/* ===================================
+﻿/* ===================================
    BASE Y RESET
    =================================== */
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -13,7 +13,7 @@
    CONTENEDOR PRINCIPAL GLASSMORPHISM
    =================================== */
 .form-container {
-  max-width: 1400px;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto 20px auto;
   background: var(--bg-secondary);

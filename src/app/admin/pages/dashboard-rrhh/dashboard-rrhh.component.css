@@ -1,4 +1,4 @@
-/* --- BASE Y FONDO --- */
+﻿/* --- BASE Y FONDO --- */
 :host {
   display: block;
   min-height: 100vh;
@@ -8,7 +8,7 @@
 }
 
 .dashboard-container {
-  max-width: 1400px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 20px;
   color: var(--text-white);
@@ -289,7 +289,7 @@
   cursor: pointer;
   transition: 0.3s;
 }
-/* --- SECCIÓN DE RENDIMIENTO INTEGRADA --- */
+/* --- SECCIÃ“N DE RENDIMIENTO INTEGRADA --- */
 .performance-section {
   background: rgba(30, 41, 59, 0.4);
   border-radius: 15px;
@@ -321,7 +321,7 @@
   font-size: 0.85rem;
 }
 
-/* Filtros en línea */
+/* Filtros en lÃ­nea */
 .filters-inline {
   display: flex;
   align-items: center;

@@ -1,5 +1,5 @@
-/* ==========================================================================
-   CONFIGURACIÓN GLOBAL Y FONDOS
+﻿/* ==========================================================================
+   CONFIGURACIÃ“N GLOBAL Y FONDOS
    ========================================================================== */
 :host {
   display: block;
@@ -11,7 +11,7 @@
 }
 
 .usuarios-container {
-  max-width: 1400px;
+  max-width: 100%;
   width: 95%;
   margin: 0 auto;
   background-color: rgba(15, 23, 42, 0.9);
@@ -58,7 +58,7 @@
    ========================================================================== */
 .taller-grid {
   display: grid;
-  /* Esto hace que las tarjetas se adapten solas al tamaño de la pantalla */
+  /* Esto hace que las tarjetas se adapten solas al tamaÃ±o de la pantalla */
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 25px;
 }
@@ -80,7 +80,7 @@
   background: var(--bg-hover-light);
 }
 
-/* Colores de Borde Superior según el Estado del Autobús */
+/* Colores de Borde Superior segÃºn el Estado del AutobÃºs */
 .border-pendiente { border-top: 5px solid #facc15; } /* Amarillo */
 .border-reparacion { border-top: 5px solid #38bdf8; } /* Azul */
 .border-refacciones { border-top: 5px solid #f87171; } /* Rojo */

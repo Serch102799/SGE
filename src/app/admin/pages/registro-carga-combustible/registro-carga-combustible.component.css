@@ -1,5 +1,5 @@
-/* ============================================= */
-/* --- ESTILOS BASE Y DE PÁGINA --- */
+﻿/* ============================================= */
+/* --- ESTILOS BASE Y DE PÃGINA --- */
 /* ============================================= */
 :host {
   display: block;
@@ -16,7 +16,7 @@
 /* --- CONTENEDOR PRINCIPAL --- */
 /* ============================================= */
 .form-container {
-  max-width: 1200px;
+  max-width: 100%;
   width: 95%;
   margin: 0 auto;
   background-color: var(--bg-dark-card);
@@ -24,7 +24,7 @@
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(10px);
-  /* LA CORRECCIÓN CLAVE: */
+  /* LA CORRECCIÃ“N CLAVE: */
   overflow: visible; 
 }
 
@@ -82,7 +82,7 @@
   padding: 0 10px;
   font-size: 1rem;
   font-weight: 600;
-  color: #4dabf7; /* Azul neón */
+  color: #4dabf7; /* Azul neÃ³n */
   background-color: var(--bg-dark-card); /* Mismo color que el fondo del container */
   border-radius: 4px;
 }
@@ -102,7 +102,7 @@
   flex-direction: column;
 }
 
-/* Grid System básico */
+/* Grid System bÃ¡sico */
 .col-md-2 { flex: 0 0 calc(16.666% - 15px); }
 .col-md-3 { flex: 0 0 calc(25% - 15px); }
 .col-md-4 { flex: 0 0 calc(33.333% - 15px); }
@@ -119,15 +119,15 @@
 .sticky-panel {
   position: -webkit-sticky; /* Soporte para Safari */
   position: sticky;
-  top: 0px; /* 👈 Garantiza que ancle arriba */
-  z-index: 999; /* 👈 Garantiza que pase por encima de todos los inputs */
+  top: 0px; /* ðŸ‘ˆ Garantiza que ancle arriba */
+  z-index: 999; /* ðŸ‘ˆ Garantiza que pase por encima de todos los inputs */
   
-  /* Efecto cristal oscuro para que tape lo de atrás */
+  /* Efecto cristal oscuro para que tape lo de atrÃ¡s */
   background: rgba(15, 23, 42, 0.98); 
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   
-  /* Diseño de la tarjeta flotante */
+  /* DiseÃ±o de la tarjeta flotante */
   padding: 15px 30px;
   /* El margen negativo expande el panel a los bordes del contenedor para un mejor efecto */
   margin: -30px -30px 25px -30px; 
@@ -243,7 +243,7 @@
 }
 
 /* ============================================= */
-/* --- BOTONES PEQUEÑOS DE ACCIÓN --- */
+/* --- BOTONES PEQUEÃ‘OS DE ACCIÃ“N --- */
 /* ============================================= */
 .btn-agregar-detalle {
   padding: 10px 20px;
@@ -305,7 +305,7 @@
 .kpi-alerta .kpi-value-sm { color: #ffb74d; }
 
 /* ============================================= */
-/* --- BOTONES DE ACCIÓN PRINCIPAL (NEÓN) --- */
+/* --- BOTONES DE ACCIÃ“N PRINCIPAL (NEÃ“N) --- */
 /* ============================================= */
 .acciones-finales {
   display: flex;
@@ -316,7 +316,7 @@
   border-top: 1px solid var(--border-color);
 }
 
-/* Botón Cancelar (Gris sutil) */
+/* BotÃ³n Cancelar (Gris sutil) */
 .btn-cancelar {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -336,7 +336,7 @@
   background: var(--border-color);
 }
 
-/* Botón Guardar (Verde Neón - Estilo Cyberpunk) */
+/* BotÃ³n Guardar (Verde NeÃ³n - Estilo Cyberpunk) */
 .btn-guardar {
   background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); /* Degradado Verde */
   border: none;
@@ -368,10 +368,10 @@
 }
 
 /* ============================================= */
-/* --- MODAL TICKET (CONFIRMACIÓN) --- */
+/* --- MODAL TICKET (CONFIRMACIÃ“N) --- */
 /* ============================================= */
 
-/* Fondo oscuro detrás del modal */
+/* Fondo oscuro detrÃ¡s del modal */
 .modal-overlay {
   position: fixed;
   top: 0; 
@@ -387,7 +387,7 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-/* El Ticket (Diseño Papel/Recibo Moderno) */
+/* El Ticket (DiseÃ±o Papel/Recibo Moderno) */
 .ticket-modal {
   background: #fdfdfd; /* Fondo blanco */
   color: #333; /* Texto oscuro */
@@ -401,13 +401,13 @@
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Decoración superior (Borde) */
+/* DecoraciÃ³n superior (Borde) */
 .ticket-header {
   background: var(--bg-dark-card); /* Cabecera oscura */
   color: white;
   padding: 20px;
   text-align: center;
-  border-bottom: 3px dashed #ccc; /* Línea de corte */
+  border-bottom: 3px dashed #ccc; /* LÃ­nea de corte */
 }
 
 .ticket-header h3 {
@@ -518,7 +518,7 @@
 .btn-ticket-confirm:hover { background: #009684; transform: translateY(-2px); }
 
 /* ============================================= */
-/* --- MODAL DE NOTIFICACIÓN (GENÉRICO) --- */
+/* --- MODAL DE NOTIFICACIÃ“N (GENÃ‰RICO) --- */
 /* ============================================= */
 .modal-content:not(.ticket-modal) {
   background-color: var(--bg-dark-card);

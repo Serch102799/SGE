@@ -1,7 +1,7 @@
-:host {
+﻿:host {
   display: block;
   padding: 40px 20px;
-  background-color: var(--bg-dark-main); /* Un fondo oscuro sólido para el dashboard */
+  background-color: var(--bg-dark-main); /* Un fondo oscuro sÃ³lido para el dashboard */
 }
 /* Base y Fondo */
 :host {
@@ -28,7 +28,7 @@
 .date-badge { background: rgba(0,0,0,0.4); padding: 8px 15px; border-radius: 20px; font-weight: 600; color: #38bdf8; }
 /* Contenedor Principal */
 .usuarios-container {
-  max-width: 1200px;
+  max-width: 100%;
   width: 95%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.8);
@@ -59,7 +59,7 @@
   padding: 30px;
 }
 
-/* Botón para "Agregar" */
+/* BotÃ³n para "Agregar" */
 .btn-agregar {
   background-color: #4480d3;
   border: none;
@@ -106,7 +106,7 @@
 .tabla-usuarios td { color: var(--text-light); }
 .acciones { text-align: center; display: flex; gap: 10px; justify-content: center; }
 
-/* Botones de Acción en tabla */
+/* Botones de AcciÃ³n en tabla */
 .btn-accion {
   padding: 6px 12px;
   font-size: 0.85rem;
@@ -179,12 +179,12 @@
   display: flex;
   gap: 20px;
   margin-bottom: 25px;
-  flex-wrap: wrap; /* Para que se adapte en pantallas pequeñas */
+  flex-wrap: wrap; /* Para que se adapte en pantallas pequeÃ±as */
 }
 
 .filtro-item {
   flex: 1;
-  min-width: 200px; /* Ancho mínimo para cada filtro */
+  min-width: 200px; /* Ancho mÃ­nimo para cada filtro */
 }
 
 /* Reutilizamos la clase .form-control que ya tienes */
@@ -193,14 +193,14 @@
 }
 tr.alerta-stock-bajo {
   background-color: rgba(217, 83, 79, 0.15); /* Fondo rojo muy sutil */
-  border-left: 4px solid #d9534f; /* Línea roja a la izquierda para destacar */
+  border-left: 4px solid #d9534f; /* LÃ­nea roja a la izquierda para destacar */
 }
 
 tr.alerta-stock-bajo:hover {
-  background-color: rgba(217, 83, 79, 0.25); /* Un rojo un poco más intenso al pasar el mouse */
+  background-color: rgba(217, 83, 79, 0.25); /* Un rojo un poco mÃ¡s intenso al pasar el mouse */
 }
 
-/* Estilo para resaltar el número del stock */
+/* Estilo para resaltar el nÃºmero del stock */
 td.stock-critico {
   color: #ff8a8a; /* Color de texto rojo claro */
   font-weight: bold;
@@ -254,7 +254,7 @@ td.stock-critico {
 }
 
 .usuarios-container {
-  max-width: 1200px;
+  max-width: 100%;
   width: 95%;
   margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.8);
@@ -311,7 +311,7 @@ td.stock-critico {
 }
 
 .dashboard-container {
-  max-width: 1400px;
+  max-width: 100%;
   margin: 0 auto;
 }
 .cantidad-entrada {
@@ -334,7 +334,7 @@ td.stock-critico {
 }
 /*
 ========================================
---- Estilos para Animación de Carga ---
+--- Estilos para AnimaciÃ³n de Carga ---
 ========================================
 */
 
@@ -354,11 +354,11 @@ td.stock-critico {
 }
 
 .bus-animation {
-  width: 150px; /* Ancho del autobús */
+  width: 150px; /* Ancho del autobÃºs */
   position: absolute;
-  bottom: 10px; /* Posición sobre la carretera */
+  bottom: 10px; /* PosiciÃ³n sobre la carretera */
   left: 0;
-  /* Aquí se define la animación */
+  /* AquÃ­ se define la animaciÃ³n */
   animation: drive 7s linear infinite;
 }
 
@@ -381,7 +381,7 @@ td.stock-critico {
 }
 
 
-/* Definición de la animación 'drive' */
+/* DefiniciÃ³n de la animaciÃ³n 'drive' */
 @keyframes drive {
   from {
     transform: translateX(-200px); /* Empieza fuera de la pantalla a la izquierda */
@@ -406,9 +406,9 @@ td.stock-critico {
   margin-bottom: 10px;
 }
 .kpi-grid .kpi-card:first-child {
-  /* Le decimos que se expanda para ocupar las 3 columnas (de la línea 1 a la -1) */
+  /* Le decimos que se expanda para ocupar las 3 columnas (de la lÃ­nea 1 a la -1) */
   grid-column: 1 / -1;
-  border-left-color: #f0ad4e; /* Le damos un color diferente para destacarla más */
+  border-left-color: #f0ad4e; /* Le damos un color diferente para destacarla mÃ¡s */
 }
 
 .kpi-label {
@@ -430,7 +430,7 @@ td.stock-critico {
 }
 
 
-/* Contenedor de la gráfica */
+/* Contenedor de la grÃ¡fica */
 .chart-container {
   background-color: rgba(0, 0, 0, 0.664);
   border: 1px solid var(--border-color);
@@ -449,7 +449,7 @@ td.stock-critico {
   position: relative;
 }
 /* =========================================
-   PANEL FINANCIERO (GRÁFICAS DE PASTEL)
+   PANEL FINANCIERO (GRÃFICAS DE PASTEL)
    ========================================= */
 .financial-section {
   background-color: rgba(0, 0, 0, 0.658); /* MISMO FONDO QUE EL RESTO DEL DASHBOARD */
@@ -467,13 +467,13 @@ td.stock-critico {
   margin-bottom: 30px;
   flex-wrap: wrap;
   gap: 15px;
-  border-bottom: 1px solid var(--bg-hover-light); /* Línea divisoria muy sutil */
+  border-bottom: 1px solid var(--bg-hover-light); /* LÃ­nea divisoria muy sutil */
   padding-bottom: 15px;
 }
 
 .financial-header h3 {
   margin: 0;
-  color: var(--text-white); /* Mismo color de títulos */
+  color: var(--text-white); /* Mismo color de tÃ­tulos */
   font-size: 1.3rem;
   font-weight: 500;
 }
@@ -490,7 +490,7 @@ td.stock-critico {
 }
 
 .filter-group label {
-  color: #a7b7d2; /* Mismo tono azulado/grisáceo de tus textos secundarios */
+  color: #a7b7d2; /* Mismo tono azulado/grisÃ¡ceo de tus textos secundarios */
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -511,7 +511,7 @@ td.stock-critico {
   border-color: #38bdf8;
 }
 
-/* Contenedor de Gráficas de Pastel */
+/* Contenedor de GrÃ¡ficas de Pastel */
 .pie-container {
   display: flex;
   flex-direction: column;
@@ -531,13 +531,13 @@ td.stock-critico {
 }
 
 .bg-compras {
-  background: rgba(16, 185, 129, 0.08); /* Verde más transparente */
+  background: rgba(16, 185, 129, 0.08); /* Verde mÃ¡s transparente */
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
 .bg-compras h2 { color: #34d399; margin: 5px 0 0 0; font-size: 2rem;}
 
 .bg-gastos {
-  background: rgba(239, 68, 68, 0.08); /* Rojo más transparente */
+  background: rgba(239, 68, 68, 0.08); /* Rojo mÃ¡s transparente */
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
 .bg-gastos h2 { color: #f87171; margin: 5px 0 0 0; font-size: 2rem;}
@@ -572,7 +572,7 @@ td.stock-critico {
   color: #38bdf8;
 }
 
-/* Responsividad para móviles */
+/* Responsividad para mÃ³viles */
 @media (max-width: 768px) {
   .financial-header { flex-direction: column; align-items: flex-start; }
   .date-filters { flex-direction: column; width: 100%; }
@@ -645,7 +645,7 @@ td.stock-critico {
   font-weight: 500;
 }
 
-/* Botón Derecho */
+/* BotÃ³n Derecho */
 .banner-action {
   color: #38bdf8;
   font-weight: 600;

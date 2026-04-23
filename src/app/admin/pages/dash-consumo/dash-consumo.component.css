@@ -1,4 +1,4 @@
-:host {
+﻿:host {
   display: block;
   min-height: 100vh;
   padding: 40px 20px;
@@ -7,7 +7,7 @@
 }
 
 .dashboard-container {
-  max-width: 1400px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -94,7 +94,7 @@
 
 .charts-grid-fuel {
   display: grid;
-  grid-template-columns: 2fr 1fr; /* La gráfica de barras ocupa el doble que la dona */
+  grid-template-columns: 2fr 1fr; /* La grÃ¡fica de barras ocupa el doble que la dona */
   gap: 25px;
 }
 

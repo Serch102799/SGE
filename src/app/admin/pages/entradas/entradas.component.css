@@ -1,4 +1,4 @@
-/* ===================================
+﻿/* ===================================
    BASE Y RESET
    =================================== */
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -13,7 +13,7 @@
    CONTENEDOR PRINCIPAL GLASSMORPHISM
    =================================== */
 .usuarios-container {
-  max-width: 1400px;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto 20px auto;
   background: var(--bg-secondary);
@@ -69,7 +69,7 @@
 .btn-exportar.btn-pdf:hover { background: rgba(239, 68, 68, 0.25); color: #fff; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
 
 /* ===================================
-   FILTROS Y BÚSQUEDA
+   FILTROS Y BÃšSQUEDA
    =================================== */
 .filtros-container { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
 .filtro-item { flex: 1; min-width: 200px; }
@@ -101,7 +101,7 @@ select.form-control, textarea.form-control { border-radius: 8px; }
 .empty-table-message { text-align: center; padding: 40px !important; font-style: italic; color: var(--text-muted); }
 
 /* ===================================
-   BOTONES DE ACCIÓN EN TABLA (PÍLDORAS NEÓN)
+   BOTONES DE ACCIÃ“N EN TABLA (PÃLDORAS NEÃ“N)
    =================================== */
 .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .btn-accion {
@@ -113,7 +113,7 @@ select.form-control, textarea.form-control { border-radius: 8px; }
 /* FIX AL HTML: Esto oculta los span que traen el texto duplicado de Bootstrap */
 .btn-accion span { display: none !important; }
 
-/* Colores específicos de los botones Neón */
+/* Colores especÃ­ficos de los botones NeÃ³n */
 .btn-estado { background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.3); color: #38bdf8; }
 .btn-estado:hover { background: rgba(56, 189, 248, 0.3); box-shadow: 0 0 10px rgba(56, 189, 248, 0.4); color: white; transform: translateY(-2px); }
 
@@ -177,7 +177,7 @@ button[disabled] { opacity: 0.5; cursor: not-allowed; box-shadow: none !importan
 .alert-danger-custom { background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 15px; border-radius: 8px; color: #f87171; line-height: 1.6; }
 
 /* ===================================
-   PAGINACIÓN
+   PAGINACIÃ“N
    =================================== */
 .pagination-controls { display: flex; justify-content: flex-end; margin-top: 10px; }
 ::ng-deep .ngx-pagination { margin-bottom: 0; padding-left: 0; }
