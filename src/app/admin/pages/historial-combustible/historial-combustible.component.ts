@@ -8,6 +8,8 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { addPdfFooter } from '../../../shared/utils/pdf-footer.util';
+import { ExportNotificationService } from '../../../shared/services/export-notification.service';
 
 interface Ruta {
   id_ruta: number;
@@ -93,7 +95,7 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     id_ruta: null as number | null
   };
 
-  constructor(private http: HttpClient, public authService: AuthService) {
+  constructor(private http: HttpClient, public authService: AuthService, private exportNotif: ExportNotificationService) {
     const ahora = new Date();
     this.fechaMaxima = ahora.toISOString().slice(0, 16);
   }
@@ -473,7 +475,10 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       doc.text(`Total Registros: ${todasLasCargas.length}`, 15, actualY + 8); doc.text(`Total Litros: ${totalLitros.toFixed(2)} L`, 90, actualY + 8);
       doc.text(`Total KM: ${totalKm.toFixed(0)} km`, 180, actualY + 8); doc.text(`Rendimiento Promedio: ${promedioRendimiento.toFixed(2)} km/L`, 15, actualY + 18);
 
-      doc.save(`Historial_Combustible_${new Date().getTime()}.pdf`);
+      const pdfFilename = `Historial_Combustible_${new Date().getTime()}.pdf`;
+      addPdfFooter(doc as unknown as jsPDF, 'Historial de Combustible');
+      doc.save(pdfFilename);
+      this.exportNotif.showPdf(pdfFilename);
       this.registrarAuditoriaExportacion('PDF', todasLasCargas.length);
     } catch (error) { alert('Error al exportar a PDF'); console.error(error); } finally { this.exportando = false; }
   }
@@ -510,7 +515,9 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       worksheet[`A${rr + 2}`] = { v: 'Total Litros:', t: 's' }; worksheet[`B${rr + 2}`] = { v: parseFloat(datosExcel.reduce((acc, d) => acc + this.obtenerNumero(d['Litros']), 0).toFixed(2)), t: 'n' };
       worksheet[`A${rr + 3}`] = { v: 'Total KM:', t: 's' }; worksheet[`B${rr + 3}`] = { v: parseInt(datosExcel.reduce((acc, d) => acc + this.obtenerNumero(d['KM Recorridos']), 0).toFixed(0)), t: 'n' };
 
-      XLSX.writeFile(workbook, `Historial_Combustible_${new Date().getTime()}.xlsx`);
+      const xlsFilename = `Historial_Combustible_${new Date().getTime()}.xlsx`;
+      XLSX.writeFile(workbook, xlsFilename);
+      this.exportNotif.showExcel(xlsFilename);
       this.registrarAuditoriaExportacion('EXCEL', todasLasCargas.length);
     } catch (error) { alert('Error al exportar a Excel.'); } finally { this.exportandoExcel = false; }
   }

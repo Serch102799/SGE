@@ -8,6 +8,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { environment } from '../../../../environments/environments';
 import * as XLSX from 'xlsx';
+import { addPdfFooter } from '../../../shared/utils/pdf-footer.util';
+import { ExportNotificationService } from '../../../shared/services/export-notification.service';
 
 @Component({
   selector: 'app-reportes',
@@ -45,7 +47,7 @@ export class ReportesComponent implements OnInit {
   filteredBusesReporte$!: Observable<any[]>;
 
   mostrarModalNotificacion = false;
-  notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' | 'descargando' };
+  notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
 
   modalDetallesVisible: boolean = false;
   busSeleccionado: any = null;
@@ -71,7 +73,8 @@ export class ReportesComponent implements OnInit {
     },
   };
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private exportNotif: ExportNotificationService) { }
+
 
   ngOnInit() {
     this.cargarCategorias();
@@ -207,20 +210,9 @@ export class ReportesComponent implements OnInit {
     this.reporteData = []; this.columnasReporte = []; this.totalGeneral = 0;
   }
 
-  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' | 'descargando' = 'advertencia') {
-    this.notificacion = { titulo, mensaje, tipo }; 
-    this.mostrarModalNotificacion = true;
-  }
-  iniciarDescargaAnimada(tipoExportacion: 'pdf' | 'excel') {
-    if (this.reporteData.length === 0 && this.movimientosCategoria.length === 0) { 
-      this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.', 'advertencia'); return; 
-    }
-    this.mostrarNotificacion('Procesando', 'Generando tu reporte, por favor espera...', 'descargando');
-    setTimeout(() => {
-      try {
-        if (tipoExportacion === 'pdf') this.exportarPDF(); else this.exportarExcel();
-      } catch (error) { this.mostrarNotificacion('Error', 'Hubo un problema al exportar el archivo.', 'error'); }
-    }, 800);
+  mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') {
+    // Mensajes de validación dentro del formulario se muestran con alert simple
+    alert(`${titulo}: ${mensaje}`);
   }
   cerrarModalNotificacion() { this.mostrarModalNotificacion = false; }
 
@@ -274,8 +266,10 @@ export class ReportesComponent implements OnInit {
         m.tipo_movimiento === 'Entrada' ? `+${m.cantidad}` : `-${m.cantidad}`, m.destino_origen || 'No Especificado', `$${parseFloat(m.costo_total || 0).toLocaleString('es-MX', {minimumFractionDigits:2})}`
       ]);
       autoTable(doc, { startY: startY, head: headersCat, body: bodyCat, headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 }, styles: { fontSize: 8, cellPadding: 3 }, margin: { top: 10 } });
-      doc.save(`Reporte_Categoria_${this.categoriaSeleccionada}_${new Date().getTime()}.pdf`);
-      this.mostrarNotificacion('Éxito', 'PDF exportado correctamente.', 'exito');
+      addPdfFooter(doc, 'Reportes por Categoría');
+      const filename = `Reporte_Categoria_${this.categoriaSeleccionada}_${new Date().getTime()}.pdf`;
+      doc.save(filename);
+      this.exportNotif.showPdf(filename);
       return;
     }
 
@@ -306,8 +300,10 @@ export class ReportesComponent implements OnInit {
         });
       });
       autoTable(doc, { startY: startY, head: [['ID', 'FECHA / VEHÍCULO', 'TIPO', 'ARTÍCULO / DESC.', 'MARCA / PROV.', 'CANT.', 'SUBTOTAL']], body: bodyBus, headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 }, styles: { fontSize: 8, cellPadding: 3 }, margin: { top: 10 } });
-      doc.save(`Reporte_Vehiculos_${new Date().getTime()}.pdf`);
-      this.mostrarNotificacion('Éxito', 'PDF exportado correctamente.', 'exito');
+      addPdfFooter(doc, 'Reportes de Flota por Vehículo');
+      const filenameVeh = `Reporte_Vehiculos_${new Date().getTime()}.pdf`;
+      doc.save(filenameVeh);
+      this.exportNotif.showPdf(filenameVeh);
       return; 
     }
 
@@ -338,8 +334,10 @@ export class ReportesComponent implements OnInit {
         });
       });
       autoTable(doc, { startY: startY, head: [customHeaders], body: bodyRS, headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 }, styles: { fontSize: 8, cellPadding: 3 }, margin: { top: 10 } });
-      doc.save(`Reporte_RazonSocial_${new Date().getTime()}.pdf`);
-      this.mostrarNotificacion('Éxito', 'PDF exportado correctamente.', 'exito');
+      addPdfFooter(doc, 'Reportes por Razón Social');
+      const filenameRS = `Reporte_RazonSocial_${new Date().getTime()}.pdf`;
+      doc.save(filenameRS);
+      this.exportNotif.showPdf(filenameRS);
       return;
     }
 
@@ -395,8 +393,10 @@ export class ReportesComponent implements OnInit {
     });
 
     autoTable(doc, { startY: startY, head: [headers], body: body, headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 }, styles: { fontSize: 9, cellPadding: 3 }, alternateRowStyles: { fillColor: [245, 245, 245] }, margin: { top: 10 } });
-    doc.save(`Reporte_${this.tipoReporteSeleccionado}_${new Date().getTime()}.pdf`);
-    this.mostrarNotificacion('Éxito', 'PDF exportado correctamente', 'exito');
+    addPdfFooter(doc, 'Reportes de Inventario y Flota');
+    const filenameRep = `Reporte_${this.tipoReporteSeleccionado}_${new Date().getTime()}.pdf`;
+    doc.save(filenameRep);
+    this.exportNotif.showPdf(filenameRep);
   }
 
   exportarExcel() {
@@ -422,8 +422,9 @@ export class ReportesComponent implements OnInit {
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte Categoría');
       worksheet['!cols'] = [ { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 25 }, { wch: 15 } ];
-      XLSX.writeFile(workbook, `Reporte_Categoria_${this.categoriaSeleccionada}_${new Date().getTime()}.xlsx`);
-      this.mostrarNotificacion('Éxito', 'Excel exportado correctamente', 'exito');
+      const filenameExcelCat = `Reporte_Categoria_${this.categoriaSeleccionada}_${new Date().getTime()}.xlsx`;
+      XLSX.writeFile(workbook, filenameExcelCat);
+      this.exportNotif.showExcel(filenameExcelCat);
       return;
     }
 
@@ -505,6 +506,7 @@ export class ReportesComponent implements OnInit {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte');
     worksheet['!cols'] = [ { wch: 20 }, { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 } ];
     XLSX.writeFile(workbook, `Reporte_${this.tipoReporteSeleccionado}_${new Date().getTime()}.xlsx`);
-    this.mostrarNotificacion('Éxito', 'Excel exportado correctamente', 'exito');
+    const filenameXls = `Reporte_${this.tipoReporteSeleccionado}_${new Date().getTime()}.xlsx`;
+    this.exportNotif.showExcel(filenameXls);
   }
 }

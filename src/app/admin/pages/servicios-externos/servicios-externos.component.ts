@@ -8,6 +8,8 @@ import { environment } from '../../../../environments/environments';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf'; 
 import autoTable from 'jspdf-autotable';
+import { addPdfFooter } from '../../../shared/utils/pdf-footer.util';
+import { ExportNotificationService } from '../../../shared/services/export-notification.service';
 
 @Component({
   selector: 'app-servicios-externos',
@@ -54,7 +56,8 @@ export class ServiciosExternosComponent implements OnInit {
 
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private exportNotif: ExportNotificationService) {}
+
 
   ngOnInit(): void {
     this.cargarServicios();
@@ -185,9 +188,9 @@ export class ServiciosExternosComponent implements OnInit {
     const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dataToExport);
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Servicios');
-    XLSX.writeFile(wb, `Reporte_Servicios_Externos_${new Date().getTime()}.xlsx`);
-
-    this.mostrarNotificacion('Exportación Exitosa', 'El archivo Excel se ha descargado en tu equipo.', 'exito');
+    const filename = `Reporte_Servicios_Externos_${new Date().getTime()}.xlsx`;
+    XLSX.writeFile(wb, filename);
+    this.exportNotif.showExcel(filename);
   }
 
   exportarPDF() {
@@ -268,9 +271,10 @@ export class ServiciosExternosComponent implements OnInit {
     });
 
     const timestamp = new Date().getTime();
-    doc.save(`Servicios_Externos_${timestamp}.pdf`);
-    
-    this.mostrarNotificacion('Exportación Exitosa', 'El archivo PDF se ha descargado en tu equipo.', 'exito');
+    const filename = `Servicios_Externos_${timestamp}.pdf`;
+    addPdfFooter(doc, 'Servicios Externos de Flota');
+    doc.save(filename);
+    this.exportNotif.showPdf(filename);
   }
 
   exportarXML() {

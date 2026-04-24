@@ -8,6 +8,8 @@ import { Router } from '@angular/router';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { addPdfFooter } from '../../../shared/utils/pdf-footer.util';
+import { ExportNotificationService } from '../../../shared/services/export-notification.service';
 
 // --- Interfaces ---
 export interface Autobus {
@@ -91,7 +93,7 @@ export class AutobusesComponent implements OnInit, OnDestroy {
     tipo: 'advertencia' as 'exito' | 'error' | 'advertencia'
   };
 
-  constructor(private http: HttpClient, public authService: AuthService, private router: Router) { }
+  constructor(private http: HttpClient, public authService: AuthService, private router: Router, private exportNotif: ExportNotificationService) { }
 
   ngOnInit(): void {
     this.obtenerAutobuses();
@@ -354,7 +356,7 @@ export class AutobusesComponent implements OnInit, OnDestroy {
     return;
   }
 
-  // Mapear datos
+  const filename = `Historial_Bus_${this.autobusSeleccionadoEconomico}.xlsx`;
   const data = this.historialFiltrado.map(item => ({
     'Fecha': new Date(item.fecha).toLocaleDateString(),
     'Kilometraje': item.kilometraje,
@@ -362,18 +364,16 @@ export class AutobusesComponent implements OnInit, OnDestroy {
     'Descripción': item.nombre,
     'Marca': item.marca || '-',
     'Cantidad': item.cantidad,
-    'Costo Unitario': Number(item.costo_unitario), 
+    'Costo Unitario': Number(item.costo_unitario),
     'Costo Total': Number(item.costo_total),
     'Solicitado Por': item.solicitado_por
   }));
 
-  // Crear hoja y libro
   const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
   const wb: XLSX.WorkBook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Historial');
-
-  // Guardar
-  XLSX.writeFile(wb, `Historial_Bus_${this.autobusSeleccionadoEconomico}.xlsx`);
+  XLSX.writeFile(wb, filename);
+  this.exportNotif.showExcel(filename);
 }
 
 // 2. Exportar a PDF
@@ -383,19 +383,16 @@ exportarHistorialPDF() {
     return;
   }
 
+  const filename = `Historial_Bus_${this.autobusSeleccionadoEconomico}.pdf`;
   const doc = new jsPDF();
 
-  // Encabezado del PDF
   doc.setFontSize(18);
   doc.text(`Historial de Mantenimiento: Autobús #${this.autobusSeleccionadoEconomico}`, 14, 20);
-  
   doc.setFontSize(12);
   doc.text(`Costo Total del Periodo: $${this.costoTotalHistorial.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, 14, 30);
-  
   doc.setFontSize(10);
   doc.text(`Fecha de reporte: ${new Date().toLocaleDateString()}`, 14, 36);
 
-  // Generar tabla
   autoTable(doc, {
     startY: 40,
     head: [['Fecha', 'KM', 'Tipo', 'Descripción', 'Cant.', 'Costo U.', 'Total', 'Solicitante']],
@@ -410,10 +407,13 @@ exportarHistorialPDF() {
       item.solicitado_por
     ]),
     theme: 'grid',
-    headStyles: { fillColor: [44, 62, 80] }, // Color oscuro azulado
-    styles: { fontSize: 8 }
+    headStyles: { fillColor: [44, 62, 80] },
+    styles: { fontSize: 8 },
+    margin: { bottom: 25 }
   });
 
-  doc.save(`Historial_Bus_${this.autobusSeleccionadoEconomico}.pdf`);
+  addPdfFooter(doc, 'Mantenimiento de Flota');
+  doc.save(filename);
+  this.exportNotif.showPdf(filename);
 }
 }

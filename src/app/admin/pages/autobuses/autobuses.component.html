@@ -1,4 +1,4 @@
-﻿<div class="usuarios-container">
+<div class="usuarios-container">
   <div class="container-header">
     <h2>Gestión de Autobuses</h2>
     <button class="btn-agregar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
@@ -103,112 +103,217 @@
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
-  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>{{ modoEdicion ? 'Editar Autobús' : 'Agregar Nuevo Autobús' }}</h3>
-      <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+  <div class="modal-content modal-lg form-modal" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header-modern">
+      <div class="header-title">
+        <div class="icon-box">
+          <i class="fas" [ngClass]="modoEdicion ? 'fa-pen-to-square' : 'fa-bus'"></i>
+        </div>
+        <div>
+          <h3>{{ modoEdicion ? 'Editar Autobús' : 'Registro de Autobús' }}</h3>
+          <p class="subtitle">{{ modoEdicion ? 'Modifica los datos del vehículo seleccionado' : 'Ingresa los datos para dar de alta una nueva unidad' }}</p>
+        </div>
+      </div>
+      <button class="btn-cerrar-modern" (click)="cerrarModal()" title="Cerrar">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
-    <div class="modal-body">
-      <form (ngSubmit)="guardarAutobus()">
-        <div class="form-row">
-          <div class="form-group col">
-            <label>N° Económico</label>
-            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.economico" name="economico"
-              [disabled]="modoEdicion" required>
+
+    <div class="modal-body form-body-scroll">
+      <form (ngSubmit)="guardarAutobus()" #autobusForm="ngForm">
+        
+        <!-- SECCIÓN 1: Datos Principales -->
+        <div class="form-section">
+          <div class="section-header">
+            <i class="fas fa-id-card"></i>
+            <h4>Identificación Principal</h4>
           </div>
-          <div class="form-group col">
-            <label>VIN (Número de Serie)</label>
-            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.vin" name="vin"
-              [disabled]="modoEdicion" required minlength="17" maxlength="17">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group col">
-            <label>Placa</label>
-            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.placa" name="placa" required>
-          </div>
-          <div class="form-group col">
-            <label>Modelo Chasis</label>
-            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.chasis" name="chasis">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group col">
-            <label>Motor</label>
-            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.motor" name="motor">
-          </div>
-          <div class="form-group col">
-            <label>Tarjeta de Circulación</label>
-            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.tarjeta_circulacion"
-              name="tarjeta_circulacion">
-          </div>
-        </div>
-        <hr>
-        <div class="form-row">
-          <div class="form-group col">
-            <label>Razón Social</label>
-            <select class="form-control" [(ngModel)]="autobusSeleccionado.razon_social" name="razon_social" required>
-              <option value="" disabled>Selecciona una opción</option>
-              <option *ngFor="let rs of razonesSociales" [value]="rs">{{ rs }}</option>
-            </select>
-          </div>
-          <div class="form-group col">
-            <label>Sistema de Emisiones</label>
-            <select class="form-control" [(ngModel)]="autobusSeleccionado.sistema" name="sistema">
-              <option value="" disabled>Selecciona una opción</option>
-              <option *ngFor="let sistema of sistemasEmisiones" [value]="sistema">{{ sistema }}</option>
-            </select>
+          <div class="section-content grid-2">
+            
+            <div class="form-group">
+              <label>N° Económico <span class="required">*</span></label>
+              <div class="input-wrapper">
+                <i class="fas fa-hashtag input-icon"></i>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.economico" name="economico" [disabled]="modoEdicion" required placeholder="Ej. 101">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>VIN (Número de Serie) <span class="required">*</span></label>
+              <div class="input-wrapper">
+                <i class="fas fa-barcode input-icon"></i>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.vin" name="vin" [disabled]="modoEdicion" required minlength="17" maxlength="17" placeholder="17 caracteres">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Placa <span class="required">*</span></label>
+              <div class="input-wrapper">
+                <i class="fas fa-id-badge input-icon"></i>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.placa" name="placa" required placeholder="Ej. XX-12-345">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Razón Social <span class="required">*</span></label>
+              <div class="input-wrapper">
+                <i class="fas fa-building input-icon"></i>
+                <select class="form-control" [(ngModel)]="autobusSeleccionado.razon_social" name="razon_social" required>
+                  <option value="" disabled>Selecciona una opción</option>
+                  <option *ngFor="let rs of razonesSociales" [value]="rs">{{ rs }}</option>
+                </select>
+              </div>
+            </div>
+
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group col">
-            <label>Marca</label>
-            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.marca" name="marca">
+
+        <!-- SECCIÓN 2: Vehículo -->
+        <div class="form-section">
+          <div class="section-header">
+            <i class="fas fa-bus-alt"></i>
+            <h4>Datos del Vehículo</h4>
           </div>
-          <div class="form-group col">
-            <label>Modelo</label>
-            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.modelo" name="modelo">
+          <div class="section-content grid-2">
+            
+            <div class="form-group">
+              <label>Marca</label>
+              <div class="input-wrapper">
+                <i class="fas fa-industry input-icon"></i>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.marca" name="marca" placeholder="Ej. Volvo, Mercedes-Benz">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Modelo</label>
+              <div class="input-wrapper">
+                <i class="fas fa-tag input-icon"></i>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.modelo" name="modelo" placeholder="Ej. 9700, Paradiso">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Año</label>
+              <div class="input-wrapper">
+                <i class="fas fa-calendar-alt input-icon"></i>
+                <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.anio" name="anio" placeholder="Ej. 2024">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Carrocería</label>
+              <div class="input-wrapper">
+                <i class="fas fa-shield-alt input-icon"></i>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.carroceria" name="carroceria" placeholder="Ej. Irizar i8">
+              </div>
+            </div>
+
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group col">
-            <label>Año</label>
-            <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.anio" name="anio">
+
+        <!-- SECCIÓN 3: Especificaciones Mecánicas -->
+        <div class="form-section">
+          <div class="section-header">
+            <i class="fas fa-cogs"></i>
+            <h4>Especificaciones Mecánicas</h4>
           </div>
-          <div class="form-group col">
-            <label>Kilometraje Actual</label>
-            <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.kilometraje_actual"
-              name="kilometraje_actual">
+          <div class="section-content grid-3">
+            
+            <div class="form-group">
+              <label>Motor</label>
+              <div class="input-wrapper">
+                <i class="fas fa-cogs input-icon"></i>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.motor" name="motor" placeholder="Modelo de motor">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Potencia (HP)</label>
+              <div class="input-wrapper">
+                <i class="fas fa-bolt input-icon"></i>
+                <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.hp" name="hp" placeholder="Caballos de fuerza">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Modelo Chasis</label>
+              <div class="input-wrapper">
+                <i class="fas fa-truck input-icon"></i>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.chasis" name="chasis" placeholder="Modelo de chasis">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Sistema Emisiones</label>
+              <div class="input-wrapper">
+                <i class="fas fa-leaf input-icon"></i>
+                <select class="form-control" [(ngModel)]="autobusSeleccionado.sistema" name="sistema">
+                  <option value="" disabled>Selecciona una opción</option>
+                  <option *ngFor="let sistema of sistemasEmisiones" [value]="sistema">{{ sistema }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Sistema Eléctrico</label>
+              <div class="input-wrapper">
+                <i class="fas fa-plug input-icon"></i>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.sistema_electrico" name="sistema_electrico" placeholder="Ej. 24V">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Medida Llanta</label>
+              <div class="input-wrapper">
+                <i class="fas fa-circle-notch input-icon"></i>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.medida_llanta" name="medida_llanta" placeholder="Ej. 295/80R22.5">
+              </div>
+            </div>
+
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group col">
-            <label>HP (Caballos de Fuerza)</label>
-            <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.hp" name="hp">
+
+        <!-- SECCIÓN 4: Operación y Registro -->
+        <div class="form-section" style="margin-bottom: 0;">
+          <div class="section-header">
+            <i class="fas fa-clipboard-check"></i>
+            <h4>Operación y Registro</h4>
           </div>
-          <div class="form-group col">
-            <label>Carrocería</label>
-            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.carroceria" name="carroceria">
+          <div class="section-content grid-2">
+            
+            <div class="form-group">
+              <label>Kilometraje Actual</label>
+              <div class="input-wrapper">
+                <i class="fas fa-tachometer-alt input-icon"></i>
+                <input type="number" class="form-control" [(ngModel)]="autobusSeleccionado.kilometraje_actual" name="kilometraje_actual" placeholder="KM Actual">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Tarjeta de Circulación</label>
+              <div class="input-wrapper">
+                <i class="fas fa-file-invoice input-icon"></i>
+                <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.tarjeta_circulacion" name="tarjeta_circulacion" placeholder="Número de tarjeta">
+              </div>
+            </div>
+
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group col">
-            <label>Sistema Eléctrico</label>
-            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.sistema_electrico"
-              name="sistema_electrico">
-          </div>
-          <div class="form-group col">
-            <label>Medida de Llanta</label>
-            <input type="text" class="form-control" [(ngModel)]="autobusSeleccionado.medida_llanta"
-              name="medida_llanta">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
-          <button type="submit" class="btn-accion btn-guardar">Guardar</button>
-        </div>
+
       </form>
     </div>
+
+    <!-- Mover el footer fuera del scroll para que siempre sea visible -->
+    <div class="modal-footer-modern">
+      <button type="button" class="btn-cancelar-modern" (click)="cerrarModal()">
+        <i class="fas fa-times"></i> Cancelar
+      </button>
+      <button type="button" class="btn-guardar-modern" (click)="autobusForm.ngSubmit.emit()" [disabled]="!autobusForm.form.valid">
+        <i class="fas fa-save"></i> {{ modoEdicion ? 'Actualizar Autobús' : 'Guardar Autobús' }}
+      </button>
+    </div>
+
   </div>
 </div>
 
@@ -440,7 +545,7 @@
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalHistorial" (click)="cerrarModalHistorial()">
-  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+  <div class="modal-content modal-xl" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Historial de Mantenimiento: Autobús #{{ autobusSeleccionadoEconomico }}</h3>
       <button class="btn-cerrar" (click)="cerrarModalHistorial()">×</button>

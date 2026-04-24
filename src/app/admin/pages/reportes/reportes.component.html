@@ -1,4 +1,4 @@
-﻿<div class="usuarios-container">
+<div class="usuarios-container">
   <div class="container-header">
     <h2>Módulo de Reportes</h2>
   </div>
@@ -139,8 +139,8 @@
       <div class="results-header">
         <h4>{{ tituloReporte }}</h4>
         <div class="export-buttons">
-          <button class="btn-exportar" (click)="iniciarDescargaAnimada('pdf')">📄 Exportar a PDF</button>
-          <button class="btn-excel" (click)="iniciarDescargaAnimada('excel')">📊 Exportar a Excel</button>
+          <button class="btn-exportar" (click)="exportarPDF()">📄 Exportar a PDF</button>
+          <button class="btn-excel" (click)="exportarExcel()">📊 Exportar a Excel</button>
         </div>
       </div>
 
@@ -182,8 +182,8 @@
       <div class="results-header">
         <h4><i class="fas fa-layer-group text-info"></i> Reporte de Movimientos: {{ categoriaSeleccionada }}</h4>
         <div class="export-buttons">
-          <button class="btn-exportar" (click)="iniciarDescargaAnimada('pdf')">📄 Exportar a PDF</button>
-          <button class="btn-excel" (click)="iniciarDescargaAnimada('excel')">📊 Exportar a Excel</button>
+          <button class="btn-exportar" (click)="exportarPDF()">📄 Exportar a PDF</button>
+          <button class="btn-excel" (click)="exportarExcel()">📊 Exportar a Excel</button>
         </div>
       </div>
 
@@ -289,36 +289,7 @@
   </div>
 </div>
 
-<!-- MODAL NOTIFICACIÓN -->
-<div class="modal-overlay" *ngIf="mostrarModalNotificacion" style="z-index: 3000; backdrop-filter: blur(5px);">
-  <div class="modal-content modal-animado" (click)="$event.stopPropagation()">
 
-    <div class="notificacion-body text-center" *ngIf="notificacion.tipo === 'descargando'">
-      <div class="animacion-descarga mt-3">
-        <i class="fas fa-cloud-download-alt pulse-icon"></i>
-        <div class="loader-line mt-4"></div>
-      </div>
-      <h3 class="mt-4 text-info">{{ notificacion.titulo }}</h3>
-      <p class="text-muted mb-2">{{ notificacion.mensaje }}</p>
-    </div>
-
-    <div class="notificacion-body text-center" *ngIf="notificacion.tipo !== 'descargando'">
-      <div class="icon-container mt-2" [ngClass]="notificacion.tipo">
-        <i class="fas" [ngClass]="{
-          'fa-check-circle': notificacion.tipo === 'exito',
-          'fa-exclamation-triangle': notificacion.tipo === 'advertencia',
-          'fa-times-circle': notificacion.tipo === 'error'
-        }"></i>
-      </div>
-      <h3 class="mt-3" style="color: #e2e8f0;">{{ notificacion.titulo }}</h3>
-      <p class="text-muted mb-4">{{ notificacion.mensaje }}</p>
-
-      <button class="btn-guardar w-100" style="padding: 12px; font-size: 1.1rem;" (click)="cerrarModalNotificacion()">
-        Entendido
-      </button>
-    </div>
-  </div>
-</div>
 
 <!-- ==========================================
      MODAL DE DESGLOSE (DINÁMICO)

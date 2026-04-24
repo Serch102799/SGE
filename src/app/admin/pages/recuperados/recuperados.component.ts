@@ -8,6 +8,8 @@ import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AuthService } from '../../../services/auth.service';
+import { addPdfFooter } from '../../../shared/utils/pdf-footer.util';
+import { ExportNotificationService } from '../../../shared/services/export-notification.service';
 
 @Component({
   selector: 'app-recuperados',
@@ -68,7 +70,8 @@ export class RecuperadosComponent implements OnInit {
   mostrarModalNotificacion = false;
   notificacion = { titulo: '', mensaje: '', tipo: 'advertencia' };
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
+  constructor(private http: HttpClient, private authService: AuthService, private exportNotif: ExportNotificationService) {}
+
 
   ngOnInit(): void {
     this.cargarPiezas();
@@ -282,9 +285,9 @@ export class RecuperadosComponent implements OnInit {
     });
 
     const nombreArchivo = `Reporte_Recuperados_${new Date().toISOString().split('T')[0]}.pdf`;
+    addPdfFooter(doc, 'Cascos y Piezas Recuperadas');
     doc.save(nombreArchivo);
-    
-    this.mostrarNotificacion('¡Listo!', 'El PDF se ha descargado correctamente.', 'exito');
+    this.exportNotif.showPdf(nombreArchivo);
   }
 
   // ==========================================

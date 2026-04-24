@@ -1,236 +1,340 @@
-﻿<div class="usuarios-container">
+<!-- ============================================================
+     CONTENEDOR PRINCIPAL
+     ============================================================ -->
+<div class="usuarios-container">
   <div class="container-header">
     <h2><i class="fas fa-fill-drip"></i> Catálogo de Insumos</h2>
-    <div class="acciones-header" style="display: flex; gap: 10px;">
-      <button class="btn-accion btn-guardar" style="background: linear-gradient(135deg, #10b981, #059669);" (click)="exportarAExcel()">
-        <i class="fas fa-file-excel"></i> Exportar a Excel
+    <div class="acciones-header">
+      <button class="btn-accion btn-guardar" style="background:linear-gradient(135deg,#059669,#10b981); border-color:rgba(16,185,129,0.4);" (click)="exportarAExcel()">
+        <i class="fas fa-file-excel"></i> Excel
       </button>
-      <button class="btn-accion btn-guardar" (click)="abrirModal('agregar')" *ngIf="authService.hasRole(['Admin', 'Almacenista', 'SuperUsuario'])">
-        <i class="fas fa-plus-circle"></i> Agregar Insumo
+      <button class="btn-accion btn-guardar" (click)="abrirModal('agregar')"
+              *ngIf="authService.hasRole(['Admin','Almacenista','SuperUsuario'])">
+        <i class="fas fa-plus"></i> Nuevo Insumo
       </button>
     </div>
   </div>
 
   <div class="container-body">
-    <div class="row mb-4">
-      <div class="col-md-6 form-group">
-        <label class="text-muted"><i class="fas fa-search"></i> Búsqueda Rápida</label>
-        <input type="text" class="form-control" placeholder="Buscar por nombre o marca..." 
-               [(ngModel)]="terminoBusqueda" (ngModelChange)="onFiltroChange()">
+    <!-- Filtros -->
+    <div class="filtros-bar">
+      <div class="filtro-item">
+        <label><i class="fas fa-search" style="margin-right:4px;"></i> Búsqueda</label>
+        <div class="input-icon-wrap">
+          <i class="fas fa-search input-icon"></i>
+          <input type="text" class="form-control" placeholder="Nombre, marca…"
+                 [(ngModel)]="terminoBusqueda" (ngModelChange)="onFiltroChange()">
+        </div>
       </div>
-      <div class="col-md-6 form-group">
-        <label class="text-muted"><i class="fas fa-filter"></i> Filtrar por Tipo</label>
+      <div class="filtro-item">
+        <label><i class="fas fa-filter" style="margin-right:4px;"></i> Tipo de Insumo</label>
         <select class="form-control" [(ngModel)]="filtroTipo" (change)="onFiltroChange()">
-          <option value="">Todos los Tipos</option>
+          <option value="">Todos los tipos</option>
           <option *ngFor="let tipo of tiposDeInsumo" [value]="tipo">{{ tipo }}</option>
         </select>
       </div>
     </div>
 
-    <div class="contador-resultados text-muted mb-3">
-      <i class="fas fa-list-ul"></i> Mostrando <strong>{{ totalItems }}</strong> insumos encontrados
+    <!-- Contador -->
+    <div class="contador-resultados">
+      <i class="fas fa-database"></i>
+      <strong>{{ totalItems }}</strong> insumos encontrados
     </div>
 
+    <!-- Tabla -->
     <div class="tabla-responsive-wrapper">
       <table class="tabla-usuarios">
         <thead>
           <tr>
-            <th style="cursor: pointer;" (click)="onSort('nombre')">
-              Nombre <i class="fas" *ngIf="sortField === 'nombre'" [ngClass]="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+            <th (click)="onSort('nombre')" style="cursor:pointer;">
+              Insumo
+              <i class="fas" *ngIf="sortField==='nombre'" [ngClass]="sortDirection==='asc'?'fa-sort-up':'fa-sort-down'"></i>
             </th>
-            <th style="cursor: pointer;" (click)="onSort('marca')">
-              Marca <i class="fas" *ngIf="sortField === 'marca'" [ngClass]="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+            <th (click)="onSort('tipo_insumo')" style="cursor:pointer;">
+              Tipo
+              <i class="fas" *ngIf="sortField==='tipo_insumo'" [ngClass]="sortDirection==='asc'?'fa-sort-up':'fa-sort-down'"></i>
             </th>
-            <th style="cursor: pointer;" (click)="onSort('tipo_insumo')">
-              Tipo <i class="fas" *ngIf="sortField === 'tipo_insumo'" [ngClass]="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+            <th class="text-center" (click)="onSort('stock_actual')" style="cursor:pointer;">
+              Stock
+              <i class="fas" *ngIf="sortField==='stock_actual'" [ngClass]="sortDirection==='asc'?'fa-sort-up':'fa-sort-down'"></i>
             </th>
-            <th class="text-center" style="cursor: pointer;" (click)="onSort('stock_actual')">
-              Stock <i class="fas" *ngIf="sortField === 'stock_actual'" [ngClass]="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+            <th class="text-center" (click)="onSort('unidad_medida')" style="cursor:pointer;">
+              Unidad
+              <i class="fas" *ngIf="sortField==='unidad_medida'" [ngClass]="sortDirection==='asc'?'fa-sort-up':'fa-sort-down'"></i>
             </th>
-            <th class="text-center" style="cursor: pointer;" (click)="onSort('unidad_medida')">
-              Unidad <i class="fas" *ngIf="sortField === 'unidad_medida'" [ngClass]="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+            <th class="text-right" (click)="onSort('costo_unitario_promedio')" style="cursor:pointer;">
+              Costo Unit.
+              <i class="fas" *ngIf="sortField==='costo_unitario_promedio'" [ngClass]="sortDirection==='asc'?'fa-sort-up':'fa-sort-down'"></i>
             </th>
-            <th class="text-right" style="cursor: pointer;" (click)="onSort('costo_unitario_promedio')">
-              Costo Unit. <i class="fas" *ngIf="sortField === 'costo_unitario_promedio'" [ngClass]="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
-            </th>
-            <th class="text-center">Acciones</th>
+            <th class="text-center" *ngIf="authService.hasRole(['Admin','Almacenista','SuperUsuario'])">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let insumo of insumos | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }" class="fila-clickable">
-            
-            <td style="font-weight: 600; color: white;">{{ insumo.nombre }}</td>
-            <td style="color: #ccc;">{{ insumo.marca || '---' }}</td>
-            
+          <tr *ngFor="let ins of insumos | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }">
+
+            <!-- Nombre + marca -->
             <td>
-              <span class="badge" style="border: 1px solid rgba(255,255,255,0.2);" [ngClass]="{
-                  'badge-fluido': insumo.tipo_insumo === 'Fluido', 
-                  'badge-consumible': insumo.tipo_insumo === 'Consumible de Taller',
-                  'badge-limpieza': insumo.tipo_insumo === 'Limpieza',
-                  'badge-seguridad': insumo.tipo_insumo === 'Seguridad'
+              <div class="cell-nombre">
+                <span class="nombre-principal">{{ ins.nombre }}</span>
+                <span class="nombre-sub" *ngIf="ins.marca">{{ ins.marca }}</span>
+              </div>
+            </td>
+
+            <!-- Tipo chip -->
+            <td>
+              <span class="chip"
+                [ngClass]="{
+                  'chip-blue':   ins.tipo_insumo === 'Fluido',
+                  'chip-purple': ins.tipo_insumo === 'Consumible de Taller',
+                  'chip-green':  ins.tipo_insumo === 'Limpieza',
+                  'chip-amber':  ins.tipo_insumo === 'Seguridad',
+                  'chip-gray':   !['Fluido','Consumible de Taller','Limpieza','Seguridad'].includes(ins.tipo_insumo)
                 }">
-                {{ insumo.tipo_insumo }}
+                {{ ins.tipo_insumo }}
               </span>
             </td>
 
+            <!-- Stock con barra -->
             <td class="text-center">
-              <span class="badge" [ngClass]="{
-                  'badge-agotado': insumo.stock_actual <= 0,
-                  'badge-bajo': insumo.stock_actual > 0 && insumo.stock_actual <= insumo.stock_minimo,
-                  'badge-saludable': insumo.stock_actual > insumo.stock_minimo
-                }">
-                {{ insumo.stock_actual | number:'1.2-2' }}
-              </span>
+              <div class="stock-cell"
+                   [class.stock-ok]="ins.stock_actual > ins.stock_minimo"
+                   [class.stock-warn]="ins.stock_actual > 0 && ins.stock_actual <= ins.stock_minimo"
+                   [class.stock-zero]="ins.stock_actual <= 0">
+                <span class="stock-num">{{ ins.stock_actual | number:'1.0-1' }}</span>
+                <div class="stock-bar-track">
+                  <div class="stock-bar-fill"
+                       [style.width.%]="ins.stock_minimo > 0 ? (ins.stock_actual / (ins.stock_minimo * 2)) * 100 : 100">
+                  </div>
+                </div>
+              </div>
             </td>
-            
-            <td class="text-center"><small class="text-muted">{{ insumo.unidad_medida }}</small></td>
-            
-            <td class="text-right" style="color: #38bdf8; font-weight: bold; font-family: monospace; font-size: 1.05rem;">
-              <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
-                <span>{{ formatearMoneda(insumo.costo_unitario_promedio) }}</span>
-                <button *ngIf="authService.hasRole(['SuperUsuario'])" class="btn-accion" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 4px 8px; font-size: 0.75rem;" (click)="abrirModalEditarCosto(insumo)" title="Ajustar Costo">
-                  <i class="fas fa-edit"></i>
+
+            <!-- Unidad -->
+            <td class="text-center">
+              <span class="chip chip-gray">{{ ins.unidad_medida }}</span>
+            </td>
+
+            <!-- Costo -->
+            <td class="text-right">
+              <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px;">
+                <span class="price-cell">{{ formatearMoneda(ins.costo_unitario_promedio) }}</span>
+                <button *ngIf="authService.hasRole(['SuperUsuario'])" class="btn-icon btn-icon-blue"
+                        title="Ajustar costo" (click)="abrirModalEditarCosto(ins)">
+                  <i class="fas fa-pen"></i>
                 </button>
               </div>
             </td>
 
-            <td class="acciones text-center" *ngIf="authService.hasRole(['Admin', 'Almacenista', 'SuperUsuario'])">
-              <button class="btn-accion" style="background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 0.85rem; padding: 6px 10px;" (click)="abrirModal('editar', insumo)" title="Editar">
-                <i class="fas fa-edit"></i> Editar
-              </button>
-              <button class="btn-accion" style="background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.85rem; padding: 6px 10px;" (click)="abrirModalBorrar(insumo)" title="Eliminar">
-                <i class="fas fa-trash-alt"></i> Eliminar
-              </button>
+            <!-- Acciones -->
+            <td class="text-center" *ngIf="authService.hasRole(['Admin','Almacenista','SuperUsuario'])">
+              <div class="acciones-cell">
+                <button class="btn-icon btn-icon-amber" title="Editar" (click)="abrirModal('editar', ins)">
+                  <i class="fas fa-pen"></i>
+                </button>
+                <button class="btn-icon btn-icon-red" title="Eliminar" (click)="abrirModalBorrar(ins)">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
             </td>
           </tr>
+
           <tr *ngIf="insumos.length === 0">
-            <td colspan="7" class="empty-table-message text-center py-4 text-muted">
-              <i class="fas fa-search fa-2x mb-2 d-block"></i> No se encontraron insumos que coincidan con los filtros.
+            <td colspan="6">
+              <div class="empty-state">
+                <i class="fas fa-box-open"></i>
+                <p>No se encontraron insumos con los filtros aplicados.</p>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="pagination-controls mt-4">
-      <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente"></pagination-controls>
+    <div class="pagination-controls">
+      <pagination-controls (pageChange)="onPageChange($event)" previousLabel="Anterior" nextLabel="Siguiente">
+      </pagination-controls>
     </div>
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+<!-- ============================================================
+     MODAL AGREGAR / EDITAR — DRAWER LATERAL
+     ============================================================ -->
+<div class="modal-overlay modal-drawer" *ngIf="mostrarModal" (click)="cerrarModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>
-        <i class="fas" [ngClass]="modoEdicion ? 'fa-edit text-warning' : 'fa-plus-circle text-primary'"></i> 
-        {{ modoEdicion ? 'Editar Insumo' : 'Nuevo Insumo' }}
-      </h3>
+
+    <div class="modal-header" [ngClass]="modoEdicion ? 'accent-amber' : 'accent-blue'">
+      <div class="modal-title-group">
+        <div class="modal-icon-badge" [ngClass]="modoEdicion ? 'icon-badge-amber' : 'icon-badge-blue'">
+          <i class="fas" [ngClass]="modoEdicion ? 'fa-pen' : 'fa-plus'"></i>
+        </div>
+        <div>
+          <h3>{{ modoEdicion ? 'Editar Insumo' : 'Nuevo Insumo' }}</h3>
+          <small>{{ modoEdicion ? insumoSeleccionado.nombre : 'Complete los datos del insumo' }}</small>
+        </div>
+      </div>
       <button class="btn-cerrar" (click)="cerrarModal()">×</button>
     </div>
+
     <div class="modal-body">
-      <form (ngSubmit)="guardarInsumo()">
-        <div class="row">
-          <div class="col-md-8 form-group">
-            <label>Nombre del Insumo</label>
-            <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.nombre" name="nombre" required>
-          </div>
-          <div class="col-md-4 form-group">
-            <label>Marca</label>
-            <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.marca" name="marca">
-          </div>
-          <div class="col-md-12 form-group">
-            <label>Tipo de Insumo</label>
-            <select class="form-control" [(ngModel)]="insumoSeleccionado.tipo_insumo" name="tipo_insumo" required>
-              <option value="" disabled>Selecciona un tipo...</option>
-              <option *ngFor="let tipo of tiposDeInsumo" [value]="tipo">{{ tipo }}</option>
-            </select>
-          </div>
-          <div class="col-md-6 form-group">
-            <label>Unidad de Medida</label>
-            <input type="text" class="form-control" [(ngModel)]="insumoSeleccionado.unidad_medida" name="unidad_medida" placeholder="Ej. Litros, Pieza, Metro" required>
-          </div>
-          <div class="col-md-6 form-group">
-            <label>Stock Mínimo (Alerta)</label>
-            <input type="number" class="form-control" [(ngModel)]="insumoSeleccionado.stock_minimo" name="stock_minimo">
+      <form id="formInsumo" (ngSubmit)="guardarInsumo()">
+
+        <!-- Identificación -->
+        <div class="form-section">
+          <div class="form-section-title"><i class="fas fa-tag"></i> Identificación</div>
+          <div class="form-grid">
+            <div class="form-field" style="grid-column:1/-1;">
+              <label class="required">Nombre del Insumo</label>
+              <div class="input-icon-wrap">
+                <i class="fas fa-fill-drip input-icon"></i>
+                <input type="text" class="form-control" placeholder="Ej. Aceite Hidráulico ISO 46"
+                       [(ngModel)]="insumoSeleccionado.nombre" name="nombre" required>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Marca</label>
+              <div class="input-icon-wrap">
+                <i class="fas fa-industry input-icon"></i>
+                <input type="text" class="form-control" placeholder="Ej. Castrol, Mobil"
+                       [(ngModel)]="insumoSeleccionado.marca" name="marca">
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="required">Tipo de Insumo</label>
+              <select class="form-control" [(ngModel)]="insumoSeleccionado.tipo_insumo" name="tipo_insumo" required>
+                <option value="" disabled>Selecciona…</option>
+                <option *ngFor="let tipo of tiposDeInsumo" [value]="tipo">{{ tipo }}</option>
+              </select>
+            </div>
           </div>
         </div>
-        <div class="modal-footer mt-3 p-0 pt-3" style="background: transparent; border-top: none;">
-          <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
-          <button type="submit" class="btn-accion btn-guardar">
-            <i class="fas fa-save"></i> {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
-          </button>
+
+        <!-- Almacén -->
+        <div class="form-section">
+          <div class="form-section-title"><i class="fas fa-warehouse"></i> Almacén</div>
+          <div class="form-grid cols-2">
+            <div class="form-field">
+              <label class="required">Unidad de Medida</label>
+              <div class="input-icon-wrap">
+                <i class="fas fa-ruler input-icon"></i>
+                <input type="text" class="form-control" placeholder="Litros / Pieza / Metro"
+                       [(ngModel)]="insumoSeleccionado.unidad_medida" name="unidad_medida" required>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Stock Mínimo (Alerta)</label>
+              <div class="input-icon-wrap">
+                <i class="fas fa-exclamation-triangle input-icon"></i>
+                <input type="number" class="form-control" placeholder="0"
+                       [(ngModel)]="insumoSeleccionado.stock_minimo" name="stock_minimo">
+              </div>
+            </div>
+          </div>
         </div>
+
       </form>
     </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+      <button type="submit" form="formInsumo" class="btn-accion btn-guardar"
+              [style.background]="modoEdicion ? 'linear-gradient(135deg,#d97706,#f59e0b)' : null"
+              [style.border-color]="modoEdicion ? 'rgba(245,158,11,0.4)' : null">
+        <i class="fas" [ngClass]="modoEdicion ? 'fa-sync-alt' : 'fa-save'"></i>
+        {{ modoEdicion ? 'Actualizar' : 'Guardar Insumo' }}
+      </button>
+    </div>
   </div>
 </div>
 
+<!-- ============================================================
+     MODAL ELIMINAR
+     ============================================================ -->
 <div class="modal-overlay" *ngIf="mostrarModalBorrar" (click)="cerrarModalBorrar()">
   <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
-    <div class="modal-header header-error">
-      <h3><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h3>
-    </div>
-    <div class="modal-body text-center">
-      <p class="confirm-text" *ngIf="insumoABorrar">¿Estás seguro de eliminar <strong>{{ insumoABorrar.nombre }}</strong>?</p>
-      <p class="text-muted text-sm mt-2">Esta acción no se puede deshacer.</p>
-    </div>
-    <div class="modal-footer justify-content-center">
-      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBorrar()">Cancelar</button>
-      <button type="button" class="btn-accion" style="background: #ef4444; color: white;" (click)="confirmarEliminacion()"><i class="fas fa-trash-alt"></i> Sí, Eliminar</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" *ngIf="mostrarModalCosto" (click)="cerrarModalCosto()">
-  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
-    <div class="modal-header header-advertencia">
-      <h3><i class="fas fa-hand-holding-usd"></i> Ajuste Financiero</h3>
-      <button class="btn-cerrar" (click)="cerrarModalCosto()">×</button>
-    </div>
-    <div class="modal-body text-center">
-      <p class="text-muted mb-1">Insumo: <strong class="text-white">{{ insumoEditarCosto?.nombre }}</strong></p>
-      <p class="text-muted mb-3">Costo Actual: <strong style="color: #38bdf8;">{{ formatearMoneda(insumoEditarCosto?.costo_unitario_promedio || 0) }}</strong></p>
-
-      <div class="form-group text-left mt-4">
-        <label>Nuevo Costo Unitario Promedio</label>
-        <div style="position: relative;">
-          <span style="position: absolute; left: 15px; top: 12px; color: #38bdf8; font-weight: bold;">$</span>
-          <input type="number" class="form-control" style="padding-left: 30px; font-size: 1.2rem; font-weight: bold;" [(ngModel)]="nuevoCosto" min="0" step="0.01" placeholder="0.00" />
-        </div>
-        <small class="text-muted d-block mt-2">Vista previa: {{ formatearMoneda(nuevoCosto) }}</small>
+    <div class="modal-header accent-red">
+      <div class="modal-title-group">
+        <div class="modal-icon-badge icon-badge-red"><i class="fas fa-trash"></i></div>
+        <h3>Confirmar Eliminación</h3>
       </div>
     </div>
-    <div class="modal-footer justify-content-center">
-      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalCosto()">Cancelar</button>
-      <button type="button" class="btn-accion btn-guardar" (click)="guardarCosto()"><i class="fas fa-check"></i> Aplicar Costo</button>
+    <div class="modal-body">
+      <span class="confirm-icon">🗑️</span>
+      <p class="confirm-text" *ngIf="insumoABorrar">
+        ¿Eliminar <strong style="color:#f87171;">{{ insumoABorrar.nombre }}</strong>?
+      </p>
+      <p class="confirm-sub">Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBorrar()">Cancelar</button>
+      <button type="button" class="btn-accion" style="background:#dc2626; color:white; border:1px solid rgba(220,38,38,0.4);" (click)="confirmarEliminacion()">
+        <i class="fas fa-trash-alt"></i> Sí, Eliminar
+      </button>
     </div>
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()" style="z-index: 3000;">
+<!-- ============================================================
+     MODAL AJUSTE DE COSTO (Solo SuperUsuario)
+     ============================================================ -->
+<div class="modal-overlay" *ngIf="mostrarModalCosto" (click)="cerrarModalCosto()">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header accent-amber">
+      <div class="modal-title-group">
+        <div class="modal-icon-badge icon-badge-amber"><i class="fas fa-dollar-sign"></i></div>
+        <div>
+          <h3>Ajuste Financiero</h3>
+          <small>{{ insumoEditarCosto?.nombre }}</small>
+        </div>
+      </div>
+      <button class="btn-cerrar" (click)="cerrarModalCosto()">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.15); border-radius:10px; padding:14px; margin-bottom:18px; text-align:center;">
+        <div style="font-size:0.75rem; color:#475569; margin-bottom:4px;">Costo actual</div>
+        <div style="font-size:1.5rem; font-weight:700; color:#38bdf8; font-family:monospace;">
+          {{ formatearMoneda(insumoEditarCosto?.costo_unitario_promedio || 0) }}
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="required">Nuevo Costo Unitario</label>
+        <div class="input-icon-wrap">
+          <i class="fas fa-dollar-sign input-icon"></i>
+          <input type="number" class="form-control" style="font-size:1.15rem; font-weight:700; padding-left:34px;"
+                 [(ngModel)]="nuevoCosto" min="0" step="0.01" placeholder="0.00">
+        </div>
+        <small style="color:#475569; margin-top:6px; display:block;">Vista previa: {{ formatearMoneda(nuevoCosto) }}</small>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalCosto()">Cancelar</button>
+      <button type="button" class="btn-accion btn-guardar" style="background:linear-gradient(135deg,#d97706,#f59e0b); border-color:rgba(245,158,11,0.4);" (click)="guardarCosto()">
+        <i class="fas fa-check"></i> Aplicar Costo
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL NOTIFICACIÓN
+     ============================================================ -->
+<div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()" style="z-index:3000;">
   <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header"
-         [ngClass]="{
-           'header-exito': notificacion.tipo === 'exito',
-           'header-error': notificacion.tipo === 'error',
-           'header-advertencia': notificacion.tipo === 'advertencia'
-         }">
-      <h3>
-        <i class="fas"
-           [ngClass]="{
-             'fa-check-circle': notificacion.tipo === 'exito',
-             'fa-times-circle': notificacion.tipo === 'error',
-             'fa-exclamation-triangle': notificacion.tipo === 'advertencia'
-           }"></i>
-        {{ notificacion.titulo }}
-      </h3>
+         [ngClass]="{'header-exito':notificacion.tipo==='exito','header-error':notificacion.tipo==='error','header-advertencia':notificacion.tipo==='advertencia'}">
+      <div class="modal-title-group">
+        <div class="modal-icon-badge"
+             [ngClass]="{'icon-badge-green':notificacion.tipo==='exito','icon-badge-red':notificacion.tipo==='error','icon-badge-amber':notificacion.tipo==='advertencia'}">
+          <i class="fas" [ngClass]="{'fa-check':notificacion.tipo==='exito','fa-times':notificacion.tipo==='error','fa-exclamation':notificacion.tipo==='advertencia'}"></i>
+        </div>
+        <h3>{{ notificacion.titulo }}</h3>
+      </div>
     </div>
-    <div class="modal-body text-center">
+    <div class="modal-body text-center" style="padding:28px 22px;">
       <p class="confirm-text">{{ notificacion.mensaje }}</p>
     </div>
-    <div class="modal-footer justify-content-center">
+    <div class="modal-footer" style="justify-content:center;">
       <button class="btn-accion btn-guardar" (click)="cerrarModalNotificacion()">Entendido</button>
     </div>
   </div>
 </div>
-

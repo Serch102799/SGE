@@ -10,6 +10,8 @@ import {
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { addPdfFooter } from '../../../shared/utils/pdf-footer.util';
+import { ExportNotificationService } from '../../../shared/services/export-notification.service';
 
 // --- INTERFACES ---
 export interface Proveedor {
@@ -80,7 +82,8 @@ export class ProveedoresComponent implements OnInit {
   mostrarModalNotificacion = false;
   notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
 
-  constructor(private http: HttpClient, public authService: AuthService) { }
+  constructor(private http: HttpClient, public authService: AuthService, private exportNotif: ExportNotificationService) { }
+
 
   ngOnInit(): void {
     this.obtenerProveedores();
@@ -244,8 +247,9 @@ export class ProveedoresComponent implements OnInit {
     const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dataLimpia);
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Reporte_Compras');
-    XLSX.writeFile(wb, `Reporte_Compras_Proveedor_${new Date().getTime()}.xlsx`);
-    this.mostrarNotificacion('Éxito', 'El archivo Excel se descargó correctamente.', 'exito');
+    const filename = `Reporte_Compras_Proveedor_${new Date().getTime()}.xlsx`;
+    XLSX.writeFile(wb, filename);
+    this.exportNotif.showExcel(filename);
   }
 
   // 3. ACTUALIZA EXPORTAR PDF
@@ -291,8 +295,10 @@ export class ProveedoresComponent implements OnInit {
       autoTable(doc, { head: columnas, body: filas, startY: yPos, headStyles: { fillColor: [41, 128, 185] } });
     }
 
-    doc.save(`Compras_Proveedor_${new Date().getTime()}.pdf`);
-    this.mostrarNotificacion('Éxito', 'El archivo PDF se descargó correctamente.', 'exito');
+    const filename = `Compras_Proveedor_${new Date().getTime()}.pdf`;
+    addPdfFooter(doc, 'Gestión de Proveedores');
+    doc.save(filename);
+    this.exportNotif.showPdf(filename);
   }
 
   private postGuardado(mensaje: string) {

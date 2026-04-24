@@ -11,6 +11,8 @@ import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { addPdfFooter } from '../../../shared/utils/pdf-footer.util';
+import { ExportNotificationService } from '../../../shared/services/export-notification.service';
 
 // --- Interfaces ---
 export interface Salida {
@@ -92,7 +94,7 @@ export class SalidasComponent implements OnInit, OnDestroy {
   mostrarModalNotificacion = false;
   notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
 
-  constructor(private http: HttpClient, private router: Router, public authService: AuthService) {
+  constructor(private http: HttpClient, private router: Router, public authService: AuthService, private exportNotif: ExportNotificationService) {
     this.filteredRefacciones$ = this.refaccionControl.valueChanges.pipe(
       startWith(''),
       debounceTime(400),
@@ -253,8 +255,10 @@ export class SalidasComponent implements OnInit, OnDestroy {
 
         const wb: XLSX.WorkBook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Reporte Salidas');
-        XLSX.writeFile(wb, `Salidas_Detalladas_${new Date().toISOString().slice(0, 10)}.xlsx`);
-        this.mostrarNotificacion('Éxito', 'Excel generado correctamente.', 'exito');
+        const filename = `Salidas_Detalladas_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        XLSX.writeFile(wb, filename);
+        this.exportNotif.showExcel(filename);
+
       },
       error: () => this.mostrarNotificacion('Error', 'No se pudo generar el reporte.', 'error')
     });
@@ -334,8 +338,11 @@ export class SalidasComponent implements OnInit, OnDestroy {
           doc.setDrawColor(200); doc.line(14, yPos - 5, 196, yPos - 5);
         });
 
-        doc.save(`Salidas_Reporte_${new Date().toISOString().slice(0,10)}.pdf`);
-        this.mostrarNotificacion('Éxito', 'PDF generado correctamente.', 'exito');
+        const filename = `Salidas_Reporte_${new Date().toISOString().slice(0,10)}.pdf`;
+        addPdfFooter(doc, 'Salidas de Almacén');
+        doc.save(filename);
+        this.exportNotif.showPdf(filename);
+
       },
       error: () => this.mostrarNotificacion('Error', 'No se pudo generar el PDF.', 'error')
     });

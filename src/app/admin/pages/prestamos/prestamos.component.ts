@@ -10,6 +10,8 @@ import { environment } from '../../../../environments/environments';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { addPdfFooter } from '../../../shared/utils/pdf-footer.util';
+import { ExportNotificationService } from '../../../shared/services/export-notification.service';
 
 interface PrestamoActivo {
   id_prestamo: number;
@@ -84,7 +86,7 @@ export class PrestamosComponent implements OnInit {
   mostrarModalNotificacion = false;
   notificacion = { titulo: '', mensaje: '', tipo: 'exito' as 'exito' | 'error' | 'advertencia' };
 
-  constructor(private http: HttpClient, public authService: AuthService) {
+  constructor(private http: HttpClient, public authService: AuthService, private exportNotif: ExportNotificationService) {
     this.filteredItems$ = this.itemControl.valueChanges.pipe(
       startWith(''), debounceTime(300), distinctUntilChanged(),
       switchMap(val => this._buscarItem(val || ''))
@@ -208,8 +210,9 @@ export class PrestamosComponent implements OnInit {
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, `Prestamos_${this.vistaActual}`);
     
-    XLSX.writeFile(wb, `Reporte_Prestamos_${this.vistaActual}_${new Date().getTime()}.xlsx`);
-    this.mostrarNotificacion('Exportación Exitosa', 'El archivo Excel se ha descargado.', 'exito');
+    const filename = `Reporte_Prestamos_${this.vistaActual}_${new Date().getTime()}.xlsx`;
+    XLSX.writeFile(wb, filename);
+    this.exportNotif.showExcel(filename);
   }
 
   // 🚀 --- Exportar a PDF (AHORA CON TOTALES EN VERDE) ---
@@ -278,8 +281,10 @@ export class PrestamosComponent implements OnInit {
       styles: { fontSize: 9 }
     });
 
-    doc.save(`Reporte_Prestamos_${this.vistaActual}_${new Date().getTime()}.pdf`);
-    this.mostrarNotificacion('Exportación Exitosa', 'El archivo PDF se ha descargado.', 'exito');
+    const filename = `Reporte_Prestamos_${this.vistaActual}_${new Date().getTime()}.pdf`;
+    addPdfFooter(doc, 'Préstamos de Pañol');
+    doc.save(filename);
+    this.exportNotif.showPdf(filename);
   }
 
   // --- Resto de las funciones intactas (buscarItem, abrirModalNuevo, guardarPrestamo, etc.) ---

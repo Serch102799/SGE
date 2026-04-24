@@ -1,0 +1,247 @@
+/* ============================================
+   EXPORT TOAST — Contenedor global fijo
+   ============================================ */
+.toast-container {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  pointer-events: none;
+}
+
+/* ============================================
+   TOAST BASE
+   ============================================ */
+.export-toast {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 340px;
+  max-width: 420px;
+  padding: 18px 20px 18px 18px;
+  border-radius: 18px;
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+  pointer-events: all;
+  cursor: default;
+  animation: toastSlideIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(255,255,255,0.08);
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(120px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* ============================================
+   GLOW EFFECT — borde luminoso por tipo
+   ============================================ */
+.toast-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+/* PDF — rojo intenso */
+.toast-pdf {
+  background: linear-gradient(135deg, rgba(20, 8, 8, 0.95) 0%, rgba(30, 10, 10, 0.98) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+.toast-pdf .toast-glow {
+  background: radial-gradient(ellipse at 20% 50%, rgba(239, 68, 68, 0.6), transparent 60%);
+  opacity: 1;
+}
+.toast-pdf .toast-icon-wrap { color: #ef4444; }
+.toast-pdf .toast-progress-bar {
+  background: linear-gradient(90deg, #ef4444, #b91c1c);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.7);
+}
+.toast-pdf .toast-icon-ring {
+  border-color: rgba(239, 68, 68, 0.3);
+  animation: ringPulse 2s ease-in-out infinite;
+  --ring-color: rgba(239, 68, 68, 0.4);
+}
+
+/* EXCEL — verde intenso */
+.toast-excel {
+  background: linear-gradient(135deg, rgba(8, 20, 10, 0.95) 0%, rgba(10, 30, 12, 0.98) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+.toast-excel .toast-glow {
+  background: radial-gradient(ellipse at 20% 50%, rgba(34, 197, 94, 0.6), transparent 60%);
+  opacity: 1;
+}
+.toast-excel .toast-icon-wrap { color: #22c55e; }
+.toast-excel .toast-progress-bar {
+  background: linear-gradient(90deg, #22c55e, #15803d);
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.7);
+}
+.toast-excel .toast-icon-ring {
+  border-color: rgba(34, 197, 94, 0.3);
+  --ring-color: rgba(34, 197, 94, 0.4);
+}
+
+/* ERROR */
+.toast-error {
+  background: linear-gradient(135deg, rgba(20, 8, 8, 0.95) 0%, rgba(30, 10, 10, 0.98) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+.toast-error .toast-icon-wrap { color: #ef4444; }
+.toast-error .toast-progress-bar { background: #ef4444; }
+.toast-error .toast-icon-ring { --ring-color: rgba(239, 68, 68, 0.4); }
+
+/* WARNING */
+.toast-warning {
+  background: linear-gradient(135deg, rgba(20, 15, 5, 0.95) 0%, rgba(30, 20, 5, 0.98) 100%);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+}
+.toast-warning .toast-icon-wrap { color: #eab308; }
+.toast-warning .toast-progress-bar {
+  background: linear-gradient(90deg, #eab308, #ca8a04);
+  box-shadow: 0 0 10px rgba(234, 179, 8, 0.6);
+}
+.toast-warning .toast-icon-ring { --ring-color: rgba(234, 179, 8, 0.4); }
+
+/* SUCCESS */
+.toast-success {
+  background: linear-gradient(135deg, rgba(8, 15, 20, 0.95) 0%, rgba(10, 20, 30, 0.98) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+.toast-success .toast-icon-wrap { color: #3b82f6; }
+.toast-success .toast-progress-bar {
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+}
+.toast-success .toast-icon-ring { --ring-color: rgba(59, 130, 246, 0.4); }
+
+/* ============================================
+   ICON
+   ============================================ */
+.toast-icon-wrap {
+  flex-shrink: 0;
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-icon-wrap svg {
+  width: 26px;
+  height: 26px;
+  z-index: 2;
+  position: relative;
+  filter: drop-shadow(0 0 6px currentColor);
+  animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.toast-icon-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--ring-color, rgba(255,255,255,0.2));
+  animation: ringPulse 2s ease-in-out infinite;
+}
+
+@keyframes ringPulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 0.1; }
+}
+
+/* ============================================
+   BODY
+   ============================================ */
+.toast-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-title {
+  color: #f1f5f9;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 3px;
+  letter-spacing: 0.3px;
+}
+
+.toast-message {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================
+   PROGRESS BAR
+   ============================================ */
+.toast-progress-track {
+  margin-top: 10px;
+  height: 3px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.toast-progress-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.05s linear;
+}
+
+/* ============================================
+   CLOSE BUTTON
+   ============================================ */
+.toast-close {
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
+  padding: 0;
+  align-self: flex-start;
+}
+
+.toast-close:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.toast-close svg {
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 480px) {
+  .toast-container { right: 12px; bottom: 12px; }
+  .export-toast { min-width: calc(100vw - 24px); }
+}

@@ -8,6 +8,8 @@ import { environment } from '../../../../environments/environments';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { addPdfFooter } from '../../../shared/utils/pdf-footer.util';
+import { ExportNotificationService } from '../../../shared/services/export-notification.service';
 
 // Interfaz para la lista de entradas
 export interface Entrada {
@@ -85,7 +87,8 @@ export class EntradasComponent implements OnInit, OnDestroy {
     items: [] 
   };
 
-  constructor(private http: HttpClient, private router: Router, public authService: AuthService) { }
+  constructor(private http: HttpClient, private router: Router, public authService: AuthService, private exportNotif: ExportNotificationService) { }
+
 
   ngOnInit(): void {
     this.revisarNotificaciones();
@@ -398,8 +401,10 @@ export class EntradasComponent implements OnInit, OnDestroy {
         const wb: XLSX.WorkBook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Reporte Detallado');
         const fecha = new Date().toISOString().slice(0, 10);
-        XLSX.writeFile(wb, `Entradas_Detalladas_${fecha}.xlsx`);
-        this.mostrarNotificacion('Éxito', 'Reporte descargado correctamente.', 'exito');
+        const filename = `Entradas_Detalladas_${fecha}.xlsx`;
+        XLSX.writeFile(wb, filename);
+        this.exportNotif.showExcel(filename);
+
       },
       error: (err) => {
         if (err.message === 'No hay datos para exportar') {
@@ -491,8 +496,11 @@ export class EntradasComponent implements OnInit, OnDestroy {
         });
 
         const fecha = new Date().toISOString().slice(0, 10);
-        doc.save(`Reporte_Entradas_${fecha}.pdf`);
-        this.mostrarNotificacion('Éxito', 'PDF generado correctamente.', 'exito');
+        const filename = `Reporte_Entradas_${fecha}.pdf`;
+        addPdfFooter(doc, 'Entradas de Almacén');
+        doc.save(filename);
+        this.exportNotif.showPdf(filename);
+
       },
       error: (err) => {
         console.error(err);
