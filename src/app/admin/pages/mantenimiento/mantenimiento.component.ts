@@ -33,13 +33,36 @@ export class MantenimientoComponent implements OnInit {
   futuros: any[] = [];
   completados: any[] = [];
 
+  // Buscador de servicios
+  terminoBusqueda: string = '';
+
+  get filtradosUrgentes() {
+    return this.urgentes.filter(s => s.economico.toString().toLowerCase().includes(this.terminoBusqueda.toLowerCase()) || s.alerta.toLowerCase().includes(this.terminoBusqueda.toLowerCase()));
+  }
+  get filtradosEsteMes() {
+    return this.esteMes.filter(s => s.economico.toString().toLowerCase().includes(this.terminoBusqueda.toLowerCase()) || s.alerta.toLowerCase().includes(this.terminoBusqueda.toLowerCase()));
+  }
+  get filtradosFuturos() {
+    return this.futuros.filter(s => s.economico.toString().toLowerCase().includes(this.terminoBusqueda.toLowerCase()) || s.alerta.toLowerCase().includes(this.terminoBusqueda.toLowerCase()));
+  }
+  get filtradosCompletados() {
+    return this.completados.filter(s => s.economico.toString().toLowerCase().includes(this.terminoBusqueda.toLowerCase()) || (s.observaciones || '').toLowerCase().includes(this.terminoBusqueda.toLowerCase()));
+  }
+
+
   // Variables para Modales
   modalActivo: string = '';
   servicioSeleccionado: any = null;
+  tipoServicioCalculado: string = 'Mantenimiento Preventivo Normal';
   formData: any = {};
+
 
   mostrarModalNotificacion = false;
   notificacion = { titulo: '', mensaje: '', tipo: 'advertencia' };
+
+  // Variables para Modal de Confirmación
+  mostrarModalConfirmacion = false;
+  servicioAConfirmar: any = null;
 
   autobusControl = new FormControl<any>('');
   filteredAutobuses$!: Observable<any[]>;
@@ -233,6 +256,40 @@ export class MantenimientoComponent implements OnInit {
     this.formData = { id_autobus: null, fecha_ultimo_servicio: new Date().toISOString().split('T')[0], km_ultimo_servicio: 0, observaciones: 'Registro inicial' };
   }
 
+  // ==========================================
+  // LÓGICA DE MANTENIMIENTO DE OPORTUNIDAD
+  // ==========================================
+  iniciarRegistroServicio(servicio: any) {
+    const kmActual = parseFloat(servicio.km_actual_bus) || 0;
+
+    // Obtenemos el KM del último servicio. Si tu backend no lo manda directo, 
+    // lo calculamos restando los 30k al próximo servicio proyectado.
+    const kmUltimo = parseFloat(servicio.km_ultimo_servicio) || (parseFloat(servicio.km_proximo_servicio) - 30000);
+    const kmRecorridos = kmActual - kmUltimo;
+
+    // Si recorrió menos de 27,000 km, lanzamos la advertencia con el modal personalizado
+    if (kmRecorridos >= 0 && kmRecorridos < 27000) {
+      this.servicioAConfirmar = servicio;
+      this.mostrarModalConfirmacion = true;
+    } else {
+      // Si ya pasó los 27k, es un servicio totalmente normal
+      this.tipoServicioCalculado = 'Mantenimiento Preventivo Normal';
+      this.abrirModalCompletar(servicio);
+    }
+  }
+
+  confirmarAdelanto() {
+    this.tipoServicioCalculado = 'Mantenimiento de Oportunidad';
+    this.mostrarModalConfirmacion = false;
+    this.abrirModalCompletar(this.servicioAConfirmar);
+    this.servicioAConfirmar = null;
+  }
+
+  cancelarAdelanto() {
+    this.mostrarModalConfirmacion = false;
+    this.servicioAConfirmar = null;
+  }
+
   abrirModalCompletar(servicio: any) {
     this.servicioSeleccionado = servicio; this.modalActivo = 'completar';
     this.formData.fecha_realizado = new Date().toISOString().split('T')[0];
@@ -310,7 +367,8 @@ export class MantenimientoComponent implements OnInit {
       km_realizado: this.formData.km_realizado,
       fecha_realizado: this.formData.fecha_realizado,
       observaciones: this.formData.observaciones,
-      id_salida_almacen: idSalidaGenerada
+      id_salida_almacen: idSalidaGenerada,
+      tipo_servicio: this.tipoServicioCalculado
     };
 
     this.http.post(`${this.apiUrl}/${this.servicioSeleccionado.id_servicio}/completar`, payload).subscribe({
