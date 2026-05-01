@@ -1,4 +1,4 @@
-﻿<div class="form-container mt-4 mb-5" style="max-width: 98%;">
+<div class="form-container mt-4 mb-5" style="max-width: 98%;">
   <div class="container-header">
     <h2><i class="fas fa-recycle"></i> Gestión de Refacciones Usadas</h2>
     <div class="header-actions">
@@ -96,7 +96,10 @@
       
       <div class="kanban-column col-yonque">
         <div class="column-header">
-          <h3>🟤 Yonque (Bajas) <span class="badge">{{ yonque.length }}</span></h3>
+          <h3>
+            <div><i class="fas fa-box-open" style="color: #a8a29e; margin-right: 8px;"></i> Yonque (Bajas)</div>
+            <span class="badge">{{ yonque.length }}</span>
+          </h3>
         </div>
         <div class="column-body">
           <div class="kanban-card" *ngFor="let pieza of yonque">
@@ -113,7 +116,10 @@
 
       <div class="kanban-column col-reparacion">
         <div class="column-header">
-          <h3>🟡 En Reparación <span class="badge">{{ enReparacion.length }}</span></h3>
+          <h3>
+            <div><i class="fas fa-tools" style="color: #fbbf24; margin-right: 8px;"></i> En Reparación</div>
+            <span class="badge">{{ enReparacion.length }}</span>
+          </h3>
         </div>
         <div class="column-body">
           <div class="kanban-card" *ngFor="let pieza of enReparacion">
@@ -129,7 +135,10 @@
 
       <div class="kanban-column col-disponible">
         <div class="column-header">
-          <h3>🟢 Stock Recuperado <span class="badge">{{ disponibles.length }}</span></h3>
+          <h3>
+            <div><i class="fas fa-check-circle" style="color: #4ade80; margin-right: 8px;"></i> Stock Recuperado</div>
+            <span class="badge">{{ disponibles.length }}</span>
+          </h3>
         </div>
         <div class="column-body">
           <div class="kanban-card" *ngFor="let pieza of disponibles">
@@ -145,7 +154,10 @@
 
       <div class="kanban-column col-instalada">
         <div class="column-header">
-          <h3>🔵 Instaladas <span class="badge">{{ instaladas.length }}</span></h3>
+          <h3>
+            <div><i class="fas fa-bus" style="color: #38bdf8; margin-right: 8px;"></i> Instaladas</div>
+            <span class="badge">{{ instaladas.length }}</span>
+          </h3>
         </div>
         <div class="column-body">
           <div class="kanban-card opacity-75" *ngFor="let pieza of instaladas">

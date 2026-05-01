@@ -1,4 +1,4 @@
-﻿:host {
+:host {
   display: block;
   padding: 40px 20px;
   background-color: var(--bg-dark-main); /* Un fondo oscuro sÃ³lido para el dashboard */
@@ -586,8 +586,6 @@ td.stock-critico {
   justify-content: space-between;
   align-items: center;
   padding: 15px 25px;
-  margin-top: 25px;
-  margin-bottom: 35px; 
   border-radius: 12px;
   background: var(--bg-secondary); 
   border: 1px solid var(--border-color);
@@ -654,8 +652,203 @@ td.stock-critico {
   align-items: center;
   gap: 8px;
   transition: color 0.2s;
+  text-decoration: none;
 }
 
 .kpi-mantenimiento-banner:hover .banner-action {
   color: #7dd3fc;
+}
+
+.kpi-mantenimiento-banner.alerta-amarilla {
+  border-left-color: #f59e0b;
+}
+
+.alerta-amarilla .banner-icon { color: rgba(245, 158, 11, 0.3); }
+.alerta-amarilla .banner-value { color: #f59e0b; }
+
+.mantenimiento-grid {
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 15px; 
+  margin-top: 15px;
+  margin-bottom: 25px;
+}
+
+@media (max-width: 768px) {
+  .mantenimiento-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   WIDGET DE PROYECCIÓN OPERATIVA (FORECASTING)
+   ========================================================================== */
+.proyeccion-widget {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.7));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(56, 189, 248, 0.05);
+  overflow: hidden;
+  margin-bottom: 35px;
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.proyeccion-header {
+  padding: 20px 25px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.proyeccion-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #e2e8f0;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.proyeccion-header h3 i {
+  color: #38bdf8;
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));
+}
+
+.proyeccion-body {
+  padding: 25px;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 25px;
+}
+
+.resumen-predictivo {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stat-box-forecasting {
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-box-forecasting:hover {
+  transform: translateY(-3px);
+}
+
+.stat-box-forecasting::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 5px;
+}
+
+.stat-box-servicios::before { background: #38bdf8; box-shadow: 0 0 10px #38bdf8; }
+.stat-box-presupuesto::before { background: #f43f5e; box-shadow: 0 0 10px #f43f5e; }
+
+.stat-box-servicios:hover { box-shadow: 0 8px 20px rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.3); }
+.stat-box-presupuesto:hover { box-shadow: 0 8px 20px rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); }
+
+.stat-label-forecasting {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.stat-value-forecasting {
+  font-size: 2.2rem;
+  font-weight: 800;
+}
+
+.stat-value-servicios { color: #38bdf8; text-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+.stat-value-presupuesto { color: #f43f5e; text-shadow: 0 0 15px rgba(244, 63, 94, 0.4); }
+
+.lista-compras {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.lista-compras h4 {
+  color: #f8fafc;
+  font-size: 1.15rem;
+  margin: 0 0 20px 0;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 12px;
+}
+
+.lista-compras h4 i {
+  color: #fbbf24;
+  filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5));
+}
+
+.forecasting-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+.forecasting-table th {
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  padding: 0 15px 10px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.forecasting-table td {
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #e2e8f0;
+  font-size: 0.95rem;
+}
+
+.forecasting-table tr td:first-child { border-radius: 8px 0 0 8px; }
+.forecasting-table tr td:last-child { border-radius: 0 8px 8px 0; }
+
+.forecasting-table tr:hover td {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sugerencia-compra {
+  color: #fbbf24;
+  font-weight: 700;
+  background: rgba(251, 191, 36, 0.1);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  display: inline-block;
+}
+
+@media (max-width: 992px) {
+  .proyeccion-body {
+    grid-template-columns: 1fr;
+  }
 }

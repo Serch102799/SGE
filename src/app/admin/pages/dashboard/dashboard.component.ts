@@ -37,7 +37,15 @@ export class DashboardComponent implements OnInit {
   faCalendarAlt = faCalendarAlt;
   currentDate: Date = new Date();
   stats: DashboardStats | null = null;
-  serviciosPendientes: number = 0;
+  serviciosUrgentes: number = 0;
+  serviciosProximos: number = 0;
+
+  proyeccion: any = {
+    servicios_proyectados: 0,
+    gasto_estimado: 0,
+    compras_sugeridas: []
+  };
+  isLoadingProyeccion = true;
 
   private apiUrlStats = `${environment.apiUrl}/dashboard/stats`;
   private apiUrlKpis = `${environment.apiUrl}/reportes/dashboard-kpis`;
@@ -112,6 +120,7 @@ export class DashboardComponent implements OnInit {
     this.cargarKpisFinancieros();
     this.cargarKpiServicios();
     this.cargarTopAutobuses();
+    this.cargarProyeccion();
   }
 
   // ==========================================
@@ -134,11 +143,25 @@ export class DashboardComponent implements OnInit {
 
   cargarKpiServicios() {
     this.http.get<any>(`${environment.apiUrl}/servicios/kpi-pendientes`).subscribe({
-      next: (res) => { this.serviciosPendientes = res.pendientes || 0; },
+      next: (res) => {
+        this.serviciosUrgentes = res.urgentes || 0;
+        this.serviciosProximos = res.proximos || 0;
+      },
       error: (err) => console.error('Error al cargar KPI de servicios', err)
     });
   }
-
+  cargarProyeccion() {
+    this.http.get<any>(`${environment.apiUrl}/dashboard/proyeccion-compras`).subscribe({
+      next: (res) => {
+        this.proyeccion = res;
+        this.isLoadingProyeccion = false;
+      },
+      error: (err) => {
+        console.error('Error cargando proyecciones', err);
+        this.isLoadingProyeccion = false;
+      }
+    });
+  }
   cargarEstadisticas() {
     this.isLoading = true;
     this.http.get<DashboardStats>(this.apiUrlStats).subscribe({

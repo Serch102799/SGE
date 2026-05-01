@@ -15,10 +15,10 @@ interface Autobus { id_autobus: number; economico: string; kilometraje_ultima_ca
 interface Ruta { id_ruta: number; nombre_ruta: string; kilometraje_vuelta: number; vueltas_diarias_promedio?: number; }
 interface Ubicacion { id_ubicacion: number; nombre_ubicacion: string; }
 interface RutaRealizada { id_ruta: number; nombre_ruta: string; vueltas: number; kilometraje: number; }
-interface Rendimiento { 
-  modelo?: string; 
-  ruta?: string; 
-  bueno?: string | number; 
+interface Rendimiento {
+  modelo?: string;
+  ruta?: string;
+  bueno?: string | number;
   id_ruta?: number;
   nombre_ruta?: string;
   modelo_autobus?: string;
@@ -40,7 +40,7 @@ export class RegistroCargaCombustibleComponent implements OnInit {
   operadores: Operador[] = [];
   rutas: Ruta[] = [];
   ubicaciones: Ubicacion[] = [];
-  rendimientos: Rendimiento[] = []; // 👈 Nuevo catálogo de Rendimientos
+  rendimientos: Rendimiento[] = [];
 
   // --- Formulario Maestro ---
   cargaMaestro = {
@@ -53,7 +53,7 @@ export class RegistroCargaCombustibleComponent implements OnInit {
     motivo_desviacion: ''
   };
 
-  tipo_calculo: 'dias' | 'vueltas' = 'vueltas'; 
+  tipo_calculo: 'dias' | 'vueltas' = 'vueltas';
 
   autobusControl = new FormControl();
   operadorControl = new FormControl();
@@ -69,15 +69,15 @@ export class RegistroCargaCombustibleComponent implements OnInit {
 
   // --- Campos Calculados en Tiempo Real ---
   km_inicial: number | null = null;
-  modeloAutobusActual: string = ''; // 👈 Guardamos el modelo seleccionado
-  
+  modeloAutobusActual: string = '';
+
   km_recorridos: number = 0;
   km_esperados: number = 0;
   desviacion_km: number = 0;
   rendimiento_calculado: number = 0;
-  
-  litros_desviacion: number = 0; // 👈 NUEVO KPI DINÁMICO
-  
+
+  litros_desviacion: number = 0;
+
   umbral_km: number = 15;
 
   isSaving = false;
@@ -110,7 +110,7 @@ export class RegistroCargaCombustibleComponent implements OnInit {
 
   private _buscarApi(tipo: 'autobuses' | 'operadores', term: any): Observable<any[]> {
     const searchTerm = typeof term === 'string' ? term : term.economico || term.nombre_completo;
-    if (!searchTerm) return of([]); 
+    if (!searchTerm) return of([]);
     return this.http.get<any[]>(`${this.apiUrl}/${tipo}/buscar`, { params: { term: searchTerm } });
   }
 
@@ -120,7 +120,7 @@ export class RegistroCargaCombustibleComponent implements OnInit {
     const autobus = event.option.value as Autobus;
     this.cargaMaestro.id_autobus = autobus.id_autobus;
     this.km_inicial = autobus.kilometraje_ultima_carga;
-    this.modeloAutobusActual = autobus.modelo || 'Desconocido'; // 👈 Extraemos el modelo
+    this.modeloAutobusActual = autobus.modelo || 'Desconocido';
     this.recalcularValores();
   }
 
@@ -130,13 +130,12 @@ export class RegistroCargaCombustibleComponent implements OnInit {
   }
 
   cargarCatalogos() {
-    // 👈 Agregamos la petición de rendimientos al forkJoin
     const peticiones: [Observable<Ruta[]>, Observable<Ubicacion[]>, Observable<Rendimiento[]>] = [
       this.http.get<Ruta[]>(`${this.apiUrl}/rutas`),
       this.http.get<Ubicacion[]>(`${this.apiUrl}/ubicaciones`),
-      this.http.get<Rendimiento[]>(`${this.apiUrl}/rendimientos`) // Endpoint de tu tabla de rendimientos
+      this.http.get<Rendimiento[]>(`${this.apiUrl}/rendimientos`)
     ];
-    
+
     forkJoin(peticiones).subscribe({
       next: ([rutas, ubicaciones, rendimientos]) => {
         this.rutas = (rutas as any).data || rutas;
@@ -168,7 +167,7 @@ export class RegistroCargaCombustibleComponent implements OnInit {
 
   cambiarModoCalculo(nuevoModo: 'dias' | 'vueltas') {
     this.tipo_calculo = nuevoModo;
-    if (nuevoModo === 'dias') { this.rutas_realizadas = []; this.detalleRutaActual = { id_ruta: null, vueltas: 1 }; } 
+    if (nuevoModo === 'dias') { this.rutas_realizadas = []; this.detalleRutaActual = { id_ruta: null, vueltas: 1 }; }
     else { this.id_ruta_principal = null; this.dias_laborados = 1; this.rutaPrincipalSeleccionada = undefined; }
     this.recalcularValores();
   }
@@ -177,7 +176,7 @@ export class RegistroCargaCombustibleComponent implements OnInit {
   // 🧠 CEREBRO DE CÁLCULOS (TELEMETRÍA + RENDIMIENTOS)
   // ====================================================
   recalcularValores() {
-    if (this.tipo_calculo === 'dias') { this.recalcularValoresDias(); } 
+    if (this.tipo_calculo === 'dias') { this.recalcularValoresDias(); }
     else { this.recalcularValoresVueltas(); }
   }
 
@@ -192,43 +191,43 @@ export class RegistroCargaCombustibleComponent implements OnInit {
     this.calcularKPIsBase();
 
     let litrosIdealesTeoricos = 0;
-    
+
     // 🕵️‍♂️ LOG 1: ¿Qué autobús y catálogo tenemos?
-   /*  console.log('--- DEPURANDO CRUCE DE RENDIMIENTO ---');
-    console.log('Modelo Autobús Seleccionado:', this.modeloAutobusActual);
-    console.log('Catálogo de Rendimientos cargado:', this.rendimientos); */
+    /*  console.log('--- DEPURANDO CRUCE DE RENDIMIENTO ---');
+     console.log('Modelo Autobús Seleccionado:', this.modeloAutobusActual);
+     console.log('Catálogo de Rendimientos cargado:', this.rendimientos); */
 
     for (const r of this.rutas_realizadas) {
-       const kmRuta = r.kilometraje * r.vueltas;
-       
-       // 🕵️‍♂️ LOG 2: ¿Qué ruta estamos buscando?
+      const kmRuta = r.kilometraje * r.vueltas;
+
+      // 🕵️‍♂️ LOG 2: ¿Qué ruta estamos buscando?
       /*  console.log('Buscando configuración para Ruta:', r.nombre_ruta); */
 
-       // BÚSQUEDA A PRUEBA DE MAYÚSCULAS/ESPACIOS
-       const rendConfig = this.rendimientos.find(x => 
-           // Cruzamos por ID de ruta (más seguro) o por nombre por si acaso
-           (x.id_ruta === r.id_ruta || String(x.ruta || x.nombre_ruta).trim().toLowerCase() === String(r.nombre_ruta).trim().toLowerCase()) 
-           && 
-           // Cruzamos el modelo permitiendo ambos nombres de columna
-           String(x.modelo || x.modelo_autobus).trim().toLowerCase() === String(this.modeloAutobusActual).trim().toLowerCase()
-       );
-       
-       // 🕵️‍♂️ LOG 3: ¿Encontró la configuración?
-       /*  console.log('Resultado de la búsqueda (rendConfig):', rendConfig); */
+      // BÚSQUEDA A PRUEBA DE MAYÚSCULAS/ESPACIOS
+      const rendConfig = this.rendimientos.find(x =>
+        // Cruzamos por ID de ruta (más seguro) o por nombre por si acaso
+        (x.id_ruta === r.id_ruta || String(x.ruta || x.nombre_ruta).trim().toLowerCase() === String(r.nombre_ruta).trim().toLowerCase())
+        &&
+        // Cruzamos el modelo permitiendo ambos nombres de columna
+        String(x.modelo || x.modelo_autobus).trim().toLowerCase() === String(this.modeloAutobusActual).trim().toLowerCase()
+      );
 
-       const rendimientoBueno = rendConfig ? parseFloat(String(rendConfig.bueno || rendConfig.rendimiento_bueno)) : 3.5; 
-       /* console.log(`Aplicando Rendimiento: ${rendimientoBueno} km/L para ${r.nombre_ruta}`); */
-       
-       litrosIdealesTeoricos += (kmRuta / rendimientoBueno);
+      // 🕵️‍♂️ LOG 3: ¿Encontró la configuración?
+      /*  console.log('Resultado de la búsqueda (rendConfig):', rendConfig); */
+
+      const rendimientoBueno = rendConfig ? parseFloat(String(rendConfig.bueno || rendConfig.rendimiento_bueno)) : 3.5;
+      /* console.log(`Aplicando Rendimiento: ${rendimientoBueno} km/L para ${r.nombre_ruta}`); */
+
+      litrosIdealesTeoricos += (kmRuta / rendimientoBueno);
     }
 
     const rendimientoPromedioEsperado = litrosIdealesTeoricos > 0 ? (this.km_esperados / litrosIdealesTeoricos) : 3.5;
     const litrosIdealesReales = rendimientoPromedioEsperado > 0 ? (this.km_recorridos / rendimientoPromedioEsperado) : 0;
 
     if (this.cargaMaestro.litros_cargados && litrosIdealesReales > 0) {
-       this.litros_desviacion = this.cargaMaestro.litros_cargados - litrosIdealesReales;
+      this.litros_desviacion = this.cargaMaestro.litros_cargados - litrosIdealesReales;
     } else {
-       this.litros_desviacion = 0;
+      this.litros_desviacion = 0;
     }
   }
 
@@ -244,15 +243,15 @@ export class RegistroCargaCombustibleComponent implements OnInit {
     // 🚀 MAGIA: Cálculo de Desviación de Diésel (Días)
     if (this.rutaPrincipalSeleccionada && this.km_recorridos > 0) {
       // 🕵️‍♂️ BÚSQUEDA A PRUEBA DE COLUMNAS DE BD (MODO DÍAS)
-      const rendConfig = this.rendimientos.find(x => 
-        (x.id_ruta === this.id_ruta_principal || String(x.ruta || x.nombre_ruta).trim().toLowerCase() === String(this.rutaPrincipalSeleccionada?.nombre_ruta).trim().toLowerCase()) 
-        && 
+      const rendConfig = this.rendimientos.find(x =>
+        (x.id_ruta === this.id_ruta_principal || String(x.ruta || x.nombre_ruta).trim().toLowerCase() === String(this.rutaPrincipalSeleccionada?.nombre_ruta).trim().toLowerCase())
+        &&
         String(x.modelo || x.modelo_autobus).trim().toLowerCase() === String(this.modeloAutobusActual).trim().toLowerCase()
       );
-      
+
       const rendimientoBueno = rendConfig ? parseFloat(String(rendConfig.bueno || rendConfig.rendimiento_bueno)) : 3.5;
       const litrosIdealesReales = this.km_recorridos / rendimientoBueno;
-      
+
       if (this.cargaMaestro.litros_cargados) {
         this.litros_desviacion = this.cargaMaestro.litros_cargados - litrosIdealesReales;
       } else {
@@ -270,41 +269,41 @@ export class RegistroCargaCombustibleComponent implements OnInit {
       this.mostrarNotificacion('Datos Incompletos', 'Autobús, Ubicación, KM Final y Litros son requeridos.', 'error'); return;
     }
     if (this.tipo_calculo === 'dias' && (!this.id_ruta_principal || this.dias_laborados <= 0)) {
-        this.mostrarNotificacion('Datos Incompletos', 'Ruta Principal y Días Laborados son requeridos.', 'error'); return;
+      this.mostrarNotificacion('Datos Incompletos', 'Ruta Principal y Días Laborados son requeridos.', 'error'); return;
     } else if (this.tipo_calculo === 'vueltas' && this.rutas_realizadas.length === 0) {
-        this.mostrarNotificacion('Datos Incompletos', 'Debes agregar al menos una ruta.', 'error'); return;
+      this.mostrarNotificacion('Datos Incompletos', 'Debes agregar al menos una ruta.', 'error'); return;
     }
     if (Math.abs(this.desviacion_km) > this.umbral_km && !this.cargaMaestro.motivo_desviacion) {
-       this.mostrarNotificacion('Motivo Requerido', 'La desviación de kilometraje es alta. Por favor, escribe un motivo.', 'advertencia'); return;
+      this.mostrarNotificacion('Motivo Requerido', 'La desviación de kilometraje es alta. Por favor, escribe un motivo.', 'advertencia'); return;
     }
 
     const autobus = this.autobusControl.value;
     const operador = this.operadorControl.value;
     const ubicacion = this.ubicaciones.find(u => u.id_ubicacion === this.cargaMaestro.id_ubicacion);
-    
+
     let rutaTexto = '';
     if (this.tipo_calculo === 'dias') {
-        const ruta = this.rutas.find(r => r.id_ruta === this.id_ruta_principal);
-        rutaTexto = `${ruta?.nombre_ruta || 'N/A'} (${this.dias_laborados} días)`;
+      const ruta = this.rutas.find(r => r.id_ruta === this.id_ruta_principal);
+      rutaTexto = `${ruta?.nombre_ruta || 'N/A'} (${this.dias_laborados} días)`;
     } else {
-        rutaTexto = this.rutas_realizadas.map(r => `${r.nombre_ruta} (${r.vueltas})`).join(', ');
-        if (rutaTexto.length > 50) rutaTexto = rutaTexto.substring(0, 47) + '...';
+      rutaTexto = this.rutas_realizadas.map(r => `${r.nombre_ruta} (${r.vueltas})`).join(', ');
+      if (rutaTexto.length > 50) rutaTexto = rutaTexto.substring(0, 47) + '...';
     }
 
     this.datosConfirmacion = {
-        unidad: typeof autobus === 'object' ? autobus.economico : autobus,
-        operador: typeof operador === 'object' ? operador.nombre_completo : (operador || 'Sin asignar'),
-        ubicacion: ubicacion?.nombre_ubicacion || 'Desconocida', fecha: this.cargaMaestro.fecha_operacion,
-        litros: this.cargaMaestro.litros_cargados, km_anterior: this.km_inicial, km_actual: this.cargaMaestro.km_final,
-        recorrido: this.km_recorridos, rendimiento: this.rendimiento_calculado, ruta: rutaTexto,
-        desviacion: this.desviacion_km, 
-        litros_desviacion: this.litros_desviacion // 👈 Mandamos el KPI al resumen
+      unidad: typeof autobus === 'object' ? autobus.economico : autobus,
+      operador: typeof operador === 'object' ? operador.nombre_completo : (operador || 'Sin asignar'),
+      ubicacion: ubicacion?.nombre_ubicacion || 'Desconocida', fecha: this.cargaMaestro.fecha_operacion,
+      litros: this.cargaMaestro.litros_cargados, km_anterior: this.km_inicial, km_actual: this.cargaMaestro.km_final,
+      recorrido: this.km_recorridos, rendimiento: this.rendimiento_calculado, ruta: rutaTexto,
+      desviacion: this.desviacion_km,
+      litros_desviacion: this.litros_desviacion // 👈 Mandamos el KPI al resumen
     };
     this.mostrarModalConfirmacion = true;
   }
 
   confirmarYGuardar() {
-    this.mostrarModalConfirmacion = false; 
+    this.mostrarModalConfirmacion = false;
     this.isSaving = true;
 
     let payload: any = {
@@ -320,7 +319,7 @@ export class RegistroCargaCombustibleComponent implements OnInit {
       error: err => { console.error('Error:', err); this.mostrarNotificacion('Error', err.error?.message || 'Error al guardar.', 'error'); this.isSaving = false; }
     });
   }
-  
+
   cancelarConfirmacion() { this.mostrarModalConfirmacion = false; }
   regresar() { this.location.back(); }
   mostrarNotificacion(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'advertencia' = 'advertencia') { this.notificacion = { titulo, mensaje, tipo }; this.mostrarModalNotificacion = true; }

@@ -1,4 +1,4 @@
-﻿<div class="dashboard-container">
+<div class="dashboard-container">
   <div class="welcome-header">
     <div class="welcome-text">
       <h2>¡Hola, {{ nombreUsuario }}! 👋</h2>
@@ -44,19 +44,103 @@
     </div>
 
     <!-- BANNER DE MANTENIMIENTO -->
-    <div class="kpi-mantenimiento-banner" [routerLink]="['/admin/mantenimiento']"
-      [ngClass]="{'alerta-roja': serviciosPendientes > 0, 'alerta-verde': serviciosPendientes === 0}">
-      <div class="banner-content">
-        <div class="banner-icon">
-          <i class="fas fa-tools"></i>
+    <!-- CONTENEDOR DE ALERTAS TALLER -->
+    <div class="mantenimiento-grid">
+
+      <!-- TARJETA URGENTES (Rojo) -->
+      <div class="kpi-mantenimiento-banner alerta-roja" routerLink="/admin/mantenimiento">
+        <div class="banner-content">
+          <i class="fas fa-exclamation-circle banner-icon"></i>
+          <div class="banner-text">
+            <span class="banner-value">{{ serviciosUrgentes }}</span>
+            <span class="banner-label">Servicios Urgentes / Atrasados</span>
+          </div>
         </div>
-        <div class="banner-text">
-          <span class="banner-value">{{ serviciosPendientes }}</span>
-          <span class="banner-label">Servicios Pendientes / Atrasados</span>
+        <div class="banner-action">
+          <span>Ir a la Agenda</span>
+          <i class="fas fa-arrow-right"></i>
         </div>
       </div>
-      <div class="banner-action">
-        Ir a la Agenda Taller <i class="fas fa-arrow-right"></i>
+
+      <!-- TARJETA PRÓXIMOS (Amarillo/Naranja) -->
+      <div class="kpi-mantenimiento-banner alerta-amarilla" routerLink="/admin/mantenimiento">
+        <div class="banner-content">
+          <i class="fas fa-clock banner-icon"></i>
+          <div class="banner-text">
+            <span class="banner-value">{{ serviciosProximos }}</span>
+            <span class="banner-label">Servicios Próximos (Mes)</span>
+          </div>
+        </div>
+        <div class="banner-action">
+          <span>Ver Proyecciones</span>
+          <i class="fas fa-arrow-right"></i>
+        </div>
+      </div>
+
+    </div>
+    <!-- WIDGET DE PROYECCIÓN (FORECASTING) -->
+    <div class="proyeccion-widget" *ngIf="!isLoadingProyeccion">
+      <div class="proyeccion-header">
+        <h3><i class="fas fa-magic"></i> Proyección Operativa (Próximos 30 días)</h3>
+        <p class="text-muted m-0"><small><i class="fas fa-info-circle"></i> Basado en el historial de consumos y agenda de taller.</small></p>
+      </div>
+
+      <div class="proyeccion-body">
+
+        <!-- Resumen Financiero y Servicios -->
+        <div class="resumen-predictivo">
+          <div class="stat-box-forecasting stat-box-servicios">
+            <span class="stat-label-forecasting">Servicios Agendados</span>
+            <div class="stat-value-forecasting stat-value-servicios">{{ proyeccion.servicios_proyectados }}</div>
+          </div>
+
+          <div class="stat-box-forecasting stat-box-presupuesto">
+            <span class="stat-label-forecasting">Presupuesto Requerido</span>
+            <div class="stat-value-forecasting stat-value-presupuesto">{{ proyeccion.gasto_estimado | currency:'MXN' }}</div>
+          </div>
+        </div>
+
+        <!-- Lista de Compras Inteligentes -->
+        <div class="lista-compras">
+          <h4>
+            <i class="fas fa-shopping-cart"></i> Compras Sugeridas Inteligentes
+          </h4>
+
+          <div *ngIf="proyeccion.compras_sugeridas.length === 0" class="empty-chart" style="height: auto; padding: 40px;">
+            <div class="text-center">
+              <i class="fas fa-shield-alt fa-3x text-success mb-3" style="opacity: 0.8; filter: drop-shadow(0 0 10px rgba(74,222,128,0.5));"></i>
+              <p style="font-size: 1.1rem; color: #cbd5e1; margin: 0;">Stock Óptimo</p>
+              <small class="text-muted">El almacén cuenta con suficientes insumos para cubrir las proyecciones del mes.</small>
+            </div>
+          </div>
+
+          <div class="table-responsive" *ngIf="proyeccion.compras_sugeridas.length > 0" style="background: transparent; border: none; overflow-x: auto;">
+            <table class="forecasting-table">
+              <thead>
+                <tr>
+                  <th style="text-align: left;">Artículo</th>
+                  <th style="text-align: center;">Stock Actual</th>
+                  <th style="text-align: center;">Se Requerirán</th>
+                  <th style="text-align: right;">Sugerencia de Compra</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of proyeccion.compras_sugeridas">
+                  <td>
+                    <strong>{{ item.articulo }}</strong> <br>
+                    <span class="badge" style="background: rgba(255,255,255,0.05); font-weight: 500; font-size: 0.75rem; margin-top: 4px;">{{ item.tipo }}</span>
+                  </td>
+                  <td style="text-align: center; color: #94a3b8;">{{ item.stock }}</td>
+                  <td style="text-align: center; font-weight: 600; color: #e2e8f0;">{{ item.requerido }}</td>
+                  <td style="text-align: right;">
+                    <span class="sugerencia-compra">+ {{ item.a_comprar }} uds.</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -226,4 +310,3 @@
 
   </div>
 </div>
-
