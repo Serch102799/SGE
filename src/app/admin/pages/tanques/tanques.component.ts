@@ -146,12 +146,18 @@ export class TanquesComponent implements OnInit {
 
   confirmarRecarga(): void {
     if (!this.tanqueARecargar || !this.litrosARecargar || this.litrosARecargar <= 0) {
-      this.mostrarNotificacion('Dato Inválido', 'Por favor, ingresa una cantidad de litros válida.');
+      this.mostrarNotificacion('Dato Inválido', 'Por favor, ingresa una cantidad de litros válida.', 'error');
       return;
     }
     if (!this.fechaRecarga) {
-      this.mostrarNotificacion('Fecha Requerida', 'Por favor, selecciona una fecha de operación.');
+      this.mostrarNotificacion('Fecha Requerida', 'Por favor, selecciona una fecha de operación.', 'error');
       return;
+    }
+
+    const nivelFuturo = parseFloat(this.tanqueARecargar.nivel_actual_litros.toString()) + parseFloat(this.litrosARecargar.toString());
+    if (nivelFuturo > this.tanqueARecargar.capacidad_litros) {
+       this.mostrarNotificacion('Capacidad Excedida', `La recarga excederá la capacidad del tanque (${this.tanqueARecargar.capacidad_litros} Lts).`, 'error');
+       return;
     }
 
     const url = `${this.apiUrl}/recargar/${this.tanqueARecargar.id_tanque}`;
@@ -212,12 +218,31 @@ export class TanquesComponent implements OnInit {
 
   guardarTraslado(): void {
     if (!this.traslado.id_tanque_origen || !this.traslado.id_tanque_destino || !this.traslado.litros_trasladados || this.traslado.litros_trasladados <= 0) {
-      this.mostrarNotificacion('Datos Incompletos', 'Completa todos los campos para realizar el traslado.');
+      this.mostrarNotificacion('Datos Incompletos', 'Completa todos los campos para realizar el traslado.', 'error');
+      return;
+    }
+    if (this.traslado.id_tanque_origen === this.traslado.id_tanque_destino) {
+      this.mostrarNotificacion('Datos Inválidos', 'El tanque de origen y destino no pueden ser el mismo.', 'error');
       return;
     }
     if (!this.traslado.fecha_operacion) {
-      this.mostrarNotificacion('Fecha Requerida', 'Por favor, selecciona una fecha de operación.');
+      this.mostrarNotificacion('Fecha Requerida', 'Por favor, selecciona una fecha de operación.', 'error');
       return;
+    }
+
+    const tanqueOrigen = this.tanques.find(t => t.id_tanque === this.traslado.id_tanque_origen);
+    if (tanqueOrigen && this.traslado.litros_trasladados > tanqueOrigen.nivel_actual_litros) {
+        this.mostrarNotificacion('Stock Insuficiente', `El tanque origen solo tiene ${tanqueOrigen.nivel_actual_litros} Lts disponibles.`, 'error');
+        return;
+    }
+
+    const tanqueDestino = this.tanques.find(t => t.id_tanque === this.traslado.id_tanque_destino);
+    if (tanqueDestino && this.traslado.litros_trasladados) {
+        const nivelFuturo = parseFloat(tanqueDestino.nivel_actual_litros.toString()) + parseFloat(this.traslado.litros_trasladados.toString());
+        if (nivelFuturo > tanqueDestino.capacidad_litros) {
+             this.mostrarNotificacion('Capacidad Excedida', `El traslado excederá la capacidad del tanque destino (${tanqueDestino.capacidad_litros} Lts).`, 'error');
+             return;
+        }
     }
 
     this.http.post(`${environment.apiUrl}/traslados`, this.traslado).subscribe({

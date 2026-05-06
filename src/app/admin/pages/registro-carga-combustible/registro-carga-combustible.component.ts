@@ -41,6 +41,7 @@ export class RegistroCargaCombustibleComponent implements OnInit {
   rutas: Ruta[] = [];
   ubicaciones: Ubicacion[] = [];
   rendimientos: Rendimiento[] = [];
+  tanques: any[] = [];
 
   // --- Formulario Maestro ---
   cargaMaestro = {
@@ -130,20 +131,38 @@ export class RegistroCargaCombustibleComponent implements OnInit {
   }
 
   cargarCatalogos() {
-    const peticiones: [Observable<Ruta[]>, Observable<Ubicacion[]>, Observable<Rendimiento[]>] = [
+    const peticiones: [Observable<Ruta[]>, Observable<Ubicacion[]>, Observable<Rendimiento[]>, Observable<any>] = [
       this.http.get<Ruta[]>(`${this.apiUrl}/rutas`),
       this.http.get<Ubicacion[]>(`${this.apiUrl}/ubicaciones`),
-      this.http.get<Rendimiento[]>(`${this.apiUrl}/rendimientos`)
+      this.http.get<Rendimiento[]>(`${this.apiUrl}/rendimientos`),
+      this.http.get<any>(`${this.apiUrl}/tanques`)
     ];
 
     forkJoin(peticiones).subscribe({
-      next: ([rutas, ubicaciones, rendimientos]) => {
+      next: ([rutas, ubicaciones, rendimientos, respuestaTanques]) => {
         this.rutas = (rutas as any).data || rutas;
         this.ubicaciones = (ubicaciones as any).data || ubicaciones;
         this.rendimientos = (rendimientos as any).data || rendimientos;
+        this.tanques = respuestaTanques.tanques || [];
       },
       error: () => this.mostrarNotificacion('Error de Carga', 'No se pudieron cargar los catálogos.', 'error')
     });
+  }
+
+  get tanqueNivelDisponible(): number | null {
+    if (!this.cargaMaestro.id_ubicacion) return null;
+    const tanquesUbicacion = this.tanques.filter(t => t.id_ubicacion === this.cargaMaestro.id_ubicacion);
+    if (tanquesUbicacion.length === 0) return null;
+    const tanquePrincipal = tanquesUbicacion.sort((a, b) => a.id_tanque - b.id_tanque)[0];
+    return tanquePrincipal ? tanquePrincipal.nivel_actual_litros : null;
+  }
+
+  get tanqueNombre(): string {
+     if (!this.cargaMaestro.id_ubicacion) return '';
+    const tanquesUbicacion = this.tanques.filter(t => t.id_ubicacion === this.cargaMaestro.id_ubicacion);
+    if (tanquesUbicacion.length === 0) return '';
+    const tanquePrincipal = tanquesUbicacion.sort((a, b) => a.id_tanque - b.id_tanque)[0];
+    return tanquePrincipal ? tanquePrincipal.nombre_tanque : '';
   }
 
   // --- MÉTODOS MODO VUELTAS ---
@@ -268,6 +287,12 @@ export class RegistroCargaCombustibleComponent implements OnInit {
     if (!this.cargaMaestro.id_autobus || !this.cargaMaestro.km_final || !this.cargaMaestro.litros_cargados || !this.cargaMaestro.id_ubicacion) {
       this.mostrarNotificacion('Datos Incompletos', 'Autobús, Ubicación, KM Final y Litros son requeridos.', 'error'); return;
     }
+
+    if (this.tanqueNivelDisponible !== null && this.cargaMaestro.litros_cargados > this.tanqueNivelDisponible) {
+        this.mostrarNotificacion('Stock Insuficiente', `El tanque principal de esta ubicación (${this.tanqueNombre}) solo tiene ${this.tanqueNivelDisponible.toFixed(2)} litros disponibles.`, 'error');
+        return;
+    }
+
     if (this.tipo_calculo === 'dias' && (!this.id_ruta_principal || this.dias_laborados <= 0)) {
       this.mostrarNotificacion('Datos Incompletos', 'Ruta Principal y Días Laborados son requeridos.', 'error'); return;
     } else if (this.tipo_calculo === 'vueltas' && this.rutas_realizadas.length === 0) {

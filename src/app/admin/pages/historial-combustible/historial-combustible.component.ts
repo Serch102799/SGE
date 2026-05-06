@@ -348,9 +348,9 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     };
 
     this.http.put(`${this.apiUrl}/${this.cargaEditando.id_carga}`, datosAActualizar).subscribe({
-      next: () => {
+      next: (res: any) => {
         this.guardandoEdicion = false;
-        alert('Carga actualizada exitosamente.');
+        alert(res.message || 'Carga actualizada exitosamente.');
         this.cerrarModalEditar();
         this.obtenerCargas();
       },
