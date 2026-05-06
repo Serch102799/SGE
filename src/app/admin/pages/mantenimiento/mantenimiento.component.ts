@@ -56,6 +56,7 @@ export class MantenimientoComponent implements OnInit {
   tipoServicioCalculado: string = 'Mantenimiento Preventivo Normal';
   formData: any = {};
 
+  huboCambioOdometro: boolean = false;
 
   mostrarModalNotificacion = false;
   notificacion = { titulo: '', mensaje: '', tipo: 'advertencia' };
@@ -297,6 +298,7 @@ export class MantenimientoComponent implements OnInit {
     this.detallesRefaccionesAAgregar = []; this.detallesInsumosAAgregar = [];
     this.refaccionControl.setValue(''); this.insumoControl.setValue('');
     this.formData = { km_realizado: servicio.km_actual_bus || 0, fecha_realizado: new Date().toISOString().split('T')[0], observaciones: `Servicio completado.` };
+    this.huboCambioOdometro = false;
   }
 
   cerrarModal() { this.modalActivo = ''; this.servicioSeleccionado = null; }
@@ -315,8 +317,9 @@ export class MantenimientoComponent implements OnInit {
   }
 
   guardarServicio() {
-    if (this.formData.km_realizado < this.servicioSeleccionado.km_ultimo_servicio) {
-      this.mostrarNotificacion('Error', 'El KM no puede ser menor al del último servicio.', 'error'); return;
+    if (!this.huboCambioOdometro && this.formData.km_realizado < this.servicioSeleccionado.km_ultimo_servicio) {
+      this.mostrarNotificacion('Error', 'El KM no puede ser menor al del último servicio (A menos que indiques un cambio de odómetro).', 'error');
+      return;
     }
 
     this.isSaving = true;
@@ -368,7 +371,8 @@ export class MantenimientoComponent implements OnInit {
       fecha_realizado: this.formData.fecha_realizado,
       observaciones: this.formData.observaciones,
       id_salida_almacen: idSalidaGenerada,
-      tipo_servicio: this.tipoServicioCalculado
+      tipo_servicio: this.tipoServicioCalculado,
+      cambio_odometro: this.huboCambioOdometro
     };
 
     this.http.post(`${this.apiUrl}/${this.servicioSeleccionado.id_servicio}/completar`, payload).subscribe({

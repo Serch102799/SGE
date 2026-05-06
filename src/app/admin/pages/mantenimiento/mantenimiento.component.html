@@ -11,7 +11,7 @@
           <p>Supervisión inteligente de la flotilla</p>
         </div>
       </div>
-      
+
       <div class="actions-area">
         <!-- Buscador Moderno -->
         <div class="search-premium">
@@ -24,7 +24,8 @@
           <button [class.active]="vistaActual === 'kanban'" (click)="cambiarVista('kanban')" title="Vista de Tablero">
             <i class="fas fa-th-large"></i>
           </button>
-          <button [class.active]="vistaActual === 'calendario'" (click)="cambiarVista('calendario')" title="Vista de Agenda">
+          <button [class.active]="vistaActual === 'calendario'" (click)="cambiarVista('calendario')"
+            title="Vista de Agenda">
             <i class="fas fa-list"></i>
           </button>
         </div>
@@ -49,7 +50,7 @@
        VISTA 1: TABLERO KANBAN REDISEÑADO
        ========================================== -->
   <div class="board-premium" *ngIf="vistaActual === 'kanban' && !isLoading">
-    
+
     <!-- COLUMNA URGENTES -->
     <div class="col-premium col-danger">
       <div class="col-header">
@@ -68,7 +69,7 @@
           <div class="card-alerta badge-soft-danger">
             <i class="fas fa-exclamation-triangle"></i> {{ s.alerta }}
           </div>
-          
+
           <div class="stats-grid mt-3">
             <div class="stat-box">
               <span class="stat-label">Actual</span>
@@ -81,7 +82,8 @@
           </div>
 
           <div class="card-date mt-2">
-            <i class="far fa-calendar-times"></i> Vence: <strong>{{ s.fecha_proximo_servicio | date:'dd/MMM/yyyy' }}</strong>
+            <i class="far fa-calendar-times"></i> Vence: <strong>{{ s.fecha_proximo_servicio | date:'dd/MMM/yyyy'
+              }}</strong>
           </div>
 
           <button class="btn-action-premium btn-danger-gradient mt-3" (click)="iniciarRegistroServicio(s)">
@@ -113,7 +115,7 @@
           <div class="card-alerta badge-soft-warning">
             <i class="fas fa-bell"></i> {{ s.alerta }}
           </div>
-          
+
           <!-- Barra de progreso de KM -->
           <div class="progress-section mt-3">
             <div class="progress-labels">
@@ -121,12 +123,14 @@
               <span class="text-muted">Faltan {{ s.km_proximo_servicio - s.km_actual_bus | number }} km</span>
             </div>
             <div class="progress-bar-bg">
-              <div class="progress-bar-fill fill-warning" [style.width.%]="(s.km_actual_bus / s.km_proximo_servicio) * 100"></div>
+              <div class="progress-bar-fill fill-warning"
+                [style.width.%]="(s.km_actual_bus / s.km_proximo_servicio) * 100"></div>
             </div>
           </div>
 
           <div class="card-date mt-2">
-            <i class="far fa-calendar-alt"></i> Prog: <strong>{{ s.fecha_proximo_servicio | date:'dd/MMM/yyyy' }}</strong>
+            <i class="far fa-calendar-alt"></i> Prog: <strong>{{ s.fecha_proximo_servicio | date:'dd/MMM/yyyy'
+              }}</strong>
           </div>
 
           <button class="btn-action-premium btn-warning-gradient mt-3" (click)="iniciarRegistroServicio(s)">
@@ -155,7 +159,7 @@
             <span class="bus-id"><i class="fas fa-bus-alt text-muted"></i> {{ s.economico }}</span>
             <span class="sticker-success">🟢 ÓPTIMO</span>
           </div>
-          
+
           <div class="stats-grid mt-3">
             <div class="stat-box">
               <span class="stat-label">Meta KM</span>
@@ -217,10 +221,12 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let s of filtradosUrgentes.concat(filtradosEsteMes)" class="tr-hover" [ngClass]="{'row-danger-bg': s.alerta.includes('Vencido')}">
+        <tr *ngFor="let s of filtradosUrgentes.concat(filtradosEsteMes)" class="tr-hover"
+          [ngClass]="{'row-danger-bg': s.alerta.includes('Vencido')}">
           <td>
             <div class="status-pill" [ngClass]="s.alerta.includes('Vencido') ? 'pill-danger' : 'pill-warning'">
-              <i class="fas" [ngClass]="s.alerta.includes('Vencido') ? 'fa-exclamation-triangle' : 'fa-bell'"></i> {{ s.alerta }}
+              <i class="fas" [ngClass]="s.alerta.includes('Vencido') ? 'fa-exclamation-triangle' : 'fa-bell'"></i> {{
+              s.alerta }}
             </div>
           </td>
           <td>
@@ -235,13 +241,14 @@
           <td style="min-width: 200px;">
             <div class="progress-wrapper">
               <div class="progress-text">
-                <span [class.text-danger]="s.km_actual_bus >= s.km_proximo_servicio">{{ s.km_actual_bus | number }} km</span>
+                <span [class.text-danger]="s.km_actual_bus >= s.km_proximo_servicio">{{ s.km_actual_bus | number }}
+                  km</span>
                 <span class="text-muted">/ {{ s.km_proximo_servicio | number }} km</span>
               </div>
               <div class="progress-bar-bg small-bar">
-                <div class="progress-bar-fill" 
-                     [ngClass]="s.alerta.includes('Vencido') ? 'fill-danger pulse-danger-bar' : 'fill-warning'"
-                     [style.width.%]="(s.km_actual_bus / s.km_proximo_servicio) * 100 > 100 ? 100 : (s.km_actual_bus / s.km_proximo_servicio) * 100">
+                <div class="progress-bar-fill"
+                  [ngClass]="s.alerta.includes('Vencido') ? 'fill-danger pulse-danger-bar' : 'fill-warning'"
+                  [style.width.%]="(s.km_actual_bus / s.km_proximo_servicio) * 100 > 100 ? 100 : (s.km_actual_bus / s.km_proximo_servicio) * 100">
                 </div>
               </div>
             </div>
@@ -252,15 +259,14 @@
             </div>
           </td>
           <td class="text-center">
-            <button class="btn-action-premium" 
-                    [ngClass]="s.alerta.includes('Vencido') ? 'btn-danger-gradient' : 'btn-warning-gradient'" 
-                    style="padding: 8px 15px; font-size: 0.85rem;"
-                    (click)="iniciarRegistroServicio(s)">
+            <button class="btn-action-premium"
+              [ngClass]="s.alerta.includes('Vencido') ? 'btn-danger-gradient' : 'btn-warning-gradient'"
+              style="padding: 8px 15px; font-size: 0.85rem;" (click)="iniciarRegistroServicio(s)">
               <i class="fas fa-wrench"></i> Completar
             </button>
           </td>
         </tr>
-        
+
         <tr *ngIf="filtradosUrgentes.length === 0 && filtradosEsteMes.length === 0">
           <td colspan="5" class="empty-table-state">
             <div class="empty-state-content">
@@ -292,15 +298,18 @@
 
       <div class="modal-body">
         <div class="alert-premium alert-warning">
-          <i class="fas fa-info-circle"></i> Ingresa los datos del ÚLTIMO servicio. El sistema sumará automáticamente 6 meses y 30,000 km.
+          <i class="fas fa-info-circle"></i> Ingresa los datos del ÚLTIMO servicio. El sistema sumará automáticamente 6
+          meses y 30,000 km.
         </div>
 
         <div class="form-group mb-3 mt-3">
           <label>Autobús <span class="text-danger">*</span></label>
           <mat-form-field appearance="outline" class="full-width dark-mat-field">
-            <input type="text" placeholder="Busca por económico..." matInput [formControl]="autobusControl" [matAutocomplete]="autoBus">
+            <input type="text" placeholder="Busca por económico..." matInput [formControl]="autobusControl"
+              [matAutocomplete]="autoBus">
           </mat-form-field>
-          <mat-autocomplete #autoBus="matAutocomplete" [displayWith]="displayAutobus" (optionSelected)="onAutobusSeleccionado($event)">
+          <mat-autocomplete #autoBus="matAutocomplete" [displayWith]="displayAutobus"
+            (optionSelected)="onAutobusSeleccionado($event)">
             <mat-option *ngFor="let bus of filteredAutobuses$ | async" [value]="bus">
               <i class="fas fa-bus text-muted"></i> {{ bus.economico }}
             </mat-option>
@@ -320,7 +329,8 @@
 
         <div class="form-group mt-3">
           <label>Observaciones Iniciales (Opcional)</label>
-          <textarea class="form-control" [(ngModel)]="formData.observaciones" rows="2" placeholder="Ej. Traído de la libreta..."></textarea>
+          <textarea class="form-control" [(ngModel)]="formData.observaciones" rows="2"
+            placeholder="Ej. Traído de la libreta..."></textarea>
         </div>
       </div>
 
@@ -341,13 +351,20 @@
 
       <div class="modal-body">
         <div class="alert-premium alert-info">
-          <i class="fas fa-cogs"></i> El servicio se registrará como: <strong>{{ tipoServicioCalculado }}</strong>. Se creará vale de almacén y se agendará el siguiente servicio.
+          <i class="fas fa-cogs"></i> El servicio se registrará como: <strong>{{ tipoServicioCalculado }}</strong>. Se
+          creará vale de almacén y se agendará el siguiente servicio.
         </div>
 
         <div class="form-grid mt-3">
           <div class="form-group">
             <label>Kilometraje Actual (Odómetro) <span class="text-danger">*</span></label>
             <input type="number" class="form-control" [(ngModel)]="formData.km_realizado" required>
+          </div>
+          <div class="form-group mb-3" style="flex: 1; padding-top: 25px;">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: #f59e0b;">
+              <input type="checkbox" [(ngModel)]="huboCambioOdometro" style="width: 18px; height: 18px;">
+              <span><i class="fas fa-tachometer-alt"></i> Se reemplazó/reseteó el Odómetro</span>
+            </label>
           </div>
           <div class="form-group">
             <label>Fecha Real de Ejecución <span class="text-danger">*</span></label>
@@ -361,9 +378,11 @@
           <div class="adder-row">
             <div style="flex: 2;">
               <mat-form-field appearance="outline" class="full-width dark-mat-field">
-                <input type="text" placeholder="Buscar refacción..." matInput [formControl]="refaccionControl" [matAutocomplete]="autoRef">
+                <input type="text" placeholder="Buscar refacción..." matInput [formControl]="refaccionControl"
+                  [matAutocomplete]="autoRef">
               </mat-form-field>
-              <mat-autocomplete #autoRef="matAutocomplete" [displayWith]="displayItem" (optionSelected)="onRefaccionSelected($event)">
+              <mat-autocomplete #autoRef="matAutocomplete" [displayWith]="displayItem"
+                (optionSelected)="onRefaccionSelected($event)">
                 <mat-option *ngFor="let ref of filteredRefacciones$ | async" [value]="ref">
                   {{ ref.numero_parte || 'S/N' }} - {{ ref.nombre }}
                 </mat-option>
@@ -378,9 +397,11 @@
               </select>
             </div>
             <div style="flex: 0.8;">
-              <input type="number" class="form-control" placeholder="Cant." [(ngModel)]="detalleActualRefaccion.cantidad_despachada">
+              <input type="number" class="form-control" placeholder="Cant."
+                [(ngModel)]="detalleActualRefaccion.cantidad_despachada">
             </div>
-            <button class="btn-add-square btn-warning-gradient" (click)="agregarDetalleRefaccion()"><i class="fas fa-plus"></i></button>
+            <button class="btn-add-square btn-warning-gradient" (click)="agregarDetalleRefaccion()"><i
+                class="fas fa-plus"></i></button>
           </div>
 
           <table class="table-mini mt-2" *ngIf="detallesRefaccionesAAgregar.length > 0">
@@ -398,14 +419,17 @@
                 <td>{{ r.nombre_refaccion }} <small class="text-muted d-block">{{ r.numero_parte }}</small></td>
                 <td>{{ r.costo_unitario | currency }}</td>
                 <td>{{ r.cantidad_despachada }}</td>
-                <td class="text-success font-weight-bold">{{ (r.cantidad_despachada * r.costo_unitario) | currency }}</td>
-                <td><button class="btn-icon text-danger" (click)="eliminarRefaccion(i)"><i class="fas fa-trash"></i></button></td>
+                <td class="text-success font-weight-bold">{{ (r.cantidad_despachada * r.costo_unitario) | currency }}
+                </td>
+                <td><button class="btn-icon text-danger" (click)="eliminarRefaccion(i)"><i
+                      class="fas fa-trash"></i></button></td>
               </tr>
             </tbody>
             <tfoot>
               <tr>
                 <td colspan="3" class="text-right"><strong>Total Refacciones:</strong></td>
-                <td colspan="2" class="text-success text-lg"><strong>{{ calcularTotalSalida() | currency }}</strong></td>
+                <td colspan="2" class="text-success text-lg"><strong>{{ calcularTotalSalida() | currency }}</strong>
+                </td>
               </tr>
             </tfoot>
           </table>
@@ -417,18 +441,22 @@
           <div class="adder-row">
             <div style="flex: 2;">
               <mat-form-field appearance="outline" class="full-width dark-mat-field">
-                <input type="text" placeholder="Buscar insumo..." matInput [formControl]="insumoControl" [matAutocomplete]="autoIns">
+                <input type="text" placeholder="Buscar insumo..." matInput [formControl]="insumoControl"
+                  [matAutocomplete]="autoIns">
               </mat-form-field>
-              <mat-autocomplete #autoIns="matAutocomplete" [displayWith]="displayItem" (optionSelected)="onInsumoSelected($event)">
+              <mat-autocomplete #autoIns="matAutocomplete" [displayWith]="displayItem"
+                (optionSelected)="onInsumoSelected($event)">
                 <mat-option *ngFor="let ins of filteredInsumos$ | async" [value]="ins">
                   {{ ins.nombre }} <small>(Stock: {{ ins.stock_actual }})</small>
                 </mat-option>
               </mat-autocomplete>
             </div>
             <div style="flex: 1;">
-              <input type="number" class="form-control" placeholder="Cant." [(ngModel)]="detalleActualInsumo.cantidad_usada">
+              <input type="number" class="form-control" placeholder="Cant."
+                [(ngModel)]="detalleActualInsumo.cantidad_usada">
             </div>
-            <button class="btn-add-square btn-info-gradient" (click)="agregarDetalleInsumo()"><i class="fas fa-plus"></i></button>
+            <button class="btn-add-square btn-info-gradient" (click)="agregarDetalleInsumo()"><i
+                class="fas fa-plus"></i></button>
           </div>
 
           <table class="table-mini mt-2" *ngIf="detallesInsumosAAgregar.length > 0">
@@ -443,7 +471,8 @@
               <tr *ngFor="let ins of detallesInsumosAAgregar; let i = index">
                 <td>{{ ins.nombre_insumo }}</td>
                 <td>{{ ins.cantidad_usada }}</td>
-                <td><button class="btn-icon text-danger" (click)="eliminarInsumo(i)"><i class="fas fa-trash"></i></button></td>
+                <td><button class="btn-icon text-danger" (click)="eliminarInsumo(i)"><i
+                      class="fas fa-trash"></i></button></td>
               </tr>
             </tbody>
           </table>
@@ -451,7 +480,8 @@
 
         <div class="form-group mt-3">
           <label>Trabajos Realizados / Observaciones Adicionales</label>
-          <textarea class="form-control" [(ngModel)]="formData.observaciones" rows="3" placeholder="Ej. Revisión de frenos, alineación..."></textarea>
+          <textarea class="form-control" [(ngModel)]="formData.observaciones" rows="3"
+            placeholder="Ej. Revisión de frenos, alineación..."></textarea>
         </div>
       </div>
 
@@ -489,14 +519,12 @@
           'text-warning': notificacion.tipo === 'advertencia'
         }">{{ notificacion.titulo }}</h3>
       <p class="text-muted">{{ notificacion.mensaje }}</p>
-      
-      <button class="btn-action-premium w-100 mt-4" 
-              [ngClass]="{
+
+      <button class="btn-action-premium w-100 mt-4" [ngClass]="{
                 'btn-outline-success': notificacion.tipo === 'exito',
                 'btn-outline-danger': notificacion.tipo === 'error',
                 'btn-outline-warning': notificacion.tipo === 'advertencia'
-              }"
-              (click)="cerrarModalNotificacion()">
+              }" (click)="cerrarModalNotificacion()">
         Entendido
       </button>
     </div>
@@ -517,7 +545,7 @@
         Esta unidad no ha alcanzado los 27,000 km mínimos requeridos.<br><br>
         ¿Estás seguro de que deseas adelantar el servicio y <strong>reiniciar los contadores</strong>?
       </p>
-      
+
       <div style="display: flex; gap: 15px; margin-top: 25px;">
         <button class="btn-outline w-100" (click)="cancelarAdelanto()">Cancelar</button>
         <button class="btn-action-premium btn-warning-gradient w-100" (click)="confirmarAdelanto()">

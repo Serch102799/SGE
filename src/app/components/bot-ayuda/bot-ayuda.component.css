@@ -1,22 +1,19 @@
-/* Posicionamiento fijo en la esquina inferior derecha */
-/* Esto hace que el contenedor fantasma deje pasar los clics */
 :host {
-  pointer-events: none;
-}
-
-/* Esto asegura que el botón del bot siga funcionando */
-.bot-container {
-  pointer-events: auto;
-}
-.bot-container {
   position: fixed;
   bottom: 25px;
   right: 25px;
-  z-index: 9999; /* Siempre por encima de todo */
+  z-index: 9999;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  pointer-events: none;
+  pointer-events: none; /* Allows clicks to pass through the host element itself */
+}
+
+.bot-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none; /* the container shouldn't capture clicks */
 }
 
 /* --- EL BOTÓN FLOTANTE (FAB) --- */

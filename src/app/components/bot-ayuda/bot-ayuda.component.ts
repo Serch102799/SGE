@@ -111,25 +111,61 @@ export class BotAyudaComponent implements OnInit {
         ],
         tip: 'Los tickets resueltos se volverán un poco transparentes y bajarán al fondo de la lista para no estorbar.' 
       };
-      } else if (url.includes('refacciones')) {
+    } else if (url.includes('refacciones') || url.includes('insumos')) {
       this.ayudaActual = { 
-        titulo: 'Inventario de Refacciones', 
-        icono: 'fa-cogs',
-        descripcion: 'Administra el catálogo de piezas de tu almacén, consulta existencias y registra salidas manuales.',
+        titulo: 'Inventario de Almacén', 
+        icono: 'fa-box-open',
+        descripcion: 'Administra el catálogo de piezas o insumos, consulta existencias y mantén el stock óptimo.',
         pasos: [
-          'Busca una pieza por nombre, número de parte o usa los filtros de categoría.',
-          'Usa el botón "Editar" para actualizar la ubicación en el almacén o el stock mínimo.',
-          'Usa el botón "Salida" para descontar piezas que se utilizaron en el taller.'
+          'Busca una pieza por nombre o número de parte.',
+          'Usa el botón de edición para ajustar el nivel de "Stock Mínimo".',
+          'Si el stock baja del mínimo, verás una alerta en el dashboard.'
         ],
-        tip: 'Si una pieza llega a su "Stock Mínimo", el sistema te lo notificará en el Dashboard y en los Reportes de Stock Bajo.' 
+        tip: 'Mantén las categorías y ubicaciones (pasillos/anaqueles) actualizados para facilitar los inventarios físicos.' 
       };
-    }  
-    else {
+    } else if (url.includes('recuperados')) {
+      this.ayudaActual = { 
+        titulo: 'Piezas Recuperadas', 
+        icono: 'fa-recycle',
+        descripcion: 'Tablero Kanban para gestionar el flujo de piezas usadas o reparables (Yonque, Reparación, Stock, Instaladas).',
+        pasos: [
+          'Agrega una pieza al "Yonque" cuando se baje de una unidad.',
+          'Envíala a reparar asignando un proveedor.',
+          'Recibe la pieza con su factura y costo.',
+          'Asígnala a una nueva unidad cuando esté lista.'
+        ],
+        tip: 'Al recibir la pieza, el costo de reparación se añade automáticamente al valor de tu inventario global.' 
+      };
+    } else if (url.includes('mantenimiento') || url.includes('taller')) {
+      this.ayudaActual = { 
+        titulo: 'Agenda de Taller', 
+        icono: 'fa-calendar-check',
+        descripcion: 'Visualiza y gestiona los servicios preventivos y correctivos de las unidades.',
+        pasos: [
+          'Revisa las alertas rojas para servicios urgentes o atrasados.',
+          'Abre la tarjeta del servicio para surtir los vales de refacciones.',
+          'Al finalizar, cierra el servicio y actualiza el kilometraje.'
+        ],
+        tip: 'Si una unidad reporta una falla grave en el camino, crea un servicio correctivo inmediato desde la vista principal.' 
+      };
+    } else if (url.includes('dashboard')) {
+      this.ayudaActual = { 
+        titulo: 'Dashboard Inteligente', 
+        icono: 'fa-chart-line',
+        descripcion: 'Tu centro de mando global con proyecciones operativas y estados críticos.',
+        pasos: [
+          'Revisa el "Stock Bajo" y atiende las alertas rojas de mantenimiento.',
+          'Observa la "Proyección Operativa" para anticipar compras necesarias.',
+          'Filtra por fechas en la sección financiera para auditar gastos.'
+        ],
+        tip: 'La inteligencia predictiva sugiere compras automáticamente basándose en los servicios agendados para los próximos 30 días.' 
+      };
+    } else {
       this.ayudaActual = { 
         titulo: 'Asistente Global', 
         icono: 'fa-robot',
-        descripcion: 'Navega por las distintas pantallas del sistema. Al entrar a un módulo específico (como Reportes o Combustible), esta ventana cambiará automáticamente para darte instrucciones paso a paso.',
-        tip: '¿Algo falló? Usa la pestaña "Reportar Falla" para enviar un ticket directo a sistemas.'
+        descripcion: 'Navega por las distintas pantallas del sistema. Al entrar a un módulo específico, esta ventana cambiará automáticamente para darte instrucciones paso a paso.',
+        tip: '¿Algo falló o tienes una duda grave? Usa la pestaña "Reportar Falla" para enviar un ticket directo a sistemas.'
       };
     }
   }
