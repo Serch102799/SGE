@@ -231,7 +231,7 @@ export class EntradasComponent implements OnInit, OnDestroy {
       id_entrada: entrada.idEntrada,
       id_proveedor: entrada.idProveedor,
       fecha_operacion: fechaLocal,
-      factura_proveedor: entrada.factura_proveedor,
+      factura: entrada.factura_proveedor,
       observaciones: entrada.observaciones,
       items: []
     };

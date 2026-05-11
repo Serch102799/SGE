@@ -22,12 +22,12 @@ export interface Salida {
   solicitadoPorID: number;
   observaciones: string;
   nombreEmpleado: string;
-  
+
   // Datos de Autobús (Pueden ser nulos si es para un particular)
   idAutobus?: number;
   economicoAutobus?: string;
   kilometrajeAutobus?: number;
-  
+
   // Nuevos Datos de Vehículo Particular
   id_vehiculo_particular?: number;
   propietario_vehiculo?: string;
@@ -47,13 +47,13 @@ interface Lote { id_lote: number; cantidad_disponible: number; nombre_proveedor:
 export class SalidasComponent implements OnInit, OnDestroy {
 
   private apiUrl = `${environment.apiUrl}/salidas`;
-  
+
   // --- Estado de la Tabla Principal ---
   salidas: Salida[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 10;
   totalItems: number = 0;
-  
+
   // --- Filtros ---
   terminoBusqueda: string = '';
   fechaInicio: string = '';
@@ -65,6 +65,23 @@ export class SalidasComponent implements OnInit, OnDestroy {
   mostrarModalDetalles = false;
   detallesSeleccionados: any[] = [];
   salidaSeleccionadaId: number | null = null;
+
+  // --- Estado para Edición Histórica ---
+  mostrarModalEdicion = false;
+  empleados: any[] = [];
+  autobuses: any[] = [];
+  vehiculosParticulares: any[] = [];
+  salidaEdicion: any = {
+    id_salida: 0,
+    tipo_salida: '',
+    id_autobus: null,
+    id_vehiculo_particular: null,
+    solicitado_por_id: null,
+    observaciones: '',
+    kilometraje_autobus: null,
+    fecha_operacion: '',
+    items: []
+  };
 
   // --- Modal "Agregar Items" ---
   mostrarModalAgregarItems = false;
@@ -79,13 +96,13 @@ export class SalidasComponent implements OnInit, OnDestroy {
     cantidad_devuelta: null as number | null,
     motivo: ''
   };
-  
+
   // --- Lógica de Autocomplete para el Modal ---
   refaccionControl = new FormControl();
   insumoControl = new FormControl();
   filteredRefacciones$: Observable<RefaccionSimple[]>;
   filteredInsumos$: Observable<InsumoSimple[]>;
-  
+
   detalleActualRefaccion = { id_refaccion: null as number | null, id_lote: null as number | null, cantidad_despachada: null as number | null };
   detalleActualInsumo = { id_insumo: null as number | null, cantidad_usada: null as number | null };
   lotesDisponibles: Lote[] = [];
@@ -111,9 +128,9 @@ export class SalidasComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.revisarNotificaciones();
-    
+
     this.searchSubscription = this.searchSubject.pipe(
-      startWith(undefined), 
+      startWith(undefined),
       debounceTime(400)
     ).subscribe(() => {
       this.currentPage = 1;
@@ -151,10 +168,10 @@ export class SalidasComponent implements OnInit, OnDestroy {
       .set('page', this.currentPage.toString())
       .set('limit', this.itemsPerPage.toString())
       .set('search', this.terminoBusqueda.trim());
-    
+
     if (this.fechaInicio) params = params.set('fechaInicio', this.fechaInicio);
     if (this.fechaFin) params = params.set('fechaFin', this.fechaFin);
-    
+
     this.http.get<{ total: number, data: any[] }>(this.apiUrl, { params }).subscribe({
       next: (response) => {
         this.salidas = (response.data || []).map(item => ({
@@ -185,7 +202,18 @@ export class SalidasComponent implements OnInit, OnDestroy {
 
   onFiltroChange(): void { this.searchSubject.next(); }
   onPageChange(page: number): void { this.currentPage = page; this.obtenerSalidas(); }
-  
+
+  getTipoSalidaBadge(tipo: string): string {
+    if (!tipo) return 'badge-secondary';
+    const tipoLower = tipo.toLowerCase();
+
+    if (tipoLower.includes('preventivo')) return 'badge-info';
+    if (tipoLower.includes('correctivo')) return 'badge-warning';
+    if (tipoLower.includes('emergencia')) return 'badge-danger';
+    if (tipoLower.includes('venta')) return 'badge-success';
+    return 'badge-secondary';
+  }
+
   registrarNuevaSalida() { this.router.navigate(['/admin/registro-salida']); }
 
   exportarAExcelCompleto() {
@@ -202,7 +230,7 @@ export class SalidasComponent implements OnInit, OnDestroy {
         if (salidas.length === 0) throw new Error('No hay datos');
 
         const peticionesDetalles = salidas.map(salida => {
-          const id = salida.id_salida; 
+          const id = salida.id_salida;
           if (!id) return of({ cabecera: salida, detalles: [] });
           return this.http.get<any[]>(`${this.apiUrl}/detalles/${id}`).pipe(
             map(detalles => ({ cabecera: salida, detalles: detalles || [] })),
@@ -218,11 +246,11 @@ export class SalidasComponent implements OnInit, OnDestroy {
 
         dataCompleta.forEach(item => {
           const cab = (item as { cabecera: any; detalles: any[] }).cabecera;
-          
+
           // Lógica para determinar el destino (Autobús o Vehículo Particular)
-          const destinoInfo = cab.economico_autobus 
-                              ? `Bus: ${cab.economico_autobus}` 
-                              : (cab.propietario_vehiculo ? `Particular: ${cab.propietario_vehiculo}` : 'N/A');
+          const destinoInfo = cab.economico_autobus
+            ? `Bus: ${cab.economico_autobus}`
+            : (cab.propietario_vehiculo ? `Particular: ${cab.propietario_vehiculo}` : 'N/A');
 
           filasExcel.push({
             'ID Vale': cab.id_salida,
@@ -251,7 +279,7 @@ export class SalidasComponent implements OnInit, OnDestroy {
         });
 
         const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(filasExcel);
-        ws['!cols'] = [{wch:10}, {wch:20}, {wch:15}, {wch:25}, {wch:20}, {wch:12}, {wch:30}, {wch:10}, {wch:10}, {wch:12}];
+        ws['!cols'] = [{ wch: 10 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 20 }, { wch: 12 }, { wch: 30 }, { wch: 10 }, { wch: 10 }, { wch: 12 }];
 
         const wb: XLSX.WorkBook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Reporte Salidas');
@@ -304,27 +332,27 @@ export class SalidasComponent implements OnInit, OnDestroy {
 
           doc.setFillColor(240, 240, 240);
           doc.rect(14, yPos - 5, 182, 18, 'F');
-          
+
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(10);
           doc.text(`Vale #${cab.id_salida} | ${new Date(cab.fecha_operacion).toLocaleDateString()}`, 16, yPos);
-          
+
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(9);
-          
+
           const destinoDestacado = cab.economico_autobus ? `Bus ${cab.economico_autobus}` : (cab.propietario_vehiculo ? `Part: ${cab.propietario_vehiculo}` : 'N/A');
 
           doc.text(`Tipo: ${cab.tipo_salida}`, 16, yPos + 6);
           doc.text(`Destino: ${destinoDestacado}`, 80, yPos + 6);
           doc.text(`Solicitó: ${cab.nombre_empleado || 'N/A'}`, 140, yPos + 6);
-          
+
           yPos += 15;
 
           const bodyData = item.detalles.map((det: any) => {
             const neto = (Number(det.cantidad) || 0) - (Number(det.cantidad_devuelta) || 0);
             const costo = Number(det.costo_unitario) || 0;
             return [
-                det.tipo_item, det.nombre_item, neto, `$${costo.toFixed(2)}`, `$${(neto * costo).toFixed(2)}`
+              det.tipo_item, det.nombre_item, neto, `$${costo.toFixed(2)}`, `$${(neto * costo).toFixed(2)}`
             ];
           });
 
@@ -338,7 +366,7 @@ export class SalidasComponent implements OnInit, OnDestroy {
           doc.setDrawColor(200); doc.line(14, yPos - 5, 196, yPos - 5);
         });
 
-        const filename = `Salidas_Reporte_${new Date().toISOString().slice(0,10)}.pdf`;
+        const filename = `Salidas_Reporte_${new Date().toISOString().slice(0, 10)}.pdf`;
         addPdfFooter(doc, 'Salidas de Almacén');
         doc.save(filename);
         this.exportNotif.showPdf(filename);
@@ -360,6 +388,77 @@ export class SalidasComponent implements OnInit, OnDestroy {
   }
   cerrarModalDetalles() { this.mostrarModalDetalles = false; }
 
+  // ==========================================
+  // LÓGICA DE EDICIÓN HISTÓRICA
+  // ==========================================
+  cargarCatalogos() {
+    if (this.empleados.length === 0) {
+      this.http.get<any[]>(`${environment.apiUrl}/empleados`).subscribe(data => this.empleados = data);
+    }
+    if (this.autobuses.length === 0) {
+      this.http.get<any[]>(`${environment.apiUrl}/autobus`).subscribe(data => this.autobuses = data);
+    }
+    if (this.vehiculosParticulares.length === 0) {
+      this.http.get<any[]>(`${environment.apiUrl}/vehiculosParticulares`).subscribe(data => this.vehiculosParticulares = data);
+    }
+  }
+
+  abrirEdicionHistorica(salida: Salida) {
+    this.cargarCatalogos();
+    const fecha = new Date(salida.fechaSalida);
+    const fechaLocal = new Date(fecha.getTime() - (fecha.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+
+    this.salidaEdicion = {
+      id_salida: salida.idSalida,
+      tipo_salida: salida.tipoSalida,
+      id_autobus: salida.idAutobus,
+      id_vehiculo_particular: salida.id_vehiculo_particular,
+      solicitado_por_id: salida.solicitadoPorID,
+      observaciones: salida.observaciones,
+      kilometraje_autobus: salida.kilometrajeAutobus,
+      fecha_operacion: fechaLocal,
+      items: []
+    };
+
+    this.http.get<any[]>(`${this.apiUrl}/detalles/${salida.idSalida}`).subscribe({
+      next: (detalles) => {
+        this.salidaEdicion.items = detalles.map(d => ({
+          id_detalle: d.id_detalle,
+          id_item: d.id_item,
+          id_lote: d.id_lote,
+          nombre: d.nombre_item,
+          tipo: d.tipo_item.toLowerCase(),
+          cantidad_original: Number(d.cantidad),
+          cantidad_nueva: Number(d.cantidad),
+          cantidad_devuelta: Number(d.cantidad_devuelta || 0)
+        }));
+        this.mostrarModalEdicion = true;
+      },
+      error: (err) => this.mostrarNotificacion('Error', 'No se pudieron cargar los datos para edición.', 'error')
+    });
+  }
+
+  guardarEdicionHistorica() {
+    if (!confirm('¿Confirmas que deseas aplicar estos cambios históricos? El stock actual se verá afectado.')) return;
+
+    this.http.put(`${this.apiUrl}/${this.salidaEdicion.id_salida}/editar-completo`, this.salidaEdicion).subscribe({
+      next: () => {
+        this.mostrarNotificacion('Éxito', 'Salida actualizada correctamente.', 'exito');
+        this.cerrarModalEdicion();
+        this.obtenerSalidas();
+      },
+      error: (err) => {
+        console.error(err);
+        this.mostrarNotificacion('Error', 'No se pudo actualizar la salida: ' + (err.error?.message || err.message), 'error');
+      }
+    });
+  }
+
+  cerrarModalEdicion() {
+    this.mostrarModalEdicion = false;
+    this.salidaEdicion = { items: [] };
+  }
+
   // =========================================================================
   // LOGICA: AGREGAR ITEMS A UN VALE YA EXISTENTE
   // =========================================================================
@@ -369,13 +468,13 @@ export class SalidasComponent implements OnInit, OnDestroy {
     this.itemsNuevosInsumos = [];
     this.resetDetalleRefaccion();
     this.resetDetalleInsumo();
-    
+
     this.http.get<any[]>(`${this.apiUrl}/detalles/${salida.idSalida}`).subscribe(detalles => {
       this.itemsExistentes = detalles;
       this.mostrarModalAgregarItems = true;
     });
   }
-  
+
   cerrarModalAgregarItems() { this.mostrarModalAgregarItems = false; }
 
   onRefaccionSelectEnModal() {
@@ -402,11 +501,11 @@ export class SalidasComponent implements OnInit, OnDestroy {
     this.itemsNuevosRefacciones.push({ id_refaccion: refaccionSeleccionada.id_refaccion, id_lote, nombre_refaccion: refaccionSeleccionada.nombre, nombre_proveedor: lote.nombre_proveedor, cantidad_despachada });
     this.resetDetalleRefaccion();
   }
-  
+
   resetDetalleRefaccion() {
-      this.refaccionControl.setValue('');
-      this.detalleActualRefaccion = { id_refaccion: null, id_lote: null, cantidad_despachada: null };
-      this.lotesDisponibles = [];
+    this.refaccionControl.setValue('');
+    this.detalleActualRefaccion = { id_refaccion: null, id_lote: null, cantidad_despachada: null };
+    this.lotesDisponibles = [];
   }
 
   agregarNuevoInsumo() {
@@ -416,25 +515,25 @@ export class SalidasComponent implements OnInit, OnDestroy {
     if (!insumoSeleccionado || !insumoSeleccionado.id_insumo || !cantidad_usada || cantidad_usada <= 0) {
       this.mostrarNotificacion('Datos Incompletos', 'Busca y selecciona un insumo y una cantidad válida.'); return;
     }
-    
+
     this.http.get<InsumoSimple>(`${environment.apiUrl}/insumos/${insumoSeleccionado.id_insumo}`).subscribe(insumoDetalle => {
-        if (cantidad_usada > insumoDetalle.stock_actual) {
-            this.mostrarNotificacion('Stock Insuficiente', `Stock insuficiente. Disponible: ${insumoDetalle.stock_actual}`); return;
-        }
-        this.itemsNuevosInsumos.push({ id_insumo: insumoSeleccionado.id_insumo, nombre_insumo: insumoSeleccionado.nombre, cantidad_usada });
-        this.resetDetalleInsumo();
+      if (cantidad_usada > insumoDetalle.stock_actual) {
+        this.mostrarNotificacion('Stock Insuficiente', `Stock insuficiente. Disponible: ${insumoDetalle.stock_actual}`); return;
+      }
+      this.itemsNuevosInsumos.push({ id_insumo: insumoSeleccionado.id_insumo, nombre_insumo: insumoSeleccionado.nombre, cantidad_usada });
+      this.resetDetalleInsumo();
     });
   }
 
   resetDetalleInsumo() {
-      this.insumoControl.setValue('');
-      this.detalleActualInsumo = { id_insumo: null, cantidad_usada: null };
+    this.insumoControl.setValue('');
+    this.detalleActualInsumo = { id_insumo: null, cantidad_usada: null };
   }
-  
+
   guardarItemsAdicionales() {
     if (!this.salidaSeleccionada) return;
     const peticionesDetalle = [];
-    
+
     for (const detalle of this.itemsNuevosRefacciones) {
       const payload = { ID_Salida: this.salidaSeleccionada.idSalida, ID_Refaccion: detalle.id_refaccion, Cantidad_Despachada: detalle.cantidad_despachada, ID_Lote: detalle.id_lote };
       peticionesDetalle.push(this.http.post(`${environment.apiUrl}/detalleSalida`, payload));
@@ -443,9 +542,9 @@ export class SalidasComponent implements OnInit, OnDestroy {
       const payload = { id_salida: this.salidaSeleccionada.idSalida, id_insumo: detalle.id_insumo, cantidad_usada: detalle.cantidad_usada };
       peticionesDetalle.push(this.http.post(`${environment.apiUrl}/detalle-salida-insumo`, payload));
     }
-    
+
     if (peticionesDetalle.length === 0) { this.cerrarModalAgregarItems(); return; }
-    
+
     forkJoin(peticionesDetalle).subscribe({
       next: () => {
         this.mostrarNotificacion('Éxito', 'Items agregados correctamente a la salida.', 'exito');
@@ -455,7 +554,7 @@ export class SalidasComponent implements OnInit, OnDestroy {
       error: (err) => this.mostrarNotificacion('Error', `Error al agregar: ${err.error?.message || 'Revisa tu conexión'}`, 'error')
     });
   }
-  
+
   // =========================================================================
 
   revisarNotificaciones() {
@@ -471,7 +570,7 @@ export class SalidasComponent implements OnInit, OnDestroy {
     this.mostrarModalNotificacion = true;
   }
   cerrarModalNotificacion() { this.mostrarModalNotificacion = false; }
-  
+
   abrirModalDevolucion(detalle: any): void {
     const cantidadMaxima = detalle.cantidad - (detalle.cantidad_devuelta || 0);
     this.itemParaDevolucion = { ...detalle, cantidad_maxima: cantidadMaxima };

@@ -37,6 +37,8 @@ export class RegistroSalidaComponent implements OnInit {
   empleados: Empleado[] = [];
   vehiculosParticulares: VehiculoParticular[] = []; // Se carga completo porque son pocos
   
+  nombreUsuarioActual: string = '';
+  
   // --- Formularios y Listas ---
   salidaMaestro = {
     tipoSalida: 'Mantenimiento Correctivo',
@@ -112,6 +114,11 @@ export class RegistroSalidaComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarCatalogos();
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.salidaMaestro.solicitadoPorID = currentUser.id;
+      this.nombreUsuarioActual = currentUser.nombre;
+    }
   }
 
   public getFormattedCurrentDateTime(): string {

@@ -1,4 +1,4 @@
-﻿<div class="mb-3" style="padding: 0 20px;">
+<div class="mb-3" style="padding: 0 20px;">
   <button class="btn-accion btn-cancelar" (click)="regresar()" style="font-size: 1rem; padding: 10px 20px;">
     <i class="fas fa-arrow-left"></i> Regresar a Salidas
   </button>
@@ -104,10 +104,11 @@
         <!-- Si es particular, el campo de empleado ocupa todo el espacio (o la mitad, como decidas, aquí lo dejo en col-md-6 u 12) -->
         <div class="form-group mb-0" [ngClass]="tipoDestino === 'Autobus' ? 'col-md-6' : 'col-md-12'">
           <label for="empleado">Despachado por:</label>
-          <select id="empleado" class="form-control" [(ngModel)]="salidaMaestro.solicitadoPorID" name="solicitadoPorID" required>
-            <option [ngValue]="null" disabled>Selecciona al responsable...</option>
-            <option *ngFor="let e of empleados" [ngValue]="e.id_empleado">{{ e.nombre }}</option>
-          </select>
+          <div class="input-icon-wrapper" style="position: relative;">
+            <i class="fas fa-user-check" style="position: absolute; left: 15px; top: 12px; color: #a0c4ff;"></i>
+            <input id="empleado" type="text" class="form-control" [value]="nombreUsuarioActual" disabled 
+                   style="background-color: rgba(255,255,255,0.05) !important; color: #a0c4ff !important; padding-left: 40px; font-weight: bold; cursor: not-allowed; border-style: dashed;">
+          </div>
         </div>
       </div>
 
