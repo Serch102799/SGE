@@ -215,6 +215,120 @@ export class ProveedoresComponent implements OnInit {
   }
 
   // ==========================================
+  // EXPORTACIONES (DIRECTORIO)
+  // ==========================================
+  exportarDirectorioExcel() {
+    if (this.proveedoresFiltrados.length === 0) {
+      this.mostrarNotificacion('Sin Datos', 'No hay proveedores para exportar.', 'advertencia'); return;
+    }
+    
+    const data = this.proveedoresFiltrados.map(p => ({
+      'Empresa': p.nombre_proveedor,
+      'RFC': p.rfc || 'No registrado',
+      'Contacto Principal': p.contacto || 'Sin contacto',
+      'Teléfono': p.telefono || 'N/A',
+      'Correo': p.correo || 'N/A',
+      'Dirección': p.direccion || 'N/A'
+    }));
+
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Directorio');
+    const filename = `Directorio_Proveedores_${new Date().getTime()}.xlsx`;
+    XLSX.writeFile(wb, filename);
+    this.exportNotif.showExcel(filename);
+  }
+
+  exportarDirectorioPDF() {
+    if (this.proveedoresFiltrados.length === 0) {
+      this.mostrarNotificacion('Sin Datos', 'No hay proveedores para exportar.', 'advertencia'); return;
+    }
+
+    const doc = new jsPDF('landscape');
+    const pageWidth = doc.internal.pageSize.width;
+    let yPos = 0;
+
+    // --- ENCABEZADO MODERNO ---
+    doc.setFillColor(30, 41, 59); // Fondo oscuro Slate 800
+    doc.rect(0, 0, pageWidth, 45, 'F');
+
+    // Título Principal
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.text('DIRECTORIO DE PROVEEDORES', 20, 24);
+
+    // Subtítulo / Fecha
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(148, 163, 184); // Slate 400
+    doc.text(`Generado el: ${new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}`, 20, 34);
+
+    // Resumen a la derecha
+    doc.setFontSize(12);
+    doc.setTextColor(255, 255, 255);
+    doc.text(`Total Registrados: ${this.proveedoresFiltrados.length}`, pageWidth - 20, 27, { align: 'right' });
+    
+    // Línea decorativa de acento
+    doc.setFillColor(56, 189, 248); // Sky 400
+    doc.rect(pageWidth - 75, 34, 55, 2, 'F'); 
+    // -------------------------
+
+    yPos = 55;
+
+    const columnas = [['Empresa', 'RFC', 'Contacto Principal', 'Teléfono', 'Correo', 'Dirección']];
+    const filas = this.proveedoresFiltrados.map(p => [
+      p.nombre_proveedor,
+      p.rfc || '-',
+      p.contacto || '-',
+      p.telefono || '-',
+      p.correo || '-',
+      p.direccion || '-'
+    ]);
+
+    autoTable(doc, { 
+      head: columnas, 
+      body: filas, 
+      startY: yPos,
+      theme: 'plain',
+      headStyles: { 
+        fillColor: [241, 245, 249], // Slate 100
+        textColor: [15, 23, 42], // Slate 900
+        fontStyle: 'bold',
+        fontSize: 10,
+        cellPadding: { top: 6, bottom: 6, left: 5, right: 5 }
+      },
+      bodyStyles: { 
+        textColor: [71, 85, 105], // Slate 500
+        fontSize: 9,
+        cellPadding: { top: 5, bottom: 5, left: 5, right: 5 },
+        lineWidth: { bottom: 0.1 },
+        lineColor: [226, 232, 240] // Slate 200
+      },
+      alternateRowStyles: { 
+        fillColor: [250, 250, 252] // Gris muy claro para filas alternas
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', textColor: [30, 41, 59], cellWidth: 55 } // Empresa en negritas y ancho fijo
+      },
+      margin: { left: 20, right: 20 },
+      didDrawPage: function (data) {
+        const docSettings = doc.internal.pageSize;
+        const pageHeight = docSettings.height || docSettings.getHeight();
+        
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text('Página ' + (doc as any).internal.getNumberOfPages(), data.settings.margin.left, pageHeight - 10);
+        doc.text('Directorio Telefónico Corporativo', pageWidth - data.settings.margin.right, pageHeight - 10, { align: 'right' });
+      }
+    });
+
+    const filename = `Directorio_Proveedores_${new Date().getTime()}.pdf`;
+    doc.save(filename);
+    this.exportNotif.showPdf(filename);
+  }
+
+  // ==========================================
   // EXPORTACIONES (DETALLADAS)
   // ==========================================
   exportarExcel() {
