@@ -18,7 +18,7 @@ import { ExportNotificationService } from '../../../shared/services/export-notif
   styleUrls: ['./reportes.component.css']
 })
 export class ReportesComponent implements OnInit {
-  
+
   tipoReporteSeleccionado: string = 'stock-bajo';
   fechaInicio: string = '';
   fechaFin: string = '';
@@ -51,10 +51,9 @@ export class ReportesComponent implements OnInit {
 
   modalDetallesVisible: boolean = false;
   busSeleccionado: any = null;
-  
+
   private apiUrl = `${environment.apiUrl}/reportes`;
 
-  // --- CONFIGURACIÓN DE REPORTES (ACTUALIZADO CON NUEVAS FUNCIONES) ---
   reportesConfig: { [key: string]: { titulo: string, descripcion: string, requiereFecha: boolean, requiereListaArticulos?: boolean, requiereListaBuses?: boolean } } = {
     'stock-bajo': { titulo: 'Stock Bajo', descripcion: 'Refacciones e insumos con stock por debajo del mínimo', requiereFecha: false },
     'gastos-totales': { titulo: 'Gastos Totales de Almacén y Servicios', descripcion: 'Resumen de compras de refacciones, insumos y facturación de talleres o servicios externos.', requiereFecha: true },
@@ -66,10 +65,10 @@ export class ReportesComponent implements OnInit {
     'movimientos-refaccion': { titulo: 'Movimientos Generales por Refacción', descripcion: 'Historial de entradas y salidas de refacciones.', requiereFecha: true },
     'historial-por-refaccion': { titulo: 'Historial por Artículos Específicos', descripcion: 'Auditoría de entradas y salidas de una lista personalizada de ítems.', requiereFecha: true, requiereListaArticulos: true },
     'costo-por-autobus-especifico': { titulo: 'Costo por Vehículo Específico', descripcion: 'Desglose de gastos de mantenimiento de la lista de vehículos seleccionados.', requiereFecha: true, requiereListaBuses: true },
-    'detalle-gastos-salidas': { 
-        titulo: 'Salidas Totales', 
-        descripcion: 'Desglose exacto de cada salida de almacén, servicios y préstamos de herramientas.', 
-        requiereFecha: true 
+    'detalle-gastos-salidas': {
+      titulo: 'Salidas Totales',
+      descripcion: 'Desglose exacto de cada salida de almacén, servicios y préstamos de herramientas.',
+      requiereFecha: true
     },
   };
 
@@ -83,7 +82,7 @@ export class ReportesComponent implements OnInit {
       startWith(''), debounceTime(400), distinctUntilChanged(),
       switchMap(value => this._buscarApi('refacciones', value || ''))
     );
-    
+
     this.filteredInsumos$ = this.insumoControl.valueChanges.pipe(
       startWith(''), debounceTime(400), distinctUntilChanged(),
       switchMap(value => this._buscarApi('insumos', value || ''))
@@ -135,7 +134,7 @@ export class ReportesComponent implements OnInit {
     );
   }
 
-  displayFn(item: any): string { return item ? `${item.nombre} ${item.marca !== 'N/A' ? '('+item.marca+')' : ''}` : ''; }
+  displayFn(item: any): string { return item ? `${item.nombre} ${item.marca !== 'N/A' ? '(' + item.marca + ')' : ''}` : ''; }
   displayFnBusRep(bus: any): string { return bus && bus.economico ? `Bus ${bus.economico}` : ''; }
 
   agregarBusLista(event: any) {
@@ -168,18 +167,18 @@ export class ReportesComponent implements OnInit {
     if (this.requiereFechas && (!this.fechaInicio || !this.fechaFin)) { this.mostrarNotificacion('Filtro Requerido', 'Este reporte requiere un rango de fechas.'); return; }
     if (this.requiereListaArticulos && this.itemsSeleccionados.length === 0) { this.mostrarNotificacion('Lista Vacía', 'Busca y agrega al menos un artículo a la lista.'); return; }
     if (this.requiereListaBuses && this.busesSeleccionados.length === 0) { this.mostrarNotificacion('Lista Vacía', 'Agrega al menos un vehículo a la lista.'); return; }
-    
+
     this.isLoading = true; this.reporteData = []; this.totalGeneral = 0;
-    
+
     let params = new HttpParams();
     if (this.fechaInicio) params = params.set('fechaInicio', this.fechaInicio);
     if (this.fechaFin) params = params.set('fechaFin', this.fechaFin);
-    
+
     if (this.tipoReporteSeleccionado === 'historial-por-refaccion') {
       const idsRefacciones = this.itemsSeleccionados.filter(i => i.tipo === 'Refacción').map(i => i.id).join(',');
       const idsInsumos = this.itemsSeleccionados.filter(i => i.tipo === 'Insumo').map(i => i.id).join(',');
-      if(idsRefacciones) params = params.set('idsRefacciones', idsRefacciones);
-      if(idsInsumos) params = params.set('idsInsumos', idsInsumos);
+      if (idsRefacciones) params = params.set('idsRefacciones', idsRefacciones);
+      if (idsInsumos) params = params.set('idsInsumos', idsInsumos);
     }
     if (this.tipoReporteSeleccionado === 'costo-por-autobus-especifico') {
       params = params.set('idsAutobuses', this.busesSeleccionados.map(b => b.id).join(','));
@@ -220,7 +219,7 @@ export class ReportesComponent implements OnInit {
     this.busSeleccionado = fila;
     if (typeof this.busSeleccionado.detalles === 'string') { try { this.busSeleccionado.detalles = JSON.parse(this.busSeleccionado.detalles); } catch (e) { this.busSeleccionado.detalles = []; } }
     if (Array.isArray(this.busSeleccionado.detalles)) this.busSeleccionado.detalles = this.busSeleccionado.detalles.map((d: any) => d.value || d);
-    this.modalDetallesVisible = true; document.body.style.overflow = 'hidden'; 
+    this.modalDetallesVisible = true; document.body.style.overflow = 'hidden';
   }
   cerrarModalDetalles() { this.modalDetallesVisible = false; this.busSeleccionado = null; document.body.style.overflow = 'auto'; }
 
@@ -244,7 +243,7 @@ export class ReportesComponent implements OnInit {
     const dataToExport = isCategoria ? this.movimientosCategoria : this.reporteData;
 
     if (dataToExport.length === 0) { this.mostrarNotificacion('Sin Datos', 'No hay datos para exportar.'); return; }
-    
+
     const doc = new jsPDF('landscape');
     let startY = 40;
 
@@ -255,15 +254,15 @@ export class ReportesComponent implements OnInit {
 
       doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(239, 68, 68);
       doc.text(`Gasto en Salidas: $${this.totalGastadoCategoria.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, startY);
-      
+
       startY += 8; doc.setTextColor(34, 197, 94);
       doc.text(`Inversión en Entradas:$${this.totalInvertidoCategoria.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, startY);
-      
+
       doc.setTextColor(0, 0, 0); doc.setFont('helvetica', 'normal'); startY += 10;
       const headersCat = [['FECHA', 'MOVIMIENTO', 'ARTÍCULO', 'CANTIDAD', 'DESTINO / ORIGEN', 'COSTO IMPLICADO']];
       const bodyCat = this.movimientosCategoria.map(m => [
         new Date(m.fecha).toLocaleDateString('es-MX'), m.tipo_movimiento, `${m.articulo}\n(${m.tipo_item} | No. Parte: ${m.numero_parte || 'N/A'})`,
-        m.tipo_movimiento === 'Entrada' ? `+${m.cantidad}` : `-${m.cantidad}`, m.destino_origen || 'No Especificado', `$${parseFloat(m.costo_total || 0).toLocaleString('es-MX', {minimumFractionDigits:2})}`
+        m.tipo_movimiento === 'Entrada' ? `+${m.cantidad}` : `-${m.cantidad}`, m.destino_origen || 'No Especificado', `$${parseFloat(m.costo_total || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
       ]);
       autoTable(doc, { startY: startY, head: headersCat, body: bodyCat, headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 }, styles: { fontSize: 8, cellPadding: 3 }, margin: { top: 10 } });
       addPdfFooter(doc, 'Reportes por Categoría');
@@ -286,17 +285,17 @@ export class ReportesComponent implements OnInit {
         const tituloBus = (esParticular ? 'FLOTA ADMINISTRATIVA' : `BUS ${item.autobus}`) + ` | Empresa: ${item.razon_social || 'S/D'}` + (marcaModelo ? ` (${marcaModelo})` : '');
         bodyBus.push([
           { content: item.id_autobus || '-', styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } },
-          { content: tituloBus, colSpan: 5, styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } }, 
-          { content: `$${parseFloat(item.costo_total_mantenimiento).toLocaleString('es-MX', {minimumFractionDigits:2})}`, styles: { fontStyle: 'bold', halign: 'right', fillColor: [220, 235, 255], textColor: [0, 100, 0] } }
+          { content: tituloBus, colSpan: 5, styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } },
+          { content: `$${parseFloat(item.costo_total_mantenimiento).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, styles: { fontStyle: 'bold', halign: 'right', fillColor: [220, 235, 255], textColor: [0, 100, 0] } }
         ]);
 
         let detallesArray = [];
-        try { detallesArray = typeof item.detalles === 'string' ? JSON.parse(item.detalles) : item.detalles; } catch (e) {}
+        try { detallesArray = typeof item.detalles === 'string' ? JSON.parse(item.detalles) : item.detalles; } catch (e) { }
         if (!Array.isArray(detallesArray)) detallesArray = [];
 
         detallesArray.forEach((rawD: any) => {
           const d = rawD?.value || rawD; if (!d) return;
-          bodyBus.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), d.tipo_item || '-', d.nombre || '-', (d.marca && d.marca !== 'N/A') ? d.marca : '-', { content: d.cantidad || '1', halign: 'center' }, { content: `$${parseFloat(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}`, halign: 'right' }]);
+          bodyBus.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), d.tipo_item || '-', d.nombre || '-', (d.marca && d.marca !== 'N/A') ? d.marca : '-', { content: d.cantidad || '1', halign: 'center' }, { content: `$${parseFloat(d.costo_total).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, halign: 'right' }]);
         });
       });
       autoTable(doc, { startY: startY, head: [['ID', 'FECHA / VEHÍCULO', 'TIPO', 'ARTÍCULO / DESC.', 'MARCA / PROV.', 'CANT.', 'SUBTOTAL']], body: bodyBus, headStyles: { fillColor: [68, 128, 211], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 }, styles: { fontSize: 8, cellPadding: 3 }, margin: { top: 10 } });
@@ -304,32 +303,32 @@ export class ReportesComponent implements OnInit {
       const filenameVeh = `Reporte_Vehiculos_${new Date().getTime()}.pdf`;
       doc.save(filenameVeh);
       this.exportNotif.showPdf(filenameVeh);
-      return; 
+      return;
     }
 
     if (this.tipoReporteSeleccionado === 'compras-razon-social' || this.tipoReporteSeleccionado === 'gastos-razon-social') {
       const isCompras = this.tipoReporteSeleccionado === 'compras-razon-social';
       const customHeaders = isCompras ? ['FECHA / RAZÓN SOCIAL', 'DOCUMENTO / FACT.', 'PROVEEDOR', 'SUBTOTAL'] : ['FECHA / RAZÓN SOCIAL', 'VEHÍCULO / ORIGEN', 'TIPO / DESC.', 'SUBTOTAL'];
       const bodyRS: any[] = [];
-      
+
       this.reporteData.forEach(item => {
         bodyRS.push([
           { content: item.razon_social, colSpan: 3, styles: { fontStyle: 'bold', fillColor: [220, 235, 255] } },
-          { content: `$${parseFloat(item.costo_total_general).toLocaleString('es-MX', {minimumFractionDigits:2})}`, styles: { fontStyle: 'bold', halign: 'right', fillColor: [220, 235, 255], textColor: [0, 100, 0] } }
+          { content: `$${parseFloat(item.costo_total_general).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, styles: { fontStyle: 'bold', halign: 'right', fillColor: [220, 235, 255], textColor: [0, 100, 0] } }
         ]);
-        
+
         let detallesArray = [];
-        try { detallesArray = typeof item.detalles === 'string' ? JSON.parse(item.detalles) : item.detalles; } catch (e) {}
+        try { detallesArray = typeof item.detalles === 'string' ? JSON.parse(item.detalles) : item.detalles; } catch (e) { }
         if (!Array.isArray(detallesArray)) detallesArray = [];
 
         detallesArray.forEach((rawD: any) => {
           const d = rawD?.value || rawD; if (!d) return;
           if (isCompras) {
-            bodyRS.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), d.documento || '-', d.proveedor || '-', { content: `$${parseFloat(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}`, halign: 'right' }]);
+            bodyRS.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), d.documento || '-', d.proveedor || '-', { content: `$${parseFloat(d.costo_total).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, halign: 'right' }]);
           } else {
             // Ajuste "Flota Administrativa" para reporte de Gastos
             const vehiculoText = d.autobus === 'Flota Admin' || !d.autobus ? 'Flota Admin' : `BUS ${d.autobus}`;
-            bodyRS.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), vehiculoText, `${d.tipo}: ${d.descripcion}`, { content: `$${parseFloat(d.costo_total).toLocaleString('es-MX', {minimumFractionDigits:2})}`, halign: 'right' }]);
+            bodyRS.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), vehiculoText, `${d.tipo}: ${d.descripcion}`, { content: `$${parseFloat(d.costo_total).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, halign: 'right' }]);
           }
         });
       });
@@ -364,29 +363,29 @@ export class ReportesComponent implements OnInit {
     this.reporteData.forEach(item => {
       const filaPrincipal = columnasVisibles.map(col => this.formatearValor(item[col], col));
       let detallesArray = [];
-      try { detallesArray = typeof item.detalles === 'string' ? JSON.parse(item.detalles) : item.detalles; } catch (e) {}
+      try { detallesArray = typeof item.detalles === 'string' ? JSON.parse(item.detalles) : item.detalles; } catch (e) { }
       if (!Array.isArray(detallesArray)) detallesArray = [];
 
       if (reportesConDesglose.includes(this.tipoReporteSeleccionado) && detallesArray.length > 0) {
         body.push(filaPrincipal.map(val => ({ content: val, styles: { fontStyle: 'bold', fillColor: [235, 245, 255] } })));
-        
+
         if (this.tipoReporteSeleccionado === 'gastos-totales') {
-          body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: 'TIPO', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'ARTÍCULO / SERVICIO', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'PROV. / MARCA', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'CANT.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'center' } }, { content: 'COSTO U.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } }, { content: 'SUBTOTAL', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } }]);
+          body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: 'TIPO', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80, 80, 80], fillColor: [245, 245, 245] } }, { content: 'ARTÍCULO / SERVICIO', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 8, textColor: [80, 80, 80], fillColor: [245, 245, 245] } }, { content: 'PROV. / MARCA', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80, 80, 80], fillColor: [245, 245, 245] } }, { content: 'CANT.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80, 80, 80], fillColor: [245, 245, 245], halign: 'center' } }, { content: 'COSTO U.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80, 80, 80], fillColor: [245, 245, 245], halign: 'right' } }, { content: 'SUBTOTAL', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80, 80, 80], fillColor: [245, 245, 245], halign: 'right' } }]);
         } else {
-          body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: 'FECHA', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'MOVIMIENTO', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'ORIGEN / DESTINO', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245] } }, { content: 'CANT.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'center' } }, { content: 'COSTO TOTAL', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80,80,80], fillColor: [245,245,245], halign: 'right' } }]);
+          body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: 'FECHA', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80, 80, 80], fillColor: [245, 245, 245] } }, { content: 'MOVIMIENTO', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80, 80, 80], fillColor: [245, 245, 245] } }, { content: 'ORIGEN / DESTINO', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 8, textColor: [80, 80, 80], fillColor: [245, 245, 245] } }, { content: 'CANT.', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80, 80, 80], fillColor: [245, 245, 245], halign: 'center' } }, { content: 'COSTO TOTAL', styles: { fontStyle: 'bold', fontSize: 8, textColor: [80, 80, 80], fillColor: [245, 245, 245], halign: 'right' } }]);
         }
 
         detallesArray.forEach((rawD: any) => {
-          const d = rawD?.value || rawD; if (!d || Object.keys(d).length === 0) return; 
+          const d = rawD?.value || rawD; if (!d || Object.keys(d).length === 0) return;
           const cantidadStr = (d.cantidad !== undefined && d.cantidad !== null) ? d.cantidad.toString() : '0';
           const costoUnitario = parseFloat(d.costo_unitario) || 0;
           const costoTotal = parseFloat(d.costo_total) || 0;
 
           if (this.tipoReporteSeleccionado === 'gastos-totales') {
-            body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: d.tipo_item || '-', styles: { fontSize: 8, textColor: [100,100,100] } }, { content: d.nombre || '-', colSpan: 2, styles: { fontSize: 8, textColor: [100,100,100] } }, { content: d.marca || 'N/A', styles: { fontSize: 8, textColor: [100,100,100] } }, { content: cantidadStr, styles: { fontSize: 8, textColor: [100,100,100], halign: 'center' } }, { content: `$${costoUnitario.toFixed(2)}`, styles: { fontSize: 8, textColor: [100,100,100], halign: 'right' } }, { content: `$${costoTotal.toFixed(2)}`, styles: { fontSize: 8, textColor: [100,100,100], halign: 'right' } }]);
+            body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: d.tipo_item || '-', styles: { fontSize: 8, textColor: [100, 100, 100] } }, { content: d.nombre || '-', colSpan: 2, styles: { fontSize: 8, textColor: [100, 100, 100] } }, { content: d.marca || 'N/A', styles: { fontSize: 8, textColor: [100, 100, 100] } }, { content: cantidadStr, styles: { fontSize: 8, textColor: [100, 100, 100], halign: 'center' } }, { content: `$${costoUnitario.toFixed(2)}`, styles: { fontSize: 8, textColor: [100, 100, 100], halign: 'right' } }, { content: `$${costoTotal.toFixed(2)}`, styles: { fontSize: 8, textColor: [100, 100, 100], halign: 'right' } }]);
           } else {
             const colorTexto = d.tipo_movimiento === 'Entrada' ? [46, 204, 113] : [231, 76, 60];
-            body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: new Date(d.fecha).toLocaleDateString('es-MX'), styles: { fontSize: 8, textColor: [100,100,100] } }, { content: d.tipo_movimiento || '-', styles: { fontSize: 8, fontStyle: 'bold', textColor: colorTexto } }, { content: d.documento || '-', colSpan: 2, styles: { fontSize: 8, textColor: [100,100,100] } }, { content: cantidadStr, styles: { fontSize: 8, textColor: [100,100,100], halign: 'center' } }, { content: `$${costoTotal.toFixed(2)}`, styles: { fontSize: 8, textColor: [100,100,100], halign: 'right' } }]);
+            body.push([{ content: '', styles: { fillColor: [255, 255, 255] } }, { content: new Date(d.fecha).toLocaleDateString('es-MX'), styles: { fontSize: 8, textColor: [100, 100, 100] } }, { content: d.tipo_movimiento || '-', styles: { fontSize: 8, fontStyle: 'bold', textColor: colorTexto } }, { content: d.documento || '-', colSpan: 2, styles: { fontSize: 8, textColor: [100, 100, 100] } }, { content: cantidadStr, styles: { fontSize: 8, textColor: [100, 100, 100], halign: 'center' } }, { content: `$${costoTotal.toFixed(2)}`, styles: { fontSize: 8, textColor: [100, 100, 100], halign: 'right' } }]);
           }
         });
       } else { body.push(filaPrincipal); }
@@ -415,13 +414,13 @@ export class ReportesComponent implements OnInit {
 
       datosExcelCat.push(['FECHA', 'MOVIMIENTO', 'TIPO ITEM', 'ARTÍCULO', 'NO. PARTE', 'CANTIDAD', 'DESTINO / ORIGEN', 'COSTO IMPLICADO']);
       this.movimientosCategoria.forEach(m => {
-        datosExcelCat.push([new Date(m.fecha).toLocaleDateString('es-MX'), m.tipo_movimiento, m.tipo_item, m.articulo, m.numero_parte || 'N/A', m.tipo_movimiento === 'Entrada' ? m.cantidad : -m.cantidad, m.destino_origen || 'No Especificado', `$${parseFloat(m.costo_total || 0).toLocaleString('es-MX', {minimumFractionDigits:2})}`]);
+        datosExcelCat.push([new Date(m.fecha).toLocaleDateString('es-MX'), m.tipo_movimiento, m.tipo_item, m.articulo, m.numero_parte || 'N/A', m.tipo_movimiento === 'Entrada' ? m.cantidad : -m.cantidad, m.destino_origen || 'No Especificado', `$${parseFloat(m.costo_total || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`]);
       });
 
       const worksheet = XLSX.utils.aoa_to_sheet(datosExcelCat);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte Categoría');
-      worksheet['!cols'] = [ { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 25 }, { wch: 15 } ];
+      worksheet['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 25 }, { wch: 15 }];
       const filenameExcelCat = `Reporte_Categoria_${this.categoriaSeleccionada}_${new Date().getTime()}.xlsx`;
       XLSX.writeFile(workbook, filenameExcelCat);
       this.exportNotif.showExcel(filenameExcelCat);
@@ -443,11 +442,11 @@ export class ReportesComponent implements OnInit {
       datosExcel.push(filaPrincipal);
 
       let detallesArray = [];
-      try { detallesArray = typeof fila.detalles === 'string' ? JSON.parse(fila.detalles) : fila.detalles; } catch (e) {}
+      try { detallesArray = typeof fila.detalles === 'string' ? JSON.parse(fila.detalles) : fila.detalles; } catch (e) { }
       if (!Array.isArray(detallesArray)) detallesArray = [];
 
       if (reportesConDesglose.includes(this.tipoReporteSeleccionado) && detallesArray.length > 0) {
-        
+
         if (this.tipoReporteSeleccionado === 'costo-autobus' || this.tipoReporteSeleccionado === 'costo-por-autobus-especifico') {
           const marcaModelo = `${fila.marca || fila.marca_autobus || ''} ${fila.modelo || fila.anio || fila.modelo_autobus || ''}`.trim();
           const vehiculoTitulo = fila.autobus === 'Flota Admin' || !fila.autobus ? 'Flota Administrativa' : `Autobús: ${fila.autobus}`;
@@ -483,7 +482,7 @@ export class ReportesComponent implements OnInit {
             datosExcel.push(['', new Date(d.fecha).toLocaleDateString('es-MX'), d.tipo_movimiento || '-', d.documento || '-', d.cantidad || 0, `$${(parseFloat(d.costo_total) || 0).toFixed(2)}`]);
           });
         }
-        datosExcel.push([]); 
+        datosExcel.push([]);
       }
     });
 
@@ -504,7 +503,7 @@ export class ReportesComponent implements OnInit {
     const worksheet = XLSX.utils.aoa_to_sheet(datosExcel);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte');
-    worksheet['!cols'] = [ { wch: 20 }, { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 } ];
+    worksheet['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }];
     XLSX.writeFile(workbook, `Reporte_${this.tipoReporteSeleccionado}_${new Date().getTime()}.xlsx`);
     const filenameXls = `Reporte_${this.tipoReporteSeleccionado}_${new Date().getTime()}.xlsx`;
     this.exportNotif.showExcel(filenameXls);
