@@ -59,6 +59,12 @@
         </a>
       </li> -->
 
+      <li *ngIf="authService.hasRole(['SuperUsuario', 'Admin'])">
+        <a routerLink="Granel" routerLinkActive="active">
+          <fa-icon [icon]="faTickets" class="icon-maint"></fa-icon> <span>Granel</span>
+        </a>
+      </li>
+
       <li *ngIf="authService.hasRole(['Admin', 'SuperUsuario'])">
         <a routerLink="entradas" routerLinkActive="active">
           <fa-icon [icon]="faEntradas" class="icon-inv"></fa-icon> <span>Entradas</span>

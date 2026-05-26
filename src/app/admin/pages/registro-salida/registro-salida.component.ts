@@ -35,8 +35,12 @@ export class RegistroSalidaComponent implements OnInit {
 
   // --- Catálogos ---
   empleados: Empleado[] = [];
-  vehiculosParticulares: VehiculoParticular[] = []; // Se carga completo porque son pocos
+  vehiculosParticulares: VehiculoParticular[] = [];
   
+  // 🚀 NUEVO: Colecciones para el Prorrateo a Granel
+  consumiblesActivos: any[] = [];
+  granelSeleccionado: number[] = [];
+
   nombreUsuarioActual: string = '';
   
   // --- Formularios y Listas ---
@@ -46,7 +50,7 @@ export class RegistroSalidaComponent implements OnInit {
     idVehiculoParticular: null as number | null,
     solicitadoPorID: null as number | null,
     observaciones: '',
-    kilometraje: null as number | null, // Solo para autobuses
+    kilometraje: null as number | null,
     fecha_operacion: this.getFormattedCurrentDateTime()
   };
   
@@ -74,7 +78,6 @@ export class RegistroSalidaComponent implements OnInit {
   
   constructor(private http: HttpClient, private router: Router, private location: Location, public authService: AuthService) {
     
-    // Autocomplete de Autobuses (API)
     this.filteredAutobuses$ = this.autobusControl.valueChanges.pipe(
       startWith(''),
       debounceTime(300),
@@ -82,7 +85,6 @@ export class RegistroSalidaComponent implements OnInit {
       switchMap(value => this._buscarApi('autobuses', value || ''))
     );
 
-    // Autocomplete de Vehículos Particulares (Filtro Local)
     this.filteredVehiculos$ = this.vehiculoControl.valueChanges.pipe(
       startWith(''),
       map(value => {
@@ -97,7 +99,6 @@ export class RegistroSalidaComponent implements OnInit {
       })
     );
 
-    // Autocomplete de Refacciones e Insumos (API)
     this.filteredRefacciones$ = this.refaccionControl.valueChanges.pipe(
       startWith(''),
       debounceTime(400),
@@ -114,6 +115,8 @@ export class RegistroSalidaComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarCatalogos();
+    this.cargarGranelActivo(); // 🚀 NUEVA CARGA INICIAL
+    
     const currentUser = this.authService.getCurrentUser();
     if (currentUser) {
       this.salidaMaestro.solicitadoPorID = currentUser.id;
@@ -127,7 +130,6 @@ export class RegistroSalidaComponent implements OnInit {
     return now.toISOString().slice(0, 16);
   }
 
-  // Método para que tu HTML pueda alternar la vista entre Bus y Particular
   cambiarDestino(destino: 'Autobus' | 'Particular') {
     this.tipoDestino = destino;
     this.salidaMaestro.idAutobus = null;
@@ -173,17 +175,32 @@ export class RegistroSalidaComponent implements OnInit {
   }
   
   cargarCatalogos() {
-    // Cargar Empleados
     this.http.get<Empleado[]>(`${this.apiUrl}/empleados`).subscribe({
       next: (empleados) => { this.empleados = empleados; },
       error: err => this.mostrarNotificacion('Error', 'No se cargaron los empleados.', 'error')
     });
 
-    // Cargar Vehículos Particulares (Flota administrativa)
     this.http.get<VehiculoParticular[]>(`${this.apiUrl}/vehiculos-particulares`).subscribe({
       next: (vehiculos) => { this.vehiculosParticulares = vehiculos; },
       error: err => console.error('No se pudo cargar la flota administrativa')
     });
+  }
+
+  // 🚀 NUEVA FUNCIÓN: Descarga los tambores de grasa/insumos que estén abiertos en piso
+  cargarGranelActivo() {
+    this.http.get<any[]>(`${this.apiUrl}/granel/activos`).subscribe({
+      next: (data) => this.consumiblesActivos = data,
+      error: (err) => console.error('Error al cargar insumos a granel operativos', err)
+    });
+  }
+
+  // 🚀 NUEVA FUNCIÓN: Administra el arreglo de IDs según los clicks en las casillas
+  toggleGranel(idGranel: number, event: any) {
+    if (event.target.checked) {
+      this.granelSeleccionado.push(idGranel);
+    } else {
+      this.granelSeleccionado = this.granelSeleccionado.filter(id => id !== idGranel);
+    }
   }
   
   onRefaccionSelect() {
@@ -249,7 +266,6 @@ export class RegistroSalidaComponent implements OnInit {
       return;
     }
 
-    // Validaciones dependiendo del destino
     if (this.tipoDestino === 'Autobus') {
       if (!this.salidaMaestro.idAutobus || this.salidaMaestro.kilometraje === null) {
         this.mostrarNotificacion('Datos Incompletos', 'Selecciona el autobús e ingresa el kilometraje.');
@@ -267,14 +283,15 @@ export class RegistroSalidaComponent implements OnInit {
       }
     }
 
-    if (this.detallesRefaccionesAAgregar.length === 0 && this.detallesInsumosAAgregar.length === 0) {
-      this.mostrarNotificacion('Sin Detalles', 'Agrega al menos una refacción o insumo al vale.');
+    // 🚀 AJUSTE DE VALIDACIÓN: Ahora un vale de salida es válido SI TIENE refacciones, SI TIENE insumos OR SI MARCÓ un consumible a granel
+    if (this.detallesRefaccionesAAgregar.length === 0 && this.detallesInsumosAAgregar.length === 0 && this.granelSeleccionado.length === 0) {
+      this.mostrarNotificacion('Sin Detalles', 'Agrega al menos una refacción, insumo o marca un consumible a granel para justificar el vale.');
       return;
     }
     
     this.isSaving = true;
 
-    // Generamos el Payload Inteligente
+    // Generamos el Payload Inteligente (Inyectamos el arreglo de granel)
     const payloadMaestro = {
       Tipo_Salida: this.salidaMaestro.tipoSalida,
       ID_Autobus: this.tipoDestino === 'Autobus' ? this.salidaMaestro.idAutobus : null,
@@ -282,7 +299,8 @@ export class RegistroSalidaComponent implements OnInit {
       Solicitado_Por_ID: this.salidaMaestro.solicitadoPorID,
       Observaciones: this.salidaMaestro.observaciones,
       Kilometraje_Autobus: this.tipoDestino === 'Autobus' ? this.salidaMaestro.kilometraje : null,
-      Fecha_Operacion: this.salidaMaestro.fecha_operacion
+      Fecha_Operacion: this.salidaMaestro.fecha_operacion,
+      consumibles_granel_usados: this.granelSeleccionado // 🚀 ENVIADO DIRECTO AL BACKEND
     };
 
     this.http.post<any>(`${this.apiUrl}/salidas`, payloadMaestro).subscribe({

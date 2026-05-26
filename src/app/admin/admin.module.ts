@@ -57,6 +57,7 @@ import { VehiculosParticularesComponent } from './pages/vehiculos-particulares/v
 import { ViajesTurismoComponent } from './pages/viajes-turismo/viajes-turismo.component';
 import { DashTurismoComponent } from './pages/dash-turismo/dash-turismo.component';
 import { ExportToastComponent } from '../components/export-toast/export-toast.component';
+import { GranelComponent } from './pages/granel/granel.component';
 
 @NgModule({
   declarations: [
@@ -103,7 +104,8 @@ import { ExportToastComponent } from '../components/export-toast/export-toast.co
     VehiculosParticularesComponent,
     ViajesTurismoComponent,
     DashTurismoComponent,
-    ExportToastComponent
+    ExportToastComponent,
+    GranelComponent
   ],
   imports: [
     HttpClientModule,

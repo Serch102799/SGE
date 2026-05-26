@@ -20,13 +20,13 @@ import { ExportNotificationService } from '../../../shared/services/export-notif
 export class RecuperadosComponent implements OnInit {
   apiUrl = `${environment.apiUrl}/recuperados`;
   esSuperUsuario: boolean = false;
-  
+
   // ==========================================
   // ESTADOS Y VISTAS
   // ==========================================
   vistaActual: 'kanban' | 'tabla' = 'kanban';
-  todasLasPiezas: any[] = []; 
-  piezasFiltradas: any[] = []; 
+  todasLasPiezas: any[] = [];
+  piezasFiltradas: any[] = [];
 
   // Filtros de búsqueda
   textoBusqueda: string = '';
@@ -56,25 +56,31 @@ export class RecuperadosComponent implements OnInit {
   filteredAutobusesDestino$!: Observable<any[]>;
   filteredProveedores$!: Observable<any[]>;
 
-  modalActivo: string = ''; 
+  modalActivo: string = '';
   piezaSeleccionada: any = null;
-  formData: any = { 
+  formData: any = {
     cantidad: 1,
     subtotal: null,
     aplica_iva: false,
     iva_monto: 0,
-    costo_reparacion: 0
-  }; 
+    costo_reparacion: 0,
+    valor_estimado_ahorro: 0,
+    tipo_vehiculo_destino: 'autobus'
+  };
   isSaving = false;
 
   mostrarModalNotificacion = false;
   notificacion = { titulo: '', mensaje: '', tipo: 'advertencia' };
 
-  constructor(private http: HttpClient, private authService: AuthService, private exportNotif: ExportNotificationService) {}
+  vehiculoParticularControl = new FormControl<any>('');
+  filteredVehiculosParticulares$!: Observable<any[]>;
+
+  constructor(private http: HttpClient, private authService: AuthService, private exportNotif: ExportNotificationService) { }
 
 
   ngOnInit(): void {
     this.cargarPiezas();
+
 
     // 1. BUSCADOR DINÁMICO DE REFACCIONES
     this.filteredRefacciones$ = this.refaccionControl.valueChanges.pipe(
@@ -84,7 +90,7 @@ export class RecuperadosComponent implements OnInit {
       switchMap((value: any) => {
         const term = typeof value === 'string' ? value : value?.nombre;
         if (!term || term.length < 2) return of([]);
-        
+
         return this.http.get<any[]>(`${environment.apiUrl}/refacciones/buscar`, { params: { term } }).pipe(
           map(res => res.map(item => ({
             id_refaccion: item.id_refaccion,
@@ -104,8 +110,8 @@ export class RecuperadosComponent implements OnInit {
       distinctUntilChanged(),
       switchMap((value: any) => {
         const term = typeof value === 'string' ? value : value?.economico;
-        if (!term) return of([]); 
-        
+        if (!term) return of([]);
+
         return this.http.get<any[]>(`${environment.apiUrl}/autobuses/buscar`, { params: { term } }).pipe(
           catchError(() => of([]))
         );
@@ -119,13 +125,29 @@ export class RecuperadosComponent implements OnInit {
       distinctUntilChanged(),
       switchMap((value: any) => {
         const term = typeof value === 'string' ? value : value?.economico;
-        if (!term) return of([]); 
-        
+        if (!term) return of([]);
+
         return this.http.get<any[]>(`${environment.apiUrl}/autobuses/buscar`, { params: { term } }).pipe(
           catchError(() => of([]))
         );
       })
     );
+
+    //4. buscador dinámico de vehiculos particulares
+    this.filteredVehiculosParticulares$ = this.vehiculoParticularControl.valueChanges.pipe(
+      startWith(''),
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap((value: any) => {
+        const term = typeof value === 'string' ? value : value?.propietario;
+        if (!term) return of([]);
+
+        return this.http.get<any[]>(`${environment.apiUrl}/vehiculos_particulares/buscar`, { params: { term } }).pipe(
+          catchError(() => of([]))
+        );
+      })
+    );
+
 
     // 4. BUSCADOR DINÁMICO DE PROVEEDORES (Talleres)
     this.filteredProveedores$ = this.proveedorControl.valueChanges.pipe(
@@ -134,8 +156,8 @@ export class RecuperadosComponent implements OnInit {
       distinctUntilChanged(),
       switchMap((value: any) => {
         const term = typeof value === 'string' ? value : value?.nombre_proveedor;
-        if (!term || term.length < 2) return of([]); 
-        
+        if (!term || term.length < 2) return of([]);
+
         return this.http.get<any[]>(`${environment.apiUrl}/proveedores/buscar`, { params: { term } }).pipe(
           catchError(() => of([]))
         );
@@ -145,14 +167,22 @@ export class RecuperadosComponent implements OnInit {
     this.esSuperUsuario = user?.rol === 'SuperUsuario' || user?.rol === 'Administrador' || user?.rol === 'Admin';
   }
 
-  displayRefaccion(refaccion: any): string { 
-    return refaccion ? `${refaccion.numero_parte || 'S/N'} - ${refaccion.nombre}` : ''; 
+
+  displayVehiculoParticular(vehiculo: any): string {
+    return vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} - ${vehiculo.propietario}` : '';
   }
-  displayAutobus(autobus: any): string { 
-    return autobus ? autobus.economico : ''; 
+
+  onVehiculoParticularSelected(event: MatAutocompleteSelectedEvent) {
+    this.formData.id_vehiculo_particular_destino = event.option.value.id_vehiculo;
   }
-  displayProveedor(proveedor: any): string { 
-    return proveedor ? proveedor.nombre_proveedor : ''; 
+  displayRefaccion(refaccion: any): string {
+    return refaccion ? `${refaccion.numero_parte || 'S/N'} - ${refaccion.nombre}` : '';
+  }
+  displayAutobus(autobus: any): string {
+    return autobus ? autobus.economico : '';
+  }
+  displayProveedor(proveedor: any): string {
+    return proveedor ? proveedor.nombre_proveedor : '';
   }
 
   onRefaccionSelected(event: MatAutocompleteSelectedEvent) { this.formData.id_refaccion = event.option.value.id_refaccion; }
@@ -167,7 +197,7 @@ export class RecuperadosComponent implements OnInit {
     this.http.get<any[]>(this.apiUrl).subscribe({
       next: (data) => {
         this.todasLasPiezas = data;
-        this.aplicarFiltros(); 
+        this.aplicarFiltros();
       },
       error: () => this.mostrarNotificacion('Error', 'No se pudieron cargar las piezas', 'error')
     });
@@ -178,7 +208,7 @@ export class RecuperadosComponent implements OnInit {
 
     if (this.textoBusqueda) {
       const termino = this.textoBusqueda.toLowerCase();
-      filtrado = filtrado.filter(p => 
+      filtrado = filtrado.filter(p =>
         (p.nombre_pieza && p.nombre_pieza.toLowerCase().includes(termino)) ||
         (p.origen_economico && p.origen_economico.toLowerCase().includes(termino)) ||
         (p.proveedor_nombre && p.proveedor_nombre.toLowerCase().includes(termino))
@@ -190,13 +220,13 @@ export class RecuperadosComponent implements OnInit {
     }
     if (this.fechaFin) {
       const fin = new Date(this.fechaFin);
-      fin.setHours(23, 59, 59); 
+      fin.setHours(23, 59, 59);
       filtrado = filtrado.filter(p => new Date(p.fecha_baja) <= fin);
     }
 
     this.piezasFiltradas = filtrado;
     this.distribuirKanban();
-    this.paginaActual = 1; 
+    this.paginaActual = 1;
   }
 
   limpiarFiltros() {
@@ -218,7 +248,7 @@ export class RecuperadosComponent implements OnInit {
     const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
     return this.piezasFiltradas.slice(inicio, inicio + this.itemsPorPagina);
   }
-  
+
   get totalPaginas() { return Math.ceil(this.piezasFiltradas.length / this.itemsPorPagina); }
   cambiarPagina(delta: number) {
     const nueva = this.paginaActual + delta;
@@ -230,10 +260,10 @@ export class RecuperadosComponent implements OnInit {
   // ==========================================
   exportarCSV() {
     const encabezados = "ID,Pieza,Estado,Costo Reparacion,Origen,Destino,Proveedor\n";
-    const filas = this.piezasFiltradas.map(p => 
+    const filas = this.piezasFiltradas.map(p =>
       `${p.id_pieza_recuperada},"${p.nombre_pieza}","${p.estado}",${p.costo_reparacion || 0},"${p.origen_economico || 'N/A'}","${p.destino_economico || 'N/A'}","${p.proveedor_nombre || 'N/A'}"`
     ).join("\n");
-    
+
     const blob = new Blob([encabezados + filas], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -245,11 +275,11 @@ export class RecuperadosComponent implements OnInit {
 
   exportarPDF() {
     const doc = new jsPDF('p', 'mm', 'letter');
-    
+
     doc.setFontSize(18);
-    doc.setTextColor(15, 23, 42); 
+    doc.setTextColor(15, 23, 42);
     doc.text('Reporte de Cascos y Piezas Recuperadas', 14, 22);
-    
+
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text(`Fecha de generación: ${new Date().toLocaleDateString()}`, 14, 30);
@@ -263,24 +293,24 @@ export class RecuperadosComponent implements OnInit {
       p.nombre_pieza,
       p.estado,
       p.origen_economico || 'N/A',
-      p.destino_economico || 'N/A',
+      p.destino_economico ? `Bus ${p.destino_economico}` : (p.destino_particular ? `Auto: ${p.destino_particular}` : 'N/A'),
       p.proveedor_nombre || 'N/A',
       `$${p.costo_reparacion || 0}`
     ]);
 
     autoTable(doc, {
-      startY: 42, 
+      startY: 42,
       head: [['ID', 'Pieza / Componente', 'Estado', 'Origen', 'Destino', 'Taller/Proveedor', 'Costo']],
       body: datosTabla,
       theme: 'grid',
-      headStyles: { 
-        fillColor: [68, 128, 211], 
+      headStyles: {
+        fillColor: [68, 128, 211],
         textColor: 255,
         fontSize: 9,
         fontStyle: 'bold'
       },
       bodyStyles: { fontSize: 8 },
-      alternateRowStyles: { fillColor: [245, 247, 250] }, 
+      alternateRowStyles: { fillColor: [245, 247, 250] },
       margin: { top: 40, left: 14, right: 14 }
     });
 
@@ -294,20 +324,25 @@ export class RecuperadosComponent implements OnInit {
   // MODALES, CÁLCULOS Y GUARDADO
   // ==========================================
   abrirModal(tipo: string, pieza: any = null) {
-    this.modalActivo = tipo; 
-    this.piezaSeleccionada = pieza; 
+    this.modalActivo = tipo;
+    this.piezaSeleccionada = pieza;
     const hoy = new Date().toISOString().split('T')[0];
-    this.formData = { 
+
+    this.formData = {
       cantidad: 1,
       subtotal: null,
       aplica_iva: false,
       iva_monto: 0,
       costo_reparacion: 0,
-      fecha_reparacion: hoy
-    }; 
-    this.refaccionControl.setValue(''); 
+      valor_estimado_ahorro: 0,
+      tipo_vehiculo_destino: 'autobus',
+      fecha_reparacion: hoy,
+      id_vehiculo_particular_destino: null
+    };
+
+    this.refaccionControl.setValue('');
     this.autobusOrigenControl.setValue('');
-    this.autobusDestinoControl.setValue(''); 
+    this.autobusDestinoControl.setValue('');
     this.proveedorControl.setValue('');
   }
 
@@ -318,7 +353,7 @@ export class RecuperadosComponent implements OnInit {
     const sub = parseFloat(this.formData.subtotal) || 0;
     this.formData.iva_monto = this.formData.aplica_iva ? (sub * 0.16) : 0;
     this.formData.costo_total_factura = sub + this.formData.iva_monto;
-    this.formData.costo_reparacion = sub + this.formData.iva_monto; 
+    this.formData.costo_reparacion = sub + this.formData.iva_monto;
   }
 
   guardarIngreso() {
@@ -366,6 +401,6 @@ export class RecuperadosComponent implements OnInit {
   mostrarNotificacion(titulo: string, mensaje: string, tipo: string) {
     this.notificacion = { titulo, mensaje, tipo }; this.mostrarModalNotificacion = true;
   }
-  
+
   cerrarModalNotificacion() { this.mostrarModalNotificacion = false; }
 }
