@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormControl } from '@angular/forms';
 import { Observable, of } from 'rxjs';
-import { startWith, debounceTime, distinctUntilChanged, switchMap, catchError, map } from 'rxjs/operators';
+import { startWith, debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { environment } from '../../../../environments/environments';
 
@@ -20,13 +20,16 @@ export class GranelComponent implements OnInit {
   isLoading = false;
   isSaving = false;
 
-  // Autocomplete para buscar insumos
-  insumoControl = new FormControl();
-  filteredInsumos$!: Observable<any[]>;
-  insumoSeleccionado: any = null;
+  // 🚀 NUEVO: Control de Insumo vs Refacción
+  tipoArticulo: 'insumo' | 'refaccion' = 'insumo';
+
+  articuloControl = new FormControl();
+  filteredArticulos$!: Observable<any[]>;
+  articuloSeleccionado: any = null;
 
   modalActivo: string = '';
   tamborAConfirmar: any = null;
+  tipoCierre: 'tradicional' | 'global' = 'tradicional'; // Controla qué endpoint llamar
 
   mostrarModalNotificacion = false;
   notificacion = { titulo: '', mensaje: '', tipo: 'advertencia' };
@@ -36,26 +39,37 @@ export class GranelComponent implements OnInit {
   ngOnInit(): void {
     this.cargarPanel();
 
-    this.filteredInsumos$ = this.insumoControl.valueChanges.pipe(
+    this.filteredArticulos$ = this.articuloControl.valueChanges.pipe(
       startWith(''),
       debounceTime(400),
       distinctUntilChanged(),
       switchMap(value => {
         const term = typeof value === 'string' ? value : value?.nombre;
         if (!term || term.length < 2) return of([]);
-        return this.http.get<any[]>(`${environment.apiUrl}/insumos/buscar`, { params: { term } }).pipe(
+        
+        // Dependiendo del radio button, busca en una ruta u otra
+        const rutaBusqueda = this.tipoArticulo === 'insumo' ? 'insumos' : 'refacciones';
+        return this.http.get<any[]>(`${environment.apiUrl}/${rutaBusqueda}/buscar`, { params: { term } }).pipe(
           catchError(() => of([]))
         );
       })
     );
   }
 
-  displayInsumo(insumo: any): string {
-    return insumo ? `${insumo.nombre} (Stock: ${insumo.stock_actual})` : '';
+  cambiarTipoArticulo(tipo: 'insumo' | 'refaccion') {
+    this.tipoArticulo = tipo;
+    this.articuloControl.setValue('');
+    this.articuloSeleccionado = null;
   }
 
-  onInsumoSelected(event: MatAutocompleteSelectedEvent): void {
-    this.insumoSeleccionado = event.option.value;
+  displayArticulo(item: any): string {
+    if (!item) return '';
+    if (this.tipoArticulo === 'insumo') return `${item.nombre} (Stock: ${item.stock_actual})`;
+    return `${item.nombre} (No. Parte: ${item.numero_parte || 'S/N'})`;
+  }
+
+  onArticuloSelected(event: MatAutocompleteSelectedEvent): void {
+    this.articuloSeleccionado = event.option.value;
   }
 
   cargarPanel() {
@@ -75,12 +89,13 @@ export class GranelComponent implements OnInit {
 
   abrirModalNuevo() {
     this.modalActivo = 'nuevo';
-    this.insumoControl.setValue('');
-    this.insumoSeleccionado = null;
+    this.articuloControl.setValue('');
+    this.articuloSeleccionado = null;
   }
 
-  abrirModalConfirmacion(tambor: any) {
+  abrirModalConfirmacion(tambor: any, tipo: 'tradicional' | 'global') {
     this.tamborAConfirmar = tambor;
+    this.tipoCierre = tipo;
     this.modalActivo = 'confirmarCierre';
   }
 
@@ -90,21 +105,26 @@ export class GranelComponent implements OnInit {
   }
 
   guardarNuevoTambor() {
-    if (!this.insumoSeleccionado) {
-      this.mostrarNotificacion('Atención', 'Debes seleccionar un insumo del catálogo.', 'advertencia');
+    if (!this.articuloSeleccionado) {
+      this.mostrarNotificacion('Atención', 'Debes seleccionar un artículo del catálogo.', 'advertencia');
       return;
     }
 
     this.isSaving = true;
-    this.http.post(`${this.apiUrl}/abrir`, { id_insumo: this.insumoSeleccionado.id_insumo }).subscribe({
+    const payload = { 
+      id_item: this.tipoArticulo === 'insumo' ? this.articuloSeleccionado.id_insumo : this.articuloSeleccionado.id_refaccion,
+      tipo_item: this.tipoArticulo
+    };
+
+    this.http.post(`${this.apiUrl}/abrir`, payload).subscribe({
       next: () => {
-        this.mostrarNotificacion('¡Éxito!', 'El insumo se ha movido al piso de taller y está listo para usarse.', 'exito');
+        this.mostrarNotificacion('¡Éxito!', 'El artículo se ha movido al piso de taller.', 'exito');
         this.cerrarModal();
         this.cargarPanel();
         this.isSaving = false;
       },
       error: (err) => {
-        this.mostrarNotificacion('Error', err.error?.message || 'No se pudo abrir el tambor.', 'error');
+        this.mostrarNotificacion('Error', err.error?.message || 'No se pudo abrir el artículo.', 'error');
         this.isSaving = false;
       }
     });
@@ -114,16 +134,19 @@ export class GranelComponent implements OnInit {
     if (!this.tamborAConfirmar) return;
     this.isSaving = true;
 
-    this.http.post<any>(`${this.apiUrl}/${this.tamborAConfirmar.id_consumible_granel}/cerrar-prorratear`, {}).subscribe({
+    // Decidimos a qué endpoint pegarle
+    const ruta = this.tipoCierre === 'global' ? 'prorrateo-global' : 'cerrar-prorratear';
+
+    this.http.post<any>(`${this.apiUrl}/${this.tamborAConfirmar.id_consumible_granel}/${ruta}`, {}).subscribe({
       next: (res) => {
-        const msj = `Tambor liquidado. El costo de $${parseFloat(this.tamborAConfirmar.costo_total_tambor).toLocaleString()} se dividió entre ${res.vehiculos_impactados} vehículos impactados ($${parseFloat(res.costo_asignado_por_vehiculo).toLocaleString()} a cada uno).`;
-        this.mostrarNotificacion('¡Prorrateo Exitoso!', msj, 'exito');
+        const msj = `Liquidación Exitosa. El costo se dividió entre ${res.vehiculos_impactados} vehículos impactados ($${parseFloat(res.costo_asignado_por_vehiculo).toLocaleString()} a cada uno).`;
+        this.mostrarNotificacion('¡Ajuste Contable!', msj, 'exito');
         this.cerrarModal();
         this.cargarPanel();
         this.isSaving = false;
       },
       error: (err) => {
-        this.mostrarNotificacion('Error', err.error?.message || 'Error al liquidar el tambor.', 'error');
+        this.mostrarNotificacion('Error', err.error?.message || 'Error al liquidar.', 'error');
         this.isSaving = false;
       }
     });

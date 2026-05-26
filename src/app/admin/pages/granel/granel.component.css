@@ -1,0 +1,487 @@
+/* =====================================================
+   GRANEL COMPONENT - PREMIUM STYLES
+   Consumibles y Gasto General (Piso de Taller)
+   ===================================================== */
+
+:host {
+  display: block;
+  font-family: inherit;
+  color: var(--text-secondary);
+  animation: fadeIn var(--transition-normal) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===================================================
+   CONTENEDOR PRINCIPAL
+   ===================================================== */
+.dashboard-container {
+  margin: 0 auto;
+  padding: var(--spacing-md);
+}
+
+/* ===================================================
+   SECCIÓN FINANCIERA (Header Principal)
+   ===================================================== */
+.financial-section {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-lg);
+  transition: all var(--transition-normal);
+}
+
+.financial-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.financial-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.financial-header h3 i {
+  color: #38bdf8;
+}
+
+/* ===================================================
+   BOTONES
+   ===================================================== */
+.btn-guardar,
+.btn-cancelar {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-guardar {
+  background: var(--info-gradient);
+  color: white;
+}
+
+.btn-guardar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);
+  filter: brightness(1.1);
+}
+
+.btn-guardar:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-guardar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-cancelar {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-tertiary);
+  border: 1px solid var(--border-primary);
+}
+
+.btn-cancelar:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* ===================================================
+   STAT BOX (CARDS DE ARTÍCULOS ABIERTOS)
+   ===================================================== */
+.stat-box {
+  transition: transform var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+  transition: all 0.6s ease;
+}
+
+.stat-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 15px rgba(245, 158, 11, 0.1);
+}
+
+.stat-box:hover::before {
+  left: 100%;
+}
+
+.stat-box h5 {
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+.stat-box .text-muted {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: var(--spacing-md);
+}
+
+.stat-box .text-success,
+.stat-box .text-info {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* ===================================================
+   TABLA PREMIUM (Historial de Liquidaciones)
+   ===================================================== */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+}
+
+.premium-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.95rem;
+}
+
+.premium-table thead {
+  background: var(--bg-secondary);
+}
+
+.premium-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  padding: 16px;
+  border-bottom: 2px solid var(--border-secondary);
+  letter-spacing: 0.05em;
+}
+
+.premium-table td {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  vertical-align: middle;
+  background: rgba(30, 41, 59, 0.4);
+  transition: background var(--transition-fast);
+  color: var(--text-tertiary);
+}
+
+.premium-table tbody tr:hover td {
+  background: rgba(30, 41, 59, 0.8);
+}
+
+.premium-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.premium-table .text-muted {
+  color: var(--text-muted);
+}
+
+.premium-table .text-info {
+  color: #3b82f6;
+}
+
+.premium-table .text-success {
+  color: #10b981;
+}
+
+.premium-table .text-right {
+  text-align: right;
+}
+
+.premium-table .text-center {
+  text-align: center;
+}
+
+/* ===================================================
+   BADGES (Etiquetas de Estado)
+   ===================================================== */
+.badge-warning {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ===================================================
+   MODAL - OVERLAY
+   ===================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-dark-overlay);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: modalBgFadeIn var(--transition-normal);
+}
+
+@keyframes modalBgFadeIn {
+  from {
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+  }
+  to {
+    background: var(--bg-dark-overlay);
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* ===================================================
+   MODAL - CONTENIDO
+   ===================================================== */
+.modal-content {
+  background: var(--bg-dark-modal);
+  width: 90%;
+  max-width: 500px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  animation: modalScaleUp var(--transition-normal) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-header {
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--text-white);
+}
+
+.modal-header h3 i {
+  color: #38bdf8;
+}
+
+/* Encabezados condicionales */
+.header-exito h3 {
+  color: #8b5cf6;
+}
+
+.header-exito h3 i {
+  color: #8b5cf6;
+}
+
+.header-advertencia h3 {
+  color: #10b981;
+}
+
+.header-advertencia h3 i {
+  color: #10b981;
+}
+
+.btn-cerrar {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: color var(--transition-fast);
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+.btn-cerrar:hover {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* ===================================================
+   MODAL - BODY
+   ===================================================== */
+.modal-body {
+  padding: 24px;
+  color: var(--text-light);
+}
+
+/* Radio button labels */
+.modal-body label {
+  color: var(--text-light);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-body input[type="radio"] {
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+/* Form groups */
+.form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.form-group label {
+  display: block;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+}
+
+.form-group .text-danger {
+  color: #ef4444;
+}
+
+/* ===================================================
+   MODAL - FOOTER
+   ===================================================== */
+.modal-footer {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+  background: rgba(15, 23, 42, 0.3);
+}
+
+/* ===================================================
+   MATERIAL DESIGN OVERRIDES
+   ===================================================== */
+::ng-deep .dark-theme-mat .mat-mdc-form-field-flex {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+::ng-deep .dark-theme-mat .mat-mdc-text-field-wrapper {
+  padding: 0 !important;
+}
+
+::ng-deep .dark-theme-mat input.mat-mdc-input-element {
+  color: var(--text-secondary) !important;
+}
+
+::ng-deep .dark-theme-mat .mat-mdc-form-field-label {
+  color: var(--text-muted) !important;
+}
+
+::ng-deep .mat-mdc-autocomplete-panel {
+  background-color: #1e293b !important;
+  border: 1px solid var(--border-primary) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+::ng-deep .mat-mdc-option {
+  color: var(--text-tertiary) !important;
+  transition: background var(--transition-fast);
+}
+
+::ng-deep .mat-mdc-option:hover {
+  background-color: rgba(56, 189, 248, 0.1) !important;
+  color: #38bdf8 !important;
+}
+
+::ng-deep .mat-mdc-option.mdc-list-item--selected {
+  background-color: rgba(56, 189, 248, 0.2) !important;
+  color: #38bdf8 !important;
+}
+
+/* ===================================================
+   RESPONSIVE
+   ===================================================== */
+@media (max-width: 768px) {
+  .financial-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .financial-header h3 {
+    font-size: 1.25rem;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-width: 90vw;
+  }
+
+  .modal-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .btn-cerrar {
+    align-self: flex-end;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+  }
+
+  .btn-guardar,
+  .btn-cancelar {
+    width: 100%;
+    justify-content: center;
+  }
+}
