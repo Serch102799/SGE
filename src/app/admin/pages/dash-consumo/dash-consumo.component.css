@@ -1,4 +1,4 @@
-﻿:host {
+:host {
   display: block;
   min-height: 100vh;
   padding: 40px 20px;
@@ -12,12 +12,13 @@
 }
 
 .financial-section {
-  background-color: rgba(0, 0, 0, 0.658);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.7), rgba(30, 41, 59, 0.6));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
   padding: 25px;
   margin-bottom: 25px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .financial-header {
@@ -77,12 +78,20 @@
 }
 
 .kpi-card {
-  background-color: rgba(0, 0, 0, 0.658);
-  border: 1px solid var(--border-color);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.7), rgba(30, 41, 59, 0.6));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-left: 5px solid #4ade80;
-  border-radius: 10px;
+  border-radius: 16px;
   padding: 25px;
   text-align: center;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
 }
 
 .kpi-value {
@@ -99,10 +108,17 @@
 }
 
 .chart-container {
-  background-color: rgba(0, 0, 0, 0.664);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.7), rgba(30, 41, 59, 0.6));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
   padding: 25px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+}
+.chart-container:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
 }
 
 .chart-container h3 {
@@ -136,6 +152,36 @@
 .btn-cancelar:hover { background-color: #777; }
 
 .kpi-loading { text-align: center; padding: 40px; color: #38bdf8; }
+
+/* Nuevas Tablas de Ranking */
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+.ranking-table th {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  padding: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  text-align: left;
+}
+.ranking-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.02);
+  color: #e2e8f0;
+  font-size: 0.95rem;
+}
+.ranking-table tr:hover td {
+  background: rgba(255,255,255,0.05);
+}
+.badge-rendimiento {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
 
 @media (max-width: 1024px) {
   .charts-grid-fuel { grid-template-columns: 1fr; }

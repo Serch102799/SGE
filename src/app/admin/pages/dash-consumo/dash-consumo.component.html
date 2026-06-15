@@ -1,4 +1,4 @@
-﻿<div class="dashboard-container">
+<div class="dashboard-container">
   
   <div class="financial-section">
     <div class="financial-header">
@@ -40,7 +40,7 @@
   </div>
 
   <div *ngIf="!isLoading">
-    <div class="kpi-grid">
+    <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
       <div class="kpi-card" style="border-left-color: #38bdf8;">
         <div class="kpi-label" style="color: #38bdf8;">Total Litros Quemados</div>
         <div class="kpi-value">{{ totalLitros | number:'1.0-0' }} L</div>
@@ -50,16 +50,20 @@
         <div class="kpi-value">{{ totalKm | number:'1.0-0' }} km</div>
       </div>
       <div class="kpi-card" [ngStyle]="{'border-left-color': rendimientoGlobal >= 3 ? '#10b981' : (rendimientoGlobal >= 2 ? '#f59e0b' : '#ef4444')}">
-        <div class="kpi-label text-white">Rendimiento Promedio Global</div>
+        <div class="kpi-label text-white">Rendimiento Global</div>
         <div class="kpi-value" [ngStyle]="{'color': rendimientoGlobal >= 3 ? '#10b981' : (rendimientoGlobal >= 2 ? '#f59e0b' : '#ef4444')}">
           {{ rendimientoGlobal | number:'1.2-2' }} <small style="font-size: 1rem;">km/L</small>
         </div>
       </div>
+      <div class="kpi-card" style="border-left-color: #f43f5e;">
+        <div class="kpi-label" style="color: #f43f5e;">Costo Estimado Diésel</div>
+        <div class="kpi-value" style="color: #f43f5e;">{{ costoEstimado | currency:'MXN' }}</div>
+      </div>
     </div>
 
-    <div class="charts-grid-fuel">
+    <div class="charts-grid-fuel" style="grid-template-columns: 1fr 1fr; margin-bottom: 25px;">
       <div class="chart-container tendecia-container">
-        <h3>Tendencia de Consumo por Día</h3>
+        <h3><i class="fas fa-chart-bar text-info"></i> Tendencia de Consumo (Litros)</h3>
         <div class="chart-wrapper-horizontal" *ngIf="chartTendenciaData.labels!.length > 0">
           <canvas baseChart [data]="chartTendenciaData" [options]="chartTendenciaOptions" type="bar"></canvas>
         </div>
@@ -68,15 +72,76 @@
         </div>
       </div>
 
+      <div class="chart-container tendecia-container">
+        <h3><i class="fas fa-chart-line text-success"></i> Histórico de Rendimiento (km/L)</h3>
+        <div class="chart-wrapper-horizontal" *ngIf="chartTendenciaRendimientoData.labels!.length > 0">
+          <canvas baseChart [data]="chartTendenciaRendimientoData" [options]="chartTendenciaRendimientoOptions" type="line"></canvas>
+        </div>
+        <div *ngIf="chartTendenciaRendimientoData.labels!.length === 0" class="empty-chart">
+          No hay datos suficientes.
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid-fuel" style="grid-template-columns: 1fr 1fr 1fr;">
       <div class="chart-container top-container">
         <h3>Unidades de Mayor Consumo</h3>
         <div class="chart-wrapper" *ngIf="chartTopBusesData.labels!.length > 0">
           <canvas baseChart [data]="chartTopBusesData" [options]="chartTopBusesOptions" type="doughnut"></canvas>
         </div>
         <div *ngIf="chartTopBusesData.labels!.length === 0" class="empty-chart">
-          No hay datos suficientes.
+          No hay datos.
         </div>
       </div>
+
+      <!-- Top Operadores (Ranking) -->
+      <div class="chart-container">
+        <h3>Top Rendimiento: Operadores</h3>
+        <table class="ranking-table" *ngIf="topOperadores.length > 0">
+          <thead>
+            <tr>
+              <th>Operador</th>
+              <th>Litros</th>
+              <th>km/L</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let op of topOperadores">
+              <td>{{ op.nombre }}</td>
+              <td>{{ op.litros | number:'1.0-0' }}</td>
+              <td>
+                <span class="badge-rendimiento" [ngStyle]="{'background': op.kmL >= 2.5 ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)', 'color': op.kmL >= 2.5 ? '#10b981' : '#ef4444'}">
+                  {{ op.kmL | number:'1.1-2' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="topOperadores.length === 0" class="empty-chart">Sin datos suficientes.</div>
+      </div>
+
+      <!-- Rutas Críticas -->
+      <div class="chart-container">
+        <h3>Consumo por Ruta</h3>
+        <table class="ranking-table" *ngIf="topRutas.length > 0">
+          <thead>
+            <tr>
+              <th>Ruta</th>
+              <th>Litros</th>
+              <th>km/L</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ruta of topRutas">
+              <td>{{ ruta.nombre }}</td>
+              <td>{{ ruta.litros | number:'1.0-0' }} L</td>
+              <td>{{ ruta.kmL | number:'1.1-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="topRutas.length === 0" class="empty-chart">Sin rutas asignadas.</div>
+      </div>
+
     </div>
   </div>
 

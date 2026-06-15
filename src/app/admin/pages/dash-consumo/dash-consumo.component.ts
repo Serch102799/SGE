@@ -38,6 +38,12 @@ export class DashConsumoComponent implements OnInit {
   totalLitros: number = 0;
   totalKm: number = 0;
   rendimientoGlobal: number = 0;
+  costoEstimado: number = 0;
+  precioDieselPromedio: number = 24.50; // $24.50 MXN/L por defecto
+
+  // Rankings
+  topOperadores: { nombre: string, kmL: number, litros: number }[] = [];
+  topRutas: { nombre: string, kmL: number, litros: number }[] = [];
 
   // ==========================================
   // GRÁFICA 1: TENDENCIA POR DÍA
@@ -65,6 +71,23 @@ export class DashConsumoComponent implements OnInit {
   public chartTopBusesData: ChartData<'doughnut'> = {
     labels: [],
     datasets: [{ data: [], backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#64748b'] }]
+  };
+
+  // ==========================================
+  // GRÁFICA 3: TENDENCIA HISTÓRICA RENDIMIENTO (km/L)
+  // ==========================================
+  public chartTendenciaRendimientoOptions: ChartConfiguration['options'] = {
+    responsive: true, maintainAspectRatio: false,
+    elements: { line: { tension: 0.4 }, point: { radius: 4 } },
+    plugins: { legend: { display: true, labels: { color: '#e0e0e0' } }, tooltip: { mode: 'index', intersect: false } },
+    scales: {
+      x: { ticks: { color: '#a7b7d2' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+      y: { ticks: { color: '#a7b7d2' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+    }
+  };
+  public chartTendenciaRendimientoData: ChartData<'line'> = {
+    labels: [],
+    datasets: [{ data: [], label: 'Rendimiento (km/L)', borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.2)', fill: true }]
   };
 
   constructor(private http: HttpClient, public authService: AuthService) {
@@ -183,8 +206,10 @@ export class DashConsumoComponent implements OnInit {
 
   procesarDatosGraficas(cargas: any[]) {
     this.totalLitros = 0; this.totalKm = 0;
-    const agrupadoPorDia: { [key: string]: number } = {};
+    const agrupadoPorDia: { [key: string]: { litros: number, km: number } } = {};
     const agrupadoPorBus: { [key: string]: number } = {};
+    const agrupadoPorOperador: { [key: string]: { litros: number, km: number } } = {};
+    const agrupadoPorRuta: { [key: string]: { litros: number, km: number } } = {};
 
     cargas.forEach(carga => {
       const litros = parseFloat(carga.litros_cargados) || 0;
@@ -195,25 +220,56 @@ export class DashConsumoComponent implements OnInit {
         const fecha = new Date(carga.fecha_operacion);
         fecha.setMinutes(fecha.getMinutes() + fecha.getTimezoneOffset()); 
         const diaStr = fecha.toLocaleDateString('es-MX', { weekday: 'short', day: '2-digit', month: 'short' });
-        if (!agrupadoPorDia[diaStr]) agrupadoPorDia[diaStr] = 0;
-        agrupadoPorDia[diaStr] += litros;
+        if (!agrupadoPorDia[diaStr]) agrupadoPorDia[diaStr] = { litros: 0, km: 0 };
+        agrupadoPorDia[diaStr].litros += litros;
+        agrupadoPorDia[diaStr].km += km;
       }
 
       const busStr = `Bus ${carga.economico || 'S/D'}`;
       if (!agrupadoPorBus[busStr]) agrupadoPorBus[busStr] = 0;
       agrupadoPorBus[busStr] += litros;
+
+      const opStr = carga.nombre_operador || 'Sin Operador';
+      if (!agrupadoPorOperador[opStr]) agrupadoPorOperador[opStr] = { litros: 0, km: 0 };
+      agrupadoPorOperador[opStr].litros += litros;
+      agrupadoPorOperador[opStr].km += km;
+
+      const rutaStr = carga.nombre_ruta || 'Sin Ruta';
+      if (!agrupadoPorRuta[rutaStr]) agrupadoPorRuta[rutaStr] = { litros: 0, km: 0 };
+      agrupadoPorRuta[rutaStr].litros += litros;
+      agrupadoPorRuta[rutaStr].km += km;
     });
 
     this.rendimientoGlobal = this.totalLitros > 0 ? (this.totalKm / this.totalLitros) : 0;
+    this.costoEstimado = this.totalLitros * this.precioDieselPromedio;
 
+    // Tendencia Litros
     this.chartTendenciaData.labels = Object.keys(agrupadoPorDia);
-    this.chartTendenciaData.datasets[0].data = Object.values(agrupadoPorDia);
+    this.chartTendenciaData.datasets[0].data = Object.values(agrupadoPorDia).map(d => d.litros);
+
+    // Tendencia Rendimiento Histórico
+    this.chartTendenciaRendimientoData.labels = Object.keys(agrupadoPorDia);
+    this.chartTendenciaRendimientoData.datasets[0].data = Object.values(agrupadoPorDia).map(d => d.litros > 0 ? (d.km / d.litros) : 0);
 
     const busesOrdenados = Object.entries(agrupadoPorBus)
       .map(([bus, litros]) => ({ bus, litros })).sort((a, b) => b.litros - a.litros).slice(0, 6);
 
     this.chartTopBusesData.labels = busesOrdenados.map(b => b.bus);
     this.chartTopBusesData.datasets[0].data = busesOrdenados.map(b => b.litros);
+
+    // Top Operadores (Filtramos los que tienen más de 50 litros para evitar valores extremos falsos)
+    this.topOperadores = Object.entries(agrupadoPorOperador)
+      .filter(([_, data]) => data.litros > 50)
+      .map(([nombre, data]) => ({ nombre, kmL: data.km / data.litros, litros: data.litros }))
+      .sort((a, b) => b.kmL - a.kmL)
+      .slice(0, 5);
+
+    // Top Rutas (Más consumo)
+    this.topRutas = Object.entries(agrupadoPorRuta)
+      .filter(([_, data]) => data.litros > 0)
+      .map(([nombre, data]) => ({ nombre, kmL: data.km / data.litros, litros: data.litros }))
+      .sort((a, b) => b.litros - a.litros)
+      .slice(0, 5);
 
     this.chartTendencia?.update();
   }

@@ -1,4 +1,4 @@
-﻿/* ============================================= */
+/* ============================================= */
 /* --- BASE Y FONDO --- */
 /* ============================================= */
 :host {
@@ -29,11 +29,12 @@
   max-width: 100%;
   width: 95%;
   margin: 0 auto;
-  background-color: rgba(0, 0, 0, 0.8);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.7), rgba(30, 41, 59, 0.6));
+  backdrop-filter: blur(12px);
   color: var(--text-light);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(255, 255, 255, 0.02);
   overflow: hidden;
 }
 
@@ -65,42 +66,25 @@
 }
 
 .btn-agregar {
-  background: linear-gradient(135deg, #2196F3 0%, #1976d2 100%);
-  color: white;
-  border: none;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(37, 99, 235, 0.2));
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #fff;
   padding: 0.65rem 1.5rem;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
   font-size: 0.95rem;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+  backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   gap: 8px;
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-agregar::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.2);
-  transition: left 0.5s ease;
 }
 
 .btn-agregar:hover {
-  background: linear-gradient(135deg, #42a5f5 0%, #2196F3 100%);
-  box-shadow: 0 8px 20px rgba(33, 150, 243, 0.4);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.4), rgba(37, 99, 235, 0.4));
+  box-shadow: 0 8px 15px rgba(56, 189, 248, 0.2);
   transform: translateY(-2px);
-}
-
-.btn-agregar:hover::before {
-  left: 100%;
 }
 
 .container-body {
@@ -141,22 +125,25 @@
 }
 
 .kpi-card {
-  background: linear-gradient(135deg, rgba(33, 150, 243, 0.08) 0%, rgba(13, 71, 161, 0.05) 100%);
-  border-left: 4px solid #2196F3;
-  border-top: 1px solid rgba(33, 150, 243, 0.2);
-  border-right: 1px solid rgba(33, 150, 243, 0.1);
-  border-bottom: 1px solid rgba(33, 150, 243, 0.1);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.7), rgba(30, 41, 59, 0.6));
+  backdrop-filter: blur(12px);
+  border-left: 4px solid #38bdf8;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   padding: 1.75rem;
-  border-radius: 10px;
+  border-radius: 12px;
   text-align: center;
-  box-shadow: 0 4px 16px rgba(33, 150, 243, 0.08);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .kpi-card:hover {
-  background: linear-gradient(135deg, rgba(33, 150, 243, 0.12) 0%, rgba(13, 71, 161, 0.08) 100%);
-  box-shadow: 0 8px 24px rgba(33, 150, 243, 0.15);
-  transform: translateY(-2px);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(56, 189, 248, 0.1);
+  border-left-color: #7dd3fc;
 }
 
 .kpi-value {
@@ -236,38 +223,73 @@
 }
 
 /* ============================================= */
-/* --- BARRA DE PROGRESO --- */
+/* --- BARRA DE PROGRESO (LIQUID ANIMATION) --- */
 /* ============================================= */
 .progress-bar-container {
   width: 100%;
-  height: 24px;
-  background-color: #1f2937;
-  border-radius: 4px;
+  height: 28px;
+  background-color: rgba(15, 23, 42, 0.6);
+  border-radius: 14px;
   overflow: hidden;
-  border: 1px solid #38404a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+  position: relative;
 }
 
 .progress-bar {
   height: 100%;
-  color: white;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8em;
-  font-weight: 600;
-  transition: width 0.5s ease-in-out;
+  font-size: 0.85em;
+  font-weight: 700;
+  text-shadow: 0px 1px 3px rgba(0,0,0,0.8);
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efecto de olas y burbujas */
+.progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%),
+    radial-gradient(circle, rgba(255,255,255,0.5) 2px, transparent 2px);
+  background-size: 200% 100%, 20px 20px;
+  animation: shimmer 2s infinite linear, bubbleRise 3s infinite linear;
+  z-index: 1;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0, 0 20px; }
+  100% { background-position: -200% 0, 0 0; }
+}
+@keyframes bubbleRise {
+  0% { background-position: 200% 0, 0 20px; }
+  100% { background-position: -200% 0, 0 0; }
+}
+
+.progress-content {
+  position: relative;
+  z-index: 2;
 }
 
 .progress-bar.low {
-  background: linear-gradient(90deg, #d32f2f 0%, #b71c1c 100%);
+  background: linear-gradient(90deg, #b91c1c 0%, #ef4444 100%);
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
 }
 
 .progress-bar.medium {
-  background: linear-gradient(90deg, #f57c00 0%, #e65100 100%);
+  background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%);
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
 }
 
 .progress-bar.high {
-  background: linear-gradient(90deg, #4caf50 0%, #388e3c 100%);
+  background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
 }
 
 /* ============================================= */
@@ -330,10 +352,11 @@
 }
 
 .modal-content {
-  background-color: rgba(25, 28, 36, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.02);
   width: 90%;
   max-width: 700px;
   overflow: hidden;

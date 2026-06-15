@@ -53,6 +53,8 @@ export class RefaccionesComponent implements OnInit {
   mostrarModalBorrar = false;
   mostrarModalSalida = false;
   mostrarModalHistorial = false;
+  mostrarModalCancelar = false;
+  movimientoACancelar: any = null;
   
   nuevaRefaccion: Partial<Refaccion> = {
     Nombre: '',
@@ -69,6 +71,7 @@ export class RefaccionesComponent implements OnInit {
   };
   historialSeleccionado: any[] = [];
   refaccionSeleccionadaNombre: string | null = null;
+  refaccionSeleccionadaId: number | null = null;
 
   mostrarModalNotificacion = false;
   notificacion = {
@@ -257,7 +260,12 @@ item: any;
   
   verHistorial(refaccion: Refaccion) {
     this.refaccionSeleccionadaNombre = refaccion.Nombre;
-    this.http.get<any[]>(`${this.movimientosApiUrl}/${refaccion.id_refaccion}`).subscribe({
+    this.refaccionSeleccionadaId = refaccion.id_refaccion;
+    this.cargarHistorial(refaccion.id_refaccion);
+  }
+
+  cargarHistorial(idRefaccion: number) {
+    this.http.get<any[]>(`${this.movimientosApiUrl}/${idRefaccion}`).subscribe({
       next: (historial) => {
         this.historialSeleccionado = historial;
         this.mostrarModalHistorial = true;
@@ -265,10 +273,44 @@ item: any;
       error: (err) => this.mostrarNotificacion('Error', 'No se pudo cargar el historial.', 'error')
     });
   }
+
+  cancelarMovimiento(mov: any) {
+    this.movimientoACancelar = mov;
+    this.mostrarModalCancelar = true;
+  }
+
+  cerrarModalCancelar() {
+    this.mostrarModalCancelar = false;
+    this.movimientoACancelar = null;
+  }
+
+  confirmarCancelacion() {
+    if (!this.movimientoACancelar) return;
+    
+    this.http.post(`${this.movimientosApiUrl}/cancelar`, {
+      id_detalle: this.movimientoACancelar.id_detalle,
+      tabla_origen: this.movimientoACancelar.tabla_origen
+    }).subscribe({
+      next: () => {
+        this.mostrarNotificacion('Éxito', 'Movimiento cancelado exitosamente.', 'exito');
+        this.obtenerRefacciones(); // Actualiza el stock en la tabla principal
+        if (this.refaccionSeleccionadaId) {
+          this.cargarHistorial(this.refaccionSeleccionadaId); // Refresca el historial
+        }
+        this.cerrarModalCancelar();
+      },
+      error: (err) => {
+        this.mostrarNotificacion('Error', err.error?.message || 'Error al cancelar el movimiento.', 'error');
+        this.cerrarModalCancelar();
+      }
+    });
+  }
+
   cerrarModalHistorial() {
     this.mostrarModalHistorial = false;
     this.historialSeleccionado = [];
     this.refaccionSeleccionadaNombre = null;
+    this.refaccionSeleccionadaId = null;
   }
 
   exportarAExcel() {

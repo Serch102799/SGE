@@ -19,6 +19,22 @@
 
   <div *ngIf="!isLoading && stats">
 
+    <!-- ACCIONES RÁPIDAS -->
+    <div class="quick-actions-container">
+      <a routerLink="/admin/entradas" class="quick-action-btn action-green">
+        <i class="fas fa-plus-circle"></i> Registrar Entrada
+      </a>
+      <a routerLink="/admin/salidas" class="quick-action-btn action-orange">
+        <i class="fas fa-minus-circle"></i> Vale de Salida
+      </a>
+      <a routerLink="/admin/mantenimiento" class="quick-action-btn">
+        <i class="fas fa-wrench"></i> Agendar Servicio
+      </a>
+      <a routerLink="/admin/refacciones" class="quick-action-btn">
+        <i class="fas fa-box-open"></i> Ver Inventario
+      </a>
+    </div>
+
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-value">{{ stats.valorTotalInventario | currency:'MXN' }}</div>
@@ -191,6 +207,20 @@
           </ng-template>
         </div>
       </div>
+
+      <!-- TENDENCIA HISTÓRICA LÍNEAS -->
+      <div class="charts-grid-single" style="margin-top: 25px;" *ngIf="!isLoadingKpis">
+        <div class="chart-container" style="width: 100%;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+            <h3 style="margin: 0;">Tendencia Histórica (Últimos 6 Meses)</h3>
+            <span style="color: #94a3b8; font-size: 0.85rem;"><i class="fas fa-info-circle"></i> Datos de proyección</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas baseChart [data]="tendenciaHistoricaData" [options]="tendenciaHistoricaOptions" type="line"></canvas>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <div class="charts-grid">
@@ -244,66 +274,57 @@
     </div>
 
     <div class="movimientos-grid">
+      <!-- TIMELINE DE ENTRADAS -->
       <div class="movimiento-card">
-        <h3>Últimos Movimientos de Entradas</h3>
-        <div class="tabla-responsive-wrapper">
-          <table class="tabla-movimientos">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Tipo</th>
-                <th>Descripción</th>
-                <th>Cantidad</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let entrada of stats.ultimasEntradas">
-                <td>{{ entrada.fecha_operacion | date:'short' }}</td>
-                <td>
-                  <span class="badge"
-                    [ngClass]="{'badge-refaccion': entrada.tipo_item === 'Refacción', 'badge-insumo': entrada.tipo_item === 'Insumo'}">
-                    {{ entrada.tipo_item }}
-                  </span>
-                </td>
-                <td>{{ entrada.nombre_item }}</td>
-                <td class="cantidad-entrada">+{{ entrada.cantidad_recibida | number:'1.2-2' }}</td>
-              </tr>
-              <tr *ngIf="!stats.ultimasEntradas || stats.ultimasEntradas.length === 0">
-                <td colspan="4" class="empty-table-message">No hay entradas recientes.</td>
-              </tr>
-            </tbody>
-          </table>
+        <h3><i class="fas fa-arrow-down" style="color: #10b981;"></i> Actividad de Entradas Recientes</h3>
+        <div class="timeline-container">
+          <div class="timeline-item" *ngFor="let entrada of stats.ultimasEntradas">
+            <div class="timeline-icon icon-entrada">
+              <i class="fas" [ngClass]="{'fa-cogs': entrada.tipo_item === 'Refacción', 'fa-tint': entrada.tipo_item === 'Insumo'}"></i>
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <span class="timeline-title">{{ entrada.nombre_item }}</span>
+                <span class="timeline-date">{{ entrada.fecha_operacion | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <div class="timeline-body">
+                <span class="badge" [ngClass]="{'badge-refaccion': entrada.tipo_item === 'Refacción', 'badge-insumo': entrada.tipo_item === 'Insumo'}">
+                  {{ entrada.tipo_item }}
+                </span>
+                <strong style="color: #10b981; font-size: 1.1rem;">+{{ entrada.cantidad_recibida | number:'1.2-2' }}</strong>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="!stats.ultimasEntradas || stats.ultimasEntradas.length === 0" class="empty-timeline">
+            No hay entradas recientes registradas.
+          </div>
         </div>
       </div>
+
+      <!-- TIMELINE DE SALIDAS -->
       <div class="movimiento-card">
-        <h3>Últimos Movimientos de Salidas</h3>
-        <div class="tabla-responsive-wrapper">
-          <table class="tabla-movimientos">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Tipo</th>
-                <th>Descripción</th>
-                <th>Cantidad</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let salida of stats.ultimasSalidas">
-                <td>{{ salida.fecha_operacion | date:'short' }}</td>
-                <td>
-                  <span class="badge"
-                    [ngClass]="{'badge-refaccion': salida.tipo_item === 'Refacción', 'badge-insumo': salida.tipo_item === 'Insumo'}">
-                    {{ salida.tipo_item }}
-                  </span>
-                </td>
-                <td>{{ salida.nombre_item }}</td>
-                <td class="cantidad-salida">-{{ salida.cantidad | number:'1.2-2' }}</td>
-              </tr>
-              <tr *ngIf="!stats.ultimasSalidas || stats.ultimasSalidas.length === 0">
-                <td colspan="4" class="empty-table-message">No hay salidas recientes.</td>
-              </tr>
-            </tbody>
-          </table>
+        <h3><i class="fas fa-arrow-up" style="color: #ef4444;"></i> Actividad de Salidas Recientes</h3>
+        <div class="timeline-container">
+          <div class="timeline-item" *ngFor="let salida of stats.ultimasSalidas">
+            <div class="timeline-icon icon-salida">
+              <i class="fas" [ngClass]="{'fa-cogs': salida.tipo_item === 'Refacción', 'fa-tint': salida.tipo_item === 'Insumo'}"></i>
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <span class="timeline-title">{{ salida.nombre_item }}</span>
+                <span class="timeline-date">{{ salida.fecha_operacion | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <div class="timeline-body">
+                <span class="badge" [ngClass]="{'badge-refaccion': salida.tipo_item === 'Refacción', 'badge-insumo': salida.tipo_item === 'Insumo'}">
+                  {{ salida.tipo_item }}
+                </span>
+                <strong style="color: #ef4444; font-size: 1.1rem;">-{{ salida.cantidad | number:'1.2-2' }}</strong>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="!stats.ultimasSalidas || stats.ultimasSalidas.length === 0" class="empty-timeline">
+            No hay salidas recientes registradas.
+          </div>
         </div>
       </div>
     </div>

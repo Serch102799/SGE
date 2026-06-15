@@ -5,7 +5,9 @@
   <div class="container-header">
     <h2><i class="fas fa-tools"></i> Gestión de Refacciones</h2>
     <div class="acciones-header">
-      <button class="btn-accion btn-guardar" style="background:linear-gradient(135deg,#059669,#10b981); border-color:rgba(16,185,129,0.4);" (click)="exportarAExcel()">
+      <button class="btn-accion btn-guardar"
+        style="background:linear-gradient(135deg,#059669,#10b981); border-color:rgba(16,185,129,0.4);"
+        (click)="exportarAExcel()">
         <i class="fas fa-file-excel"></i> Excel
       </button>
       <button class="btn-accion btn-guardar" (click)="abrirModalAgregar()">
@@ -21,8 +23,8 @@
         <label><i class="fas fa-search" style="margin-right:4px;"></i> Búsqueda</label>
         <div class="input-icon-wrap">
           <i class="fas fa-search input-icon"></i>
-          <input type="text" class="form-control" placeholder="Nombre, N° parte, marca…"
-                 [(ngModel)]="terminoBusqueda" (input)="aplicarFiltros()">
+          <input type="text" class="form-control" placeholder="Nombre, N° parte, marca…" [(ngModel)]="terminoBusqueda"
+            (input)="aplicarFiltros()">
         </div>
       </div>
       <div class="filtro-item">
@@ -64,7 +66,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let r of refaccionesFiltradas | paginate: { itemsPerPage: itemsPerPage, currentPage: p }"
-              class="fila-clickable" (click)="abrirModalSalida(r)" style="cursor:pointer;">
+            class="fila-clickable" (click)="abrirModalSalida(r)" style="cursor:pointer;">
 
             <!-- Artículo -->
             <td>
@@ -84,14 +86,13 @@
 
             <!-- Stock con barra visual -->
             <td class="text-center" (click)="$event.stopPropagation()">
-              <div class="stock-cell"
-                   [class.stock-ok]="r.Stock_Actual > r.Stock_Minimo"
-                   [class.stock-warn]="r.Stock_Actual > 0 && r.Stock_Actual <= r.Stock_Minimo"
-                   [class.stock-zero]="r.Stock_Actual <= 0">
+              <div class="stock-cell" [class.stock-ok]="r.Stock_Actual > r.Stock_Minimo"
+                [class.stock-warn]="r.Stock_Actual > 0 && r.Stock_Actual <= r.Stock_Minimo"
+                [class.stock-zero]="r.Stock_Actual <= 0">
                 <span class="stock-num">{{ r.Stock_Actual }}</span>
                 <div class="stock-bar-track">
                   <div class="stock-bar-fill"
-                       [style.width.%]="r.Stock_Minimo > 0 ? (r.Stock_Actual / (r.Stock_Minimo * 2)) * 100 : 100">
+                    [style.width.%]="r.Stock_Minimo > 0 ? (r.Stock_Actual / (r.Stock_Minimo * 2)) * 100 : 100">
                   </div>
                 </div>
                 <span style="font-size:0.68rem; color:#475569;">
@@ -181,7 +182,7 @@
               <div class="input-icon-wrap">
                 <i class="fas fa-cube input-icon"></i>
                 <input type="text" class="form-control" placeholder="Ej. Filtro de aceite Toyota"
-                       [(ngModel)]="nuevaRefaccion.Nombre" name="Nombre" required>
+                  [(ngModel)]="nuevaRefaccion.Nombre" name="Nombre" required>
               </div>
             </div>
             <div class="form-field">
@@ -189,7 +190,7 @@
               <div class="input-icon-wrap">
                 <i class="fas fa-barcode input-icon"></i>
                 <input type="text" class="form-control" placeholder="Ej. 90915-YZZD2"
-                       [(ngModel)]="nuevaRefaccion.Numero_Parte" name="Numero_Parte">
+                  [(ngModel)]="nuevaRefaccion.Numero_Parte" name="Numero_Parte">
               </div>
             </div>
             <div class="form-field">
@@ -197,7 +198,7 @@
               <div class="input-icon-wrap">
                 <i class="fas fa-industry input-icon"></i>
                 <input type="text" class="form-control" placeholder="Ej. Bosch, Denso"
-                       [(ngModel)]="nuevaRefaccion.Marca" name="Marca">
+                  [(ngModel)]="nuevaRefaccion.Marca" name="Marca">
               </div>
             </div>
           </div>
@@ -212,7 +213,7 @@
               <div class="input-icon-wrap">
                 <i class="fas fa-folder input-icon"></i>
                 <input type="text" class="form-control" placeholder="Ej. Motor, Frenos"
-                       [(ngModel)]="nuevaRefaccion.Categoria" name="Categoria">
+                  [(ngModel)]="nuevaRefaccion.Categoria" name="Categoria">
               </div>
             </div>
             <div class="form-field">
@@ -220,7 +221,7 @@
               <div class="input-icon-wrap">
                 <i class="fas fa-ruler input-icon"></i>
                 <input type="text" class="form-control" placeholder="Pieza / Litro"
-                       [(ngModel)]="nuevaRefaccion.Unidad_Medida" name="Unidad_Medida" required>
+                  [(ngModel)]="nuevaRefaccion.Unidad_Medida" name="Unidad_Medida" required>
               </div>
             </div>
           </div>
@@ -230,7 +231,7 @@
               <div class="input-icon-wrap">
                 <i class="fas fa-align-left input-icon textarea-icon"></i>
                 <textarea class="form-control" rows="2" placeholder="Descripción breve del uso o compatibilidad…"
-                          [(ngModel)]="nuevaRefaccion.Descripcion" name="Descripcion"></textarea>
+                  [(ngModel)]="nuevaRefaccion.Descripcion" name="Descripcion"></textarea>
               </div>
             </div>
           </div>
@@ -245,15 +246,15 @@
               <div class="input-icon-wrap">
                 <i class="fas fa-map-marker-alt input-icon"></i>
                 <input type="text" class="form-control" placeholder="Ej. Estante A-3"
-                       [(ngModel)]="nuevaRefaccion.Ubicacion_Almacen" name="Ubicacion_Almacen">
+                  [(ngModel)]="nuevaRefaccion.Ubicacion_Almacen" name="Ubicacion_Almacen">
               </div>
             </div>
             <div class="form-field">
               <label>Stock Mínimo (Alerta)</label>
               <div class="input-icon-wrap">
                 <i class="fas fa-exclamation-triangle input-icon"></i>
-                <input type="number" class="form-control" placeholder="0"
-                       [(ngModel)]="nuevaRefaccion.Stock_Minimo" name="Stock_Minimo">
+                <input type="number" class="form-control" placeholder="0" [(ngModel)]="nuevaRefaccion.Stock_Minimo"
+                  name="Stock_Minimo">
               </div>
             </div>
           </div>
@@ -298,14 +299,16 @@
               <label class="required">Nombre del Artículo</label>
               <div class="input-icon-wrap">
                 <i class="fas fa-cube input-icon"></i>
-                <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Nombre" name="edit_nombre" required>
+                <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Nombre" name="edit_nombre"
+                  required>
               </div>
             </div>
             <div class="form-field">
               <label>N° de Parte</label>
               <div class="input-icon-wrap">
                 <i class="fas fa-barcode input-icon"></i>
-                <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Numero_Parte" name="edit_numero_parte">
+                <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Numero_Parte"
+                  name="edit_numero_parte">
               </div>
             </div>
             <div class="form-field">
@@ -332,7 +335,8 @@
               <label class="required">Unidad de Medida</label>
               <div class="input-icon-wrap">
                 <i class="fas fa-ruler input-icon"></i>
-                <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Unidad_Medida" name="edit_unidad_medida" required>
+                <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Unidad_Medida"
+                  name="edit_unidad_medida" required>
               </div>
             </div>
           </div>
@@ -341,7 +345,8 @@
               <label>Descripción / Uso</label>
               <div class="input-icon-wrap">
                 <i class="fas fa-align-left input-icon textarea-icon"></i>
-                <textarea class="form-control" rows="2" [(ngModel)]="refaccionAEditar.Descripcion" name="edit_descripcion"></textarea>
+                <textarea class="form-control" rows="2" [(ngModel)]="refaccionAEditar.Descripcion"
+                  name="edit_descripcion"></textarea>
               </div>
             </div>
           </div>
@@ -354,14 +359,16 @@
               <label>Ubicación en Almacén</label>
               <div class="input-icon-wrap">
                 <i class="fas fa-map-marker-alt input-icon"></i>
-                <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Ubicacion_Almacen" name="edit_ubicacion">
+                <input type="text" class="form-control" [(ngModel)]="refaccionAEditar.Ubicacion_Almacen"
+                  name="edit_ubicacion">
               </div>
             </div>
             <div class="form-field">
               <label>Stock Mínimo (Alerta)</label>
               <div class="input-icon-wrap">
                 <i class="fas fa-exclamation-triangle input-icon"></i>
-                <input type="number" class="form-control" [(ngModel)]="refaccionAEditar.Stock_Minimo" name="edit_stock_minimo">
+                <input type="number" class="form-control" [(ngModel)]="refaccionAEditar.Stock_Minimo"
+                  name="edit_stock_minimo">
               </div>
             </div>
           </div>
@@ -372,7 +379,8 @@
 
     <div class="modal-footer">
       <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalEditar()">Cancelar</button>
-      <button type="submit" form="formEditar" class="btn-accion btn-guardar" style="background:linear-gradient(135deg,#d97706,#f59e0b); border-color:rgba(245,158,11,0.4);">
+      <button type="submit" form="formEditar" class="btn-accion btn-guardar"
+        style="background:linear-gradient(135deg,#d97706,#f59e0b); border-color:rgba(245,158,11,0.4);">
         <i class="fas fa-sync-alt"></i> Actualizar
       </button>
     </div>
@@ -389,7 +397,8 @@
         <div class="modal-icon-badge icon-badge-blue"><i class="fas fa-sign-out-alt"></i></div>
         <div>
           <h3>Retirar Material</h3>
-          <small *ngIf="refaccionParaSalida">Stock disponible: <strong style="color:#38bdf8;">{{ refaccionParaSalida.Stock_Actual }}</strong></small>
+          <small *ngIf="refaccionParaSalida">Stock disponible: <strong style="color:#38bdf8;">{{
+              refaccionParaSalida.Stock_Actual }}</strong></small>
         </div>
       </div>
       <button class="btn-cerrar" (click)="cerrarModalSalida()">×</button>
@@ -403,7 +412,7 @@
               <div class="input-icon-wrap">
                 <i class="fas fa-hashtag input-icon"></i>
                 <input type="number" class="form-control" style="font-size:1.1rem; font-weight:700;"
-                       [(ngModel)]="datosSalida.cantidad" name="cantidad_salida" required min="1">
+                  [(ngModel)]="datosSalida.cantidad" name="cantidad_salida" required min="1">
               </div>
             </div>
             <div class="form-field">
@@ -411,7 +420,7 @@
               <div class="input-icon-wrap">
                 <i class="fas fa-comment-alt input-icon"></i>
                 <input type="text" class="form-control" placeholder="Ej. Mantenimiento, Venta"
-                       [(ngModel)]="datosSalida.motivo" name="motivo_salida" required>
+                  [(ngModel)]="datosSalida.motivo" name="motivo_salida" required>
               </div>
             </div>
           </div>
@@ -447,7 +456,8 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalBorrar()">Cancelar</button>
-      <button type="button" class="btn-accion" style="background:#dc2626; color:white; border:1px solid rgba(220,38,38,0.4);" (click)="confirmarEliminacion()">
+      <button type="button" class="btn-accion"
+        style="background:#dc2626; color:white; border:1px solid rgba(220,38,38,0.4);" (click)="confirmarEliminacion()">
         <i class="fas fa-trash-alt"></i> Sí, Eliminar
       </button>
     </div>
@@ -479,26 +489,44 @@
               <th class="text-center">Cantidad</th>
               <th>Origen / Destino</th>
               <th>Usuario</th>
+              <th *ngIf="authService.hasRole(['SuperUsuario', 'Admin', 'SuperAdmin'])" class="text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngIf="historialSeleccionado.length === 0">
-              <td colspan="5"><div class="empty-state"><i class="fas fa-inbox"></i><p>Sin movimientos registrados.</p></div></td>
+              <td colspan="6">
+                <div class="empty-state"><i class="fas fa-inbox"></i>
+                  <p>Sin movimientos registrados.</p>
+                </div>
+              </td>
             </tr>
-            <tr *ngFor="let mov of historialSeleccionado">
-              <td style="color:#94a3b8; font-size:0.85rem;">{{ mov.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+            <tr *ngFor="let mov of historialSeleccionado"
+              [ngStyle]="{'text-decoration': mov.estado === 'Cancelado' ? 'line-through' : 'none', 'opacity': mov.estado === 'Cancelado' ? '0.6' : '1'}">
+              <td style="color:#94a3b8; font-size:0.85rem;">
+                {{ mov.fecha | date:'dd/MM/yyyy HH:mm' }}
+                <span *ngIf="mov.estado === 'Cancelado'" class="badge badge-bajo"
+                  style="margin-left:5px;">Cancelado</span>
+              </td>
               <td>
-                <span class="badge" [ngClass]="{'badge-saludable': mov.tipo==='Entrada', 'badge-agotado': mov.tipo==='Salida', 'badge-bajo': mov.tipo==='Ajuste'}">
-                  <i class="fas" [ngClass]="{'fa-arrow-down':mov.tipo==='Entrada','fa-arrow-up':mov.tipo==='Salida','fa-sliders-h':mov.tipo==='Ajuste'}"></i>
+                <span class="badge"
+                  [ngClass]="{'badge-saludable': mov.tipo==='Entrada', 'badge-agotado': mov.tipo==='Salida', 'badge-bajo': mov.tipo==='Ajuste'}">
+                  <i class="fas"
+                    [ngClass]="{'fa-arrow-down':mov.tipo==='Entrada','fa-arrow-up':mov.tipo==='Salida','fa-sliders-h':mov.tipo==='Ajuste'}"></i>
                   {{ mov.tipo }}
                 </span>
               </td>
               <td class="text-center" style="font-family:monospace; font-weight:700; font-size:1rem;"
-                  [ngClass]="{'text-success':mov.tipo==='Entrada','text-danger':mov.tipo==='Salida'}">
+                [ngClass]="{'text-success':mov.tipo==='Entrada','text-danger':mov.tipo==='Salida'}">
                 {{ mov.tipo==='Entrada' ? '+' : (mov.tipo==='Salida' ? '-' : '') }}{{ mov.cantidad }}
               </td>
               <td style="color:#94a3b8;">{{ mov.origen_destino || '—' }}</td>
               <td style="color:#64748b; font-size:0.85rem;">{{ mov.solicitado_por || 'Sistema' }}</td>
+              <td *ngIf="authService.hasRole(['SuperUsuario', 'Admin', 'SuperAdmin'])" class="text-center">
+                <button *ngIf="mov.estado !== 'Cancelado' && mov.id_detalle" class="btn-icon btn-icon-red"
+                  title="Cancelar / Devolver" (click)="cancelarMovimiento(mov)">
+                  <i class="fas fa-undo-alt"></i>
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -511,16 +539,45 @@
 </div>
 
 <!-- ============================================================
+     MODAL CANCELAR MOVIMIENTO
+     ============================================================ -->
+<div class="modal-overlay" *ngIf="mostrarModalCancelar" (click)="cerrarModalCancelar()" style="z-index:2500;">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header accent-amber">
+      <div class="modal-title-group">
+        <div class="modal-icon-badge icon-badge-amber"><i class="fas fa-undo-alt"></i></div>
+        <h3>Cancelar Movimiento</h3>
+      </div>
+    </div>
+    <div class="modal-body">
+      <span class="confirm-icon">↩️</span>
+      <p class="confirm-text">
+        ¿Cancelar/devolver este movimiento?
+      </p>
+      <p class="confirm-sub">Esta acción revertirá el inventario y se marcará en el historial.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-accion btn-cancelar" (click)="cerrarModalCancelar()">Volver</button>
+      <button type="button" class="btn-accion"
+        style="background:#f59e0b; color:white; border:1px solid rgba(245,158,11,0.4);" (click)="confirmarCancelacion()">
+        <i class="fas fa-undo"></i> Sí, Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
      MODAL NOTIFICACIÓN
      ============================================================ -->
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()" style="z-index:3000;">
   <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header"
-         [ngClass]="{'header-exito':notificacion.tipo==='exito','header-error':notificacion.tipo==='error','header-advertencia':notificacion.tipo==='advertencia'}">
+      [ngClass]="{'header-exito':notificacion.tipo==='exito','header-error':notificacion.tipo==='error','header-advertencia':notificacion.tipo==='advertencia'}">
       <div class="modal-title-group">
         <div class="modal-icon-badge"
-             [ngClass]="{'icon-badge-green':notificacion.tipo==='exito','icon-badge-red':notificacion.tipo==='error','icon-badge-amber':notificacion.tipo==='advertencia'}">
-          <i class="fas" [ngClass]="{'fa-check':notificacion.tipo==='exito','fa-times':notificacion.tipo==='error','fa-exclamation':notificacion.tipo==='advertencia'}"></i>
+          [ngClass]="{'icon-badge-green':notificacion.tipo==='exito','icon-badge-red':notificacion.tipo==='error','icon-badge-amber':notificacion.tipo==='advertencia'}">
+          <i class="fas"
+            [ngClass]="{'fa-check':notificacion.tipo==='exito','fa-times':notificacion.tipo==='error','fa-exclamation':notificacion.tipo==='advertencia'}"></i>
         </div>
         <h3>{{ notificacion.titulo }}</h3>
       </div>

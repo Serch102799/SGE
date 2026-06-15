@@ -14,7 +14,7 @@ import {
   faHandHoldingHand, faGears, faDroplet, faUserShield, faBus, faCar,
   faBuilding, faFileLines, faWarehouse, faRecycle, faCodeMerge, faMapLocationDot,
   faGaugeHigh, faIdCard, faServer, faGasPump, faCircleUser, faRightFromBracket, faBars,
-  faSun, faMoon
+  faSun, faMoon, faFillDrip
 } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -56,6 +56,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
   faPrestamos = faHandHoldingHand; 
   faArtArmados = faCubes;
   faTickets = faHeadset;
+  faGranel = faFillDrip;
   faServiciosExternos = faHandshake;
   faRecuperados = faRecycle;
   faHerramientaFusion = faCodeMerge;

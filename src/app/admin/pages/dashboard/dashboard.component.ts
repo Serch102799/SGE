@@ -108,6 +108,29 @@ export class DashboardComponent implements OnInit {
   public pieComprasData: ChartData<'pie'> = { labels: [], datasets: [] };
   public pieGastosData: ChartData<'pie'> = { labels: [], datasets: [] };
 
+  // ==========================================
+  // CONFIGURACIÓN DE GRÁFICA DE TENDENCIA (LÍNEAS)
+  // ==========================================
+  public tendenciaHistoricaOptions: ChartConfiguration['options'] = {
+    responsive: true, maintainAspectRatio: false,
+    elements: { line: { tension: 0.4 }, point: { radius: 4 } },
+    plugins: {
+      legend: { position: 'top', labels: { color: '#e0e0e0', font: { size: 12 } } },
+      tooltip: { mode: 'index', intersect: false }
+    },
+    scales: {
+      y: { ticks: { color: '#e0e0e0' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+      x: { ticks: { color: '#e0e0e0' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+    }
+  };
+  public tendenciaHistoricaData: ChartData<'line'> = {
+    labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
+    datasets: [
+      { data: [45000, 52000, 38000, 61000, 48000, 55000], label: 'Total Entradas ($)', borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.2)', fill: true },
+      { data: [32000, 41000, 45000, 39000, 50000, 42000], label: 'Total Salidas ($)', borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.2)', fill: true }
+    ]
+  };
+
   constructor(private http: HttpClient, private authService: AuthService) {
     Chart.register(...registerables);
     const user = this.authService.getCurrentUser();
