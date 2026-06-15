@@ -260,10 +260,17 @@ export class DashboardComponent implements OnInit {
   }
 
   cargarTendenciaHistorica() {
-    if (!this.fechaInicioKPI || !this.fechaFinKPI) return;
+    if (!this.fechaFinKPI) return;
+
+    // Calculamos 6 meses de historial basados en la fecha de fin seleccionada
+    const [yearFin, monthFin] = this.fechaFinKPI.split('-');
+    const fInicio = new Date(parseInt(yearFin), parseInt(monthFin) - 1 - 5, 1);
+    const yearInicio = fInicio.getFullYear();
+    const monthInicioStr = (fInicio.getMonth() + 1).toString().padStart(2, '0');
+    const fechaInicioTendencia = `${yearInicio}-${monthInicioStr}-01`;
 
     const params = {
-      fechaInicio: this.fechaInicioKPI,
+      fechaInicio: fechaInicioTendencia,
       fechaFin: this.fechaFinKPI,
       razon_social_filtro: this.filtroRazonSocialTendencia
     };
