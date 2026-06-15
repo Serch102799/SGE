@@ -58,6 +58,10 @@ export class DashboardComponent implements OnInit {
   // --- FILTROS DE FECHA (Financieros) ---
   fechaInicioKPI: string = '';
   fechaFinKPI: string = '';
+  razonSocialKPI: string = 'Todas';
+
+  // --- FILTROS TENDENCIA HISTÓRICA ---
+  filtroRazonSocialTendencia: string = 'Todas';
 
   // --- TOTALES FINANCIEROS ---
   granTotalCompras: number = 0;
@@ -116,20 +120,37 @@ export class DashboardComponent implements OnInit {
     elements: { line: { tension: 0.4 }, point: { radius: 4 } },
     plugins: {
       legend: { position: 'top', labels: { color: '#e0e0e0', font: { size: 12 } } },
-      tooltip: { mode: 'index', intersect: false }
+      tooltip: { 
+        mode: 'index', 
+        intersect: false,
+        callbacks: {
+          label: (context) => {
+            let value = context.raw as number;
+            return ` $${value.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`;
+          }
+        }
+      }
     },
     scales: {
-      y: { ticks: { color: '#e0e0e0' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+      y: { 
+        ticks: { 
+          color: '#e0e0e0',
+          callback: function(value) { return '$' + value; }
+        }, 
+        grid: { color: 'rgba(255,255,255,0.05)' } 
+      },
       x: { ticks: { color: '#e0e0e0' }, grid: { color: 'rgba(255,255,255,0.05)' } }
     }
   };
   public tendenciaHistoricaData: ChartData<'line'> = {
-    labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
+    labels: [],
     datasets: [
-      { data: [45000, 52000, 38000, 61000, 48000, 55000], label: 'Total Entradas ($)', borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.2)', fill: true },
-      { data: [32000, 41000, 45000, 39000, 50000, 42000], label: 'Total Salidas ($)', borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.2)', fill: true }
+      { data: [], label: 'Total Entradas ($)', borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.2)', fill: true },
+      { data: [], label: 'Total Salidas ($)', borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.2)', fill: true }
     ]
   };
+
+  listaRazonesSociales: string[] = ['Todas', 'TRESA', 'A8M', 'MARTRESS', 'GIALJU', 'Flota Administrativa', 'Sin Razón Social'];
 
   constructor(private http: HttpClient, private authService: AuthService) {
     Chart.register(...registerables);
@@ -144,6 +165,7 @@ export class DashboardComponent implements OnInit {
     this.cargarKpiServicios();
     this.cargarTopAutobuses();
     this.cargarProyeccion();
+    this.cargarTendenciaHistorica();
   }
 
   // ==========================================
@@ -228,12 +250,48 @@ export class DashboardComponent implements OnInit {
   }
 
   // ==========================================
-  // CARGA DINÁMICA DE KPIs FINANCIEROS
+  // CARGA DINÁMICA DE KPIs FINANCIEROS Y TENDENCIA
   // ==========================================
   filtrarKpis() {
     if (this.fechaInicioKPI && this.fechaFinKPI) {
       this.cargarKpisFinancieros();
+      this.cargarTendenciaHistorica();
     }
+  }
+
+  cargarTendenciaHistorica() {
+    if (!this.fechaInicioKPI || !this.fechaFinKPI) return;
+
+    const params = {
+      fechaInicio: this.fechaInicioKPI,
+      fechaFin: this.fechaFinKPI,
+      razon_social_filtro: this.filtroRazonSocialTendencia
+    };
+
+    this.http.get<any[]>(`${environment.apiUrl}/reportes/tendencia-historica`, { params }).subscribe({
+      next: (data) => {
+        // Mapear meses: "2026-01" -> "Ene 2026"
+        const mesesNombres = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        
+        const labels = data.map(item => {
+          const [year, month] = item.mes.split('-');
+          return `${mesesNombres[parseInt(month) - 1]} ${year}`;
+        });
+        
+        const entradas = data.map(item => parseFloat(item.total_entradas || 0));
+        const salidas = data.map(item => parseFloat(item.total_salidas || 0));
+
+        this.tendenciaHistoricaData = {
+          labels: labels,
+          datasets: [
+            { data: entradas, label: 'Total Entradas ($)', borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.2)', fill: true },
+            { data: salidas, label: 'Total Salidas ($)', borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.2)', fill: true }
+          ]
+        };
+        this.chart?.update();
+      },
+      error: (err) => console.error('Error al cargar la tendencia histórica', err)
+    });
   }
 
   // ==========================================
@@ -252,7 +310,7 @@ export class DashboardComponent implements OnInit {
 
         const coloresDinCompras = comprasLabels.map((etiqueta: string) => {
 
-          if (etiqueta === 'Devolución de Préstamos') return '#06b6d4';
+          if (etiqueta === 'Devolución de Gastos de Taller') return '#06b6d4';
           if (etiqueta === 'TRESA') return '#ef4444';
           if (etiqueta === 'A8M') return '#3b82f6';
           if (etiqueta === 'MARTRESS') return '#eab308';
@@ -273,7 +331,7 @@ export class DashboardComponent implements OnInit {
         this.granTotalGastos = gastosValues.reduce((acc: number, val: number) => acc + val, 0);
 
         const coloresDinGastos = gastosLabels.map((etiqueta: string) => {
-          if (etiqueta === 'Préstamos' || etiqueta === 'Material en Préstamo') return '#ec4899';
+          if (etiqueta === 'Gastos de Taller' || etiqueta === 'Material en Gasto de Taller') return '#ec4899';
           if (etiqueta === 'TRESA') return '#ef4444';
           if (etiqueta === 'A8M') return '#3b82f6';
           if (etiqueta === 'MARTRESS') return '#eab308';

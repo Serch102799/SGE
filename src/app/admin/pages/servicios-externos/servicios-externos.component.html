@@ -1,4 +1,4 @@
-﻿<div class="usuarios-container">
+<div class="usuarios-container">
   <div class="container-header" style="flex-wrap: wrap; gap: 15px;">
     <h2><i class="fas fa-wrench"></i> Servicios y Reparaciones Externas</h2>
     
@@ -63,7 +63,7 @@
           <tr>
             <th>Folio</th>
             <th>Fecha</th>
-            <th>Autobús / Km</th>
+            <th>Vehículo / Km</th>
             <th>Proveedor</th>
             <th>Descripción</th>
             <th>Garantía</th>
@@ -78,7 +78,9 @@
             <td>#{{ s.id_servicio_externo || s.id_servicio }}</td>
             <td>{{ s.fecha_servicio | date:'dd/MM/yyyy' }}</td>
             <td>
-              <span class="badge badge-bus">Bus {{ s.economico_autobus || s.autobus }}</span><br>
+              <span class="badge badge-bus" *ngIf="s.economico_autobus">Bus {{ s.economico_autobus }}</span>
+              <span class="badge badge-car" *ngIf="s.vehiculo_particular">{{ s.vehiculo_particular }}</span>
+              <br>
               <small class="text-muted"><i class="fas fa-tachometer-alt"></i> {{ s.kilometraje_autobus | number }} km</small>
             </td>
             <td>{{ s.nombre_proveedor || s.proveedor || 'No especificado' }}<br><small class="text-muted">{{ s.factura_nota ? 'Nota: '+s.factura_nota : '' }}</small></td>
@@ -154,14 +156,16 @@
       <div class="form-grid">
         
         <div class="filtro-item">
-          <label>Autobús *</label>
+          <label>Vehículo *</label>
           <mat-form-field appearance="outline" class="w-100 dark-mat-form">
-            <input type="text" matInput placeholder="Busca el número económico..." 
+            <input type="text" matInput placeholder="Busca el número económico o placa..." 
                    [formControl]="busControl" [matAutocomplete]="autoBus">
             <mat-autocomplete #autoBus="matAutocomplete" [displayWith]="displayFnBus" 
                               (optionSelected)="seleccionarAutobus($event)">
               <mat-option *ngFor="let bus of filteredAutobuses$ | async" [value]="bus">
-                Bus {{ bus.economico }} <small class="text-muted">(Km: {{bus.kilometraje_actual}})</small>
+                <ng-container *ngIf="bus.is_vehiculo_particular">Auto: {{ bus.propietario }}</ng-container>
+                <ng-container *ngIf="!bus.is_vehiculo_particular">Bus {{ bus.economico }}</ng-container>
+                <small class="text-muted"> (Km: {{ bus.kilometraje_actual || 0 }})</small>
               </mat-option>
             </mat-autocomplete>
           </mat-form-field>

@@ -67,7 +67,7 @@ export class ReportesComponent implements OnInit {
     'costo-por-autobus-especifico': { titulo: 'Costo por Vehículo Específico', descripcion: 'Desglose de gastos de mantenimiento de la lista de vehículos seleccionados.', requiereFecha: true, requiereListaBuses: true },
     'detalle-gastos-salidas': {
       titulo: 'Salidas Totales',
-      descripcion: 'Desglose exacto de cada salida de almacén, servicios y préstamos de herramientas.',
+      descripcion: 'Desglose exacto de cada salida de almacén, servicios y gastos de taller.',
       requiereFecha: true
     },
   };

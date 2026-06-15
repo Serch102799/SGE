@@ -195,7 +195,7 @@ export class PrestamosComponent implements OnInit {
     }
 
     const dataLimpia = data.map(p => ({
-      'ID Préstamo': p.id_prestamo,
+      'ID Gasto': p.id_prestamo,
       'Fecha': new Date(p.fecha_prestamo).toLocaleDateString(),
       'Solicitante': p.solicitante,
       'Tipo Item': p.tipo_item.toUpperCase(),
@@ -233,7 +233,7 @@ export class PrestamosComponent implements OnInit {
     // Título Principal
     doc.setFontSize(16);
     doc.setTextColor(0, 0, 0); // Letra negra para el título
-    doc.text(`Reporte de Préstamos de Pañol - ${this.vistaActual.toUpperCase()}`, 14, 15);
+    doc.text(`Reporte de Gastos de Taller - ${this.vistaActual.toUpperCase()}`, 14, 15);
     
     // Fecha
     doc.setFontSize(10);
@@ -282,7 +282,7 @@ export class PrestamosComponent implements OnInit {
     });
 
     const filename = `Reporte_Prestamos_${this.vistaActual}_${new Date().getTime()}.pdf`;
-    addPdfFooter(doc, 'Préstamos de Pañol');
+    addPdfFooter(doc, 'Gastos de Taller');
     doc.save(filename);
     this.exportNotif.showPdf(filename);
   }
@@ -344,7 +344,7 @@ export class PrestamosComponent implements OnInit {
 
     this.http.post(`${this.apiUrl}/prestamos`, payload).subscribe({
       next: () => {
-        this.mostrarNotificacion('Éxito', 'Préstamo registrado correctamente.', 'exito');
+        this.mostrarNotificacion('Éxito', 'Gasto de taller registrado correctamente.', 'exito');
         this.mostrarModalNuevo = false;
         this.vistaActual === 'activos' ? this.obtenerPrestamosActivos() : this.obtenerPrestamosHistoricos();
       },

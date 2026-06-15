@@ -212,8 +212,14 @@
       <div class="charts-grid-single" style="margin-top: 25px;" *ngIf="!isLoadingKpis">
         <div class="chart-container" style="width: 100%;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
-            <h3 style="margin: 0;">Tendencia Histórica (Últimos 6 Meses)</h3>
-            <span style="color: #94a3b8; font-size: 0.85rem;"><i class="fas fa-info-circle"></i> Datos de proyección</span>
+            <h3 style="margin: 0;">Tendencia Histórica (Entradas vs Salidas)</h3>
+            <div style="display: flex; align-items: center; gap: 15px;">
+              <span style="color: #94a3b8; font-size: 0.85rem;"><i class="fas fa-filter"></i> Razón Social:</span>
+              <select class="form-control" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; outline: none; width: auto;"
+                      [(ngModel)]="filtroRazonSocialTendencia" (change)="cargarTendenciaHistorica()">
+                <option *ngFor="let rs of listaRazonesSociales" [value]="rs">{{ rs }}</option>
+              </select>
+            </div>
           </div>
           <div class="chart-wrapper">
             <canvas baseChart [data]="tendenciaHistoricaData" [options]="tendenciaHistoricaOptions" type="line"></canvas>

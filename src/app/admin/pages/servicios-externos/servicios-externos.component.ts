@@ -24,6 +24,7 @@ export class ServiciosExternosComponent implements OnInit {
   filteredServicios: any[] = [];     
   paginatedServicios: any[] = [];    
   proveedores: any[] = []; 
+  vehiculosParticulares: any[] = []; 
   
   isLoading = false;
   modalVisible = false;
@@ -45,7 +46,7 @@ export class ServiciosExternosComponent implements OnInit {
   filteredAutobuses$!: Observable<any[]>;
 
   nuevoServicio: any = {
-    id_autobus: null, kilometraje_autobus: null, id_proveedor: null,
+    id_autobus: null, id_vehiculo_particular: null, kilometraje_autobus: null, id_proveedor: null,
     fecha_servicio: new Date().toISOString().split('T')[0],
     descripcion: '', subtotal: null, aplica_iva: false, iva_monto: 0, costo_total: 0,
     factura_nota: '', tiene_garantia: false, dias_garantia: null, fecha_vencimiento_garantia: null
@@ -62,6 +63,7 @@ export class ServiciosExternosComponent implements OnInit {
   ngOnInit(): void {
     this.cargarServicios();
     this.cargarCatalogos();
+    this.cargarVehiculosParticulares();
 
     this.filteredAutobuses$ = this.busControl.valueChanges.pipe(
       startWith(''), debounceTime(300), distinctUntilChanged(),
@@ -69,20 +71,47 @@ export class ServiciosExternosComponent implements OnInit {
     );
   }
 
+  cargarVehiculosParticulares() {
+    this.http.get<any[]>(`${this.apiUrl}/vehiculos-particulares`).subscribe(data => {
+      this.vehiculosParticulares = data;
+    });
+  }
+
   private _buscarAutobusApi(term: any): Observable<any[]> {
-    const searchTerm = typeof term === 'string' ? term : term?.economico;
+    const searchTerm = typeof term === 'string' ? term : (term?.economico || term?.propietario);
     if (!searchTerm) { return of([]); }
+    
+    // Filtro local de vehículos particulares
+    const termLower = searchTerm.toLowerCase();
+    const vehiculosFiltrados = this.vehiculosParticulares.filter(v => 
+      v.propietario.toLowerCase().includes(termLower) || 
+      v.marca.toLowerCase().includes(termLower) || 
+      (v.placas && v.placas.toLowerCase().includes(termLower))
+    ).map(v => ({ ...v, is_vehiculo_particular: true }));
+
     return this.http.get<any[]>(`${this.apiUrl}/autobuses/buscar`, { params: { term: searchTerm } }).pipe(
-      catchError(() => of([]))
+      map(autobuses => [...autobuses, ...vehiculosFiltrados]),
+      catchError(() => of(vehiculosFiltrados))
     );
   }
 
-  displayFnBus(bus: any): string { return bus && bus.economico ? `Bus ${bus.economico}` : ''; }
+  displayFnBus(bus: any): string { 
+    if (!bus) return '';
+    if (bus.is_vehiculo_particular) return `Auto: ${bus.propietario} (${bus.marca})`;
+    return bus.economico ? `Bus ${bus.economico}` : ''; 
+  }
 
   seleccionarAutobus(event: any) {
     const bus = event.option.value;
-    this.nuevoServicio.id_autobus = bus.id_autobus;
-    this.nuevoServicio.kilometraje_autobus = bus.kilometraje_actual || bus.kilometraje_ultima_carga || 0;
+    if (bus.is_vehiculo_particular) {
+      this.nuevoServicio.id_vehiculo_particular = bus.id_vehiculo;
+      this.nuevoServicio.id_autobus = null;
+      this.nuevoServicio.kilometraje_autobus = bus.kilometraje_actual || 0;
+    } else {
+      this.nuevoServicio.id_autobus = bus.id_autobus;
+      this.nuevoServicio.id_vehiculo_particular = null;
+      this.nuevoServicio.kilometraje_autobus = bus.kilometraje_actual || bus.kilometraje_ultima_carga || 0;
+    }
   }
 
   // ==========================================
@@ -117,6 +146,7 @@ export class ServiciosExternosComponent implements OnInit {
         const termino = this.filtroBus.toLowerCase();
         matchBus = 
           (servicio.autobus && String(servicio.autobus).toLowerCase().includes(termino)) ||
+          (servicio.vehiculo_particular && String(servicio.vehiculo_particular).toLowerCase().includes(termino)) ||
           (servicio.descripcion && servicio.descripcion.toLowerCase().includes(termino)) ||
           (servicio.factura_nota && servicio.factura_nota.toLowerCase().includes(termino));
       }
@@ -173,10 +203,10 @@ export class ServiciosExternosComponent implements OnInit {
   // ==========================================
   exportarExcel() {
     const dataToExport = this.filteredServicios.map(s => ({
-      'ID Servicio': s.id_servicio, // Antes: id_servicio_externo
+      'ID Servicio': s.id_servicio, 
       'Fecha': s.fecha_servicio,
-      'Autobús': `Bus ${s.autobus || 'S/N'}`, // Antes: economico_autobus
-      'Proveedor': s.proveedor || 'S/N', // Antes: nombre_proveedor
+      'Vehículo': s.autobus ? `Bus ${s.autobus}` : (s.vehiculo_particular ? `Auto: ${s.vehiculo_particular}` : 'S/N'),
+      'Proveedor': s.proveedor || 'S/N',
       'Descripción': s.descripcion,
       'Subtotal': s.subtotal,
       'IVA': s.iva_monto,
@@ -222,6 +252,8 @@ export class ServiciosExternosComponent implements OnInit {
       let vehiculoStr = 'S/N';
       if (s.autobus) { 
         vehiculoStr = `Bus ${s.autobus}`;
+      } else if (s.vehiculo_particular) {
+        vehiculoStr = `Auto: ${s.vehiculo_particular}`;
       } else if (s.id_vehiculo_particular) {
         vehiculoStr = `Flota Admin.`;
       }
@@ -281,10 +313,10 @@ export class ServiciosExternosComponent implements OnInit {
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<ServiciosExternos>\n';
     this.filteredServicios.forEach(s => {
       xml += '  <Servicio>\n';
-      xml += `    <ID>${s.id_servicio}</ID>\n`; // Antes: id_servicio_externo
+      xml += `    <ID>${s.id_servicio}</ID>\n`;
       xml += `    <Fecha>${s.fecha_servicio}</Fecha>\n`;
-      xml += `    <Autobus>${s.autobus || 'S/N'}</Autobus>\n`; // Antes: economico_autobus
-      xml += `    <Proveedor>${s.proveedor || 'S/N'}</Proveedor>\n`; // Antes: nombre_proveedor
+      xml += `    <Vehiculo>${s.autobus ? 'Bus ' + s.autobus : (s.vehiculo_particular ? 'Auto: ' + s.vehiculo_particular : 'S/N')}</Vehiculo>\n`;
+      xml += `    <Proveedor>${s.proveedor || 'S/N'}</Proveedor>\n`;
       xml += `    <Descripcion>${s.descripcion}</Descripcion>\n`;
       xml += `    <Factura>${s.factura_nota}</Factura>\n`;
       xml += `    <Total>${s.costo_total}</Total>\n`;
@@ -330,7 +362,7 @@ export class ServiciosExternosComponent implements OnInit {
   abrirModal() {
     this.busControl.setValue('');
     this.nuevoServicio = {
-      id_autobus: null, kilometraje_autobus: null, id_proveedor: null,
+      id_autobus: null, id_vehiculo_particular: null, kilometraje_autobus: null, id_proveedor: null,
       fecha_servicio: new Date().toISOString().split('T')[0],
       descripcion: '', subtotal: null, aplica_iva: false, iva_monto: 0, costo_total: 0,
       factura_nota: '', tiene_garantia: false, dias_garantia: null, fecha_vencimiento_garantia: null
@@ -341,8 +373,8 @@ export class ServiciosExternosComponent implements OnInit {
   cerrarModal() { this.modalVisible = false; document.body.style.overflow = 'auto'; }
 
   guardarServicio() {
-    if (!this.nuevoServicio.id_autobus || !this.nuevoServicio.descripcion || !this.nuevoServicio.subtotal) {
-      this.mostrarNotificacion('Campos incompletos', 'Selecciona autobús, descripción y subtotal.', 'advertencia'); return;
+    if ((!this.nuevoServicio.id_autobus && !this.nuevoServicio.id_vehiculo_particular) || !this.nuevoServicio.descripcion || !this.nuevoServicio.subtotal) {
+      this.mostrarNotificacion('Campos incompletos', 'Selecciona vehículo, descripción y subtotal.', 'advertencia'); return;
     }
     if (this.nuevoServicio.tiene_garantia && !this.nuevoServicio.fecha_vencimiento_garantia) {
       this.mostrarNotificacion('Garantía', 'Establece la fecha de vencimiento.', 'advertencia'); return;
