@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    CONFIGURACIÃ“N GLOBAL Y FONDOS
    ========================================================================== */
 :host {
@@ -180,5 +180,126 @@ select.form-control option { background-color: var(--bg-dark-card); color: white
 .modal-header h3 { margin: 0; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; color: white;}
 .btn-cerrar { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: color 0.3s ease; }
 .btn-cerrar:hover { color: var(--text-white); }
-.modal-body { padding: 25px; }
 .modal-footer { display: flex; justify-content: flex-end; padding: 20px 25px; gap: 15px; background: var(--bg-hover); border-top: 1px solid var(--bg-hover-light); }
+
+/* ============================================= */
+/* --- MODAL TICKET (CONFIRMACIÃ“N) --- */
+/* ============================================= */
+
+.ticket-modal {
+  background: #fdfdfd; 
+  color: #333; 
+  width: 90%;
+  max-width: 400px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  font-family: 'Consolas', 'Monaco', monospace; 
+  position: relative;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ticket-header {
+  background: var(--bg-dark-card); 
+  color: white;
+  padding: 20px;
+  text-align: center;
+  border-bottom: 3px dashed #ccc; 
+}
+
+.ticket-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  color: #4dabf7;
+}
+
+.ticket-date { margin: 5px 0 0; font-size: 0.85rem; color: var(--text-light); }
+
+.ticket-body { padding: 25px; }
+
+.ticket-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+  border-bottom: 1px dotted #eee;
+  padding-bottom: 4px;
+}
+
+.ticket-row span:first-child { color: var(--text-muted); font-weight: 600; }
+.ticket-row span:last-child { font-weight: 700; color: var(--bg-dark-main); text-align: right; }
+
+.ticket-row.highlight {
+  font-size: 1.2rem;
+  border-bottom: 2px solid #4480d3;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+}
+.ticket-row.highlight strong { color: #4480d3; }
+
+.ticket-divider { border-bottom: 1px dashed #ccc; margin: 15px 0; }
+
+.ticket-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.ticket-item label { display: block; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+.ticket-item .value { font-size: 1.1rem; font-weight: 800; color: var(--bg-dark-main); }
+.highlight-value { color: #00b09b !important; }
+
+.ticket-alert {
+  margin-top: 15px;
+  background: #fff7ed;
+  color: #c2410c;
+  padding: 8px;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.85rem;
+  border: 1px solid #ffedd5;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  align-items: center;
+}
+
+.ticket-footer {
+  background: var(--text-white);
+  padding: 15px;
+  text-align: center;
+  border-top: 1px solid var(--text-light);
+}
+.ticket-footer p { margin: 0 0 15px; font-size: 0.9rem; color: var(--text-muted); }
+
+.ticket-actions { display: flex; gap: 10px; justify-content: center; }
+
+.btn-ticket-cancel {
+  background: white;
+  border: 1px solid var(--text-light);
+  color: var(--border-secondary);
+  padding: 8px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-ticket-cancel:hover { background: #f1f5f9; }
+
+.btn-ticket-confirm {
+  background: #00b09b; 
+  border: none;
+  color: white;
+  padding: 8px 25px;
+  border-radius: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 176, 155, 0.3);
+}
+.btn-ticket-confirm:hover { background: #009684; transform: translateY(-2px); }
+
+@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { FormControl } from '@angular/forms';
+import { Subject, Subscription, Observable } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, startWith } from 'rxjs/operators';
 import { environment } from '../../../../environments/environments';
 import { AuthService } from '../../../services/auth.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
@@ -10,6 +11,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { addPdfFooter } from '../../../shared/utils/pdf-footer.util';
 import { ExportNotificationService } from '../../../shared/services/export-notification.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface Ruta {
   id_ruta: number;
@@ -53,6 +55,13 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   private apiUrl = `${environment.apiUrl}/cargas-combustible`;
   cargas: any[] = [];
   rutas: Ruta[] = [];
+  autobuses: any[] = [];
+  operadores: any[] = [];
+
+  autobusControl = new FormControl();
+  operadorControl = new FormControl();
+  filteredAutobuses$!: Observable<any[]>;
+  filteredOperadores$!: Observable<any[]>;
 
   currentPage: number = 1;
   itemsPerPage: number = 15;
@@ -87,15 +96,20 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   cargaInfo: any = null;
   cargandoInfo: boolean = false;
 
-  formEdicion = {
+  formEdicion: any = {
     fecha_operacion: '',
     km_inicial: 0,
     km_final: 0,
     litros_cargados: 0,
-    id_ruta: null as number | null
+    id_ruta: null,
+    id_autobus: null,
+    id_empleado_operador: null,
+    tipo_calculo: 'vueltas',
+    rutas_realizadas: [],
+    dias_laborados: 1
   };
 
-  constructor(private http: HttpClient, public authService: AuthService, private exportNotif: ExportNotificationService) {
+  constructor(private http: HttpClient, public authService: AuthService, private exportNotif: ExportNotificationService, private snackBar: MatSnackBar) {
     const ahora = new Date();
     this.fechaMaxima = ahora.toISOString().slice(0, 16);
   }
@@ -103,6 +117,7 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.establecerUltimos7Dias();
     this.cargarRutas();
+    this.cargarCatálogos();
 
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(300),
@@ -136,6 +151,66 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
         this.rutas = [];
       }
     });
+  }
+
+  cargarCatálogos(): void {
+    this.http.get<any[]>(`${environment.apiUrl}/autobuses/lista-simple`).subscribe({
+      next: (data) => {
+        this.autobuses = data;
+        this.configurarFiltrosAutocompletado();
+      },
+      error: (err) => console.error("Error al cargar autobuses:", err)
+    });
+    this.http.get<any[]>(`${environment.apiUrl}/operadores/lista-simple`).subscribe({
+      next: (data) => {
+        this.operadores = data;
+        this.configurarFiltrosAutocompletado();
+      },
+      error: (err) => console.error("Error al cargar operadores:", err)
+    });
+  }
+
+  configurarFiltrosAutocompletado() {
+    if(this.autobuses.length > 0 && !this.filteredAutobuses$) {
+      this.filteredAutobuses$ = this.autobusControl.valueChanges.pipe(
+        startWith(''),
+        map(value => {
+          const name = typeof value === 'string' ? value : value?.economico;
+          return name ? this._filterAutobus(name as string) : this.autobuses.slice();
+        })
+      );
+    }
+    if(this.operadores.length > 0 && !this.filteredOperadores$) {
+      this.filteredOperadores$ = this.operadorControl.valueChanges.pipe(
+        startWith(''),
+        map(value => {
+          const name = typeof value === 'string' ? value : value?.nombre_completo;
+          return name ? this._filterOperador(name as string) : this.operadores.slice();
+        })
+      );
+    }
+  }
+
+  displayFn(item: any): string {
+    return item ? (item.economico || item.nombre_completo || '') : '';
+  }
+
+  private _filterAutobus(name: string): any[] {
+    const filterValue = name.toLowerCase();
+    return this.autobuses.filter(option => option.economico.toLowerCase().includes(filterValue));
+  }
+
+  private _filterOperador(name: string): any[] {
+    const filterValue = name.toLowerCase();
+    return this.operadores.filter(option => option.nombre_completo.toLowerCase().includes(filterValue));
+  }
+
+  onAutobusSelected(event: any): void {
+    this.formEdicion['id_autobus'] = event.option.value.id_autobus;
+  }
+
+  onOperadorSelected(event: any): void {
+    this.formEdicion['id_empleado_operador'] = event.option.value.id_operador;
   }
 
   private construirParametros(page: number = 1, limit?: number): HttpParams {
@@ -277,10 +352,35 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
         this.formEdicion.km_final = this.obtenerNumero(datosCarga.km_final);
         this.formEdicion.litros_cargados = this.obtenerNumero(datosCarga.litros_cargados);
         this.formEdicion.id_ruta = datosCarga.id_ruta_principal || null;
+        
+        // Nuevos campos
+        this.formEdicion['id_autobus'] = datosCarga.id_autobus || null;
+        this.formEdicion['id_empleado_operador'] = datosCarga.id_empleado_operador || null;
+        this.formEdicion['tipo_calculo'] = datosCarga.tipo_calculo || 'vueltas';
+        this.formEdicion['dias_laborados'] = datosCarga.dias_laborados || 1;
+        
+        if (datosCarga.tipo_calculo === 'vueltas' && datosCarga.rutas_realizadas) {
+            this.formEdicion['rutas_realizadas'] = datosCarga.rutas_realizadas.map((r: any) => ({
+                id_ruta: r.id_ruta,
+                vueltas: r.numero_vueltas || r.vueltas
+            }));
+        } else {
+            this.formEdicion['rutas_realizadas'] = [];
+        }
+
+        // Configurar los autocomplete controls
+        const bus = this.autobuses.find(a => a.id_autobus === this.formEdicion['id_autobus']);
+        if(bus) this.autobusControl.setValue(bus);
+        else this.autobusControl.setValue('');
+        
+        const op = this.operadores.find(o => o.id_operador === this.formEdicion['id_empleado_operador']);
+        if(op) this.operadorControl.setValue(op);
+        else this.operadorControl.setValue('');
+
         this.cargandoEdicion = false;
       },
       error: () => {
-        alert('Error al cargar los datos para editar. Intente de nuevo.');
+        this.snackBar.open('Error al cargar los datos para editar. Intente de nuevo.', 'Cerrar', { duration: 3000, panelClass: ['snack-error'] });
         this.cerrarModalEditar();
       }
     });
@@ -293,29 +393,73 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
     this.cargandoEdicion = false;
     this.guardandoEdicion = false;
     document.body.style.overflow = 'auto';
-    this.formEdicion = { fecha_operacion: '', km_inicial: 0, km_final: 0, litros_cargados: 0, id_ruta: null };
+    this.formEdicion = { 
+        fecha_operacion: '', 
+        km_inicial: 0, 
+        km_final: 0, 
+        litros_cargados: 0, 
+        id_ruta: null,
+        id_autobus: null as any,
+        id_empleado_operador: null as any,
+        tipo_calculo: 'vueltas' as any,
+        rutas_realizadas: [] as any[],
+        dias_laborados: 1 as any
+    };
   }
 
   detectarCambios(): boolean {
     if (!this.cargaOriginal) return false;
     const fechaOriginal = this.formatearFechaParaInput(this.cargaOriginal.fecha_operacion);
+    
+    // Convert routes arrays to JSON strings for easy comparison
+    const originalRutas = JSON.stringify((this.cargaOriginal.rutas_realizadas || []).map((r: any) => ({
+        id_ruta: r.id_ruta,
+        vueltas: r.numero_vueltas || r.vueltas
+    })));
+    const currentRutas = JSON.stringify(this.formEdicion['rutas_realizadas'] || []);
+
     return this.formEdicion.fecha_operacion !== fechaOriginal ||
       this.formEdicion.km_inicial !== this.obtenerNumero(this.cargaOriginal.km_inicial) ||
       this.formEdicion.km_final !== this.obtenerNumero(this.cargaOriginal.km_final) ||
       this.formEdicion.litros_cargados !== this.obtenerNumero(this.cargaOriginal.litros_cargados) ||
-      this.formEdicion.id_ruta !== (this.cargaOriginal.id_ruta || null);
+      this.formEdicion.id_ruta !== (this.cargaOriginal.id_ruta_principal || null) ||
+      this.formEdicion['id_autobus'] !== this.cargaOriginal.id_autobus ||
+      this.formEdicion['id_empleado_operador'] !== this.cargaOriginal.id_empleado_operador ||
+      this.formEdicion['tipo_calculo'] !== this.cargaOriginal.tipo_calculo ||
+      this.formEdicion['dias_laborados'] !== (this.cargaOriginal.dias_laborados || 1) ||
+      (this.formEdicion['tipo_calculo'] === 'vueltas' && currentRutas !== originalRutas);
   }
 
   obtenerResumenCambios(): string[] {
     if (!this.cargaOriginal) return [];
     const cambios: string[] = [];
     const fechaOriginal = this.formatearFechaParaInput(this.cargaOriginal.fecha_operacion);
+    
     if (this.formEdicion.fecha_operacion !== fechaOriginal) cambios.push(`Fecha: Modificada`);
     if (this.formEdicion.km_inicial !== this.obtenerNumero(this.cargaOriginal.km_inicial)) cambios.push(`KM Inicial modificado`);
     if (this.formEdicion.km_final !== this.obtenerNumero(this.cargaOriginal.km_final)) cambios.push(`KM Final modificado`);
     if (this.formEdicion.litros_cargados !== this.obtenerNumero(this.cargaOriginal.litros_cargados)) cambios.push(`Litros modificados`);
-    if (this.formEdicion.id_ruta !== (this.cargaOriginal.id_ruta || null)) cambios.push(`Ruta modificada`);
+    if (this.formEdicion.id_ruta !== (this.cargaOriginal.id_ruta_principal || null)) cambios.push(`Ruta principal modificada`);
+    if (this.formEdicion['id_autobus'] !== this.cargaOriginal.id_autobus) cambios.push(`Autobús modificado`);
+    if (this.formEdicion['id_empleado_operador'] !== this.cargaOriginal.id_empleado_operador) cambios.push(`Operador modificado`);
+    if (this.formEdicion['tipo_calculo'] !== this.cargaOriginal.tipo_calculo) cambios.push(`Tipo de cálculo modificado`);
+    
+    const originalRutas = JSON.stringify((this.cargaOriginal.rutas_realizadas || []).map((r: any) => ({
+        id_ruta: r.id_ruta,
+        vueltas: r.numero_vueltas || r.vueltas
+    })));
+    const currentRutas = JSON.stringify(this.formEdicion['rutas_realizadas'] || []);
+    if (this.formEdicion['tipo_calculo'] === 'vueltas' && currentRutas !== originalRutas) cambios.push(`Rutas/vueltas modificadas`);
+    
     return cambios;
+  }
+
+  agregarRutaEdicion() {
+    this.formEdicion['rutas_realizadas'].push({ id_ruta: null, vueltas: 1 });
+  }
+
+  quitarRutaEdicion(index: number) {
+    this.formEdicion['rutas_realizadas'].splice(index, 1);
   }
 
   calcularKmRecorridos(): number { return Math.max(0, this.formEdicion.km_final - this.formEdicion.km_inicial); }
@@ -335,8 +479,14 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
 
   guardarEdicion(): void {
     if (!this.cargaEditando || !this.cargaEditando.id_carga) return;
-    if (this.formEdicion.km_final <= this.formEdicion.km_inicial) { alert('El KM Final debe ser mayor que el KM Inicial.'); return; }
-    if (this.formEdicion.litros_cargados <= 0) { alert('Los litros cargados deben ser mayores a 0.'); return; }
+    if (this.formEdicion.km_final <= this.formEdicion.km_inicial) {
+      this.snackBar.open('El KM Final debe ser mayor que el KM Inicial.', 'Entendido', { duration: 3000, panelClass: ['snack-warning'] });
+      return;
+    }
+    if (this.formEdicion.litros_cargados <= 0) {
+      this.snackBar.open('Los litros cargados deben ser mayores a 0.', 'Entendido', { duration: 3000, panelClass: ['snack-warning'] });
+      return;
+    }
 
     this.guardandoEdicion = true;
     const datosAActualizar = {
@@ -344,19 +494,24 @@ export class HistorialCombustibleComponent implements OnInit, OnDestroy {
       km_inicial: this.formEdicion.km_inicial,
       km_final: this.formEdicion.km_final,
       litros_cargados: this.formEdicion.litros_cargados,
-      id_ruta: this.formEdicion.id_ruta
+      id_ruta_principal: this.formEdicion.id_ruta,
+      id_autobus: this.formEdicion['id_autobus'],
+      id_empleado_operador: this.formEdicion['id_empleado_operador'],
+      tipo_calculo: this.formEdicion['tipo_calculo'],
+      dias_laborados: this.formEdicion['dias_laborados'],
+      rutas_realizadas: this.formEdicion['rutas_realizadas']
     };
 
     this.http.put(`${this.apiUrl}/${this.cargaEditando.id_carga}`, datosAActualizar).subscribe({
       next: (res: any) => {
         this.guardandoEdicion = false;
-        alert(res.message || 'Carga actualizada exitosamente.');
+        this.snackBar.open(res.message || 'Carga actualizada exitosamente.', 'Cerrar', { duration: 2500, panelClass: ['snack-success'] });
         this.cerrarModalEditar();
         this.obtenerCargas();
       },
       error: (err) => {
         this.guardandoEdicion = false;
-        alert(`Error al guardar: ${err.error?.message || 'Error desconocido'}`);
+        this.snackBar.open(err.error?.message || 'Error al guardar.', 'Cerrar', { duration: 3000, panelClass: ['snack-error'] });
       }
     });
   }

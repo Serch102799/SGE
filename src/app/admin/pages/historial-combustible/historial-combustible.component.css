@@ -1,4 +1,4 @@
-﻿/* Base y Fondo */
+/* Base y Fondo */
 :host {
   display: block;
   padding: 40px 20px;
@@ -1881,4 +1881,110 @@
 @keyframes pulseText {
   0%, 100% { opacity: 0.5; }
   50% { opacity: 1; text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
+}
+
+/* ============================================
+   TICKET DESIGN MODAL (EDICIÓN)
+   ============================================ */
+.ticket-header {
+  text-align: center;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px dashed #9ca3af !important;
+  border-radius: 0 !important;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.ticket-header h4 {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: #111827 !important;
+}
+
+.ticket-divider {
+  border-top: 2px dashed #9ca3af;
+  margin: 15px 0;
+}
+
+.ticket-subtitle {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  color: #374151;
+  border-bottom: 1px dashed #d1d5db;
+  padding-bottom: 5px;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+}
+
+.ticket-section {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.modal-content-edit {
+  background: #ffffff !important;
+  color: #111827 !important;
+  font-family: 'Courier New', Courier, monospace;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+}
+
+.form-control-edit, .form-control-edit:focus {
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  color: #111827;
+  font-family: 'Courier New', Courier, monospace;
+  border-radius: 4px;
+}
+
+.btn-add-ruta {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  width: 100%;
+  margin-top: 10px;
+  transition: background 0.3s;
+}
+
+.btn-add-ruta:hover {
+  background: #059669;
+}
+
+.ruta-row-edit {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.ruta-select-col { flex: 2; margin-bottom: 0 !important; }
+.vueltas-input-col { flex: 1; margin-bottom: 0 !important; }
+
+.btn-remove-ruta {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-remove-ruta:hover {
+  background: #dc2626;
 }

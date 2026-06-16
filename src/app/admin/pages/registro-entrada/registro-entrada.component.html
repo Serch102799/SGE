@@ -1,4 +1,4 @@
-﻿<div class="mb-3" style="padding: 0 20px;">
+<div class="mb-3" style="padding: 0 20px;">
   <button class="btn-accion btn-cancelar" (click)="regresar()" style="font-size: 1rem; padding: 10px 20px;">
     <i class="fas fa-arrow-left"></i> Regresar a Entradas
   </button>
@@ -201,13 +201,81 @@
       <button type="button" class="btn-accion btn-cancelar mr-3" (click)="regresar()" [disabled]="isSaving" style="padding: 12px 30px; font-size: 1.1rem; margin-right: 15px;">
         <i class="fas fa-times"></i> Cancelar
       </button>
-      <button type="button" class="btn-accion btn-guardar" (click)="guardarEntradaCompleta()" [disabled]="isSaving || detallesAAgregar.length === 0" style="padding: 12px 30px; font-size: 1.1rem;">
+      <button type="button" class="btn-accion btn-guardar" (click)="prepararGuardado()" [disabled]="isSaving || detallesAAgregar.length === 0" style="padding: 12px 30px; font-size: 1.1rem;">
         <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
         {{ isSaving ? 'Guardando Entrada...' : 'Guardar Entrada Completa' }}
       </button>
     </div>
 
   </div>
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN (TICKET) -->
+<div class="modal-overlay" *ngIf="mostrarModalConfirmacion" style="z-index: 3000;">
+    <div class="modal-content ticket-modal">
+        <div class="ticket-header">
+            <h3><i class="fas fa-file-invoice"></i> Confirmar Entrada</h3>
+            <p class="ticket-date">{{ datosConfirmacion.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        
+        <div class="ticket-body">
+            <div class="ticket-row highlight">
+                <span>Proveedor:</span>
+                <strong>{{ datosConfirmacion.proveedor }}</strong>
+            </div>
+            
+            <div class="ticket-divider"></div>
+
+            <div class="ticket-row">
+                <span>Razón Social:</span>
+                <span>{{ datosConfirmacion.razon_social }}</span>
+            </div>
+            <div class="ticket-row">
+                <span>Factura:</span>
+                <span>{{ datosConfirmacion.factura }}</span>
+            </div>
+            <div class="ticket-row">
+                <span>Vale Interno:</span>
+                <span>{{ datosConfirmacion.vale }}</span>
+            </div>
+            <div class="ticket-row">
+                <span>Recibió:</span>
+                <span>{{ datosConfirmacion.recibio }}</span>
+            </div>
+
+            <div class="ticket-divider"></div>
+            
+            <div style="font-weight: bold; margin-bottom: 8px; color: var(--bg-dark-main);">Artículos:</div>
+            <div class="ticket-grid" style="grid-template-columns: 2fr 1fr 1fr; font-size: 0.85rem; row-gap: 5px;">
+                <div *ngFor="let item of datosConfirmacion.articulos" style="display: contents;">
+                    <div style="color: #333; text-align: left;">{{ item.cantidad }}x {{ item.nombre }}</div>
+                    <div class="text-right text-muted">{{ item.costo_ingresado | currency:'MXN' }} {{ item.tipo_costo === 'unitario' ? 'c/u' : 'tot' }}</div>
+                    <div class="text-right" style="color: #00b09b; font-weight: bold;">{{ calcularValorNeto(item) | currency:'MXN' }}</div>
+                </div>
+            </div>
+
+            <div class="ticket-divider"></div>
+
+            <div class="ticket-grid">
+                <div class="ticket-item" style="grid-column: span 3; text-align: right;">
+                    <label>Total a Capturar</label>
+                    <span class="value highlight-value" style="font-size: 1.5rem; color: #00b09b;">{{ datosConfirmacion.total | currency:'MXN' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="ticket-footer">
+            <p>¿Los datos y costos son correctos?</p>
+            <div class="ticket-actions">
+                <button class="btn-ticket-cancel" (click)="cancelarConfirmacion()">
+                    <i class="fas fa-edit"></i> Revisar
+                </button>
+                <button class="btn-ticket-confirm" (click)="guardarEntradaCompleta()" [disabled]="isSaving">
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()" style="z-index: 3000;">

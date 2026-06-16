@@ -1,4 +1,4 @@
-﻿<div class="usuarios-container">
+<div class="usuarios-container">
   <div class="container-header">
     <h2>Historial de Cargas de Combustible</h2>
     <div class="acciones-header">
@@ -233,23 +233,15 @@
         </div>
 
         <div *ngIf="!cargandoEdicion">
-          <div class="info-section-edit">
-            <h4>📋 Información del Registro</h4>
+          <div class="info-section-edit ticket-header">
+            <h4>🧾 TICKET DE EDICIÓN #{{ cargaEditando.id_carga }}</h4>
             <div class="info-grid-edit">
               <div class="info-item-edit">
-                <span class="info-label-edit">ID Carga:</span>
-                <span class="info-value-edit">#{{ cargaEditando.id_carga }}</span>
-              </div>
-              <div class="info-item-edit">
-                <span class="info-label-edit">Autobús:</span>
-                <span class="info-value-edit">{{ cargaEditando.economico || '-' }}</span>
-              </div>
-              <div class="info-item-edit">
-                <span class="info-label-edit">Operador:</span>
-                <span class="info-value-edit">{{ cargaEditando.nombre_operador || cargaEditando.nombre_completo || '-'
-                  }}</span>
+                <span class="info-label-edit">Operación Original:</span>
+                <span class="info-value-edit">{{ cargaEditando.fecha_operacion | date:'dd/MM/yyyy HH:mm' }}</span>
               </div>
             </div>
+            <div class="ticket-divider"></div>
           </div>
 
           <div class="form-group-edit">
@@ -297,13 +289,88 @@
             <div class="calculated-value-edit">{{ calcularRendimientoEstimado() | number:'1.2-2' }} km/L</div>
           </div>
 
-          <div class="form-group-edit">
-            <label for="editRuta">🛣️ Ruta</label>
-            <select id="editRuta" class="form-control-edit" [(ngModel)]="formEdicion.id_ruta" name="id_ruta">
-              <option [ngValue]="null">-- Cálculo por Días / Sin Ruta --</option>
-              <option *ngFor="let ruta of rutas" [value]="ruta.id_ruta">{{ ruta.nombre_ruta }}</option>
-            </select>
-            <small class="form-hint-edit">Seleccione una ruta si esta carga debe calcularse por 'vueltas'. Déjelo en blanco si es por 'días'.</small>
+          <div class="form-row-edit ticket-row">
+            <div class="form-group-edit half-width-edit">
+              <label class="required-label-edit">🚌 Autobús</label>
+              <mat-form-field appearance="outline" class="full-width" style="width: 100%;">
+                <input type="text" placeholder="Busca por económico..." matInput [formControl]="autobusControl"
+                  [matAutocomplete]="autoAutobusEdit" required>
+              </mat-form-field>
+              <mat-autocomplete #autoAutobusEdit="matAutocomplete" [displayWith]="displayFn"
+                (optionSelected)="onAutobusSelected($event)">
+                <mat-option *ngFor="let autobus of filteredAutobuses$ | async" [value]="autobus">
+                  {{ autobus.economico }}
+                </mat-option>
+              </mat-autocomplete>
+            </div>
+
+            <div class="form-group-edit half-width-edit">
+              <label class="required-label-edit">👨‍✈️ Operador</label>
+              <mat-form-field appearance="outline" class="full-width" style="width: 100%;">
+                <input type="text" placeholder="Busca por nombre..." matInput [formControl]="operadorControl"
+                  [matAutocomplete]="autoOperadorEdit" required>
+              </mat-form-field>
+              <mat-autocomplete #autoOperadorEdit="matAutocomplete" [displayWith]="displayFn"
+                (optionSelected)="onOperadorSelected($event)">
+                <mat-option *ngFor="let operador of filteredOperadores$ | async" [value]="operador">
+                  {{ operador.nombre_completo }}
+                </mat-option>
+              </mat-autocomplete>
+            </div>
+          </div>
+
+          <div class="form-row-edit ticket-row">
+            <div class="form-group-edit half-width-edit">
+              <label for="editTipoCalculo" class="required-label-edit">⚙️ Tipo de Cálculo</label>
+              <select id="editTipoCalculo" class="form-control-edit" [(ngModel)]="formEdicion['tipo_calculo']" name="tipo_calculo" required>
+                <option value="vueltas">Por Vueltas (Rutas)</option>
+                <option value="dias">Por Días Laborados</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- SECCIÓN POR VUELTAS -->
+          <div *ngIf="formEdicion['tipo_calculo'] === 'vueltas'" class="rutas-container-edit ticket-section">
+            <h5 class="ticket-subtitle">Rutas Realizadas</h5>
+            
+            <div *ngFor="let ruta of formEdicion['rutas_realizadas']; let i = index" class="form-row-edit ruta-row-edit">
+              <div class="form-group-edit ruta-select-col">
+                <select [id]="'editRuta' + i" class="form-control-edit" [(ngModel)]="ruta.id_ruta" [name]="'ruta_' + i" required>
+                  <option [ngValue]="null">-- Seleccione --</option>
+                  <option *ngFor="let r of rutas" [value]="r.id_ruta">{{ r.nombre_ruta }}</option>
+                </select>
+              </div>
+              
+              <div class="form-group-edit vueltas-input-col">
+                <input type="number" class="form-control-edit" [(ngModel)]="ruta.vueltas" [name]="'vueltas_' + i" required min="0.5" step="0.5" placeholder="Vueltas">
+              </div>
+              
+              <button type="button" class="btn-remove-ruta" (click)="quitarRutaEdicion(i)" title="Eliminar ruta">
+                &times;
+              </button>
+            </div>
+            
+            <button type="button" class="btn-add-ruta" (click)="agregarRutaEdicion()">
+              + Agregar Ruta
+            </button>
+          </div>
+
+          <!-- SECCIÓN POR DÍAS -->
+          <div *ngIf="formEdicion['tipo_calculo'] === 'dias'" class="rutas-container-edit ticket-section">
+            <h5 class="ticket-subtitle">Cálculo por Días</h5>
+            <div class="form-row-edit ticket-row">
+              <div class="form-group-edit half-width-edit">
+                <label for="editRutaPrincipal" class="required-label-edit">Ruta Principal</label>
+                <select id="editRutaPrincipal" class="form-control-edit" [(ngModel)]="formEdicion.id_ruta" name="id_ruta_principal" required>
+                  <option [ngValue]="null">-- Seleccione --</option>
+                  <option *ngFor="let r of rutas" [value]="r.id_ruta">{{ r.nombre_ruta }}</option>
+                </select>
+              </div>
+              <div class="form-group-edit half-width-edit">
+                <label for="editDias" class="required-label-edit">Días Laborados</label>
+                <input type="number" id="editDias" class="form-control-edit" [(ngModel)]="formEdicion['dias_laborados']" name="dias_laborados" required min="1" step="1">
+              </div>
+            </div>
           </div>
 
           <div *ngIf="detectarCambios()" class="changes-summary-edit">

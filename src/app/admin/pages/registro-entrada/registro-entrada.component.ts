@@ -73,7 +73,9 @@ export class RegistroEntradaComponent implements OnInit {
   detallesAAgregar: DetalleTemporal[] = [];
   isSaving = false;
 
-  // --- Notificaciones ---
+  // --- Notificaciones y Modales ---
+  mostrarModalConfirmacion = false;
+  datosConfirmacion: any = {};
   mostrarModalNotificacion = false;
   notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
 
@@ -201,7 +203,7 @@ export class RegistroEntradaComponent implements OnInit {
     return now.toISOString().slice(0, 16);
   }
 
-  guardarEntradaCompleta() {
+  prepararGuardado() {
     if (this.isSaving) return;
     if (!this.entradaMaestro.idProveedor || !this.entradaMaestro.recibidoPorID) {
       this.mostrarNotificacion('Datos Incompletos', 'Debes seleccionar un proveedor y quién recibe la mercancía.');
@@ -212,6 +214,33 @@ export class RegistroEntradaComponent implements OnInit {
       return;
     }
 
+    const proveedor = this.proveedores.find(p => p.id_proveedor === this.entradaMaestro.idProveedor);
+    const total = this.detallesAAgregar.reduce((acc, curr) => acc + this.calcularValorNeto(curr), 0);
+
+    const facturaFinal = this.entradaMaestro.factura_pendiente 
+      ? 'FACTURA PENDIENTE' 
+      : this.entradaMaestro.factura_proveedor;
+
+    this.datosConfirmacion = {
+      proveedor: proveedor ? proveedor.nombre_proveedor : 'Desconocido',
+      razon_social: this.entradaMaestro.razon_social || 'No especificada',
+      factura: facturaFinal || 'N/A',
+      vale: this.entradaMaestro.vale_interno || 'N/A',
+      recibio: this.nombreUsuarioActual,
+      fecha: this.entradaMaestro.fecha_operacion,
+      articulos: this.detallesAAgregar,
+      total: total
+    };
+
+    this.mostrarModalConfirmacion = true;
+  }
+
+  cancelarConfirmacion() {
+    this.mostrarModalConfirmacion = false;
+  }
+
+  guardarEntradaCompleta() {
+    this.mostrarModalConfirmacion = false;
     this.isSaving = true;
 
     // LÓGICA DE FACTURA PENDIENTE

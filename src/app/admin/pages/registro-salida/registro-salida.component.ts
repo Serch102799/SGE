@@ -73,6 +73,8 @@ export class RegistroSalidaComponent implements OnInit {
   detallesInsumosAAgregar: DetalleInsumoTemporal[] = [];
   
   isSaving = false;
+  mostrarModalConfirmacion = false;
+  datosConfirmacion: any = {};
   mostrarModalNotificacion = false;
   notificacion = { titulo: 'Aviso', mensaje: '', tipo: 'advertencia' as 'exito' | 'error' | 'advertencia' };
   
@@ -258,7 +260,7 @@ export class RegistroSalidaComponent implements OnInit {
     });
   }
   
-  guardarSalidaCompleta() {
+  prepararGuardado() {
     if (this.isSaving) return;
     
     if (!this.salidaMaestro.solicitadoPorID || !this.salidaMaestro.tipoSalida || !this.salidaMaestro.fecha_operacion) {
@@ -266,6 +268,7 @@ export class RegistroSalidaComponent implements OnInit {
       return;
     }
 
+    let destinoStr = '';
     if (this.tipoDestino === 'Autobus') {
       if (!this.salidaMaestro.idAutobus || this.salidaMaestro.kilometraje === null) {
         this.mostrarNotificacion('Datos Incompletos', 'Selecciona el autobús e ingresa el kilometraje.');
@@ -276,18 +279,46 @@ export class RegistroSalidaComponent implements OnInit {
         this.mostrarNotificacion('Dato Inválido', `El kilometraje no puede ser menor al actual (${autobusSeleccionado.kilometraje_actual}).`);
         return;
       }
+      destinoStr = autobusSeleccionado ? `BUS ${autobusSeleccionado.economico}` : 'Autobús';
     } else {
       if (!this.salidaMaestro.idVehiculoParticular) {
         this.mostrarNotificacion('Datos Incompletos', 'Selecciona a qué vehículo administrativo se le despachará.');
         return;
       }
+      const vehiculoSeleccionado = this.vehiculoControl.value as VehiculoParticular;
+      destinoStr = vehiculoSeleccionado ? `${vehiculoSeleccionado.propietario} - ${vehiculoSeleccionado.marca}` : 'Vehículo Particular';
     }
 
-    // 🚀 AJUSTE DE VALIDACIÓN: Ahora un vale de salida es válido SI TIENE refacciones, SI TIENE insumos OR SI MARCÓ un consumible a granel
     if (this.detallesRefaccionesAAgregar.length === 0 && this.detallesInsumosAAgregar.length === 0 && this.granelSeleccionado.length === 0) {
       this.mostrarNotificacion('Sin Detalles', 'Agrega al menos una refacción, insumo o marca un consumible a granel para justificar el vale.');
       return;
     }
+
+    const granelesNombres = this.consumiblesActivos
+      .filter(g => this.granelSeleccionado.includes(g.id_consumible_granel))
+      .map(g => g.nombre_insumo);
+
+    this.datosConfirmacion = {
+      destino: destinoStr,
+      despachadoPor: this.nombreUsuarioActual,
+      tipoSalida: this.salidaMaestro.tipoSalida,
+      fecha: this.salidaMaestro.fecha_operacion,
+      observaciones: this.salidaMaestro.observaciones || 'Ninguna',
+      kilometraje: this.tipoDestino === 'Autobus' ? this.salidaMaestro.kilometraje : 'N/A',
+      refacciones: this.detallesRefaccionesAAgregar,
+      insumos: this.detallesInsumosAAgregar,
+      graneles: granelesNombres
+    };
+
+    this.mostrarModalConfirmacion = true;
+  }
+
+  cancelarConfirmacion() {
+    this.mostrarModalConfirmacion = false;
+  }
+  
+  guardarSalidaCompleta() {
+    this.mostrarModalConfirmacion = false;
     
     this.isSaving = true;
 

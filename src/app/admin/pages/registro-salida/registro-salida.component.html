@@ -245,7 +245,7 @@
         <i class="fas fa-times"></i> Cancelar
       </button>
       
-      <button type="button" class="btn-accion btn-guardar" (click)="guardarSalidaCompleta()" 
+      <button type="button" class="btn-accion btn-guardar" (click)="prepararGuardado()" 
               [disabled]="isSaving || (detallesRefaccionesAAgregar.length === 0 && detallesInsumosAAgregar.length === 0 && granelSeleccionado.length === 0)" 
               style="padding: 12px 30px; font-size: 1.1rem;">
         <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
@@ -254,6 +254,83 @@
     </div>
 
   </div>
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN (TICKET) -->
+<div class="modal-overlay" *ngIf="mostrarModalConfirmacion" style="z-index: 3000;">
+    <div class="modal-content ticket-modal">
+        <div class="ticket-header">
+            <h3><i class="fas fa-shipping-fast"></i> Confirmar Salida</h3>
+            <p class="ticket-date">{{ datosConfirmacion.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        
+        <div class="ticket-body">
+            <div class="ticket-row highlight">
+                <span>Destino:</span>
+                <strong>{{ datosConfirmacion.destino }}</strong>
+            </div>
+            
+            <div class="ticket-divider"></div>
+
+            <div class="ticket-row">
+                <span>Tipo Salida:</span>
+                <span>{{ datosConfirmacion.tipoSalida }}</span>
+            </div>
+            <div class="ticket-row">
+                <span>Autorizó/Despachó:</span>
+                <span>{{ datosConfirmacion.despachadoPor }}</span>
+            </div>
+            <div class="ticket-row" *ngIf="datosConfirmacion.kilometraje !== 'N/A'">
+                <span>Kilometraje:</span>
+                <span>{{ datosConfirmacion.kilometraje }} km</span>
+            </div>
+            <div class="ticket-row" style="flex-direction: column; align-items: flex-start; gap: 5px;">
+                <span>Observaciones:</span>
+                <span style="color: #64748b; font-style: italic;">"{{ datosConfirmacion.observaciones }}"</span>
+            </div>
+
+            <div class="ticket-divider"></div>
+            
+            <div style="font-weight: bold; margin-bottom: 8px; color: var(--bg-dark-main);">Artículos Despachados:</div>
+            
+            <div *ngIf="datosConfirmacion.refacciones.length > 0">
+                <div style="color: #dc2626; font-size: 0.8rem; margin-top: 5px; font-weight: bold;">REFACCIONES:</div>
+                <div *ngFor="let ref of datosConfirmacion.refacciones" style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #333;">
+                    <span>{{ ref.cantidad_despachada }}x {{ ref.nombre_refaccion }}</span>
+                </div>
+            </div>
+
+            <div *ngIf="datosConfirmacion.insumos.length > 0">
+                <div style="color: #059669; font-size: 0.8rem; margin-top: 5px; font-weight: bold;">INSUMOS:</div>
+                <div *ngFor="let ins of datosConfirmacion.insumos" style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #333;">
+                    <span>{{ ins.cantidad_usada }}x {{ ins.nombre_insumo }}</span>
+                </div>
+            </div>
+
+            <div *ngIf="datosConfirmacion.graneles.length > 0">
+                <div style="color: #2563eb; font-size: 0.8rem; margin-top: 5px; font-weight: bold;">GRANEL EN USO (PISO):</div>
+                <div *ngFor="let gr of datosConfirmacion.graneles" style="font-size: 0.85rem; color: #333;">
+                    <span>- {{ gr }}</span>
+                </div>
+            </div>
+
+            <div *ngIf="datosConfirmacion.refacciones.length === 0 && datosConfirmacion.insumos.length === 0 && datosConfirmacion.graneles.length === 0">
+                <div style="color: #64748b; font-size: 0.85rem; font-style: italic;">Sin artículos registrados.</div>
+            </div>
+        </div>
+
+        <div class="ticket-footer">
+            <p>¿Confirma la salida de estos artículos?</p>
+            <div class="ticket-actions">
+                <button class="btn-ticket-cancel" (click)="cancelarConfirmacion()">
+                    <i class="fas fa-edit"></i> Revisar
+                </button>
+                <button class="btn-ticket-confirm" (click)="guardarSalidaCompleta()" [disabled]="isSaving">
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModalNotificacion" (click)="cerrarModalNotificacion()" style="z-index: 3000;">
