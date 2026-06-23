@@ -218,7 +218,7 @@
             <p class="ticket-date">{{ datosConfirmacion.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
         </div>
         
-        <div class="ticket-body">
+        <div class="ticket-body" style="max-height: 60vh; overflow-y: auto; overflow-x: hidden;">
             <div class="ticket-row highlight">
                 <span>Proveedor:</span>
                 <strong>{{ datosConfirmacion.proveedor }}</strong>
