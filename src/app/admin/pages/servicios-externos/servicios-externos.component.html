@@ -163,7 +163,7 @@
             <mat-autocomplete #autoBus="matAutocomplete" [displayWith]="displayFnBus" 
                               (optionSelected)="seleccionarAutobus($event)">
               <mat-option *ngFor="let bus of filteredAutobuses$ | async" [value]="bus">
-                <ng-container *ngIf="bus.is_vehiculo_particular">Auto: {{ bus.propietario }}</ng-container>
+                <ng-container *ngIf="bus.is_vehiculo_particular">Auto: {{ bus.propietario }} ({{ bus.marca }} {{ bus.modelo }} - {{ bus.placas }})</ng-container>
                 <ng-container *ngIf="!bus.is_vehiculo_particular">Bus {{ bus.economico }}</ng-container>
                 <small class="text-muted"> (Km: {{ bus.kilometraje_actual || 0 }})</small>
               </mat-option>

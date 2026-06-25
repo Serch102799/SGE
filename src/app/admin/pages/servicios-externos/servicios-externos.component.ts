@@ -86,6 +86,7 @@ export class ServiciosExternosComponent implements OnInit {
     const vehiculosFiltrados = this.vehiculosParticulares.filter(v => 
       v.propietario.toLowerCase().includes(termLower) || 
       v.marca.toLowerCase().includes(termLower) || 
+      (v.modelo && v.modelo.toLowerCase().includes(termLower)) || 
       (v.placas && v.placas.toLowerCase().includes(termLower))
     ).map(v => ({ ...v, is_vehiculo_particular: true }));
 
@@ -97,7 +98,7 @@ export class ServiciosExternosComponent implements OnInit {
 
   displayFnBus(bus: any): string { 
     if (!bus) return '';
-    if (bus.is_vehiculo_particular) return `Auto: ${bus.propietario} (${bus.marca})`;
+    if (bus.is_vehiculo_particular) return `Auto: ${bus.propietario} (${bus.marca} ${bus.modelo} - ${bus.placas})`;
     return bus.economico ? `Bus ${bus.economico}` : ''; 
   }
 
